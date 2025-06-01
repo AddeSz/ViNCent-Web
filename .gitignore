@@ -1,0 +1,57 @@
+# Global
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.eggs/
+*.log
+*.sqlite3
+*.db
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# PyInstaller
+dist/
+build/
+*.spec
+
+# Pytest
+.cache/
+.pytest_cache/
+
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local build
+.frontend-build/
+.DS_Store

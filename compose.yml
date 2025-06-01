@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_PORT: ${BACKEND_PORT}
+    container_name: backend
+    image: vincent/backend
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    restart: unless-stopped
+    networks:
+      - network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+    container_name: frontend
+    image: vincent/frontend
+    ports:
+      - "${VITE_PORT}:${VITE_PORT}"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - network
+    environment:
+      - VITE_PORT=${VITE_PORT}
+networks:
+  network:
+    driver: bridge
