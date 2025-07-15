@@ -1,10 +1,13 @@
 import { createRoot } from "react-dom/client";
-import "./global.css";
-import App from "./App.tsx";
-import { StrictMode } from "react";
+import { BrowserRouter } from "react-router";
+import "@/global.css";
+import App from "@/App.tsx";
+import { ThemeProvider } from "@/components/shadcnUI/theme-provider";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <BrowserRouter>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <App />
+    </ThemeProvider>
+  </BrowserRouter>,
 );
