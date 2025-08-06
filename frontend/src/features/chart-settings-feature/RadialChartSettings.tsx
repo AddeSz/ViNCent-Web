@@ -3,13 +3,14 @@ import { useChartSettings } from "@/hooks/useChartSettings";
 
 const RadialChartSettings = () => {
   const { radialSettings, setRadialSettings } = useChartSettings();
-  const { innerRadius, outerRadius, arcPadding } = radialSettings;
+  const { innerRadius, outerRadius, fontSize } = radialSettings;
 
   const outerRadiusMin = innerRadius + 200;
-  const arcPaddingMax = Math.floor((outerRadius - innerRadius) / 10);
+  const fontSizeMax = 45;
 
   return (
     <div className="flex w-full flex-col gap-2">
+      {/* Inner Radius Slider */}
       <div className="flex flex-col">
         <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
           Inner Radius: {innerRadius}px
@@ -22,14 +23,9 @@ const RadialChartSettings = () => {
           onValueChange={([val]) => {
             const newInner = val;
             const newOuter = Math.max(outerRadius, newInner + 200);
-            const newArcPadding = Math.min(
-              arcPadding,
-              (newOuter - newInner) / 10,
-            );
             setRadialSettings({
               innerRadius: newInner,
               outerRadius: newOuter,
-              arcPadding: Math.floor(newArcPadding),
             });
           }}
         />
@@ -39,6 +35,7 @@ const RadialChartSettings = () => {
         </span>
       </div>
 
+      {/* Outer Radius Slider */}
       <div className="flex flex-col">
         <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
           Outer Radius: {outerRadius}px
@@ -49,14 +46,8 @@ const RadialChartSettings = () => {
           step={10}
           value={[outerRadius]}
           onValueChange={([val]) => {
-            const newOuter = val;
-            const newArcPadding = Math.min(
-              arcPadding,
-              (newOuter - innerRadius) / 10,
-            );
             setRadialSettings({
-              outerRadius: newOuter,
-              arcPadding: Math.floor(newArcPadding),
+              outerRadius: val,
             });
           }}
         />
@@ -66,22 +57,23 @@ const RadialChartSettings = () => {
         </span>
       </div>
 
+      {/* Label Size Slider */}
       <div className="flex flex-col">
         <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
-          Arc Padding: {arcPadding}px
+          Label Size: {fontSize}px
         </label>
         <Slider
           min={0}
-          max={arcPaddingMax}
+          max={fontSizeMax}
           step={1}
-          value={[arcPadding]}
+          value={[fontSize]}
           onValueChange={([val]) => {
-            setRadialSettings({ arcPadding: val });
+            setRadialSettings({ fontSize: val });
           }}
         />
         <span className="mt-0.5 flex w-full justify-between text-xs">
           <span>0</span>
-          <span>{arcPaddingMax}</span>
+          <span>{fontSizeMax}</span>
         </span>
       </div>
     </div>

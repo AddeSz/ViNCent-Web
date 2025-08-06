@@ -4,6 +4,7 @@ import type { Network, Centrality } from "@/types/network";
 interface DataStore {
   network: Network;
   centralityData: Centrality[];
+  centralityKeys: string[];
   selectedNodes: Set<string>;
 
   selectNode: (id: string, multi?: boolean) => void;
@@ -20,10 +21,20 @@ interface DataStore {
 export const useDataStore = create<DataStore>((set, get) => ({
   network: { nodes: [], edges: [] },
   centralityData: [],
+  centralityKeys: [],
   selectedNodes: new Set<string>(),
 
   setNetwork: (data) => set({ network: data }),
-  setCentralityData: (data) => set({ centralityData: data }),
+    setCentralityData: (data) => {
+    const keysSet = new Set<string>();
+    data.forEach(item => {
+      Object.keys(item).forEach(key => {
+        if (key !== "id") keysSet.add(key);
+      });
+    });
+    const keys = Array.from(keysSet);
+    set({ centralityData: data, centralityKeys: keys });
+  },
 
   selectNode: (id, multi = false) => {
     const current = get().selectedNodes;
@@ -56,6 +67,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
     set({
       network: { nodes: [], edges: [] },
       centralityData: [],
+      centralityKeys: [],
       selectedNodes: new Set<string>(),
     }),
 }));

@@ -11,6 +11,7 @@ import drawLinks, { updateLinkHighlight } from "./drawLinks";
 import calculateBounds from "./calculateBounds";
 import { useZoom } from "@/hooks/useZoom";
 import { useChartSettings } from "@/hooks/useChartSettings";
+import { initializeColorScale } from "@/utils/ColorHelper";
 
 const RadialChart = forwardRef(function RadialChart(
   {
@@ -23,11 +24,12 @@ const RadialChart = forwardRef(function RadialChart(
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dimensions = useResizeObserver(containerRef);
   const centralityData = useDataStore((state) => state.centralityData);
+  const centralityKeys = useDataStore((state) => state.centralityKeys);
   const networkData = useDataStore((state) => state.network);
   const selectedNodes = useDataStore((state) => state.selectedNodes);
   const { setupZoom, resetZoom } = useZoom();
   const { radialSettings } = useChartSettings();
-  const { innerRadius, outerRadius, arcPadding } = radialSettings;
+  const { innerRadius, outerRadius, fontSize } = radialSettings;
 
   useImperativeHandle(
     resetRef,
@@ -42,45 +44,35 @@ const RadialChart = forwardRef(function RadialChart(
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
-
     const svgGroup = svg.append("g").attr("class", "zoom-group");
     setupZoom(svg, svgRef, svgGroup);
 
-    const keys = Array.from({ length: 10 }, (_, i) => `centrality${i}`);
     const series = d3
       .stack<Centrality>()
-      .keys(keys)
-      // .value((d, key) => {
-      //   const val = d[key as keyof Centrality];
-      //   return typeof val === "number" ? val * 3 : 0;
-      // })(centralityData);
+      .keys(centralityKeys)
       .value(() => 1)(centralityData);
+
+    initializeColorScale(series);
 
     const x = d3
       .scaleBand<string>()
       .domain(centralityData.map((d) => d.id))
       .range([0, 2 * Math.PI])
-      // .align(0)
-      .padding(0.05);
+      // .align(0.5)
+      .padding(0.25)
+      .paddingInner(0.5);
+
     const y = d3
       .scaleLinear<number, number>()
-      .domain([0, keys.length])
+      .domain([0, centralityKeys.length])
       .range([innerRadius, outerRadius]);
 
-    drawArcs(svgGroup, series, x, y, arcPadding);
-
+    drawArcs(svgGroup, series, x, y);
     const groupBounds = calculateBounds(series, x, y);
     const maxOuter = Math.max(...groupBounds.map((d) => d.outer));
     drawLinks(svgGroup, networkData.edges, x, innerRadius, selectedNodes);
-    drawBounds(
-      svgGroup,
-      groupBounds,
-      arcPadding,
-      innerRadius,
-      maxOuter,
-      selectedNodes,
-    );
-    drawLabels(svgGroup, x, maxOuter - arcPadding, selectedNodes);
+    drawBounds(svgGroup, groupBounds, innerRadius, maxOuter, selectedNodes);
+    drawLabels(svgGroup, x, maxOuter, selectedNodes, fontSize);
   }, [dimensions, centralityData, networkData, radialSettings]);
 
   useEffect(() => {

@@ -1,0 +1,1166 @@
+{
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Alice 1",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n2",
+      "label": "Bob 2",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n3",
+      "label": "Charlie 3",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n4",
+      "label": "Diana 4",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n5",
+      "label": "Eve 5",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n6",
+      "label": "Frank 6",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n7",
+      "label": "Grace 7",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n8",
+      "label": "Hank 8",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n9",
+      "label": "Ivy 9",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n10",
+      "label": "Jack 10",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n11",
+      "label": "Alice 11",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n12",
+      "label": "Bob 12",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n13",
+      "label": "Charlie 13",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n14",
+      "label": "Diana 14",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n15",
+      "label": "Eve 15",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n16",
+      "label": "Frank 16",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n17",
+      "label": "Grace 17",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n18",
+      "label": "Hank 18",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n19",
+      "label": "Ivy 19",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n20",
+      "label": "Jack 20",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n21",
+      "label": "Alice 21",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n22",
+      "label": "Bob 22",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n23",
+      "label": "Charlie 23",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n24",
+      "label": "Diana 24",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n25",
+      "label": "Eve 25",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n26",
+      "label": "Frank 26",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n27",
+      "label": "Grace 27",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n28",
+      "label": "Hank 28",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n29",
+      "label": "Ivy 29",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n30",
+      "label": "Jack 30",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n31",
+      "label": "Alice 31",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n32",
+      "label": "Bob 32",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n33",
+      "label": "Charlie 33",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n34",
+      "label": "Diana 34",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n35",
+      "label": "Eve 35",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n36",
+      "label": "Frank 36",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n37",
+      "label": "Grace 37",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n38",
+      "label": "Hank 38",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n39",
+      "label": "Ivy 39",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n40",
+      "label": "Jack 40",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n41",
+      "label": "Alice 41",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n42",
+      "label": "Bob 42",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n43",
+      "label": "Charlie 43",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n44",
+      "label": "Diana 44",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n45",
+      "label": "Eve 45",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    },
+    {
+      "id": "n46",
+      "label": "Frank 46",
+      "attributes": {
+        "role": "Engineer",
+        "team": "A"
+      }
+    },
+    {
+      "id": "n47",
+      "label": "Grace 47",
+      "attributes": {
+        "role": "Designer",
+        "team": "B"
+      }
+    },
+    {
+      "id": "n48",
+      "label": "Hank 48",
+      "attributes": {
+        "role": "Manager",
+        "team": "C"
+      }
+    },
+    {
+      "id": "n49",
+      "label": "Ivy 49",
+      "attributes": {
+        "role": "Product",
+        "team": "D"
+      }
+    },
+    {
+      "id": "n50",
+      "label": "Jack 50",
+      "attributes": {
+        "role": "Analyst",
+        "team": "E"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n50",
+      "weight": 0.99,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n11",
+      "weight": 0.35,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n26",
+      "weight": 0.94,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n17",
+      "weight": 0.72,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n47",
+      "weight": 0.78,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n22",
+      "weight": 0.66,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n24",
+      "weight": 0.55,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n4",
+      "target": "n49",
+      "weight": 0.97,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n5",
+      "target": "n28",
+      "weight": 0.52,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n6",
+      "target": "n26",
+      "weight": 0.64,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n7",
+      "target": "n5",
+      "weight": 0.68,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n7",
+      "target": "n37",
+      "weight": 0.95,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n7",
+      "target": "n8",
+      "weight": 0.92,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n8",
+      "target": "n3",
+      "weight": 0.64,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n8",
+      "target": "n39",
+      "weight": 0.75,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n8",
+      "target": "n11",
+      "weight": 0.39,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n9",
+      "target": "n25",
+      "weight": 0.42,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n9",
+      "target": "n4",
+      "weight": 0.62,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n10",
+      "target": "n26",
+      "weight": 0.5,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n11",
+      "target": "n22",
+      "weight": 0.94,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n11",
+      "target": "n35",
+      "weight": 0.94,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n46",
+      "weight": 0.78,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n9",
+      "weight": 0.86,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n27",
+      "weight": 0.95,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n13",
+      "target": "n37",
+      "weight": 0.47,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n13",
+      "target": "n7",
+      "weight": 0.63,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n13",
+      "target": "n50",
+      "weight": 0.51,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n14",
+      "target": "n10",
+      "weight": 0.92,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n36",
+      "weight": 0.77,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n14",
+      "weight": 0.83,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n16",
+      "target": "n1",
+      "weight": 0.97,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n17",
+      "target": "n48",
+      "weight": 0.61,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n17",
+      "target": "n42",
+      "weight": 0.52,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n26",
+      "weight": 0.57,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n33",
+      "weight": 0.34,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n19",
+      "target": "n18",
+      "weight": 0.92,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n19",
+      "target": "n50",
+      "weight": 0.68,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n20",
+      "target": "n50",
+      "weight": 0.9,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n43",
+      "weight": 0.32,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n15",
+      "weight": 0.76,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n37",
+      "weight": 0.98,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n22",
+      "target": "n2",
+      "weight": 0.96,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n23",
+      "target": "n17",
+      "weight": 0.45,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n23",
+      "target": "n1",
+      "weight": 0.51,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n24",
+      "target": "n31",
+      "weight": 0.52,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n24",
+      "target": "n43",
+      "weight": 0.5,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n24",
+      "target": "n39",
+      "weight": 0.78,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n8",
+      "weight": 0.73,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n21",
+      "weight": 0.42,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n31",
+      "weight": 0.53,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n26",
+      "target": "n6",
+      "weight": 0.71,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n26",
+      "target": "n40",
+      "weight": 0.85,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n27",
+      "target": "n30",
+      "weight": 0.41,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n28",
+      "target": "n31",
+      "weight": 0.41,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n28",
+      "target": "n10",
+      "weight": 0.72,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n29",
+      "target": "n28",
+      "weight": 1.0,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n30",
+      "target": "n7",
+      "weight": 0.75,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n30",
+      "target": "n15",
+      "weight": 0.53,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n30",
+      "target": "n19",
+      "weight": 0.32,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n31",
+      "target": "n32",
+      "weight": 0.82,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n31",
+      "target": "n17",
+      "weight": 0.55,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n32",
+      "target": "n43",
+      "weight": 0.31,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n33",
+      "target": "n36",
+      "weight": 0.63,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n34",
+      "target": "n12",
+      "weight": 0.95,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n43",
+      "weight": 0.99,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n20",
+      "weight": 0.67,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n19",
+      "weight": 0.39,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n36",
+      "target": "n17",
+      "weight": 0.55,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n37",
+      "target": "n9",
+      "weight": 0.74,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n37",
+      "target": "n42",
+      "weight": 0.54,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n37",
+      "target": "n34",
+      "weight": 0.45,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n38",
+      "target": "n22",
+      "weight": 0.72,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n38",
+      "target": "n12",
+      "weight": 0.96,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n39",
+      "target": "n24",
+      "weight": 0.52,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n39",
+      "target": "n13",
+      "weight": 0.65,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n40",
+      "target": "n24",
+      "weight": 0.73,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n41",
+      "target": "n17",
+      "weight": 0.93,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n41",
+      "target": "n43",
+      "weight": 0.44,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n41",
+      "target": "n38",
+      "weight": 0.63,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n42",
+      "target": "n14",
+      "weight": 0.48,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n42",
+      "target": "n48",
+      "weight": 0.88,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n43",
+      "target": "n12",
+      "weight": 0.9,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n44",
+      "target": "n40",
+      "weight": 0.79,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n44",
+      "target": "n33",
+      "weight": 0.34,
+      "attributes": {
+        "relation": "reports_to"
+      }
+    },
+    {
+      "source": "n45",
+      "target": "n35",
+      "weight": 0.43,
+      "attributes": {
+        "relation": "coworker"
+      }
+    },
+    {
+      "source": "n45",
+      "target": "n5",
+      "weight": 0.93,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n46",
+      "target": "n27",
+      "weight": 0.57,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n46",
+      "target": "n14",
+      "weight": 0.7,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n47",
+      "target": "n25",
+      "weight": 0.54,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n48",
+      "target": "n38",
+      "weight": 0.85,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n49",
+      "target": "n29",
+      "weight": 0.56,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n49",
+      "target": "n2",
+      "weight": 0.92,
+      "attributes": {
+        "relation": "stakeholder"
+      }
+    },
+    {
+      "source": "n49",
+      "target": "n36",
+      "weight": 0.54,
+      "attributes": {
+        "relation": "peer"
+      }
+    },
+    {
+      "source": "n50",
+      "target": "n49",
+      "weight": 0.91,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    },
+    {
+      "source": "n50",
+      "target": "n19",
+      "weight": 0.54,
+      "attributes": {
+        "relation": "collaborates_with"
+      }
+    }
+  ]
+}

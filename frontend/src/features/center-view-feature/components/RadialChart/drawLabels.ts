@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import type { Selection, ScaleBand } from "d3";
-import { handleHighlight } from "@/features/center-view-feature/utils/handleHighlight";
+import { handleHighlight } from "@/utils/ColorHelper";
 
 const tailwindColors = {
   selected: "orange",
@@ -12,6 +12,7 @@ const drawLabels = (
   x: ScaleBand<string>,
   outerRadius: number,
   selectedNodes: Set<string>,
+  fontSize: number,
 ): void => {
   const labelGroup = svg.append("g").attr("class", "labels-group");
 
@@ -34,18 +35,19 @@ const drawLabels = (
       g.append("text")
         .text(d)
         .attr("data-type", d)
+        .attr("dominant-baseline", "middle")
         .attr("transform", () =>
           // (x(d)! + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI //x-axis split
           (x(d)! + x.bandwidth() / 2) % (2 * Math.PI) < Math.PI
-            ? "rotate(0)translate(15,3)"
-            : "rotate(180)translate(-15,3)",
+            ? "rotate(0)translate(15,0)"
+            : "rotate(180)translate(-15,2)",
         )
         .attr("text-anchor", () =>
           (x(d)! + x.bandwidth() / 2) % (2 * Math.PI) < Math.PI
             ? "start"
             : "end",
         )
-        .attr("font-size", "24px");
+        .attr("font-size", `${fontSize}px`);
     })
     .attr("fill", (d) =>
       selectedNodes.has(d) ? tailwindColors.selected : tailwindColors.default,

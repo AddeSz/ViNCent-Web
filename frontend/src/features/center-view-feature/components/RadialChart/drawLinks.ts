@@ -17,7 +17,7 @@ const drawLinks = (
     }
   });
 
-  const linkGroup = svgGroup.append("g").attr("class", "link-group");
+  const linkGroup = svgGroup.append("g").attr("class", "links-group");
 
   edges.forEach((edge) => {
     const sourceId =

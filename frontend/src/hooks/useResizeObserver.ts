@@ -20,8 +20,9 @@ const useResizeObserver = <T extends Element>(
 
     return () => {
       resizeObserver.unobserve(observeTarget);
+      resizeObserver.disconnect();
     };
-  }, [ref]);
+  }, [ref.current]);
 
   return dimensions;
 };

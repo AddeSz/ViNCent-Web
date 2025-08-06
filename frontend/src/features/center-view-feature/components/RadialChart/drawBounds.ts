@@ -1,7 +1,7 @@
 import { arc } from "d3-shape";
 import type { Selection } from "d3";
 import type { GroupBound } from "./calculateBounds";
-import { highlightBoundsColor } from "../../utils/handleHighlight";
+import { highlightBoundsColor } from "../../../../utils/ColorHelper";
 
 const sideLinePath = (angle: number, inner: number, outer: number): string => {
   const x1 = Math.cos(angle - Math.PI / 2) * inner;
@@ -14,7 +14,6 @@ const sideLinePath = (angle: number, inner: number, outer: number): string => {
 const drawBounds = (
   svg: Selection<SVGGElement, unknown, null, undefined>,
   groupBounds: GroupBound[],
-  arcPadding: number,
   innerRadius: number,
   outerRadius: number,
   selectedNodes: Set<string>,
@@ -22,7 +21,7 @@ const drawBounds = (
   const boundsSVG = svg
     .append("g")
     .attr("class", "bounds-group")
-    .attr("stroke-width", 1)
+    .attr("stroke-width", 2)
     .attr("pointer-events", "none");
 
   boundsSVG
@@ -41,8 +40,7 @@ const drawBounds = (
         ? highlightBoundsColor.selected
         : highlightBoundsColor.default,
     )
-    .attr("stroke-width", 3)
-    .attr("d", (d) => sideLinePath(d.angle, d.inner, outerRadius - arcPadding));
+    .attr("d", (d) => sideLinePath(d.angle, d.inner, outerRadius));
 
   const innerArcGen = arc<{
     startAngle: number;
@@ -59,7 +57,6 @@ const drawBounds = (
     .attr("r", innerRadius)
     .attr("stroke", "black")
     .attr("fill", "none")
-    .attr("stroke-width", 3);
 
   boundsSVG
     .selectAll("path.inner-bounds")
@@ -73,7 +70,6 @@ const drawBounds = (
         ? highlightBoundsColor.selected
         : highlightBoundsColor.default,
     )
-    .attr("stroke-width", 3)
     .attr("d", (d) => innerArcGen({ ...d, innerRadius: d.inner })!);
 
   const outerArcGen = arc<{
@@ -88,10 +84,9 @@ const drawBounds = (
 
   boundsSVG
     .append("circle")
-    .attr("r", outerRadius - arcPadding)
+    .attr("r", outerRadius)
     .attr("stroke", "black")
     .attr("fill", "none")
-    .attr("stroke-width", 3);
 
   boundsSVG
     .selectAll("path.outer-bounds")
@@ -105,10 +100,9 @@ const drawBounds = (
         ? highlightBoundsColor.selected
         : highlightBoundsColor.default,
     )
-    .attr("stroke-width", 3)
     .attr(
       "d",
-      (d) => outerArcGen({ ...d, outerRadius: outerRadius - arcPadding })!,
+      (d) => outerArcGen({ ...d, outerRadius: outerRadius })!,
     );
 };
 

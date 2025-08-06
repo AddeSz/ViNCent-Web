@@ -1,6 +1,9 @@
 import type { Network, Centrality } from "@/types/network";
-
-export const testData = {
+import n50 from "./network_test_data_n50.json"
+import n150 from "./network_test_data_n150.json"
+export const testData1: Network = n50;
+export const testData2: Network = n150;
+export const testData3 = {
   nodes: [
     { id: "n1", label: "Alice", attributes: { role: "Engineer", team: "A" } },
     { id: "n2", label: "Bob", attributes: { role: "Designer", team: "A" } },
@@ -53,7 +56,7 @@ export function generateCentralityData(network: Network): Centrality[] {
   return network.nodes.map((node) => {
     const entry: Centrality = { id: node.id };
     for (let i = 0; i < 10; i++) {
-      entry[`centrality${i}`] = Math.random();
+      entry[`centrality${i}`] = Math.random()*(i+1);
     }
     return entry;
   });

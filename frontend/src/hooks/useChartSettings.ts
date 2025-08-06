@@ -3,7 +3,7 @@ import { create } from "zustand";
 type RadialSettings = {
   innerRadius: number;
   outerRadius: number;
-  arcPadding: number;
+  fontSize: number;
 };
 
 type NodeLinkSettings = {
@@ -22,7 +22,7 @@ export const useChartSettings = create<ChartSettingsStore>((set) => ({
   radialSettings: {
     innerRadius: 100,
     outerRadius: 600,
-    arcPadding: 6,
+    fontSize: 24,
   },
   nodeLinkSettings: {
     linkDistance: 50,

@@ -7,7 +7,7 @@ import useResizeObserver from "@/hooks/useResizeObserver";
 import { useDataStore } from "@/hooks/useDataStore";
 import type { Node, Edge } from "@/types/network";
 import { createSimulation, createDrag } from "./setupSimulation";
-import { handleHighlight } from "@/features/center-view-feature/utils/handleHighlight";
+import { handleHighlight } from "@/utils/ColorHelper";
 import { useZoom } from "@/hooks/useZoom";
 
 const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
