@@ -1,6 +1,7 @@
 import type { Edge } from "@/types/network";
 import type { ScaleBand, Selection } from "d3";
 import * as d3 from "d3";
+import { highlightLinksColor } from "@/utils/ColorHelper";
 
 const drawLinks = (
   svgGroup: Selection<SVGGElement, unknown, null, undefined>,
@@ -33,20 +34,31 @@ const drawLinks = (
     if (sourceAngle === undefined || targetAngle === undefined) return;
 
     const radius = innerRadius;
+    const path = d3.path();
+
     const sx = Math.cos(sourceAngle - Math.PI / 2) * radius;
     const sy = Math.sin(sourceAngle - Math.PI / 2) * radius;
     const tx = Math.cos(targetAngle - Math.PI / 2) * radius;
     const ty = Math.sin(targetAngle - Math.PI / 2) * radius;
 
-    const path = d3.path();
+    const bendStrength = 0.6;
+
+    const cx1 = sx * bendStrength;
+    const cy1 = sy * bendStrength;
+    const cx2 = tx * bendStrength;
+    const cy2 = ty * bendStrength;
+
     path.moveTo(sx, sy);
-    path.bezierCurveTo(0, 0, 0, 0, tx, ty);
+    path.bezierCurveTo(cx1, cy1, cx2, cy2, tx, ty);
 
     linkGroup
       .append("path")
       .attr("d", path.toString())
       .attr("fill", "none")
-      .attr("stroke", isSelected ? "orange" : "#8884d8")
+      .attr(
+        "stroke",
+        isSelected ? highlightLinksColor.selected : highlightLinksColor.default,
+      )
       .attr("stroke-width", 2)
       .attr("opacity", isSelected ? 1 : 0.6)
       .attr("data-source", sourceId)
@@ -58,21 +70,28 @@ export const updateLinkHighlight = (
   svg: Selection<SVGSVGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
 ) => {
-  svg.selectAll<SVGPathElement, unknown>("g.link-group path").each(function () {
-    const path = d3.select(this);
+  svg
+    .selectAll<SVGPathElement, unknown>("g.links-group path")
+    .each(function () {
+      const path = d3.select(this);
 
-    const sourceId = path.attr("data-source");
-    const targetId = path.attr("data-target");
+      const sourceId = path.attr("data-source");
+      const targetId = path.attr("data-target");
 
-    const isSelected =
-      sourceId &&
-      targetId &&
-      (selectedNodes.has(sourceId) || selectedNodes.has(targetId));
+      const isSelected =
+        sourceId &&
+        targetId &&
+        (selectedNodes.has(sourceId) || selectedNodes.has(targetId));
 
-    path
-      .attr("stroke", isSelected ? "orange" : "#8884d8")
-      .attr("opacity", isSelected ? 1 : 0.6);
-  });
+      path
+        .attr(
+          "stroke",
+          isSelected
+            ? highlightLinksColor.selected
+            : highlightLinksColor.default,
+        )
+        .attr("opacity", isSelected ? 1 : 0.6);
+    });
 };
 
 export default drawLinks;

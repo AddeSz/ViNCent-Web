@@ -7,13 +7,13 @@ const ChartSettings = () => {
       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
         Radial View Settings:
       </div>
-      <div className="bg-card p-1">
+      <div className="rounded-[4px] bg-card p-1">
         <RadialChartSettings />
       </div>
       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-        Node Diagram Filtering:
+        Node Diagram Settings:
       </div>
-      <div className="bg-card p-1">
+      <div className="rounded-[4px] bg-card p-1">
         <NodeLinkDiagramSettings />
       </div>
     </div>

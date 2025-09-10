@@ -1,11 +1,6 @@
 import * as d3 from "d3";
 import type { Selection, ScaleBand } from "d3";
-import { handleHighlight } from "@/utils/ColorHelper";
-
-const tailwindColors = {
-  selected: "orange",
-  default: "var(--foreground)",
-};
+import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
 
 const drawLabels = (
   svg: Selection<SVGGElement, unknown, null, undefined>,
@@ -50,7 +45,9 @@ const drawLabels = (
         .attr("font-size", `${fontSize}px`);
     })
     .attr("fill", (d) =>
-      selectedNodes.has(d) ? tailwindColors.selected : tailwindColors.default,
+      selectedNodes.has(d)
+        ? highlightLabelColor.selected
+        : highlightLabelColor.default,
     )
     .on("click", (event, d) => {
       const multi = event.shiftKey || event.ctrlKey || event.metaKey;
@@ -65,7 +62,9 @@ export const updateLabelHighlight = (
   svg
     .selectAll<SVGGElement, string>("g.labels-group g.label text")
     .attr("fill", (d) =>
-      selectedNodes.has(d) ? tailwindColors.selected : tailwindColors.default,
+      selectedNodes.has(d)
+        ? highlightLabelColor.selected
+        : highlightLabelColor.default,
     );
 };
 

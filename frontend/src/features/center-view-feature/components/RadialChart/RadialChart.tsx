@@ -3,6 +3,7 @@ import type { RefObject, Ref } from "react";
 import * as d3 from "d3";
 import useResizeObserver from "@/hooks/useResizeObserver";
 import { useDataStore } from "@/hooks/useDataStore";
+import useFilteredCentralityData from "@/hooks/useFilteredCentralityData";
 import type { Centrality } from "@/types/network";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
@@ -11,7 +12,16 @@ import drawLinks, { updateLinkHighlight } from "./drawLinks";
 import calculateBounds from "./calculateBounds";
 import { useZoom } from "@/hooks/useZoom";
 import { useChartSettings } from "@/hooks/useChartSettings";
-import { initializeColorScale } from "@/utils/ColorHelper";
+
+function scalePadding(
+  value: number,
+  maxItems: number,
+  maxPadding: number,
+): number {
+  if (value <= 1) return 0;
+  if (value <= 2) return 0.01;
+  return Math.min(value / maxItems, 1) * maxPadding;
+}
 
 const RadialChart = forwardRef(function RadialChart(
   {
@@ -23,14 +33,17 @@ const RadialChart = forwardRef(function RadialChart(
 ) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dimensions = useResizeObserver(containerRef);
-  const centralityData = useDataStore((state) => state.centralityData);
-  const centralityKeys = useDataStore((state) => state.centralityKeys);
+
+  const centralityKeys = useDataStore((state) => state.enabledCentralityKeys);
   const networkData = useDataStore((state) => state.network);
   const selectedNodes = useDataStore((state) => state.selectedNodes);
+  const getColorForKey = useDataStore((state) => state.getColorForKey);
+
+  const centralityData = useFilteredCentralityData() as Centrality[];
   const { setupZoom, resetZoom } = useZoom();
   const { radialSettings } = useChartSettings();
   const { innerRadius, outerRadius, fontSize } = radialSettings;
-
+  console.log(centralityData);
   useImperativeHandle(
     resetRef,
     () => () => {
@@ -47,32 +60,37 @@ const RadialChart = forwardRef(function RadialChart(
     const svgGroup = svg.append("g").attr("class", "zoom-group");
     setupZoom(svg, svgRef, svgGroup);
 
+    const dataLength = centralityData.length;
+
+    const outerPadding = scalePadding(dataLength, 50, 0.25);
+    const innerPadding = scalePadding(dataLength, 50, 0.5);
+
     const series = d3
       .stack<Centrality>()
       .keys(centralityKeys)
       .value(() => 1)(centralityData);
 
-    initializeColorScale(series);
-
     const x = d3
       .scaleBand<string>()
       .domain(centralityData.map((d) => d.id))
       .range([0, 2 * Math.PI])
-      // .align(0.5)
-      .padding(0.25)
-      .paddingInner(0.5);
+      .align(0.5)
+      .padding(outerPadding)
+      .paddingInner(innerPadding);
 
     const y = d3
       .scaleLinear<number, number>()
       .domain([0, centralityKeys.length])
       .range([innerRadius, outerRadius]);
 
-    drawArcs(svgGroup, series, x, y);
-    const groupBounds = calculateBounds(series, x, y);
-    const maxOuter = Math.max(...groupBounds.map((d) => d.outer));
-    drawLinks(svgGroup, networkData.edges, x, innerRadius, selectedNodes);
-    drawBounds(svgGroup, groupBounds, innerRadius, maxOuter, selectedNodes);
-    drawLabels(svgGroup, x, maxOuter, selectedNodes, fontSize);
+    if (dataLength > 0) {
+      drawArcs(svgGroup, series, x, y, getColorForKey);
+      const groupBounds = calculateBounds(series, x, y);
+      const maxOuter = Math.max(...groupBounds.map((d) => d.outer));
+      drawLinks(svgGroup, networkData.edges, x, innerRadius, selectedNodes);
+      drawBounds(svgGroup, groupBounds, innerRadius, maxOuter, selectedNodes);
+      drawLabels(svgGroup, x, maxOuter, selectedNodes, fontSize);
+    }
   }, [dimensions, centralityData, networkData, radialSettings]);
 
   useEffect(() => {

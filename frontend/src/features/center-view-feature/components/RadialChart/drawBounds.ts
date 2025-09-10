@@ -1,7 +1,7 @@
 import { arc } from "d3-shape";
 import type { Selection } from "d3";
 import type { GroupBound } from "./calculateBounds";
-import { highlightBoundsColor } from "../../../../utils/ColorHelper";
+import { highlightBoundsColor } from "@/utils/ColorHelper";
 
 const sideLinePath = (angle: number, inner: number, outer: number): string => {
   const x1 = Math.cos(angle - Math.PI / 2) * inner;
@@ -24,24 +24,25 @@ const drawBounds = (
     .attr("stroke-width", 2)
     .attr("pointer-events", "none");
 
-  boundsSVG
-    .selectAll("path.side-bounds")
-    .data(
-      groupBounds.flatMap((d) => [
-        { id: d.id, angle: d.startAngle, inner: d.inner, outer: d.outer },
-        { id: d.id, angle: d.endAngle, inner: d.inner, outer: d.outer },
-      ]),
-    )
-    .join("path")
-    .attr("class", "boundary-line side-bounds")
-    .attr("data-id", (d) => d.id)
-    .attr("stroke", (d) =>
-      selectedNodes.has(d.id)
-        ? highlightBoundsColor.selected
-        : highlightBoundsColor.default,
-    )
-    .attr("d", (d) => sideLinePath(d.angle, d.inner, outerRadius));
-
+  if (groupBounds.length > 1) {
+    boundsSVG
+      .selectAll("path.side-bounds")
+      .data(
+        groupBounds.flatMap((d) => [
+          { id: d.id, angle: d.startAngle, inner: d.inner, outer: d.outer },
+          { id: d.id, angle: d.endAngle, inner: d.inner, outer: d.outer },
+        ]),
+      )
+      .join("path")
+      .attr("class", "boundary-line side-bounds")
+      .attr("data-id", (d) => d.id)
+      .attr("stroke", (d) =>
+        selectedNodes.has(d.id)
+          ? highlightBoundsColor.selected
+          : highlightBoundsColor.default,
+      )
+      .attr("d", (d) => sideLinePath(d.angle, d.inner, outerRadius));
+  }
   const innerArcGen = arc<{
     startAngle: number;
     endAngle: number;
@@ -56,7 +57,7 @@ const drawBounds = (
     .append("circle")
     .attr("r", innerRadius)
     .attr("stroke", "black")
-    .attr("fill", "none")
+    .attr("fill", "none");
 
   boundsSVG
     .selectAll("path.inner-bounds")
@@ -86,7 +87,7 @@ const drawBounds = (
     .append("circle")
     .attr("r", outerRadius)
     .attr("stroke", "black")
-    .attr("fill", "none")
+    .attr("fill", "none");
 
   boundsSVG
     .selectAll("path.outer-bounds")
@@ -100,10 +101,7 @@ const drawBounds = (
         ? highlightBoundsColor.selected
         : highlightBoundsColor.default,
     )
-    .attr(
-      "d",
-      (d) => outerArcGen({ ...d, outerRadius: outerRadius })!,
-    );
+    .attr("d", (d) => outerArcGen({ ...d, outerRadius: outerRadius })!);
 };
 
 export const updateBoundHighlight = (

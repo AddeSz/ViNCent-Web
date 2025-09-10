@@ -5,10 +5,20 @@ import { Slider } from "@/components/shadcnUI/slider";
 
 const DataFiltering = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const centralityData = useDataStore((state) => state.centralityData);
-  const centralityKeys = useDataStore((state) => state.centralityKeys);
-
+  const {
+    getColorForKey,
+    centralityData,
+    centralityKeys,
+    enabledCentralityKeys,
+    toggleCentralityKey,
+    brushRanges,
+    setBrushRange,
+  } = useDataStore();
   const [binCount, setBinCount] = useState(16);
+
+  const handleBrushChange = (key: string, range: [number, number] | null) => {
+    setBrushRange(key, range);
+  };
 
   return (
     <div className="space-y-6">
@@ -34,16 +44,38 @@ const DataFiltering = () => {
           const values = centralityData
             .map((entry) => entry[key])
             .filter((val): val is number => typeof val === "number");
+          const isEnabled = enabledCentralityKeys.includes(key);
 
           return (
-            <div key={key} className="h-46 w-full rounded bg-card p-2 shadow">
-              <h3 className="mb-2 text-sm font-medium">{key}</h3>
-              <HistogramChart
-                data={values}
-                containerRef={containerRef}
-                binCount={binCount}
-                centralityKey={key}
-              />
+            <div
+              key={key}
+              className="h-auto w-full space-y-2 rounded bg-card p-1 shadow"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm capitalize">{key.replace(/_/g, " ")}</h3>
+                <label className="flex items-center space-x-1">
+                  <input
+                    type="checkbox"
+                    checked={isEnabled}
+                    onChange={() => toggleCentralityKey(key)}
+                  />
+                  <span className="flex items-center text-xs">Show</span>
+                </label>
+              </div>
+
+              {isEnabled && (
+                <HistogramChart
+                  data={values}
+                  containerRef={containerRef}
+                  binCount={binCount}
+                  centralityKey={key}
+                  getColorForKey={getColorForKey}
+                  onBrushChange={handleBrushChange}
+                  brushRange={brushRanges[key]}
+                  allCentralityData={centralityData}
+                  allBrushRanges={brushRanges}
+                />
+              )}
             </div>
           );
         })}

@@ -5,8 +5,7 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
-
+  const env = loadEnv(mode, path.resolve(__dirname, "../../"), "");
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -16,6 +15,9 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: parseInt(env.VITE_PORT),
+    },
+    define: {
+      "import.meta.env": env, // <--- This ensures variables are available to the browser
     },
   };
 });

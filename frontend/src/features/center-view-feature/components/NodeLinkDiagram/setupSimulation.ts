@@ -1,4 +1,3 @@
-// utils/setupSimulation.ts
 import * as d3 from "d3";
 import type { Simulation, Selection, DragBehavior } from "d3";
 import type { Node, Edge } from "@/types/network";
