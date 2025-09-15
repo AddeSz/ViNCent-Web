@@ -9,7 +9,7 @@ import {
 } from "react";
 import * as d3 from "d3";
 import useResizeObserver from "@/hooks/useResizeObserver";
-import type { Centrality } from "@/types/network";
+import type { CombinedNodeData } from "@/types/network";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
 import drawLabels, { updateLabelHighlight } from "./drawLabels";
@@ -40,8 +40,6 @@ export type ArcData = {
   data: CombinedNodeData;
   value: number;
 };
-
-export type CombinedNodeData = Record<string, any>;
 
 function scalePadding(
   value: number,
@@ -74,7 +72,7 @@ const RadialChart = forwardRef(function RadialChart(
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
   const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
 
-  const setHoveredNode = useCentralityStore((state) => state.setHoveredNode);
+  const setHoveredNode = useNetworkStore((state) => state.setHoveredNode);
   const centralityRanges = useCentralityStore(
     (state) => state.centralityRanges,
   );
@@ -131,7 +129,7 @@ const RadialChart = forwardRef(function RadialChart(
   );
 
   const handleNodeHover = (nodeData: CombinedNodeData) => {
-    setHoveredNode(nodeData as Centrality);
+    setHoveredNode(nodeData);
   };
 
   useEffect(() => {

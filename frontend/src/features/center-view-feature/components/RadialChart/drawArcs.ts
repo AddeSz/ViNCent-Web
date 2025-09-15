@@ -1,7 +1,8 @@
 import * as d3 from "d3";
 import { formatValue } from "@/utils/utils";
-import type { ArcData, CombinedNodeData } from "./RadialChart";
+import type { ArcData } from "./RadialChart";
 import type { ArcTooltipProps } from "@/features/center-view-feature/components/Tooltips/ArcTooltip";
+import type { CombinedNodeData } from "@/types/network";
 
 const drawArcs = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -33,11 +34,7 @@ const drawArcs = (
         .endAngle(endAngle);
       return arc(d);
     })
-    .attr("fill", (d) =>
-      d.value === undefined
-        ? "hsl(var(--muted-foreground))"
-        : "hsl(var(--muted-foreground))",
-    )
+    .attr("fill", "hsl(var(--muted-foreground))")
     .attr("fill-opacity", 0.1)
     .attr("stroke", "none");
 

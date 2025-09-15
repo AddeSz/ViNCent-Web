@@ -74,7 +74,6 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
       });
     });
 
-    // Determine categorical attributes
     Object.values(attributeInfo).forEach((info) => {
       const uniqueCount = info.values.size;
 
@@ -90,11 +89,12 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
       }
     });
 
+    const attributeKeysArray = Array.from(attributeKeys);
     set({
       nodeAttributes,
-      attributeKeys: Array.from(attributeKeys),
+      attributeKeys: attributeKeysArray,
       attributeInfo,
-      enabledAttributeKeys: [],
+      enabledAttributeKeys: attributeKeysArray,
     });
   },
 

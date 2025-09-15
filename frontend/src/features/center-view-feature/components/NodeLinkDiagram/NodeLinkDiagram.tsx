@@ -3,7 +3,7 @@ import type { RefObject, Ref } from "react";
 import * as d3 from "d3";
 import type { Simulation } from "d3";
 import useResizeObserver from "@/hooks/useResizeObserver";
-import type { Node, Link } from "@/types/network";
+import type { Node, Link, CombinedNodeData } from "@/types/network";
 import { createSimulation } from "./setupSimulation";
 import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
 import { selectionStyling } from "./selectionStyling";
@@ -17,6 +17,7 @@ import {
 } from "@/features/center-view-feature/components/Tooltips/NodeTooltip";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import useDebouncedValue from "@/hooks/useDebouncedValue";
+import { useAttributeStore } from "@/hooks/useAttributeStore";
 
 const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   { containerRef }: { containerRef: RefObject<HTMLDivElement | null> },
@@ -31,6 +32,8 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
   const filteredCentralityData = useFilteredCentralityData();
   const nodeLinkData = useNodeLinkData(networkData, filteredCentralityData);
+  const setHoveredNode = useNetworkStore((state) => state.setHoveredNode);
+  const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
 
   const { tooltip, showTooltip, hideTooltip } = useTooltip<NodeTooltipProps>({
     nodeId: "",
@@ -78,6 +81,17 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
       .selectAll<SVGCircleElement, Node>(".node")
       .on("mousemove", function (event, d) {
         const [x, y] = [event.clientX, event.clientY];
+        const centrality =
+          filteredCentralityData.find((c) => c.id === d.id) || {};
+        const attributes = nodeAttributes[d.id] || {};
+
+        const hoveredNodeData: CombinedNodeData = {
+          ...d,
+          ...centrality,
+          ...attributes,
+        };
+
+        setHoveredNode(hoveredNodeData);
         showTooltip(
           {
             nodeId: d.id,

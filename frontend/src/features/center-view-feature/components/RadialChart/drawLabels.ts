@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
-import type { ArcData, CombinedNodeData } from "./RadialChart";
-import type { Node } from "@/types/network";
+import type { ArcData } from "./RadialChart";
+import type { CombinedNodeData, Node } from "@/types/network";
 import type { LabelTooltipProps } from "@/features/center-view-feature/components/Tooltips/LabelTooltip";
 
 const drawLabels = (

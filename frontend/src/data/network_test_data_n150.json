@@ -4,7 +4,7 @@
       "id": "n1",
       "label": "Alice 1",
       "attributes": {
-        "role": "Engineer",
+        "role": "Engineer And Tester with a Very Long Role Name",
         "team": "A",
         "batchId": 123,
         "MetaData": {

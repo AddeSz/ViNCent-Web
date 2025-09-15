@@ -8,7 +8,6 @@ interface CentralityStore {
   enabledCentralityKeys: string[];
   sortKey: string;
   centralityRanges: Record<string, { min: number; max: number }>;
-  hoveredNode: null | Centrality;
   brushRanges: Record<string, [number, number] | null>;
 
   setSortKey: (key: string) => void;
@@ -18,8 +17,6 @@ interface CentralityStore {
   ) => void;
   toggleCentralityKey: (key: string) => void;
   setEnabledCentralityKeys: (keys: string[]) => void;
-  setHoveredNode: (node: Centrality) => void;
-  clearHoveredNode: () => void;
   setBrushRange: (key: string, range: [number, number] | null) => void;
   clearBrushRange: (key: string) => void;
   clearAllBrushRanges: () => void;
@@ -32,7 +29,6 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
   enabledCentralityKeys: [],
   sortKey: "default",
   centralityRanges: {},
-  hoveredNode: null,
   brushRanges: {},
 
   setSortKey: (key) => set({ sortKey: key }),
@@ -89,8 +85,6 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
     }),
 
   setEnabledCentralityKeys: (keys) => set({ enabledCentralityKeys: keys }),
-  setHoveredNode: (node) => set({ hoveredNode: node }),
-  clearHoveredNode: () => set({ hoveredNode: null }),
 
   setBrushRange: (key, range) =>
     set((state) => ({
@@ -112,6 +106,5 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
       enabledCentralityKeys: [],
       centralityRanges: {},
       brushRanges: {},
-      hoveredNode: null,
     }),
 }));

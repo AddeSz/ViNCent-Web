@@ -1,4 +1,4 @@
-import type { CombinedNodeData } from "./RadialChart";
+import type { CombinedNodeData } from "@/types/network";
 
 export interface GroupBound {
   id: string;

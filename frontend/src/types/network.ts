@@ -31,6 +31,10 @@ export type Centrality = {
   [key: string]: string | number;
 };
 
+//This is more general than centrality, it includes pretty much anything
+//used so I can see both node data and centrality data
+export type CombinedNodeData = Record<string, any>;
+
 export type Network = {
   nodes: Node[];
   links: Link[];

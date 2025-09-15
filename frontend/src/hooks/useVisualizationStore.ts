@@ -10,7 +10,7 @@ interface VisualizationStore {
 
   initializeCentralityColorScale: (keys: string[]) => void;
   initializeAttributeColorScale: (attributeInfos: AttributeInfo[]) => void;
-  getColorForKey: (key: string) => string;
+  getColorForKey: (key: string, value?: string | number) => string;
   clearData: () => void;
 }
 

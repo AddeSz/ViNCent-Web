@@ -1,14 +1,17 @@
 import { create } from "zustand";
-import type { Network, Node } from "@/types/network";
+import type { CombinedNodeData, Network, Node } from "@/types/network";
 
 interface NetworkStore {
   network: Network;
   nodeMap: Map<string, Node>;
   selectedNodes: Set<string>;
+  hoveredNode: null | CombinedNodeData;
   setNetwork: (data: Network) => void;
   selectNode: (id: string, multi?: boolean) => void;
   deselectNode: (id: string) => void;
   toggleNodeSelection: (id: string) => void;
+  setHoveredNode: (node: CombinedNodeData) => void;
+  clearHoveredNode: () => void;
   clearSelection: () => void;
   clearData: () => void;
 }
@@ -17,6 +20,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   network: { nodes: [], links: [] },
   nodeMap: new Map<string, Node>(),
   selectedNodes: new Set<string>(),
+  hoveredNode: null,
 
   setNetwork: (data) => {
     set({
@@ -50,6 +54,9 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     set({ selectedNodes: next });
   },
 
+  setHoveredNode: (node) => set({ hoveredNode: node }),
+  clearHoveredNode: () => set({ hoveredNode: null }),
+
   clearSelection: () => set({ selectedNodes: new Set<string>() }),
 
   clearData: () =>
@@ -57,5 +64,6 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       network: { nodes: [], links: [] },
       nodeMap: new Map(),
       selectedNodes: new Set<string>(),
+      hoveredNode: null,
     }),
 }));
