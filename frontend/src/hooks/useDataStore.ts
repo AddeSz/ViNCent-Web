@@ -13,8 +13,11 @@ export const useDataStore = () => {
   const setCentralityData = useCentralityStore(
     (state) => state.setCentralityData,
   );
-  const initializeColorScale = useVisualizationStore(
-    (state) => state.initializeColorScale,
+  const initializeCentralityColorScale = useVisualizationStore(
+    (state) => state.initializeCentralityColorScale,
+  );
+  const initializeAttributeColorScale = useVisualizationStore(
+    (state) => state.initializeAttributeColorScale,
   );
   const clearNetworkData = useNetworkStore((state) => state.clearData);
   const clearCentralityData = useCentralityStore((state) => state.clearData);
@@ -26,6 +29,11 @@ export const useDataStore = () => {
   const loadNetwork = (data: Network) => {
     setNetwork(data);
     setNodeAttributes(data.nodes);
+
+    const attributeInfos = Object.values(
+      useAttributeStore.getState().attributeInfo,
+    );
+    initializeAttributeColorScale(attributeInfos);
   };
 
   const loadCentralityData = (data: Centrality[]) => {
@@ -37,7 +45,7 @@ export const useDataStore = () => {
         if (key !== "id") keysSet.add(key);
       });
     });
-    initializeColorScale(Array.from(keysSet));
+    initializeCentralityColorScale(Array.from(keysSet));
   };
 
   const clearAllData = () => {

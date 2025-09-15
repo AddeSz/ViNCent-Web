@@ -8,6 +8,7 @@ export type AttributeInfo = {
   key: string;
   type: "string" | "number" | "boolean";
   values: Set<NodeAttributeValue>;
+  isCategorical?: boolean;
 };
 
 export type Node = SimulationNodeDatum & {

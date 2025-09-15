@@ -1,9 +1,12 @@
 import { create } from "zustand";
 
+export type RadialDisplayMode = "attributes" | "centrality" | "both";
+
 type RadialSettings = {
   innerRadius: number;
   outerRadius: number;
   fontSize: number;
+  displayMode: RadialDisplayMode;
 };
 
 type NodeLinkSettings = {
@@ -23,6 +26,7 @@ export const useChartSettings = create<ChartSettingsStore>((set) => ({
     innerRadius: 100,
     outerRadius: 600,
     fontSize: 24,
+    displayMode: "both",
   },
   nodeLinkSettings: {
     linkDistance: 50,

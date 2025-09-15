@@ -30,11 +30,6 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
       if (node.attributes) {
         const flattenedAttrs = flattenAttributes(node.attributes);
         nodeAttributes[node.id] = flattenedAttrs;
-
-        console.log(`Node ${node.id}:`, {
-          original: node.attributes,
-          flattened: flattenedAttrs,
-        });
       }
     });
 
@@ -50,6 +45,7 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
             key,
             type: "string",
             values: new Set(),
+            isCategorical: false,
           };
         }
 
@@ -76,6 +72,22 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
           }
         }
       });
+    });
+
+    // Determine categorical attributes
+    Object.values(attributeInfo).forEach((info) => {
+      const uniqueCount = info.values.size;
+
+      if (info.type === "string") {
+        info.isCategorical = uniqueCount <= 20;
+      } else if (info.type === "number") {
+        const allIntegers = Array.from(info.values).every((v) =>
+          Number.isInteger(Number(v)),
+        );
+        info.isCategorical = allIntegers && uniqueCount <= 20;
+      } else if (info.type === "boolean") {
+        info.isCategorical = true;
+      }
     });
 
     set({

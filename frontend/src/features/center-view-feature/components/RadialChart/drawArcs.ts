@@ -8,7 +8,7 @@ const drawArcs = (
   arcData: ArcData[],
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
-  getColorForKey: (key: string) => string,
+  getColorForKey: (key: string, value: string | number) => string,
   centralityRanges: Record<string, { min: number; max: number }>,
   onNodeHover: (nodeData: CombinedNodeData) => void,
   onTooltipShow: (tooltipData: ArcTooltipProps) => void,
@@ -50,14 +50,18 @@ const drawArcs = (
       const endAngle = startAngle + x.bandwidth();
       const innerRadius = y(d[0]);
       const fullOuterRadius = y(d[1]);
-      const { min, max } = centralityRanges[d.key] || { min: 0, max: 1 };
-      const minProportion = 0.0;
-      const proportion = Math.max(
-        minProportion,
-        Math.min((d.value - min) / (max - min || 1), 1),
-      );
-      const outerRadius =
-        innerRadius + (fullOuterRadius - innerRadius) * proportion;
+
+      let outerRadius = fullOuterRadius;
+
+      if (typeof d.value === "number") {
+        const { min, max } = centralityRanges[d.key] || { min: 0, max: 1 };
+        const proportion = Math.max(
+          0,
+          Math.min((d.value - min) / (max - min || 1), 1),
+        );
+        outerRadius =
+          innerRadius + (fullOuterRadius - innerRadius) * proportion;
+      }
 
       const arc = d3
         .arc<ArcData>()
@@ -65,12 +69,13 @@ const drawArcs = (
         .outerRadius(outerRadius)
         .startAngle(startAngle)
         .endAngle(endAngle);
+
       return arc(d);
     })
     .attr("fill", (d) =>
       d.value === undefined
         ? "hsl(var(--muted-foreground))"
-        : getColorForKey(d.key),
+        : getColorForKey(d.key, d.value),
     )
     .attr("stroke", "none")
     .attr("opacity", 1);

@@ -3,9 +3,9 @@ import {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useMemo,
   type RefObject,
   type Ref,
-  useMemo,
 } from "react";
 import * as d3 from "d3";
 import useResizeObserver from "@/hooks/useResizeObserver";
@@ -31,6 +31,7 @@ import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
+import useDebouncedValue from "@/hooks/useDebouncedValue";
 
 export type ArcData = {
   key: string;
@@ -61,7 +62,8 @@ const RadialChart = forwardRef(function RadialChart(
   resetRef: Ref<() => void>,
 ) {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const dimensions = useResizeObserver(containerRef);
+  const rawDimensions = useResizeObserver(containerRef);
+  const dimensions = useDebouncedValue(rawDimensions, 200);
 
   const centralityKeys = useCentralityStore(
     (state) => state.enabledCentralityKeys,
@@ -71,6 +73,7 @@ const RadialChart = forwardRef(function RadialChart(
   const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
   const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
+
   const setHoveredNode = useCentralityStore((state) => state.setHoveredNode);
   const centralityRanges = useCentralityStore(
     (state) => state.centralityRanges,
@@ -78,7 +81,7 @@ const RadialChart = forwardRef(function RadialChart(
   const centralityData = useFilteredCentralityData();
   const { setupZoom, resetZoom } = useZoom();
   const { radialSettings } = useChartSettings();
-  const { innerRadius, outerRadius, fontSize } = radialSettings;
+  const { innerRadius, outerRadius, fontSize, displayMode } = radialSettings;
   const nodeMap = useNetworkStore((state) => state.nodeMap);
 
   const combinedData = useMemo((): CombinedNodeData[] => {
@@ -89,8 +92,10 @@ const RadialChart = forwardRef(function RadialChart(
   }, [centralityData, nodeAttributes]);
 
   const allKeys = useMemo(() => {
+    if (displayMode === "attributes") return attributeKeys;
+    if (displayMode === "centrality") return centralityKeys;
     return [...centralityKeys, ...attributeKeys];
-  }, [centralityKeys, attributeKeys]);
+  }, [centralityKeys, attributeKeys, displayMode]);
 
   const {
     tooltip,
@@ -131,7 +136,6 @@ const RadialChart = forwardRef(function RadialChart(
 
   useEffect(() => {
     if (!svgRef.current || !dimensions?.width || !dimensions?.height) return;
-
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     const svgGroup = svg.append("g").attr("class", "zoom-group");

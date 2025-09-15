@@ -1,9 +1,11 @@
 import { Slider } from "@/components/shadcnUI/slider";
 import { useChartSettings } from "@/hooks/useChartSettings";
+import { RadioGroup, RadioGroupItem } from "@/components/shadcnUI/radio-group";
+import { Label } from "@/components/shadcnUI/label";
 
 const RadialChartSettings = () => {
   const { radialSettings, setRadialSettings } = useChartSettings();
-  const { innerRadius, outerRadius, fontSize } = radialSettings;
+  const { innerRadius, outerRadius, fontSize, displayMode } = radialSettings;
 
   const outerRadiusMin = innerRadius + 200;
   const fontSizeMax = 45;
@@ -72,6 +74,55 @@ const RadialChartSettings = () => {
           <span>0</span>
           <span>{fontSizeMax}</span>
         </span>
+      </div>
+
+      <div className="flex flex-col">
+        <label className="mb-1 text-sm">Display Mode</label>
+        <RadioGroup
+          value={displayMode}
+          onValueChange={(val) =>
+            setRadialSettings({
+              displayMode: val as "attributes" | "centrality" | "both",
+            })
+          }
+          className="flex flex-wrap gap-2"
+        >
+          <div className="flex min-w-0 items-center">
+            <RadioGroupItem
+              value="attributes"
+              id="attributes"
+              className="cursor-pointer"
+            />
+            <Label
+              htmlFor="attributes"
+              className="max-w-[100px] cursor-pointer truncate overflow-hidden p-1 text-ellipsis"
+            >
+              Attributes
+            </Label>
+          </div>
+          <div className="flex min-w-0 items-center">
+            <RadioGroupItem
+              value="centrality"
+              id="centrality"
+              className="cursor-pointer"
+            />
+            <Label
+              htmlFor="centrality"
+              className="max-w-[100px] cursor-pointer truncate overflow-hidden p-1 text-ellipsis"
+            >
+              Centrality
+            </Label>
+          </div>
+          <div className="flex min-w-0 items-center">
+            <RadioGroupItem value="both" id="both" className="cursor-pointer" />
+            <Label
+              htmlFor="both"
+              className="max-w-[100px] cursor-pointer truncate overflow-hidden p-1 text-ellipsis"
+            >
+              Both
+            </Label>
+          </div>
+        </RadioGroup>
       </div>
     </div>
   );

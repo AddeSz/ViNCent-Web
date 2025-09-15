@@ -16,6 +16,7 @@ import {
   type NodeTooltipProps,
 } from "@/features/center-view-feature/components/Tooltips/NodeTooltip";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
+import useDebouncedValue from "@/hooks/useDebouncedValue";
 
 const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   { containerRef }: { containerRef: RefObject<HTMLDivElement | null> },
@@ -24,7 +25,8 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   const svgRef = useRef<SVGSVGElement | null>(null);
   const simulationRef = useRef<Simulation<Node, Link> | null>(null);
   const { setupZoom, resetZoom } = useZoom();
-  const dimensions = useResizeObserver(containerRef);
+  const rawDimensions = useResizeObserver(containerRef);
+  const dimensions = useDebouncedValue(rawDimensions, 200);
   const networkData = useNetworkStore((state) => state.network);
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
   const filteredCentralityData = useFilteredCentralityData();
