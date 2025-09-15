@@ -17,17 +17,20 @@ import {
 
 import RadialChart from "./components/RadialChart/RadialChart";
 import NodeLinkDiagram from "./components/NodeLinkDiagram/NodeLinkDiagram";
-import { useDataStore } from "@/hooks/useDataStore";
+import { useCentralityStore } from "@/hooks/useCentralityStore";
+import { useNetworkStore } from "@/hooks/useNetworkStore";
 
 const VIEW_KEY = "center-view-mode";
 
 const CenterView = () => {
   const [view, setView] = useState<"radial" | "node-link">("radial");
   const [isViewLoaded, setIsViewLoaded] = useState(false);
-  const clearSelection = useDataStore((state) => state.clearSelection);
-  const centralityKeys = useDataStore((state) => state.centralityKeys);
-  const sortKey = useDataStore((state) => state.sortKey);
-  const setSortKey = useDataStore((state) => state.setSortKey);
+  const clearSelection = useNetworkStore((state) => state.clearSelection);
+  const enabledCentralityKeys = useCentralityStore(
+    (state) => state.enabledCentralityKeys,
+  );
+  const sortKey = useCentralityStore((state) => state.sortKey);
+  const setSortKey = useCentralityStore((state) => state.setSortKey);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const radialResetRef = useRef<() => void>(null);
@@ -128,13 +131,17 @@ const CenterView = () => {
               <ContextMenuSubTrigger>Sort</ContextMenuSubTrigger>
               <ContextMenuSubContent>
                 <ContextMenuRadioGroup
-                  value={sortKey}
+                  value={
+                    enabledCentralityKeys.includes(sortKey)
+                      ? sortKey
+                      : "default"
+                  }
                   onValueChange={(val) => setSortKey(val)}
                 >
                   <ContextMenuRadioItem value="default">
                     Default
                   </ContextMenuRadioItem>
-                  {centralityKeys.map((key) => (
+                  {enabledCentralityKeys.map((key) => (
                     <ContextMenuRadioItem key={key} value={key}>
                       {formatKeyLabel(key)}
                     </ContextMenuRadioItem>

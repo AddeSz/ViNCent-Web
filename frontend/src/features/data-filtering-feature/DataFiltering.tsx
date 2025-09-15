@@ -1,19 +1,21 @@
-import HistogramChart from "./HistogramChart";
-import { useDataStore } from "@/hooks/useDataStore";
 import { useRef, useState } from "react";
 import { Slider } from "@/components/shadcnUI/slider";
+import HistogramChart from "./components/HistogramChart";
+import { useCentralityStore } from "@/hooks/useCentralityStore";
+import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 
 const DataFiltering = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const {
-    getColorForKey,
-    centralityData,
-    centralityKeys,
-    enabledCentralityKeys,
-    toggleCentralityKey,
-    brushRanges,
-    setBrushRange,
-  } = useDataStore();
+  const centralityData = useCentralityStore((s) => s.centralityData);
+  const centralityKeys = useCentralityStore((s) => s.centralityKeys);
+  const enabledCentralityKeys = useCentralityStore(
+    (s) => s.enabledCentralityKeys,
+  );
+  const toggleCentralityKey = useCentralityStore((s) => s.toggleCentralityKey);
+  const brushRanges = useCentralityStore((s) => s.brushRanges);
+  const setBrushRange = useCentralityStore((s) => s.setBrushRange);
+  const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
+
   const [binCount, setBinCount] = useState(16);
 
   const handleBrushChange = (key: string, range: [number, number] | null) => {
@@ -21,8 +23,8 @@ const DataFiltering = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-semibold">Data Filtering</h2>
+    <div className="space-y-4">
+      <h2 className="mb-0 text-lg font-semibold">Data Filtering</h2>
 
       <div className="min-w-60 space-y-2">
         <label htmlFor="binCount" className="text-sm font-medium">
@@ -49,7 +51,7 @@ const DataFiltering = () => {
           return (
             <div
               key={key}
-              className="h-auto w-full space-y-2 rounded bg-card p-1 shadow"
+              className="h-auto w-full space-y-2 rounded bg-card p-1"
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-sm capitalize">{key.replace(/_/g, " ")}</h3>

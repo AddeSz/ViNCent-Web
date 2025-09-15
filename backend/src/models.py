@@ -27,7 +27,7 @@ class Node(BaseModel):
     label: Optional[str] = None
     attributes: Optional[Dict[str, Any]] = None
 
-class Edge(BaseModel):
+class Link(BaseModel):
     source: str
     target: str
     weight: Optional[float] = 1.0
@@ -36,7 +36,7 @@ class Edge(BaseModel):
 
 class NetworkData(BaseModel):
     nodes: List[Node]
-    edges: List[Edge]
+    links: List[Link]
 
 class CentralityRequest(BaseModel):
     network: NetworkData

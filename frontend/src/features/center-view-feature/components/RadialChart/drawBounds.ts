@@ -1,5 +1,4 @@
 import { arc } from "d3-shape";
-import type { Selection } from "d3";
 import type { GroupBound } from "./calculateBounds";
 import { highlightBoundsColor } from "@/utils/ColorHelper";
 
@@ -12,7 +11,7 @@ const sideLinePath = (angle: number, inner: number, outer: number): string => {
 };
 
 const drawBounds = (
-  svg: Selection<SVGGElement, unknown, null, undefined>,
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   groupBounds: GroupBound[],
   innerRadius: number,
   outerRadius: number,
@@ -105,7 +104,7 @@ const drawBounds = (
 };
 
 export const updateBoundHighlight = (
-  svg: Selection<SVGSVGElement, unknown, null, undefined>,
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
 ) => {
   svg

@@ -1,13 +1,14 @@
 import { useMemo } from "react";
-import type { Node, Edge } from "@/types/network";
+import type { Node, Link } from "@/types/network";
+import { getNodeId } from "@/utils/utils";
 
 export const useNodeLinkData = (
-  networkData: { nodes: Node[]; edges: Edge[] },
+  networkData: { nodes: Node[]; links: Link[] },
   filteredCentralityData: { id: string }[] | null,
 ) => {
   return useMemo(() => {
     if (!filteredCentralityData || filteredCentralityData.length === 0) {
-      return { nodes: [], edges: [] };
+      return { nodes: [], links: [] };
     }
 
     const validNodeIds = new Set(filteredCentralityData.map((item) => item.id));
@@ -15,14 +16,12 @@ export const useNodeLinkData = (
       validNodeIds.has(node.id),
     );
 
-    const getNodeId = (node: string | Node) =>
-      typeof node === "string" ? node : node.id;
-    const filteredEdges = networkData.edges.filter(
-      (edge) =>
-        validNodeIds.has(getNodeId(edge.source)) &&
-        validNodeIds.has(getNodeId(edge.target)),
+    const filteredLinks = networkData.links.filter(
+      (link) =>
+        validNodeIds.has(getNodeId(link.source)) &&
+        validNodeIds.has(getNodeId(link.target)),
     );
 
-    return { nodes: filteredNodes, edges: filteredEdges };
+    return { nodes: filteredNodes, links: filteredLinks };
   }, [networkData, filteredCentralityData]);
 };

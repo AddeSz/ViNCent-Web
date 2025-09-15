@@ -1,5 +1,4 @@
-import type { Series, ScaleBand, ScaleLinear } from "d3";
-import type { Centrality } from "@/types/network";
+import type { CombinedNodeData } from "./RadialChart";
 
 export interface GroupBound {
   id: string;
@@ -10,9 +9,9 @@ export interface GroupBound {
 }
 
 const calculateBounds = (
-  series: Series<Centrality, string>[],
-  x: ScaleBand<string>,
-  y: ScaleLinear<number, number>,
+  series: d3.Series<CombinedNodeData, string>[],
+  x: d3.ScaleBand<string>,
+  y: d3.ScaleLinear<number, number>,
 ): GroupBound[] => {
   const firstLayer = series[0];
   const lastLayer = series[series.length - 1];

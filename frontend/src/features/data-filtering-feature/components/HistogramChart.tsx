@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
-import type { RefObject } from "react";
 import * as d3 from "d3";
+import type { RefObject } from "react";
 import useResizeObserver from "@/hooks/useResizeObserver";
 import useDebouncedValue from "@/hooks/useDebouncedValue";
-import { useHistogramData } from "./useHistogramData";
-import { useBrush } from "./useBrush";
+import { useHistogramData } from "@/features/data-filtering-feature/hooks/useHistogramData";
+import { useBrush } from "@/features/data-filtering-feature/hooks/useBrush";
 
 type HistogramProps = {
   data: number[];

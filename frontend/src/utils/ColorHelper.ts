@@ -1,10 +1,10 @@
-import { useDataStore } from "@/hooks/useDataStore";
+import { useNetworkStore } from "@/hooks/useNetworkStore";
 
 export const handleHighlight = (id: string, multi: boolean) => {
   if (multi) {
-    useDataStore.getState().toggleNodeSelection(id);
+    useNetworkStore.getState().toggleNodeSelection(id);
   } else {
-    useDataStore.getState().selectNode(id, false);
+    useNetworkStore.getState().selectNode(id, false);
   }
 };
 

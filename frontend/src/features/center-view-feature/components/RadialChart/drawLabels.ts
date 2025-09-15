@@ -1,14 +1,26 @@
 import * as d3 from "d3";
-import type { Selection, ScaleBand } from "d3";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
+import type { ArcData, CombinedNodeData } from "./RadialChart";
+import type { Node } from "@/types/network";
+import type { LabelTooltipProps } from "@/features/center-view-feature/components/Tooltips/LabelTooltip";
 
 const drawLabels = (
-  svg: Selection<SVGGElement, unknown, null, undefined>,
-  x: ScaleBand<string>,
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  x: d3.ScaleBand<string>,
   outerRadius: number,
   selectedNodes: Set<string>,
   fontSize: number,
+  arcData: ArcData[],
+  onNodeHover: (nodeData: CombinedNodeData) => void,
+  onTooltipShow: (tooltipData: LabelTooltipProps) => void,
+  onTooltipHide: () => void,
+  nodeMap: Map<string, Node>,
 ): void => {
+  const nodeDataMap = new Map<string, CombinedNodeData>();
+  arcData.forEach((d) => {
+    nodeDataMap.set(d.data.id, d.data);
+  });
+
   const labelGroup = svg.append("g").attr("class", "labels-group");
 
   labelGroup
@@ -27,8 +39,11 @@ const drawLabels = (
     .style("user-select", "none")
     .each(function (d) {
       const g = d3.select(this);
+      const node = nodeMap.get(d);
+      const label = node?.label ?? d;
+
       g.append("text")
-        .text(d)
+        .text(label)
         .attr("data-type", d)
         .attr("dominant-baseline", "middle")
         .attr("transform", () =>
@@ -51,12 +66,53 @@ const drawLabels = (
     )
     .on("click", (event, d) => {
       const multi = event.shiftKey || event.ctrlKey || event.metaKey;
+      const nodeData = nodeMap.get(d);
+
+      console.log("Clicked node data:", {
+        nodeId: d,
+        nodeData: nodeData,
+        attributes: nodeData?.attributes,
+        centralityData: nodeDataMap.get(d),
+        arcData: arcData,
+      });
+
       handleHighlight(d, multi);
+    })
+    .on("mouseover", function (_, d) {
+      const nodeData = nodeDataMap.get(d);
+      if (nodeData) {
+        onNodeHover(nodeData);
+
+        const [mouseX, mouseY] = d3.pointer(event, document.body);
+        onTooltipShow({
+          nodeId: d,
+          label: nodeMap.get(d)?.label ?? d,
+          x: mouseX,
+          y: mouseY,
+          visible: true,
+        });
+      }
+    })
+    .on("mousemove", function (event, d) {
+      const nodeData = nodeDataMap.get(d);
+      if (nodeData) {
+        const [mouseX, mouseY] = d3.pointer(event, document.body);
+        onTooltipShow({
+          nodeId: d,
+          label: nodeMap.get(d)?.label ?? d,
+          x: mouseX,
+          y: mouseY,
+          visible: true,
+        });
+      }
+    })
+    .on("mouseout", () => {
+      onTooltipHide();
     });
 };
 
 export const updateLabelHighlight = (
-  svg: Selection<SVGSVGElement, unknown, null, undefined>,
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
 ) => {
   svg

@@ -12,8 +12,8 @@ def calculate_selected_centralities(G: nx.Graph, centralities: List[CentralityTy
     G_calc: nx.Graph | nx.DiGraph = G.copy()
     is_directed = G_calc.is_directed()
     
-    edge_weights = nx.get_edge_attributes(G_calc, "weight")
-    use_weights = len(edge_weights) > 0 and any(w != 1.0 for w in edge_weights.values())
+    link_weights = nx.get_edge_attributes(G_calc, "weight")
+    use_weights = len(link_weights) > 0 and any(w != 1.0 for w in link_weights.values())
     weight_param = "weight" if use_weights else None
     
     is_connected = nx.is_connected(G_calc) if not is_directed else nx.is_weakly_connected(G_calc)

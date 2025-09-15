@@ -1,6 +1,7 @@
 import * as d3 from "d3";
-import type { Node, Edge } from "@/types/network";
+import type { Node, Link } from "@/types/network";
 import { highlightLinksColor } from "@/utils/ColorHelper";
+import { getNodeId } from "@/utils/utils";
 
 export const selectionStyling = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
@@ -13,11 +14,8 @@ export const selectionStyling = (
     )
     .attr("stroke-width", (d) => (selectedNodes.has(d.id) ? 2 : 0));
 
-  const getNodeId = (node: string | Node): string =>
-    typeof node === "string" ? node : node.id;
-
   svg
-    .selectAll<SVGLineElement, Edge>("line.link")
+    .selectAll<SVGLineElement, Link>("line.link")
     .attr("stroke", (d) =>
       selectedNodes.has(getNodeId(d.source)) ||
       selectedNodes.has(getNodeId(d.target))

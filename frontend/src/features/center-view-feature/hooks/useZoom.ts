@@ -1,12 +1,10 @@
-// useZoom.ts
 import { useRef, useCallback } from "react";
 import * as d3 from "d3";
 import type { RefObject } from "react";
-import type { ZoomTransform } from "d3";
 
 export function useZoom() {
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
-  const transformRef = useRef<ZoomTransform | null>(null);
+  const transformRef = useRef<d3.ZoomTransform | null>(null);
 
   const setupZoom = useCallback(
     (
@@ -17,7 +15,17 @@ export function useZoom() {
       const zoomBehavior = d3
         .zoom<SVGSVGElement, unknown>()
         .filter((event) => {
-          return event.type === "wheel" || event.target === svgRef.current;
+          if (event.type === "wheel") return true;
+
+          const target = event.target as HTMLElement;
+          if (
+            target.closest(".arcs-group") ||
+            target.closest(".labels-group")
+          ) {
+            return false;
+          }
+
+          return true;
         })
         .scaleExtent([0.1, 6])
         .on("zoom", (event) => {
@@ -30,11 +38,6 @@ export function useZoom() {
       svg.call(zoomBehavior);
       const initialTransform = d3.zoomTransform(svgRef.current!);
       svg.call(zoomBehavior.transform, initialTransform);
-
-      // const initialTransform = transformRef.current || d3.zoomIdentity;
-      // transformRef.current = initialTransform;
-
-      // svg.call(zoomBehavior.transform, initialTransform);
     },
     [],
   );

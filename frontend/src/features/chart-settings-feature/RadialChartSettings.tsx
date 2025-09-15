@@ -10,7 +10,6 @@ const RadialChartSettings = () => {
 
   return (
     <div className="flex w-full flex-col gap-2">
-      {/* Inner Radius Slider */}
       <div className="flex flex-col">
         <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
           Inner Radius: {innerRadius}px
@@ -35,14 +34,13 @@ const RadialChartSettings = () => {
         </span>
       </div>
 
-      {/* Outer Radius Slider */}
       <div className="flex flex-col">
         <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
           Outer Radius: {outerRadius}px
         </label>
         <Slider
           min={outerRadiusMin}
-          max={1600}
+          max={Math.min(Math.max(outerRadius + 400, 1600), 4000)}
           step={10}
           value={[outerRadius]}
           onValueChange={([val]) => {
@@ -57,7 +55,6 @@ const RadialChartSettings = () => {
         </span>
       </div>
 
-      {/* Label Size Slider */}
       <div className="flex flex-col">
         <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
           Label Size: {fontSize}px

@@ -1,12 +1,12 @@
-import type { Edge } from "@/types/network";
-import type { ScaleBand, Selection } from "d3";
+import type { Link } from "@/types/network";
 import * as d3 from "d3";
 import { highlightLinksColor } from "@/utils/ColorHelper";
+import { getNodeId } from "@/utils/utils";
 
 const drawLinks = (
-  svgGroup: Selection<SVGGElement, unknown, null, undefined>,
-  edges: Edge[],
-  x: ScaleBand<string>,
+  svgGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
+  links: Link[],
+  x: d3.ScaleBand<string>,
   innerRadius: number,
   selectedNodes: Set<string>,
 ) => {
@@ -20,11 +20,9 @@ const drawLinks = (
 
   const linkGroup = svgGroup.append("g").attr("class", "links-group");
 
-  edges.forEach((edge) => {
-    const sourceId =
-      typeof edge.source === "string" ? edge.source : edge.source.id;
-    const targetId =
-      typeof edge.target === "string" ? edge.target : edge.target.id;
+  links.forEach((link) => {
+    const sourceId = getNodeId(link.source);
+    const targetId = getNodeId(link.target);
 
     const isSelected =
       selectedNodes.has(sourceId) || selectedNodes.has(targetId);
@@ -67,7 +65,7 @@ const drawLinks = (
 };
 
 export const updateLinkHighlight = (
-  svg: Selection<SVGSVGElement, unknown, null, undefined>,
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
 ) => {
   svg

@@ -1,18 +1,14 @@
+import { useCentralityStore } from "@/hooks/useCentralityStore";
+import type { Centrality } from "@/types/network";
 import { useMemo } from "react";
-import { useDataStore } from "./useDataStore";
 
-interface FilteredCentralityItem {
-  id: string;
-  [key: string]: number | string;
-}
-
-const useFilteredCentralityData = (): FilteredCentralityItem[] => {
-  const centralityData = useDataStore((state) => state.centralityData);
-  const enabledCentralityKeys = useDataStore(
+const useFilteredCentralityData = (): Centrality[] => {
+  const centralityData = useCentralityStore((state) => state.centralityData);
+  const enabledCentralityKeys = useCentralityStore(
     (state) => state.enabledCentralityKeys,
   );
-  const brushRanges = useDataStore((state) => state.brushRanges);
-  const sortKey = useDataStore((state) => state.sortKey);
+  const brushRanges = useCentralityStore((state) => state.brushRanges);
+  const sortKey = useCentralityStore((state) => state.sortKey);
 
   const filtered = useMemo(() => {
     return centralityData.filter((item) => {
@@ -31,7 +27,7 @@ const useFilteredCentralityData = (): FilteredCentralityItem[] => {
 
   const mapped = useMemo(() => {
     return filtered.map((item) => {
-      const result: FilteredCentralityItem = { id: item.id };
+      const result: Centrality = { id: item.id };
       for (const key of enabledCentralityKeys) {
         if (key in item) {
           result[key] = item[key];

@@ -1,5 +1,5 @@
 import networkx as nx
-from .models import NetworkData, Edge, Node
+from .models import NetworkData
 import logging
 from fastapi import HTTPException
 
@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 def create_networkx_graph(network_data: NetworkData) -> nx.Graph:
     try:
-        has_directed_edges = any(edge.directed for edge in network_data.edges)
-        G = nx.DiGraph() if has_directed_edges else nx.Graph()
+        has_directed_links = any(link.directed for link in network_data.links)
+        G = nx.DiGraph() if has_directed_links else nx.Graph()
 
         for node in network_data.nodes:
             attrs = {}
@@ -18,13 +18,13 @@ def create_networkx_graph(network_data: NetworkData) -> nx.Graph:
                 attrs.update(node.attributes)
             G.add_node(node.id, **attrs)
 
-        for edge in network_data.edges:
-            attrs = {"weight": edge.weight or 1.0}
-            if edge.directed is not None:
-                attrs["directed"] = edge.directed
-            if edge.attributes:
-                attrs.update(edge.attributes)
-            G.add_edge(edge.source, edge.target, **attrs)
+        for link in network_data.links:
+            attrs = {"weight": link.weight or 1.0}
+            if link.directed is not None:
+                attrs["directed"] = link.directed
+            if link.attributes:
+                attrs.update(link.attributes)
+            G.add_edge(link.source, link.target, **attrs)
 
         return G
 

@@ -5,7 +5,12 @@
       "label": "Alice 1",
       "attributes": {
         "role": "Engineer",
-        "team": "A"
+        "team": "A",
+        "batchId": 123,
+        "MetaData": {
+          "location": "NY",
+          "age": 30
+        }
       }
     },
     {
@@ -1201,7 +1206,7 @@
       }
     }
   ],
-  "edges": [
+  "links": [
     {
       "source": "n1",
       "target": "n69",

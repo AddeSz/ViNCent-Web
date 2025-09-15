@@ -401,7 +401,7 @@
       }
     }
   ],
-  "edges": [
+  "links": [
     {
       "source": "n1",
       "target": "n50",
