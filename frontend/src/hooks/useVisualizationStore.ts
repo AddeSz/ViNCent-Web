@@ -5,6 +5,8 @@ import type { AttributeInfo } from "@/types/network";
 interface VisualizationStore {
   centralityColorScale: d3.ScaleSequential<string> | null;
   attributeColorScale: d3.ScaleOrdinal<string, string> | null;
+  numericAttributeColorScales: Map<string, d3.ScaleSequential<string>>;
+  fixedAttributeColors: Map<string, string>;
   centralityKeyIndexMap: Map<string, number>;
   attributeKeyIndexMap: Map<string, number>;
 
@@ -17,8 +19,10 @@ interface VisualizationStore {
 export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
   centralityColorScale: null,
   attributeColorScale: null,
+  numericAttributeColorScales: new Map(),
   centralityKeyIndexMap: new Map(),
   attributeKeyIndexMap: new Map(),
+  fixedAttributeColors: new Map(),
 
   initializeCentralityColorScale: (keys) => {
     if (keys.length === 0) {
@@ -37,13 +41,27 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
 
   initializeAttributeColorScale: (attributeInfos) => {
     if (attributeInfos.length === 0) {
-      set({ attributeColorScale: null, attributeKeyIndexMap: new Map() });
+      set({
+        attributeColorScale: null,
+        attributeKeyIndexMap: new Map(),
+        numericAttributeColorScales: new Map(),
+        fixedAttributeColors: new Map(),
+      });
       return;
     }
 
     const categories: string[] = [];
     const attributeKeyIndexMap = new Map<string, number>();
+    const numericAttributeColorScales = new Map<
+      string,
+      d3.ScaleSequential<string>
+    >();
+    const fixedAttributeColors = new Map<string, string>();
     let index = 0;
+
+    const fixedColorPalette = d3.schemeCategory10.concat(
+      d3.schemeSet3 as string[],
+    );
 
     attributeInfos.forEach((info) => {
       if (info.isCategorical) {
@@ -52,7 +70,17 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
           categories.push(categoryKey);
           attributeKeyIndexMap.set(categoryKey, index++);
         });
+      } else if (info.type === "number" && !info.isCategorical) {
+        const values = Array.from(info.values as Set<number>);
+        const [min, max] = d3.extent(values) as [number, number];
+        numericAttributeColorScales.set(
+          info.key,
+          d3.scaleSequential(d3.interpolateViridis).domain([min, max]),
+        );
+        attributeKeyIndexMap.set(info.key, index++);
       } else {
+        const color = fixedColorPalette[index % fixedColorPalette.length];
+        fixedAttributeColors.set(info.key, color);
         attributeKeyIndexMap.set(info.key, index++);
       }
     });
@@ -62,13 +90,20 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       .domain(categories)
       .range(d3.schemeCategory10.concat(d3.schemeSet3 as string[]));
 
-    set({ attributeColorScale, attributeKeyIndexMap });
+    set({
+      attributeColorScale,
+      attributeKeyIndexMap,
+      numericAttributeColorScales,
+      fixedAttributeColors,
+    });
   },
 
   getColorForKey: (key: string, value?: string | number) => {
     const {
       centralityColorScale,
       attributeColorScale,
+      numericAttributeColorScales,
+      fixedAttributeColors,
       centralityKeyIndexMap,
       attributeKeyIndexMap,
     } = get();
@@ -78,13 +113,20 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     }
 
     if (attributeColorScale) {
-      let colorKey = key;
       if (value !== undefined) {
-        colorKey = `${key}:${value}`;
+        const colorKey = `${key}:${value}`;
+        if (attributeKeyIndexMap.has(colorKey)) {
+          return attributeColorScale(colorKey);
+        }
       }
-      if (attributeKeyIndexMap.has(colorKey)) {
-        return attributeColorScale(colorKey);
-      }
+    }
+
+    if (numericAttributeColorScales.has(key) && typeof value === "number") {
+      return numericAttributeColorScales.get(key)!(value);
+    }
+
+    if (fixedAttributeColors.has(key)) {
+      return fixedAttributeColors.get(key)!;
     }
 
     return "var(--muted-foreground)";

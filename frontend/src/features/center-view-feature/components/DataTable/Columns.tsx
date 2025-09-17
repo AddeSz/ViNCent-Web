@@ -104,9 +104,14 @@ export const createAttributeColumns = <T,>(
     },
     cell: ({ row }) => {
       const value = row.getValue(key);
-      const color = useVisualizationStore
-        .getState()
-        .getColorForKey(key, value as string | number);
+      const headerColor = useVisualizationStore.getState().getColorForKey(key);
+
+      const color =
+        !headerColor || headerColor === "var(--muted-foreground)"
+          ? useVisualizationStore
+              .getState()
+              .getColorForKey(key, value as string | number)
+          : undefined;
       return (
         <div
           className="w-24 truncate text-center font-medium"

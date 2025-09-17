@@ -17,7 +17,6 @@ const Legend = () => {
     (state) => state.enabledAttributeKeys,
   );
   const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
-  const attributeInfo = useAttributeStore((state) => state.attributeInfo);
   const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
   const { radialSettings } = useChartSettings();
 
@@ -74,13 +73,14 @@ const Legend = () => {
           .filter((key) => keysToShow.includes(key))
           .map((key) => {
             const value = nodeAttributes[hoveredNode.id]?.[key];
-            const info = attributeInfo[key];
-            const color = info?.isCategorical
-              ? getColorForKey(
-                  key,
-                  value !== undefined ? String(value) : undefined,
-                )
-              : getColorForKey(key);
+            const color = getColorForKey(
+              key,
+              value !== undefined
+                ? typeof value === "number"
+                  ? value
+                  : String(value)
+                : undefined,
+            );
 
             return {
               key,
