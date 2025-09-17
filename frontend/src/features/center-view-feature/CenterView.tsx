@@ -90,7 +90,7 @@ const CenterView = () => {
             className="w-30"
             aria-label="Toggle data-table view"
           >
-            Data Tabel View
+            Data Table View
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
