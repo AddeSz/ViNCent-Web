@@ -9,7 +9,7 @@ import {
 } from "react";
 import * as d3 from "d3";
 import useResizeObserver from "@/hooks/useResizeObserver";
-import type { CombinedNodeData } from "@/types/network";
+import type { CombinedData } from "@/types/network";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
 import drawLabels, { updateLabelHighlight } from "./drawLabels";
@@ -32,12 +32,13 @@ import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import useDebouncedValue from "@/hooks/useDebouncedValue";
+import useCombinedData from "../../hooks/useCombinedData";
 
 export type ArcData = {
   key: string;
   0: number;
   1: number;
-  data: CombinedNodeData;
+  data: CombinedData;
   value: number;
 };
 
@@ -68,7 +69,6 @@ const RadialChart = forwardRef(function RadialChart(
   );
   const networkData = useNetworkStore((state) => state.network);
   const attributeKeys = useAttributeStore((state) => state.attributeKeys);
-  const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
   const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
 
@@ -81,13 +81,15 @@ const RadialChart = forwardRef(function RadialChart(
   const { radialSettings } = useChartSettings();
   const { innerRadius, outerRadius, fontSize, displayMode } = radialSettings;
   const nodeMap = useNetworkStore((state) => state.nodeMap);
-
-  const combinedData = useMemo((): CombinedNodeData[] => {
-    return centralityData.map((node) => ({
-      ...node,
-      ...(nodeAttributes[node.id] || {}),
-    }));
-  }, [centralityData, nodeAttributes]);
+  // const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
+  const combinedDataMap = useCombinedData();
+  const combinedData = Array.from(combinedDataMap.values());
+  // const combinedData = useMemo((): CombinedData[] => {
+  //   return centralityData.map((node) => ({
+  //     ...node,
+  //     ...(nodeAttributes[node.id] || {}),
+  //   }));
+  // }, [centralityData, nodeAttributes]);
 
   const allKeys = useMemo(() => {
     if (displayMode === "attributes") return attributeKeys;
@@ -128,8 +130,9 @@ const RadialChart = forwardRef(function RadialChart(
     [resetZoom],
   );
 
-  const handleNodeHover = (nodeData: CombinedNodeData) => {
-    setHoveredNode(nodeData);
+  const handleNodeHover = (nodeData: CombinedData) => {
+    const data = combinedDataMap.get(nodeData.id);
+    if (data) setHoveredNode(data);
   };
 
   useEffect(() => {
@@ -144,7 +147,7 @@ const RadialChart = forwardRef(function RadialChart(
     const innerPadding = scalePadding(dataLength, 50, 0.5);
 
     const series = d3
-      .stack<CombinedNodeData>()
+      .stack<CombinedData>()
       .keys(allKeys)
       .value(() => 1)(combinedData);
 
@@ -167,7 +170,7 @@ const RadialChart = forwardRef(function RadialChart(
           return {
             ...d,
             key: layer.key,
-            value: d.data[layer.key as keyof CombinedNodeData],
+            value: d.data[layer.key as keyof CombinedData],
           };
         }),
       );
@@ -206,7 +209,14 @@ const RadialChart = forwardRef(function RadialChart(
         nodeMap,
       );
     }
-  }, [dimensions, centralityData, networkData, radialSettings]);
+  }, [
+    dimensions,
+    centralityData,
+    networkData,
+    radialSettings,
+    allKeys,
+    combinedDataMap,
+  ]);
 
   useEffect(() => {
     if (!svgRef.current) return;

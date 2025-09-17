@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { formatValue } from "@/utils/utils";
 import type { ArcData } from "./RadialChart";
 import type { ArcTooltipProps } from "@/features/center-view-feature/components/Tooltips/ArcTooltip";
-import type { CombinedNodeData } from "@/types/network";
+import type { CombinedData } from "@/types/network";
 
 const drawArcs = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -11,7 +11,7 @@ const drawArcs = (
   y: d3.ScaleLinear<number, number>,
   getColorForKey: (key: string, value: string | number) => string,
   centralityRanges: Record<string, { min: number; max: number }>,
-  onNodeHover: (nodeData: CombinedNodeData) => void,
+  onNodeHover: (nodeData: CombinedData) => void,
   onTooltipShow: (tooltipData: ArcTooltipProps) => void,
   onTooltipHide: () => void,
 ): void => {

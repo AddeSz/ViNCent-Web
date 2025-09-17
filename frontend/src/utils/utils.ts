@@ -2,6 +2,10 @@ export function getNodeId(value: string | { id: string }): string {
   return typeof value === "string" ? value : value.id;
 }
 
+export function formatKeyLabel(key: string): string {
+  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function formatValue(x: any): string {
   if (x === undefined || x === null) return "N/A";
 

@@ -2,9 +2,11 @@ import { Slider } from "@/components/shadcnUI/slider";
 import { useChartSettings } from "@/hooks/useChartSettings";
 import { RadioGroup, RadioGroupItem } from "@/components/shadcnUI/radio-group";
 import { Label } from "@/components/shadcnUI/label";
+import { Button } from "@/components/shadcnUI/button";
 
 const RadialChartSettings = () => {
-  const { radialSettings, setRadialSettings } = useChartSettings();
+  const { radialSettings, setRadialSettings, resetRadialSettings } =
+    useChartSettings();
   const { innerRadius, outerRadius, fontSize, displayMode } = radialSettings;
 
   const outerRadiusMin = innerRadius + 200;
@@ -124,6 +126,12 @@ const RadialChartSettings = () => {
           </div>
         </RadioGroup>
       </div>
+
+      <Button className="cursor-pointer" onClick={resetRadialSettings}>
+        <span className="flex-wrap truncate overflow-hidden">
+          Reset to Defaults{" "}
+        </span>
+      </Button>
     </div>
   );
 };

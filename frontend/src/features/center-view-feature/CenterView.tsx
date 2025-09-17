@@ -19,11 +19,15 @@ import RadialChart from "./components/RadialChart/RadialChart";
 import NodeLinkDiagram from "./components/NodeLinkDiagram/NodeLinkDiagram";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
+import { formatKeyLabel } from "@/utils/utils";
+import { DataTable } from "./components/DataTable/DataTable";
 
 const VIEW_KEY = "center-view-mode";
 
 const CenterView = () => {
-  const [view, setView] = useState<"radial" | "node-link">("radial");
+  const [view, setView] = useState<"radial" | "node-link" | "data-table">(
+    "radial",
+  );
   const [isViewLoaded, setIsViewLoaded] = useState(false);
   const clearSelection = useNetworkStore((state) => state.clearSelection);
   const enabledCentralityKeys = useCentralityStore(
@@ -36,12 +40,13 @@ const CenterView = () => {
   const radialResetRef = useRef<() => void>(null);
   const nodeLinkResetRef = useRef<() => void>(null);
 
-  const formatKeyLabel = (key: string) =>
-    key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
   useEffect(() => {
     const savedView = localStorage.getItem(VIEW_KEY);
-    if (savedView === "radial" || savedView === "node-link") {
+    if (
+      savedView === "radial" ||
+      savedView === "node-link" ||
+      savedView === "data-table"
+    ) {
       setView(savedView);
     }
     setIsViewLoaded(true);
@@ -61,7 +66,9 @@ const CenterView = () => {
         <ToggleGroup
           type="single"
           value={view}
-          onValueChange={(val) => val && setView(val as "radial" | "node-link")}
+          onValueChange={(val) =>
+            val && setView(val as "radial" | "node-link" | "data-table")
+          }
           className="rounded-l-none border-r-2 bg-card"
         >
           <ToggleGroupItem
@@ -77,6 +84,13 @@ const CenterView = () => {
             aria-label="Toggle node-link view"
           >
             Node-Link View
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="data-table"
+            className="w-30"
+            aria-label="Toggle data-table view"
+          >
+            Data Tabel View
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
@@ -108,6 +122,16 @@ const CenterView = () => {
                 containerRef={containerRef}
                 ref={nodeLinkResetRef}
               />
+            </div>
+
+            <div
+              className={`absolute inset-0 transition-opacity duration-200 ${
+                view === "data-table"
+                  ? "pointer-events-auto opacity-100"
+                  : "pointer-events-none opacity-0"
+              }`}
+            >
+              <DataTable />
             </div>
           </div>
         </ContextMenuTrigger>

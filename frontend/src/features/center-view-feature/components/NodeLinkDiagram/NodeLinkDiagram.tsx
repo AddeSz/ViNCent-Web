@@ -3,7 +3,7 @@ import type { RefObject, Ref } from "react";
 import * as d3 from "d3";
 import type { Simulation } from "d3";
 import useResizeObserver from "@/hooks/useResizeObserver";
-import type { Node, Link, CombinedNodeData } from "@/types/network";
+import type { Node, Link } from "@/types/network";
 import { createSimulation } from "./setupSimulation";
 import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
 import { selectionStyling } from "./selectionStyling";
@@ -17,7 +17,7 @@ import {
 } from "@/features/center-view-feature/components/Tooltips/NodeTooltip";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import useDebouncedValue from "@/hooks/useDebouncedValue";
-import { useAttributeStore } from "@/hooks/useAttributeStore";
+import useCombinedData from "../../hooks/useCombinedData";
 
 const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   { containerRef }: { containerRef: RefObject<HTMLDivElement | null> },
@@ -33,8 +33,7 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   const filteredCentralityData = useFilteredCentralityData();
   const nodeLinkData = useNodeLinkData(networkData, filteredCentralityData);
   const setHoveredNode = useNetworkStore((state) => state.setHoveredNode);
-  const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
-
+  const combinedDataMap = useCombinedData();
   const { tooltip, showTooltip, hideTooltip } = useTooltip<NodeTooltipProps>({
     nodeId: "",
     label: "",
@@ -48,22 +47,21 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
 
   useEffect(() => {
     if (!svgRef.current || !dimensions?.width || !dimensions?.height) return;
-    const svg = d3.select(svgRef.current);
-
     if (!simulationRef.current) {
+      const svg = d3.select(svgRef.current);
       const svgGroup = svg.append("g").attr("class", "zoom-group");
       setupZoom(svg, svgRef, svgGroup);
       svgGroup.append("g").attr("class", "links-group");
       svgGroup.append("g").attr("class", "nodes-group");
 
       simulationRef.current = createSimulation(
-        networkData.nodes,
-        networkData.links,
+        nodeLinkData.nodes,
+        nodeLinkData.links,
         svgGroup.selectAll(".node"),
         svgGroup.selectAll(".link"),
       );
     }
-  }, [dimensions, networkData]);
+  }, [dimensions, nodeLinkData]);
 
   useEffect(() => {
     if (!svgRef.current || !simulationRef.current) return;
@@ -81,15 +79,8 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
       .selectAll<SVGCircleElement, Node>(".node")
       .on("mousemove", function (event, d) {
         const [x, y] = [event.clientX, event.clientY];
-        const centrality =
-          filteredCentralityData.find((c) => c.id === d.id) || {};
-        const attributes = nodeAttributes[d.id] || {};
-
-        const hoveredNodeData: CombinedNodeData = {
-          ...d,
-          ...centrality,
-          ...attributes,
-        };
+        const hoveredNodeData = combinedDataMap.get(d.id);
+        if (!hoveredNodeData) return;
 
         setHoveredNode(hoveredNodeData);
         showTooltip(
@@ -105,7 +96,7 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
         );
       })
       .on("mouseleave", () => hideTooltip());
-  }, [nodeLinkData, networkData]);
+  }, [nodeLinkData, networkData, dimensions]);
 
   useEffect(() => {
     if (!svgRef.current) return;

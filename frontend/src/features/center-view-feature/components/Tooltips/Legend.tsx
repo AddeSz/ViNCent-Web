@@ -102,7 +102,7 @@ const Legend = () => {
           Node Details:
           <span className="mt-1 text-sm text-muted-foreground">
             {" "}
-            {hoveredNode.id}
+            {hoveredNode.label ? hoveredNode.label : hoveredNode.id}
           </span>
         </div>
       </div>

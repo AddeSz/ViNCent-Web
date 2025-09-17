@@ -1,4 +1,4 @@
-import type { CombinedNodeData } from "@/types/network";
+import type { CombinedData } from "@/types/network";
 
 export interface GroupBound {
   id: string;
@@ -9,7 +9,7 @@ export interface GroupBound {
 }
 
 const calculateBounds = (
-  series: d3.Series<CombinedNodeData, string>[],
+  series: d3.Series<CombinedData, string>[],
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
 ): GroupBound[] => {

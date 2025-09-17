@@ -13,12 +13,12 @@ import {
   calculateRadialSettings,
 } from "@/utils/networkProcessing";
 import { calculateCentralityValues } from "@/utils/networkBackend";
+import { defaultRadialSettings } from "@/hooks/useChartSettings";
 
 const App = () => {
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
-  const [, setIsLoading] = useState(false);
-  const [, setError] = useState<string | null>(null);
-  const { setRadialSettings } = useChartSettings();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { loadNetwork, loadCentralityData } = useDataStore();
 
   const handleDragging = (id: string) => (isDragging: boolean) => {
@@ -34,7 +34,11 @@ const App = () => {
         const data = calculateLinkCounts(testData2);
         loadNetwork(data);
 
-        setRadialSettings(calculateRadialSettings(data.nodes.length));
+        const calculatedRadial = calculateRadialSettings(data.nodes.length);
+        useChartSettings.getState().setInitialRadialSettings({
+          ...defaultRadialSettings,
+          ...calculatedRadial,
+        });
 
         const centralityData = await calculateCentralityValues(testData2);
         loadCentralityData(centralityData);
@@ -74,7 +78,17 @@ const App = () => {
           className={`w-2 transition-colors ${draggingBars["middle-left"] ? "bg-ring" : "bg-border"}`}
         />
         <Panel defaultSize={65} minSize={50}>
-          <CenterView />
+          {isLoading ? (
+            <div className="flex h-full items-center justify-center">
+              Loading…
+            </div>
+          ) : error ? (
+            <div className="flex h-full items-center justify-center text-red-500">
+              {error}
+            </div>
+          ) : (
+            <CenterView />
+          )}
         </Panel>
         <PanelResizeHandle
           onDragging={handleDragging("middle-right")}
