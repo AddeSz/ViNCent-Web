@@ -1,7 +1,7 @@
-import * as d3 from "d3";
-import type { Node, Link } from "@/types/network";
-import { createDrag } from "./setupSimulation";
+import type { Link, Node } from "@/types/network";
 import { handleHighlight, highlightLinksColor } from "@/utils/ColorHelper";
+import * as d3 from "d3";
+import { createDrag } from "./setupSimulation";
 
 const NODE_RADIUS = 10;
 const LINK_STROKE_WIDTH = 1.5;
@@ -82,7 +82,7 @@ const updateNodes = (
   return allNodes;
 };
 
-export const updateGraph = (
+const updateGraph = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   simulation: d3.Simulation<Node, Link>,
   visibleNodes: Node[],
@@ -105,3 +105,5 @@ export const updateGraph = (
     allNodes.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
   });
 };
+
+export default updateGraph;

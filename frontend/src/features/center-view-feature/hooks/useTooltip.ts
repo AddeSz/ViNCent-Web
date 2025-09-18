@@ -1,32 +1,35 @@
-import { useState, useRef, useEffect } from "react";
+import type { TooltipType } from "@/features/center-view-feature/components/Tooltips/Tooltip";
+import { useEffect, useRef, useState } from "react";
 
-type BaseTooltip = {
+interface TooltipState {
+  type: TooltipType;
+  nodeId: string;
   x: number;
   y: number;
   visible: boolean;
-};
+  arcKey?: string;
+}
 
-export function useTooltip<T extends BaseTooltip>(initial?: Partial<T>) {
-  const [tooltip, setTooltip] = useState<T>(
-    () =>
-      ({
-        x: 0,
-        y: 0,
-        visible: false,
-        ...initial,
-      }) as T,
-  );
+export const useTooltip = (initial?: Partial<TooltipState>) => {
+  const [tooltip, setTooltip] = useState<TooltipState>(() => ({
+    type: "arc",
+    nodeId: "",
+    x: 0,
+    y: 0,
+    visible: false,
+    ...initial,
+  }));
 
   const tooltipTimer = useRef<NodeJS.Timeout | null>(null);
   const currentHoveredKey = useRef<string | null>(null);
 
-  const showTooltip = (tooltipData: T, key: string) => {
+  const showTooltip = (data: Partial<TooltipState>, key: string) => {
     if (currentHoveredKey.current === key) {
       if (tooltipTimer.current) {
         clearTimeout(tooltipTimer.current);
         tooltipTimer.current = null;
       }
-      setTooltip({ ...tooltipData, visible: true });
+      setTooltip((prev) => ({ ...prev, ...data, visible: true }));
       return;
     }
 
@@ -36,7 +39,7 @@ export function useTooltip<T extends BaseTooltip>(initial?: Partial<T>) {
     }
 
     tooltipTimer.current = setTimeout(() => {
-      setTooltip({ ...tooltipData, visible: true });
+      setTooltip((prev) => ({ ...prev, ...data, visible: true }));
       currentHoveredKey.current = key;
       tooltipTimer.current = null;
     }, 150);
@@ -53,16 +56,9 @@ export function useTooltip<T extends BaseTooltip>(initial?: Partial<T>) {
 
   useEffect(() => {
     return () => {
-      if (tooltipTimer.current) {
-        clearTimeout(tooltipTimer.current);
-      }
+      if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
     };
   }, []);
 
-  return {
-    tooltip,
-    setTooltip,
-    showTooltip,
-    hideTooltip,
-  };
-}
+  return { tooltip, setTooltip, showTooltip, hideTooltip };
+};

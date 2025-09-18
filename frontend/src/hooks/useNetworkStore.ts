@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import type { CombinedData, Network, Node } from "@/types/network";
+import { create } from "zustand";
 
 interface NetworkStore {
   network: Network;

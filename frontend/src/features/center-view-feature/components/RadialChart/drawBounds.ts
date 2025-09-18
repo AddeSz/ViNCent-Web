@@ -1,6 +1,6 @@
+import { highlightBoundsColor } from "@/utils/ColorHelper";
 import { arc } from "d3-shape";
 import type { GroupBound } from "./calculateBounds";
-import { highlightBoundsColor } from "@/utils/ColorHelper";
 
 const sideLinePath = (angle: number, inner: number, outer: number): string => {
   const x1 = Math.cos(angle - Math.PI / 2) * inner;

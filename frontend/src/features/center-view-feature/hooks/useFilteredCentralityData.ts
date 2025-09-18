@@ -2,13 +2,13 @@ import { useCentralityStore } from "@/hooks/useCentralityStore";
 import type { Centrality } from "@/types/network";
 import { useMemo } from "react";
 
-const useFilteredCentralityData = (): Centrality[] => {
-  const centralityData = useCentralityStore((state) => state.centralityData);
+export const useFilteredCentralityData = (): Centrality[] => {
+  const centralityData = useCentralityStore((s) => s.centralityData);
   const enabledCentralityKeys = useCentralityStore(
-    (state) => state.enabledCentralityKeys,
+    (s) => s.enabledCentralityKeys,
   );
-  const brushRanges = useCentralityStore((state) => state.brushRanges);
-  const sortKey = useCentralityStore((state) => state.sortKey);
+  const brushRanges = useCentralityStore((s) => s.brushRanges);
+  const sortKey = useCentralityStore((s) => s.sortKey);
 
   const filtered = useMemo(() => {
     return centralityData.filter((item) => {
@@ -51,5 +51,3 @@ const useFilteredCentralityData = (): Centrality[] => {
 
   return sorted;
 };
-
-export default useFilteredCentralityData;

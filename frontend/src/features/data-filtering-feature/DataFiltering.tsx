@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
 import { Slider } from "@/components/shadcnUI/slider";
-import HistogramChart from "./components/HistogramChart";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
+import { useRef, useState } from "react";
+import HistogramChart from "./components/HistogramChart";
 
 const DataFiltering = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -14,7 +14,7 @@ const DataFiltering = () => {
   const toggleCentralityKey = useCentralityStore((s) => s.toggleCentralityKey);
   const brushRanges = useCentralityStore((s) => s.brushRanges);
   const setBrushRange = useCentralityStore((s) => s.setBrushRange);
-  const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
+  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
 
   const [binCount, setBinCount] = useState(16);
 

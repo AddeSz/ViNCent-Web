@@ -1,27 +1,27 @@
-import { useRef, useState, useEffect } from "react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from "@/components/shadcnUI/context-menu";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/shadcnUI/toggle-group";
-import {
-  ContextMenu,
-  ContextMenuTrigger,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSub,
-  ContextMenuSubTrigger,
-  ContextMenuSubContent,
-  ContextMenuRadioGroup,
-  ContextMenuRadioItem,
-} from "@/components/shadcnUI/context-menu";
+import { useEffect, useRef, useState } from "react";
 
-import RadialChart from "./components/RadialChart/RadialChart";
-import NodeLinkDiagram from "./components/NodeLinkDiagram/NodeLinkDiagram";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { formatKeyLabel } from "@/utils/utils";
 import DataTable from "./components/DataTable/DataTable";
-import useCombinedData from "./hooks/useCombinedData";
+import NodeLinkDiagram from "./components/NodeLinkDiagram/NodeLinkDiagram";
+import RadialChart from "./components/RadialChart/RadialChart";
+import { useCombinedData } from "./hooks/useCombinedData";
 
 const VIEW_KEY = "center-view-mode";
 
@@ -30,12 +30,10 @@ const CenterView = () => {
     "radial",
   );
   const [isViewLoaded, setIsViewLoaded] = useState(false);
-  const clearSelection = useNetworkStore((state) => state.clearSelection);
-  const enabledCentralityKeys = useCentralityStore(
-    (state) => state.enabledCentralityKeys,
-  );
-  const sortKey = useCentralityStore((state) => state.sortKey);
-  const setSortKey = useCentralityStore((state) => state.setSortKey);
+  const clearSelection = useNetworkStore((s) => s.clearSelection);
+  const centralityKeys = useCentralityStore((s) => s.enabledCentralityKeys);
+  const sortKey = useCentralityStore((s) => s.sortKey);
+  const setSortKey = useCentralityStore((s) => s.setSortKey);
   const { combinedData, combinedDataMap } = useCombinedData();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -163,17 +161,13 @@ const CenterView = () => {
               <ContextMenuSubTrigger>Sort</ContextMenuSubTrigger>
               <ContextMenuSubContent>
                 <ContextMenuRadioGroup
-                  value={
-                    enabledCentralityKeys.includes(sortKey)
-                      ? sortKey
-                      : "default"
-                  }
+                  value={centralityKeys.includes(sortKey) ? sortKey : "default"}
                   onValueChange={(val) => setSortKey(val)}
                 >
                   <ContextMenuRadioItem value="default">
                     Default
                   </ContextMenuRadioItem>
-                  {enabledCentralityKeys.map((key) => (
+                  {centralityKeys.map((key) => (
                     <ContextMenuRadioItem key={key} value={key}>
                       {formatKeyLabel(key)}
                     </ContextMenuRadioItem>

@@ -1,7 +1,7 @@
 import type { Link } from "@/types/network";
-import * as d3 from "d3";
 import { highlightLinksColor } from "@/utils/ColorHelper";
 import { getNodeId } from "@/utils/utils";
+import * as d3 from "d3";
 
 const drawLinks = (
   svgGroup: d3.Selection<SVGGElement, unknown, null, undefined>,

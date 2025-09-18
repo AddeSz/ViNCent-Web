@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import type { Node, Link } from "@/types/network";
+import type { Link, Node } from "@/types/network";
 import { getNodeId } from "@/utils/utils";
+import { useMemo } from "react";
 
 export const useNodeLinkData = (
   networkData: { nodes: Node[]; links: Link[] },

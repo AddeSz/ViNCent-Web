@@ -1,5 +1,5 @@
-import { useCallback } from "react";
 import * as d3 from "d3";
+import { useCallback } from "react";
 import type { HistogramDataType } from "./useHistogramData";
 
 type BrushProps = {

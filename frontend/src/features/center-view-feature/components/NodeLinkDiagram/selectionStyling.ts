@@ -1,9 +1,9 @@
-import * as d3 from "d3";
-import type { Node, Link } from "@/types/network";
+import type { Link, Node } from "@/types/network";
 import { highlightLinksColor } from "@/utils/ColorHelper";
 import { getNodeId } from "@/utils/utils";
+import * as d3 from "d3";
 
-export const selectionStyling = (
+const selectionStyling = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
 ) => {
@@ -35,3 +35,5 @@ export const selectionStyling = (
         : 0.6,
     );
 };
+
+export default selectionStyling;

@@ -1,24 +1,21 @@
-import { useRef } from "react";
-import { flexRender, type Table } from "@tanstack/react-table";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import {
-  Table as TableComponent,
   TableBody,
   TableCell,
+  Table as TableComponent,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/shadcnUI/table";
+import { flexRender, type Table } from "@tanstack/react-table";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useRef } from "react";
 
 interface TableContentProps<T> {
   table: Table<T>;
   columnsLength: number;
 }
 
-export const TableContent = <T,>({
-  table,
-  columnsLength,
-}: TableContentProps<T>) => {
+const TableContent = <T,>({ table, columnsLength }: TableContentProps<T>) => {
   const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
@@ -97,3 +94,5 @@ export const TableContent = <T,>({
     </div>
   );
 };
+
+export default TableContent;

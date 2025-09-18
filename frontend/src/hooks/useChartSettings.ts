@@ -54,13 +54,13 @@ export const useChartSettings = create<ChartSettingsStore>((set) => {
     displayMode: defaultDisplayMode,
 
     setRadialSettings: (settings) =>
-      set((state) => ({
-        radialSettings: { ...state.radialSettings, ...settings },
+      set((s) => ({
+        radialSettings: { ...s.radialSettings, ...settings },
       })),
 
     setNodeLinkSettings: (settings) =>
-      set((state) => ({
-        nodeLinkSettings: { ...state.nodeLinkSettings, ...settings },
+      set((s) => ({
+        nodeLinkSettings: { ...s.nodeLinkSettings, ...settings },
       })),
 
     setDisplayMode: (mode) => set({ displayMode: mode }),

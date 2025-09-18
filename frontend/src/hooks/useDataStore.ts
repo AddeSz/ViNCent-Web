@@ -1,30 +1,24 @@
-import type { Network, Centrality } from "@/types/network";
+import type { Centrality, Network } from "@/types/network";
 
-import { useNetworkStore } from "./useNetworkStore";
-import { useCentralityStore } from "./useCentralityStore";
-import { useVisualizationStore } from "./useVisualizationStore";
 import { useAttributeStore } from "./useAttributeStore";
+import { useCentralityStore } from "./useCentralityStore";
+import { useNetworkStore } from "./useNetworkStore";
+import { useVisualizationStore } from "./useVisualizationStore";
 
 export const useDataStore = () => {
-  const setNetwork = useNetworkStore((state) => state.setNetwork);
-  const setNodeAttributes = useAttributeStore(
-    (state) => state.setNodeAttributes,
-  );
-  const setCentralityData = useCentralityStore(
-    (state) => state.setCentralityData,
-  );
+  const setNetwork = useNetworkStore((s) => s.setNetwork);
+  const setNodeAttributes = useAttributeStore((s) => s.setNodeAttributes);
+  const setCentralityData = useCentralityStore((s) => s.setCentralityData);
   const initializeCentralityColorScale = useVisualizationStore(
-    (state) => state.initializeCentralityColorScale,
+    (s) => s.initializeCentralityColorScale,
   );
   const initializeAttributeColorScale = useVisualizationStore(
-    (state) => state.initializeAttributeColorScale,
+    (s) => s.initializeAttributeColorScale,
   );
-  const clearNetworkData = useNetworkStore((state) => state.clearData);
-  const clearCentralityData = useCentralityStore((state) => state.clearData);
-  const clearVisualizationData = useVisualizationStore(
-    (state) => state.clearData,
-  );
-  const clearAttributeData = useAttributeStore((state) => state.clearData);
+  const clearNetworkData = useNetworkStore((s) => s.clearData);
+  const clearCentralityData = useCentralityStore((s) => s.clearData);
+  const clearVisualizationData = useVisualizationStore((s) => s.clearData);
+  const clearAttributeData = useAttributeStore((s) => s.clearData);
 
   const loadNetwork = (data: Network) => {
     setNetwork(data);

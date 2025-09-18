@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import type { Centrality } from "@/types/network";
+import { create } from "zustand";
 
 interface CentralityStore {
   centralityData: Centrality[];
@@ -68,18 +68,18 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
   setCentralityRanges: (ranges) => set({ centralityRanges: ranges }),
 
   toggleCentralityKey: (key) =>
-    set((state) => {
-      const isEnabled = state.enabledCentralityKeys.includes(key);
+    set((s) => {
+      const isEnabled = s.enabledCentralityKeys.includes(key);
       if (isEnabled) {
         return {
-          enabledCentralityKeys: state.enabledCentralityKeys.filter(
+          enabledCentralityKeys: s.enabledCentralityKeys.filter(
             (k) => k !== key,
           ),
         };
       } else {
         return {
-          enabledCentralityKeys: state.centralityKeys.filter(
-            (k) => k === key || state.enabledCentralityKeys.includes(k),
+          enabledCentralityKeys: s.centralityKeys.filter(
+            (k) => k === key || s.enabledCentralityKeys.includes(k),
           ),
         };
       }
@@ -88,13 +88,13 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
   setEnabledCentralityKeys: (keys) => set({ enabledCentralityKeys: keys }),
 
   setBrushRange: (key, range) =>
-    set((state) => ({
-      brushRanges: { ...state.brushRanges, [key]: range },
+    set((s) => ({
+      brushRanges: { ...s.brushRanges, [key]: range },
     })),
 
   clearBrushRange: (key) =>
-    set((state) => {
-      const { [key]: removed, ...rest } = state.brushRanges;
+    set((s) => {
+      const { [key]: removed, ...rest } = s.brushRanges;
       return { brushRanges: rest };
     }),
 

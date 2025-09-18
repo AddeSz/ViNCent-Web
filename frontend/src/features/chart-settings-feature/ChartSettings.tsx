@@ -1,8 +1,8 @@
+import { Label } from "@/components/shadcnUI/label";
 import { RadioGroup, RadioGroupItem } from "@/components/shadcnUI/radio-group";
+import { useChartSettings } from "@/hooks/useChartSettings";
 import NodeLinkDiagramSettings from "./NodeLinkDiagramSettings";
 import RadialChartSettings from "./RadialChartSettings";
-import { Label } from "@/components/shadcnUI/label";
-import { useChartSettings } from "@/hooks/useChartSettings";
 
 const ChartSettings = () => {
   const { displayMode, setDisplayMode } = useChartSettings();

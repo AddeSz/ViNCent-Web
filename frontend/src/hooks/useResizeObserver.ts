@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import type { RefObject } from "react";
+import { useEffect, useState } from "react";
 
-const useResizeObserver = <T extends Element>(
+export const useResizeObserver = <T extends Element>(
   ref: RefObject<T | null>,
 ): DOMRectReadOnly | null => {
   const [dimensions, setDimensions] = useState<DOMRectReadOnly | null>(null);
@@ -26,5 +26,3 @@ const useResizeObserver = <T extends Element>(
 
   return dimensions;
 };
-
-export default useResizeObserver;

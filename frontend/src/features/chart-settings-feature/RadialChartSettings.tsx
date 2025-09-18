@@ -1,6 +1,6 @@
+import { Button } from "@/components/shadcnUI/button";
 import { Slider } from "@/components/shadcnUI/slider";
 import { useChartSettings } from "@/hooks/useChartSettings";
-import { Button } from "@/components/shadcnUI/button";
 
 const RadialChartSettings = () => {
   const { radialSettings, setRadialSettings, resetRadialSettings } =

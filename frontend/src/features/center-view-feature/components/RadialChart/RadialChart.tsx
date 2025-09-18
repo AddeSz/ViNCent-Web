@@ -1,37 +1,30 @@
+import ChartTooltip from "@/features/center-view-feature/components/Tooltips/Tooltip";
+import { useChartData } from "@/features/center-view-feature/hooks/useChartData";
+import { useTooltip } from "@/features/center-view-feature/hooks/useTooltip";
+import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
+import { useAttributeStore } from "@/hooks/useAttributeStore";
+import { useCentralityStore } from "@/hooks/useCentralityStore";
+import { useChartSettings } from "@/hooks/useChartSettings";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useNetworkStore } from "@/hooks/useNetworkStore";
+import { useResizeObserver } from "@/hooks/useResizeObserver";
+import { useVisualizationStore } from "@/hooks/useVisualizationStore";
+import type { CombinedData } from "@/types/network";
+import * as d3 from "d3";
 import {
-  useRef,
-  useEffect,
   forwardRef,
+  useEffect,
   useImperativeHandle,
   useMemo,
-  type RefObject,
+  useRef,
   type Ref,
+  type RefObject,
 } from "react";
-import * as d3 from "d3";
-import useResizeObserver from "@/hooks/useResizeObserver";
-import type { CombinedData } from "@/types/network";
+import calculateBounds from "./calculateBounds";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
 import drawLabels, { updateLabelHighlight } from "./drawLabels";
 import drawLinks, { updateLinkHighlight } from "./drawLinks";
-import calculateBounds from "./calculateBounds";
-import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
-import { useChartSettings } from "@/hooks/useChartSettings";
-import {
-  ArcTooltip,
-  type ArcTooltipProps,
-} from "@/features/center-view-feature/components/Tooltips/ArcTooltip";
-import { useTooltip } from "@/features/center-view-feature/hooks/useTooltip";
-import {
-  LabelTooltip,
-  type LabelTooltipProps,
-} from "@/features/center-view-feature/components/Tooltips/LabelTooltip";
-import { useCentralityStore } from "@/hooks/useCentralityStore";
-import { useNetworkStore } from "@/hooks/useNetworkStore";
-import { useAttributeStore } from "@/hooks/useAttributeStore";
-import { useVisualizationStore } from "@/hooks/useVisualizationStore";
-import useDebouncedValue from "@/hooks/useDebouncedValue";
-import { useChartData } from "@/features/center-view-feature/hooks/useChartData";
 
 export type ArcData = {
   key: string;
@@ -66,25 +59,20 @@ const RadialChart = forwardRef(function RadialChart(
   const rawDimensions = useResizeObserver(containerRef);
   const dimensions = useDebouncedValue(rawDimensions, 200);
 
-  const centralityKeys = useCentralityStore(
-    (state) => state.enabledCentralityKeys,
-  );
-  const networkData = useNetworkStore((state) => state.network);
-  const attributeKeys = useAttributeStore(
-    (state) => state.enabledAttributeKeys,
-  );
-  const selectedNodes = useNetworkStore((state) => state.selectedNodes);
-  const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
+  const centralityKeys = useCentralityStore((s) => s.enabledCentralityKeys);
+  const networkData = useNetworkStore((s) => s.network);
+  const attributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
+  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
+  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
 
-  const setHoveredNode = useNetworkStore((state) => state.setHoveredNode);
-  const centralityRanges = useCentralityStore(
-    (state) => state.centralityRanges,
-  );
+  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
+  const centralityRanges = useCentralityStore((s) => s.centralityRanges);
   const { setupZoom, resetZoom } = useZoom();
 
-  const { radialSettings, displayMode } = useChartSettings();
+  const radialSettings = useChartSettings((s) => s.radialSettings);
+  const displayMode = useChartSettings((s) => s.displayMode);
   const { innerRadius, outerRadius, fontSize } = radialSettings;
-  const nodeMap = useNetworkStore((state) => state.nodeMap);
+  const nodeMap = useNetworkStore((s) => s.nodeMap);
 
   const allKeys = useMemo(() => {
     if (displayMode === "attributes") return attributeKeys;
@@ -94,37 +82,31 @@ const RadialChart = forwardRef(function RadialChart(
 
   const chartData = useChartData(combinedData, allKeys);
 
-  const {
-    tooltip,
-    showTooltip: handleTooltipShow,
-    hideTooltip: handleTooltipHide,
-  } = useTooltip<ArcTooltipProps>({
-    nodeId: "",
-    centralityKey: "",
-    value: undefined,
-    x: 0,
-    y: 0,
-    visible: false,
-  });
-
-  const {
-    tooltip: labelTooltip,
-    showTooltip: handleLabelTooltipShow,
-    hideTooltip: handleLabelTooltipHide,
-  } = useTooltip<LabelTooltipProps>({
-    nodeId: "",
-    label: undefined,
-    x: 0,
-    y: 0,
-    visible: false,
-  });
+  const { tooltip, showTooltip, hideTooltip } = useTooltip();
 
   useImperativeHandle(resetRef, () => () => resetZoom(svgRef), [resetZoom]);
 
-  const handleNodeHover = (nodeData: CombinedData) => {
-    const data = combinedDataMap.get(nodeData.id);
+  const handleNodeHover = (nodeId: string) => {
+    const data = combinedDataMap.get(nodeId);
     if (data) setHoveredNode(data);
   };
+
+  const showArcTooltip = (data: {
+    nodeId: string;
+    x: number;
+    y: number;
+    arcKey: string;
+  }) =>
+    showTooltip(
+      { type: "arc", visible: true, ...data },
+      `${data.nodeId}-${data.arcKey}`,
+    );
+
+  const showLabelTooltip = (data: { nodeId: string; x: number; y: number }) =>
+    showTooltip(
+      { type: "label", visible: true, ...data },
+      `label-${data.nodeId}`,
+    );
 
   useEffect(() => {
     if (!svgRef.current || !dimensions?.width || !dimensions?.height) return;
@@ -163,12 +145,8 @@ const RadialChart = forwardRef(function RadialChart(
       getColorForKey,
       centralityRanges,
       handleNodeHover,
-      (tooltipData) =>
-        handleTooltipShow(
-          tooltipData,
-          `${tooltipData.nodeId}-${tooltipData.centralityKey}`,
-        ),
-      handleTooltipHide,
+      showArcTooltip,
+      hideTooltip,
     );
     drawLinks(svgGroup, networkData.links, x, innerRadius, selectedNodes);
     drawBounds(svgGroup, groupBounds, innerRadius, maxOuter, selectedNodes);
@@ -178,11 +156,9 @@ const RadialChart = forwardRef(function RadialChart(
       maxOuter,
       selectedNodes,
       fontSize,
-      arcData,
       handleNodeHover,
-      (tooltipData) =>
-        handleLabelTooltipShow(tooltipData, `label-${tooltipData.nodeId}`),
-      handleLabelTooltipHide,
+      showLabelTooltip,
+      hideTooltip,
       nodeMap,
     );
   }, [dimensions, radialSettings, allKeys, combinedData]);
@@ -206,8 +182,7 @@ const RadialChart = forwardRef(function RadialChart(
         className="h-full w-full bg-card"
         style={{ shapeRendering: "geometricPrecision" }}
       />
-      <ArcTooltip {...tooltip} />
-      <LabelTooltip {...labelTooltip} />
+      <ChartTooltip {...tooltip} combinedDataMap={combinedDataMap} />
     </div>
   );
 });

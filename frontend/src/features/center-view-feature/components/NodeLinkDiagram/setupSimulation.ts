@@ -1,13 +1,13 @@
+import type { Link, Node } from "@/types/network";
+import type { DragBehavior, Selection, Simulation } from "d3";
 import * as d3 from "d3";
-import type { Simulation, Selection, DragBehavior } from "d3";
-import type { Node, Link } from "@/types/network";
 
-export function createSimulation(
+const createSimulation = (
   nodes: Node[],
   links: Link[],
   nodeSelection: Selection<SVGCircleElement, Node, SVGGElement, unknown>,
   linkSelection: Selection<SVGLineElement, Link, SVGGElement, unknown>,
-): Simulation<Node, Link> {
+): Simulation<Node, Link> => {
   const simulation = d3
     .forceSimulation<Node, Link>(nodes)
     .force(
@@ -31,7 +31,7 @@ export function createSimulation(
     });
 
   return simulation;
-}
+};
 
 export function createDrag(
   simulation: Simulation<Node, Link>,
@@ -53,3 +53,5 @@ export function createDrag(
       d.fy = null;
     });
 }
+
+export default createSimulation;

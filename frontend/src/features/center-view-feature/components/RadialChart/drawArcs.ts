@@ -1,8 +1,6 @@
-import * as d3 from "d3";
 import { formatValue } from "@/utils/utils";
+import * as d3 from "d3";
 import type { ArcData } from "./RadialChart";
-import type { ArcTooltipProps } from "@/features/center-view-feature/components/Tooltips/ArcTooltip";
-import type { CombinedData } from "@/types/network";
 
 const drawArcs = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -11,8 +9,14 @@ const drawArcs = (
   y: d3.ScaleLinear<number, number>,
   getColorForKey: (key: string, value: string | number) => string,
   centralityRanges: Record<string, { min: number; max: number }>,
-  onNodeHover: (nodeData: CombinedData) => void,
-  onTooltipShow: (tooltipData: ArcTooltipProps) => void,
+  onNodeHover: (nodeId: string) => void,
+  onTooltipShow: (tooltipData: {
+    type: "arc";
+    nodeId: string;
+    x: number;
+    y: number;
+    arcKey: string;
+  }) => void,
   onTooltipHide: () => void,
 ): void => {
   const g = svg.append("g").attr("class", "arcs-group");
@@ -119,24 +123,22 @@ const drawArcs = (
         .attr("fill-opacity", 0.2);
 
       onTooltipShow({
+        type: "arc",
         nodeId: d.data.id,
-        centralityKey: d.key,
-        value: d.value,
         x: event.clientX,
         y: event.clientY,
-        visible: true,
+        arcKey: d.key,
       });
 
-      onNodeHover(d.data);
+      onNodeHover(d.data.id);
     })
     .on("mousemove", function (event, d) {
       onTooltipShow({
+        type: "arc",
         nodeId: d.data.id,
-        centralityKey: d.key,
-        value: d.value,
         x: event.clientX,
         y: event.clientY,
-        visible: true,
+        arcKey: d.key,
       });
     })
     .on("mouseout", function (_, d) {

@@ -1,8 +1,8 @@
 import { useAttributeStore } from "@/hooks/useAttributeStore";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
+import { useChartSettings } from "@/hooks/useChartSettings";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
-import { useChartSettings } from "@/hooks/useChartSettings";
 import { formatValue } from "@/utils/utils";
 import { useMemo } from "react";
 

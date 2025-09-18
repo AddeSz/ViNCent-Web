@@ -1,29 +1,29 @@
-import { useState, useMemo } from "react";
 import {
-  type ColumnFiltersState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  type SortingState,
-  type VisibilityState,
   useReactTable,
   type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
 
-import { useCentralityStore } from "@/hooks/useCentralityStore";
-import {
-  createSelectColumn,
-  createCentralityColumns,
-  createAttributeColumns,
-} from "./Columns";
-import { TableControls } from "./TableControls";
-import { TableContent } from "./TableContent";
-import { TablePagination } from "./TablePagination";
-import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
+import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useChartSettings } from "@/hooks/useChartSettings";
+import { useNetworkStore } from "@/hooks/useNetworkStore";
 import type { CombinedData } from "@/types/network";
+import {
+  createAttributeColumns,
+  createCentralityColumns,
+  createSelectColumn,
+} from "./Columns";
+import TableContent from "./TableContent";
+import TableControls from "./TableControls";
+import TablePagination from "./TablePagination";
 
 type DataTableProps = {
   combinedData: CombinedData[];

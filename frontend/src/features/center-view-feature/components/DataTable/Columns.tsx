@@ -1,8 +1,10 @@
-import { type ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/shadcnUI/button";
 import { Checkbox } from "@/components/shadcnUI/checkbox";
+import { Label } from "@/components/shadcnUI/label";
+import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import { formatValue } from "@/utils/utils";
+import { type ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
 
 export const createSelectColumn = <
   T extends { label?: string },
@@ -45,9 +47,6 @@ export const createSelectColumn = <
   enableSorting: false,
   enableHiding: false,
 });
-
-import { useVisualizationStore } from "@/hooks/useVisualizationStore";
-import { Label } from "@/components/shadcnUI/label";
 
 export const createCentralityColumns = <T,>(
   enabledKeys: string[],

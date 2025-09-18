@@ -1,10 +1,10 @@
-import { create } from "zustand";
 import type {
-  NodeAttributes,
   AttributeInfo,
+  NodeAttributes,
   NodeAttributeValue,
 } from "@/types/network";
 import { flattenAttributes } from "@/utils/networkProcessing";
+import { create } from "zustand";
 
 interface AttributeStore {
   nodeAttributes: Record<string, NodeAttributes>;
@@ -101,18 +101,16 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
   setEnabledAttributeKeys: (keys) => set({ enabledAttributeKeys: keys }),
 
   toggleAttributeKey: (key) =>
-    set((state) => {
-      const isEnabled = state.enabledAttributeKeys.includes(key);
+    set((s) => {
+      const isEnabled = s.enabledAttributeKeys.includes(key);
       if (isEnabled) {
         return {
-          enabledAttributeKeys: state.enabledAttributeKeys.filter(
-            (k) => k !== key,
-          ),
+          enabledAttributeKeys: s.enabledAttributeKeys.filter((k) => k !== key),
         };
       } else {
         return {
-          enabledAttributeKeys: state.attributeKeys.filter(
-            (k) => k === key || state.enabledAttributeKeys.includes(k),
+          enabledAttributeKeys: s.attributeKeys.filter(
+            (k) => k === key || s.enabledAttributeKeys.includes(k),
           ),
         };
       }

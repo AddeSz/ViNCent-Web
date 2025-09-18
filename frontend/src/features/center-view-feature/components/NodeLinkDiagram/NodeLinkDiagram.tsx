@@ -1,22 +1,19 @@
-import { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-import type { RefObject, Ref } from "react";
-import * as d3 from "d3";
-import type { Simulation } from "d3";
-import useResizeObserver from "@/hooks/useResizeObserver";
-import type { Node, Link, CombinedData } from "@/types/network";
-import { createSimulation } from "./setupSimulation";
-import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
-import { selectionStyling } from "./selectionStyling";
-import { useNodeLinkData } from "./useNodeLinkData";
-import { updateGraph } from "./updateGraph";
-import useFilteredCentralityData from "@/features/center-view-feature/hooks/useFilteredCentralityData";
+import ChartTooltip from "@/features/center-view-feature/components/Tooltips/Tooltip";
+import { useFilteredCentralityData } from "@/features/center-view-feature/hooks/useFilteredCentralityData";
 import { useTooltip } from "@/features/center-view-feature/hooks/useTooltip";
-import {
-  NodeTooltip,
-  type NodeTooltipProps,
-} from "@/features/center-view-feature/components/Tooltips/NodeTooltip";
+import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
-import useDebouncedValue from "@/hooks/useDebouncedValue";
+import { useResizeObserver } from "@/hooks/useResizeObserver";
+import type { CombinedData, Link, Node } from "@/types/network";
+import type { Simulation } from "d3";
+import * as d3 from "d3";
+import type { Ref, RefObject } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import selectionStyling from "./selectionStyling";
+import createSimulation from "./setupSimulation";
+import updateGraph from "./updateGraph";
+import { useNodeLinkData } from "./useNodeLinkData";
 
 type NodeLinkDiagramProps = {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -32,19 +29,12 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   const { setupZoom, resetZoom } = useZoom();
   const rawDimensions = useResizeObserver(containerRef);
   const dimensions = useDebouncedValue(rawDimensions, 200);
-  const networkData = useNetworkStore((state) => state.network);
-  const selectedNodes = useNetworkStore((state) => state.selectedNodes);
+  const networkData = useNetworkStore((s) => s.network);
+  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const filteredCentralityData = useFilteredCentralityData();
   const nodeLinkData = useNodeLinkData(networkData, filteredCentralityData);
-  const setHoveredNode = useNetworkStore((state) => state.setHoveredNode);
-  const { tooltip, showTooltip, hideTooltip } = useTooltip<NodeTooltipProps>({
-    nodeId: "",
-    label: "",
-    linkCount: 0,
-    x: 0,
-    y: 0,
-    visible: false,
-  });
+  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
+  const { tooltip, showTooltip, hideTooltip } = useTooltip();
 
   useImperativeHandle(resetRef, () => () => resetZoom(svgRef), [resetZoom]);
 
@@ -88,12 +78,10 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
         setHoveredNode(hoveredNodeData);
         showTooltip(
           {
+            type: "node",
             nodeId: d.id,
-            label: d.label ?? d.id,
-            linkCount: d.linkCount ?? 0,
             x,
             y,
-            visible: true,
           },
           d.id,
         );
@@ -126,7 +114,7 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
         className="h-full w-full bg-card"
         style={{ shapeRendering: "geometricPrecision" }}
       />
-      <NodeTooltip {...tooltip} />
+      <ChartTooltip {...tooltip} combinedDataMap={combinedDataMap} />
     </div>
   );
 });

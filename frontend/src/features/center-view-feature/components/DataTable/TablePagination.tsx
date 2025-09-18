@@ -1,4 +1,3 @@
-import { type Table } from "@tanstack/react-table";
 import { Button } from "@/components/shadcnUI/button";
 import {
   Select,
@@ -7,13 +6,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/shadcnUI/select";
+import { type Table } from "@tanstack/react-table";
 
 interface TablePaginationProps<T> {
   table: Table<T>;
   rowsPerPageOptions: number[];
 }
 
-export const TablePagination = <T,>({
+const TablePagination = <T,>({
   table,
   rowsPerPageOptions,
 }: TablePaginationProps<T>) => {
@@ -99,3 +99,5 @@ export const TablePagination = <T,>({
     </div>
   );
 };
+
+export default TablePagination;

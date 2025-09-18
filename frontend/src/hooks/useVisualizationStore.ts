@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import * as d3 from "d3";
 import type { AttributeInfo } from "@/types/network";
+import * as d3 from "d3";
+import { create } from "zustand";
 
 interface VisualizationStore {
   centralityColorScale: d3.ScaleSequential<string> | null;

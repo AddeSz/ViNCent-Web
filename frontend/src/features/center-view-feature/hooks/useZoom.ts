@@ -1,8 +1,8 @@
-import { useRef, useCallback } from "react";
 import * as d3 from "d3";
 import type { RefObject } from "react";
+import { useCallback, useRef } from "react";
 
-export function useZoom() {
+export const useZoom = () => {
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const transformRef = useRef<d3.ZoomTransform | null>(null);
 
@@ -63,4 +63,4 @@ export function useZoom() {
     zoomRef,
     transformRef,
   };
-}
+};

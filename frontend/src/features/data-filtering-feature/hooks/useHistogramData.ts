@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import * as d3 from "d3";
+import { useMemo } from "react";
 
 export interface HistogramDataType {
   bins: d3.Bin<number, number>[];

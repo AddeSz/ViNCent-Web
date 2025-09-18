@@ -1,4 +1,4 @@
-import type { Network, Centrality } from "@/types/network";
+import type { Centrality, Network } from "@/types/network";
 import { getNodeId } from "@/utils/utils";
 
 const API_BASE_URL =

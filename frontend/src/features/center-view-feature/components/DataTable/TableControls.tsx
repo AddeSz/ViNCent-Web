@@ -1,5 +1,3 @@
-import { ChevronDown } from "lucide-react";
-import { type Table } from "@tanstack/react-table";
 import { Button } from "@/components/shadcnUI/button";
 import {
   DropdownMenu,
@@ -8,10 +6,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shadcnUI/dropdown-menu";
 import { Input } from "@/components/shadcnUI/input";
-import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
+import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useChartSettings } from "@/hooks/useChartSettings";
 import { formatKeyLabel } from "@/utils/utils";
+import { type Table } from "@tanstack/react-table";
+import { ChevronDown } from "lucide-react";
 
 interface TableControlsProps<T> {
   table: Table<T>;
@@ -20,7 +20,7 @@ interface TableControlsProps<T> {
   attributeKeys: string[];
 }
 
-export const TableControls = <T,>({
+const TableControls = <T,>({
   table,
   firstColumnKey,
   centralityKeys,
@@ -92,3 +92,5 @@ export const TableControls = <T,>({
     </div>
   );
 };
+
+export default TableControls;

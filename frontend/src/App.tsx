@@ -1,19 +1,21 @@
 // import { ModeToggle } from "@/components/shadcnUI/mode-toggle";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { useState, useEffect } from "react";
-import { useDataStore } from "@/hooks/useDataStore";
 import { testData2 } from "@/data/testData";
 import CenterView from "@/features/center-view-feature/CenterView";
 import ChartSettings from "@/features/chart-settings-feature/ChartSettings";
 import DataFiltering from "@/features/data-filtering-feature/DataFiltering";
-import { useChartSettings } from "@/hooks/useChartSettings";
-import Legend from "./features/center-view-feature/components/Tooltips/Legend";
+import {
+  defaultRadialSettings,
+  useChartSettings,
+} from "@/hooks/useChartSettings";
+import { useDataStore } from "@/hooks/useDataStore";
+import { calculateCentralityValues } from "@/utils/networkBackend";
 import {
   calculateLinkCounts,
   calculateRadialSettings,
 } from "@/utils/networkProcessing";
-import { calculateCentralityValues } from "@/utils/networkBackend";
-import { defaultRadialSettings } from "@/hooks/useChartSettings";
+import { useEffect, useState } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import Legend from "./features/center-view-feature/components/Tooltips/Legend";
 
 const App = () => {
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});

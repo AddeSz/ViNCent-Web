@@ -1,8 +1,6 @@
-import * as d3 from "d3";
+import type { Node } from "@/types/network";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
-import type { ArcData } from "./RadialChart";
-import type { CombinedData, Node } from "@/types/network";
-import type { LabelTooltipProps } from "@/features/center-view-feature/components/Tooltips/LabelTooltip";
+import * as d3 from "d3";
 
 const drawLabels = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -10,17 +8,16 @@ const drawLabels = (
   outerRadius: number,
   selectedNodes: Set<string>,
   fontSize: number,
-  arcData: ArcData[],
-  onNodeHover: (nodeData: CombinedData) => void,
-  onTooltipShow: (tooltipData: LabelTooltipProps) => void,
+  onNodeHover: (nodeId: string) => void,
+  onTooltipShow: (tooltipData: {
+    type: "label";
+    nodeId: string;
+    x: number;
+    y: number;
+  }) => void,
   onTooltipHide: () => void,
   nodeMap: Map<string, Node>,
 ): void => {
-  const nodeDataMap = new Map<string, CombinedData>();
-  arcData.forEach((d) => {
-    nodeDataMap.set(d.data.id, d.data);
-  });
-
   const labelGroup = svg.append("g").attr("class", "labels-group");
 
   labelGroup
@@ -66,45 +63,16 @@ const drawLabels = (
     )
     .on("click", (event, d) => {
       const multi = event.shiftKey || event.ctrlKey || event.metaKey;
-      const nodeData = nodeMap.get(d);
-
-      console.log("Clicked node data:", {
-        nodeId: d,
-        nodeData: nodeData,
-        attributes: nodeData?.attributes,
-        centralityData: nodeDataMap.get(d),
-        arcData: arcData,
-      });
-
       handleHighlight(d, multi);
     })
     .on("mouseover", function (_, d) {
-      const nodeData = nodeDataMap.get(d);
-      if (nodeData) {
-        onNodeHover(nodeData);
-
-        const [mouseX, mouseY] = d3.pointer(_, document.body);
-        onTooltipShow({
-          nodeId: d,
-          label: nodeMap.get(d)?.label ?? d,
-          x: mouseX,
-          y: mouseY,
-          visible: true,
-        });
-      }
+      const [mouseX, mouseY] = d3.pointer(_, document.body);
+      onTooltipShow({ type: "label", nodeId: d, x: mouseX, y: mouseY });
+      onNodeHover(d);
     })
     .on("mousemove", function (event, d) {
-      const nodeData = nodeDataMap.get(d);
-      if (nodeData) {
-        const [mouseX, mouseY] = d3.pointer(event, document.body);
-        onTooltipShow({
-          nodeId: d,
-          label: nodeMap.get(d)?.label ?? d,
-          x: mouseX,
-          y: mouseY,
-          visible: true,
-        });
-      }
+      const [mouseX, mouseY] = d3.pointer(event, document.body);
+      onTooltipShow({ type: "label", nodeId: d, x: mouseX, y: mouseY });
     })
     .on("mouseout", () => {
       onTooltipHide();

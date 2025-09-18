@@ -1,16 +1,16 @@
+import { useFilteredCentralityData } from "@/features/center-view-feature/hooks/useFilteredCentralityData";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
-import type { CombinedData } from "@/types/network";
-import useFilteredCentralityData from "@/features/center-view-feature/hooks/useFilteredCentralityData";
-import { useMemo } from "react";
-import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useChartSettings } from "@/hooks/useChartSettings";
+import { useNetworkStore } from "@/hooks/useNetworkStore";
+import type { CombinedData } from "@/types/network";
+import { useMemo } from "react";
 
-const useCombinedData = (): {
+export const useCombinedData = (): {
   combinedDataMap: Map<string, CombinedData>;
   combinedData: CombinedData[];
 } => {
-  const nodeMap = useNetworkStore((state) => state.nodeMap);
-  const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
+  const nodeMap = useNetworkStore((s) => s.nodeMap);
+  const nodeAttributes = useAttributeStore((s) => s.nodeAttributes);
   const centralityData = useFilteredCentralityData();
   const { displayMode } = useChartSettings();
 
@@ -42,5 +42,3 @@ const useCombinedData = (): {
     };
   }, [nodeMap, centralityData, nodeAttributes, displayMode]);
 };
-
-export default useCombinedData;
