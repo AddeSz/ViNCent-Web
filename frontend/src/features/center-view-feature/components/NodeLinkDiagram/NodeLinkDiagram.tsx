@@ -3,7 +3,7 @@ import type { RefObject, Ref } from "react";
 import * as d3 from "d3";
 import type { Simulation } from "d3";
 import useResizeObserver from "@/hooks/useResizeObserver";
-import type { Node, Link } from "@/types/network";
+import type { Node, Link, CombinedData } from "@/types/network";
 import { createSimulation } from "./setupSimulation";
 import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
 import { selectionStyling } from "./selectionStyling";
@@ -17,10 +17,14 @@ import {
 } from "@/features/center-view-feature/components/Tooltips/NodeTooltip";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import useDebouncedValue from "@/hooks/useDebouncedValue";
-import useCombinedData from "../../hooks/useCombinedData";
+
+type NodeLinkDiagramProps = {
+  containerRef: RefObject<HTMLDivElement | null>;
+  combinedDataMap: Map<string, CombinedData>;
+};
 
 const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
-  { containerRef }: { containerRef: RefObject<HTMLDivElement | null> },
+  { containerRef, combinedDataMap }: NodeLinkDiagramProps,
   resetRef: Ref<() => void>,
 ) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -33,7 +37,6 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   const filteredCentralityData = useFilteredCentralityData();
   const nodeLinkData = useNodeLinkData(networkData, filteredCentralityData);
   const setHoveredNode = useNetworkStore((state) => state.setHoveredNode);
-  const combinedDataMap = useCombinedData();
   const { tooltip, showTooltip, hideTooltip } = useTooltip<NodeTooltipProps>({
     nodeId: "",
     label: "",

@@ -38,14 +38,9 @@ export const useDataStore = () => {
 
   const loadCentralityData = (data: Centrality[]) => {
     setCentralityData(data);
-
-    const keysSet = new Set<string>();
-    data.forEach((item) => {
-      Object.keys(item).forEach((key) => {
-        if (key !== "id") keysSet.add(key);
-      });
-    });
-    initializeCentralityColorScale(Array.from(keysSet));
+    initializeCentralityColorScale(
+      useCentralityStore.getState().centralityKeys,
+    );
   };
 
   const clearAllData = () => {

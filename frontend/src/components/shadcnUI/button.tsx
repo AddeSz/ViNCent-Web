@@ -26,6 +26,7 @@ const buttonVariants = cva(
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
+        none: "h-auto px-2 py-2",
       },
     },
     defaultVariants: {
@@ -50,7 +51,7 @@ function Button({
   return (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />
   );

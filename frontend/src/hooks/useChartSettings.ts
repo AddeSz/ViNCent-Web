@@ -1,12 +1,11 @@
 import { create } from "zustand";
 
-export type RadialDisplayMode = "attributes" | "centrality" | "both";
+export type DisplayMode = "attributes" | "centrality" | "both";
 
 type RadialSettings = {
   innerRadius: number;
   outerRadius: number;
   fontSize: number;
-  displayMode: RadialDisplayMode;
 };
 
 type NodeLinkSettings = {
@@ -17,18 +16,24 @@ type NodeLinkSettings = {
 type ChartSettingsStore = {
   radialSettings: RadialSettings;
   nodeLinkSettings: NodeLinkSettings;
+  displayMode: DisplayMode;
+
   setRadialSettings: (settings: Partial<RadialSettings>) => void;
   setNodeLinkSettings: (settings: Partial<NodeLinkSettings>) => void;
+  setDisplayMode: (mode: DisplayMode) => void;
+
   resetRadialSettings: () => void;
   resetNodeLinkSettings: () => void;
+  resetDisplayMode: () => void;
+
   setInitialRadialSettings: (settings: RadialSettings) => void;
+  setInitialDisplayMode: (mode: DisplayMode) => void;
 };
 
 export const defaultRadialSettings: RadialSettings = {
   innerRadius: 100,
   outerRadius: 600,
   fontSize: 24,
-  displayMode: "both",
 };
 
 export const defaultNodeLinkSettings: NodeLinkSettings = {
@@ -36,32 +41,42 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   chargeStrength: -200,
 };
 
+export const defaultDisplayMode: DisplayMode = "both";
+
 export const useChartSettings = create<ChartSettingsStore>((set) => {
   let initialRadial = defaultRadialSettings;
   let initialNodeLink = defaultNodeLinkSettings;
+  let initialDisplay: DisplayMode = defaultDisplayMode;
 
   return {
     radialSettings: defaultRadialSettings,
     nodeLinkSettings: defaultNodeLinkSettings,
+    displayMode: defaultDisplayMode,
+
     setRadialSettings: (settings) =>
       set((state) => ({
         radialSettings: { ...state.radialSettings, ...settings },
       })),
+
     setNodeLinkSettings: (settings) =>
       set((state) => ({
         nodeLinkSettings: { ...state.nodeLinkSettings, ...settings },
       })),
+
+    setDisplayMode: (mode) => set({ displayMode: mode }),
+
     setInitialRadialSettings: (settings) => {
       initialRadial = settings;
       set({ radialSettings: settings });
     },
-    resetRadialSettings: () =>
-      set({
-        radialSettings: initialRadial,
-      }),
-    resetNodeLinkSettings: () =>
-      set({
-        nodeLinkSettings: initialNodeLink,
-      }),
+
+    setInitialDisplayMode: (mode) => {
+      initialDisplay = mode;
+      set({ displayMode: mode });
+    },
+
+    resetRadialSettings: () => set({ radialSettings: initialRadial }),
+    resetNodeLinkSettings: () => set({ nodeLinkSettings: initialNodeLink }),
+    resetDisplayMode: () => set({ displayMode: initialDisplay }),
   };
 });

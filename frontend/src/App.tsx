@@ -1,4 +1,4 @@
-import { ModeToggle } from "@/components/shadcnUI/mode-toggle";
+// import { ModeToggle } from "@/components/shadcnUI/mode-toggle";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useState, useEffect } from "react";
 import { useDataStore } from "@/hooks/useDataStore";
@@ -24,7 +24,6 @@ const App = () => {
   const handleDragging = (id: string) => (isDragging: boolean) => {
     setDraggingBars((prev) => ({ ...prev, [id]: isDragging }));
   };
-
   useEffect(() => {
     const loadNetworkAndCalculateCentrality = async () => {
       try {
@@ -62,7 +61,7 @@ const App = () => {
           <PanelGroup direction="vertical">
             <Panel defaultSize={60} minSize={10}>
               <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 [scrollbar-gutter:stable] scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <ModeToggle />
+                {/* <ModeToggle /> */}
                 <ChartSettings />
               </div>
             </Panel>

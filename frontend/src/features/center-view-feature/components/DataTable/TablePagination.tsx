@@ -18,7 +18,7 @@ export const TablePagination = <T,>({
   rowsPerPageOptions,
 }: TablePaginationProps<T>) => {
   return (
-    <div className="grid grid-cols-3 items-center gap-4 py-4">
+    <div className="grid grid-cols-3 items-center gap-4 py-2">
       <div className="flex flex-col text-sm text-muted-foreground">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.

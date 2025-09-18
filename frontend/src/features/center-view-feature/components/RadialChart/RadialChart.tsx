@@ -17,7 +17,6 @@ import drawLinks, { updateLinkHighlight } from "./drawLinks";
 import calculateBounds from "./calculateBounds";
 import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
 import { useChartSettings } from "@/hooks/useChartSettings";
-import useFilteredCentralityData from "@/features/center-view-feature/hooks/useFilteredCentralityData";
 import {
   ArcTooltip,
   type ArcTooltipProps,
@@ -32,14 +31,15 @@ import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import useDebouncedValue from "@/hooks/useDebouncedValue";
-import useCombinedData from "../../hooks/useCombinedData";
+import { useChartData } from "@/features/center-view-feature/hooks/useChartData";
 
 export type ArcData = {
   key: string;
   0: number;
   1: number;
   data: CombinedData;
-  value: number;
+  value: any;
+  id: string;
 };
 
 function scalePadding(
@@ -52,12 +52,14 @@ function scalePadding(
   return Math.min(value / maxItems, 1) * maxPadding;
 }
 
+type RadialChartProps = {
+  containerRef: RefObject<HTMLDivElement | null>;
+  combinedData: CombinedData[];
+  combinedDataMap: Map<string, CombinedData>;
+};
+
 const RadialChart = forwardRef(function RadialChart(
-  {
-    containerRef,
-  }: {
-    containerRef: RefObject<HTMLDivElement | null>;
-  },
+  { containerRef, combinedData, combinedDataMap }: RadialChartProps,
   resetRef: Ref<() => void>,
 ) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -68,7 +70,9 @@ const RadialChart = forwardRef(function RadialChart(
     (state) => state.enabledCentralityKeys,
   );
   const networkData = useNetworkStore((state) => state.network);
-  const attributeKeys = useAttributeStore((state) => state.attributeKeys);
+  const attributeKeys = useAttributeStore(
+    (state) => state.enabledAttributeKeys,
+  );
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
   const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
 
@@ -76,26 +80,19 @@ const RadialChart = forwardRef(function RadialChart(
   const centralityRanges = useCentralityStore(
     (state) => state.centralityRanges,
   );
-  const centralityData = useFilteredCentralityData();
   const { setupZoom, resetZoom } = useZoom();
-  const { radialSettings } = useChartSettings();
-  const { innerRadius, outerRadius, fontSize, displayMode } = radialSettings;
+
+  const { radialSettings, displayMode } = useChartSettings();
+  const { innerRadius, outerRadius, fontSize } = radialSettings;
   const nodeMap = useNetworkStore((state) => state.nodeMap);
-  // const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
-  const combinedDataMap = useCombinedData();
-  const combinedData = Array.from(combinedDataMap.values());
-  // const combinedData = useMemo((): CombinedData[] => {
-  //   return centralityData.map((node) => ({
-  //     ...node,
-  //     ...(nodeAttributes[node.id] || {}),
-  //   }));
-  // }, [centralityData, nodeAttributes]);
 
   const allKeys = useMemo(() => {
     if (displayMode === "attributes") return attributeKeys;
     if (displayMode === "centrality") return centralityKeys;
     return [...centralityKeys, ...attributeKeys];
   }, [centralityKeys, attributeKeys, displayMode]);
+
+  const chartData = useChartData(combinedData, allKeys);
 
   const {
     tooltip,
@@ -122,13 +119,7 @@ const RadialChart = forwardRef(function RadialChart(
     visible: false,
   });
 
-  useImperativeHandle(
-    resetRef,
-    () => () => {
-      resetZoom(svgRef);
-    },
-    [resetZoom],
-  );
+  useImperativeHandle(resetRef, () => () => resetZoom(svgRef), [resetZoom]);
 
   const handleNodeHover = (nodeData: CombinedData) => {
     const data = combinedDataMap.get(nodeData.id);
@@ -141,15 +132,12 @@ const RadialChart = forwardRef(function RadialChart(
     svg.selectAll("*").remove();
     const svgGroup = svg.append("g").attr("class", "zoom-group");
     setupZoom(svg, svgRef, svgGroup);
+    if (!chartData) return;
+    const { series, arcData } = chartData;
 
     const dataLength = combinedData.length;
     const outerPadding = scalePadding(dataLength, 50, 0.25);
     const innerPadding = scalePadding(dataLength, 50, 0.5);
-
-    const series = d3
-      .stack<CombinedData>()
-      .keys(allKeys)
-      .value(() => 1)(combinedData);
 
     const x = d3
       .scaleBand<string>()
@@ -164,59 +152,40 @@ const RadialChart = forwardRef(function RadialChart(
       .domain([0, allKeys.length])
       .range([innerRadius, outerRadius]);
 
-    if (dataLength > 0) {
-      const arcData = series.flatMap((layer) =>
-        layer.map((d) => {
-          return {
-            ...d,
-            key: layer.key,
-            value: d.data[layer.key as keyof CombinedData],
-          };
-        }),
-      );
+    const groupBounds = calculateBounds(series, x, y);
+    const maxOuter = Math.max(...groupBounds.map((d) => d.outer));
 
-      const groupBounds = calculateBounds(series, x, y);
-      const maxOuter = Math.max(...groupBounds.map((d) => d.outer));
-
-      drawArcs(
-        svgGroup,
-        arcData,
-        x,
-        y,
-        getColorForKey,
-        centralityRanges,
-        handleNodeHover,
-        (tooltipData) =>
-          handleTooltipShow(
-            tooltipData,
-            `${tooltipData.nodeId}-${tooltipData.centralityKey}`,
-          ),
-        handleTooltipHide,
-      );
-      drawLinks(svgGroup, networkData.links, x, innerRadius, selectedNodes);
-      drawBounds(svgGroup, groupBounds, innerRadius, maxOuter, selectedNodes);
-      drawLabels(
-        svgGroup,
-        x,
-        maxOuter,
-        selectedNodes,
-        fontSize,
-        arcData,
-        handleNodeHover,
-        (tooltipData) =>
-          handleLabelTooltipShow(tooltipData, `label-${tooltipData.nodeId}`),
-        handleLabelTooltipHide,
-        nodeMap,
-      );
-    }
-  }, [
-    dimensions,
-    centralityData,
-    networkData,
-    radialSettings,
-    allKeys,
-    combinedDataMap,
-  ]);
+    drawArcs(
+      svgGroup,
+      arcData,
+      x,
+      y,
+      getColorForKey,
+      centralityRanges,
+      handleNodeHover,
+      (tooltipData) =>
+        handleTooltipShow(
+          tooltipData,
+          `${tooltipData.nodeId}-${tooltipData.centralityKey}`,
+        ),
+      handleTooltipHide,
+    );
+    drawLinks(svgGroup, networkData.links, x, innerRadius, selectedNodes);
+    drawBounds(svgGroup, groupBounds, innerRadius, maxOuter, selectedNodes);
+    drawLabels(
+      svgGroup,
+      x,
+      maxOuter,
+      selectedNodes,
+      fontSize,
+      arcData,
+      handleNodeHover,
+      (tooltipData) =>
+        handleLabelTooltipShow(tooltipData, `label-${tooltipData.nodeId}`),
+      handleLabelTooltipHide,
+      nodeMap,
+    );
+  }, [dimensions, radialSettings, allKeys, combinedData]);
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -233,7 +202,6 @@ const RadialChart = forwardRef(function RadialChart(
       <svg
         ref={svgRef}
         viewBox="-800 -800 1600 1600"
-        // viewBox={`${-dimensions.width} ${-dimensions.height} ${dimensions.width * 2} ${dimensions.height * 2}`}
         preserveAspectRatio="xMidYMid slice"
         className="h-full w-full bg-card"
         style={{ shapeRendering: "geometricPrecision" }}

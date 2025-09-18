@@ -101,11 +101,22 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
   setEnabledAttributeKeys: (keys) => set({ enabledAttributeKeys: keys }),
 
   toggleAttributeKey: (key) =>
-    set((state) => ({
-      enabledAttributeKeys: state.enabledAttributeKeys.includes(key)
-        ? state.enabledAttributeKeys.filter((k) => k !== key)
-        : [...state.enabledAttributeKeys, key],
-    })),
+    set((state) => {
+      const isEnabled = state.enabledAttributeKeys.includes(key);
+      if (isEnabled) {
+        return {
+          enabledAttributeKeys: state.enabledAttributeKeys.filter(
+            (k) => k !== key,
+          ),
+        };
+      } else {
+        return {
+          enabledAttributeKeys: state.attributeKeys.filter(
+            (k) => k === key || state.enabledAttributeKeys.includes(k),
+          ),
+        };
+      }
+    }),
 
   getAttributeValuesForKey: (key) => {
     const info = get().attributeInfo[key];

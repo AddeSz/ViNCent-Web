@@ -1,26 +1,46 @@
 import { useAttributeStore } from "@/hooks/useAttributeStore";
 import type { CombinedData } from "@/types/network";
-import useFilteredCentralityData from "./useFilteredCentralityData";
+import useFilteredCentralityData from "@/features/center-view-feature/hooks/useFilteredCentralityData";
 import { useMemo } from "react";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
+import { useChartSettings } from "@/hooks/useChartSettings";
 
-const useCombinedData = (): Map<string, CombinedData> => {
-  const networkData = useNetworkStore((state) => state.network);
+const useCombinedData = (): {
+  combinedDataMap: Map<string, CombinedData>;
+  combinedData: CombinedData[];
+} => {
+  const nodeMap = useNetworkStore((state) => state.nodeMap);
   const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
   const centralityData = useFilteredCentralityData();
+  const { displayMode } = useChartSettings();
 
   return useMemo(() => {
     const map = new Map<string, CombinedData>();
+
     centralityData.forEach((c) => {
-      const baseNode = networkData.nodes.find((n) => n.id === c.id) || {};
-      map.set(c.id, {
-        ...baseNode,
-        ...c,
-        ...(nodeAttributes[c.id] || {}),
-      });
+      const baseNode = nodeMap.get(c.id);
+      if (!baseNode) return;
+
+      const { vx, vy, x, y, attributes, index, ...filteredBaseNode } = baseNode;
+      let combined: CombinedData = { ...filteredBaseNode };
+
+      if (displayMode === "centrality") {
+        combined = { ...combined, ...c };
+      } else if (displayMode === "attributes") {
+        combined = { ...combined, ...(nodeAttributes[c.id] || {}) };
+      } else {
+        combined = { ...combined, ...c, ...(nodeAttributes[c.id] || {}) };
+      }
+
+      map.set(c.id, combined);
     });
-    return map;
-  }, [networkData.nodes, centralityData, nodeAttributes]);
+
+    const combinedData = Array.from(map.values());
+    return {
+      combinedDataMap: map,
+      combinedData,
+    };
+  }, [nodeMap, centralityData, nodeAttributes, displayMode]);
 };
 
 export default useCombinedData;

@@ -1,17 +1,17 @@
 import { create } from "zustand";
-import * as d3 from "d3";
 import type { Centrality } from "@/types/network";
 
 interface CentralityStore {
   centralityData: Centrality[];
+  centralityMap: Map<string, Centrality>;
   centralityKeys: string[];
   enabledCentralityKeys: string[];
   sortKey: string;
   centralityRanges: Record<string, { min: number; max: number }>;
   brushRanges: Record<string, [number, number] | null>;
 
-  setSortKey: (key: string) => void;
   setCentralityData: (data: Centrality[]) => void;
+  setSortKey: (key: string) => void;
   setCentralityRanges: (
     ranges: Record<string, { min: number; max: number }>,
   ) => void;
@@ -30,40 +30,41 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
   sortKey: "default",
   centralityRanges: {},
   brushRanges: {},
-
-  setSortKey: (key) => set({ sortKey: key }),
+  centralityMap: new Map<string, Centrality>(),
 
   setCentralityData: (data) => {
     const keysSet = new Set<string>();
-    data.forEach((item) => {
-      Object.keys(item).forEach((key) => {
-        if (key !== "id") keysSet.add(key);
-      });
-    });
-    const keys = Array.from(keysSet);
-
+    const map = new Map<string, Centrality>();
     const ranges: Record<string, { min: number; max: number }> = {};
-    keys.forEach((key) => {
-      const values = data
-        .map((d) => d[key as keyof typeof d])
-        .filter((v): v is number => typeof v === "number");
 
-      if (values.length > 0) {
-        ranges[key] = {
-          min: d3.min(values) ?? 0,
-          max: d3.max(values) ?? 0,
-        };
-      }
+    data.forEach((item) => {
+      Object.entries(item).forEach(([key, value]) => {
+        if (key === "id") return;
+        keysSet.add(key);
+
+        if (typeof value === "number") {
+          if (!ranges[key]) ranges[key] = { min: value, max: value };
+          else {
+            ranges[key].min = Math.min(ranges[key].min, value);
+            ranges[key].max = Math.max(ranges[key].max, value);
+          }
+        }
+      });
+      map.set(item.id, item);
     });
+
+    const keys = Array.from(keysSet);
 
     set({
       centralityData: data,
       centralityKeys: keys,
       enabledCentralityKeys: keys,
       centralityRanges: ranges,
+      centralityMap: map,
     });
   },
 
+  setSortKey: (key) => set({ sortKey: key }),
   setCentralityRanges: (ranges) => set({ centralityRanges: ranges }),
 
   toggleCentralityKey: (key) =>
@@ -106,5 +107,6 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
       enabledCentralityKeys: [],
       centralityRanges: {},
       brushRanges: {},
+      centralityMap: new Map(),
     }),
 }));

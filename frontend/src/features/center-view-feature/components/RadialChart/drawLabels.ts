@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
 import type { ArcData } from "./RadialChart";
-import type { CombinedNodeData, Node } from "@/types/network";
+import type { CombinedData, Node } from "@/types/network";
 import type { LabelTooltipProps } from "@/features/center-view-feature/components/Tooltips/LabelTooltip";
 
 const drawLabels = (
@@ -11,12 +11,12 @@ const drawLabels = (
   selectedNodes: Set<string>,
   fontSize: number,
   arcData: ArcData[],
-  onNodeHover: (nodeData: CombinedNodeData) => void,
+  onNodeHover: (nodeData: CombinedData) => void,
   onTooltipShow: (tooltipData: LabelTooltipProps) => void,
   onTooltipHide: () => void,
   nodeMap: Map<string, Node>,
 ): void => {
-  const nodeDataMap = new Map<string, CombinedNodeData>();
+  const nodeDataMap = new Map<string, CombinedData>();
   arcData.forEach((d) => {
     nodeDataMap.set(d.data.id, d.data);
   });
@@ -83,7 +83,7 @@ const drawLabels = (
       if (nodeData) {
         onNodeHover(nodeData);
 
-        const [mouseX, mouseY] = d3.pointer(event, document.body);
+        const [mouseX, mouseY] = d3.pointer(_, document.body);
         onTooltipShow({
           nodeId: d,
           label: nodeMap.get(d)?.label ?? d,

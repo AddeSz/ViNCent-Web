@@ -20,7 +20,8 @@ import NodeLinkDiagram from "./components/NodeLinkDiagram/NodeLinkDiagram";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { formatKeyLabel } from "@/utils/utils";
-import { DataTable } from "./components/DataTable/DataTable";
+import DataTable from "./components/DataTable/DataTable";
+import useCombinedData from "./hooks/useCombinedData";
 
 const VIEW_KEY = "center-view-mode";
 
@@ -35,6 +36,7 @@ const CenterView = () => {
   );
   const sortKey = useCentralityStore((state) => state.sortKey);
   const setSortKey = useCentralityStore((state) => state.setSortKey);
+  const { combinedData, combinedDataMap } = useCombinedData();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const radialResetRef = useRef<() => void>(null);
@@ -108,7 +110,12 @@ const CenterView = () => {
                   : "pointer-events-none opacity-0"
               }`}
             >
-              <RadialChart containerRef={containerRef} ref={radialResetRef} />
+              <RadialChart
+                containerRef={containerRef}
+                ref={radialResetRef}
+                combinedData={combinedData}
+                combinedDataMap={combinedDataMap}
+              />
             </div>
 
             <div
@@ -121,6 +128,7 @@ const CenterView = () => {
               <NodeLinkDiagram
                 containerRef={containerRef}
                 ref={nodeLinkResetRef}
+                combinedDataMap={combinedDataMap}
               />
             </div>
 
@@ -131,7 +139,7 @@ const CenterView = () => {
                   : "pointer-events-none opacity-0"
               }`}
             >
-              <DataTable />
+              <DataTable combinedData={combinedData} />
             </div>
           </div>
         </ContextMenuTrigger>

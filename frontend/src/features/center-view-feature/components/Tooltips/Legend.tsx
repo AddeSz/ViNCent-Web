@@ -4,21 +4,80 @@ import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import { useChartSettings } from "@/hooks/useChartSettings";
 import { formatValue } from "@/utils/utils";
+import { useMemo } from "react";
 
 const Legend = () => {
-  const hoveredNode = useNetworkStore((state) => state.hoveredNode);
-  const centralityKeys = useCentralityStore(
-    (state) => state.enabledCentralityKeys,
-  );
-  const centralityRanges = useCentralityStore(
-    (state) => state.centralityRanges,
-  );
-  const attributeKeys = useAttributeStore(
-    (state) => state.enabledAttributeKeys,
-  );
-  const nodeAttributes = useAttributeStore((state) => state.nodeAttributes);
-  const getColorForKey = useVisualizationStore((state) => state.getColorForKey);
-  const { radialSettings } = useChartSettings();
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+  const centralityKeys = useCentralityStore((s) => s.enabledCentralityKeys);
+  const centralityRanges = useCentralityStore((s) => s.centralityRanges);
+  const attributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
+  const nodeAttributes = useAttributeStore((s) => s.nodeAttributes);
+  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const displayMode = useChartSettings((s) => s.displayMode);
+
+  const keysToShow =
+    displayMode === "attributes"
+      ? attributeKeys
+      : displayMode === "centrality"
+        ? centralityKeys
+        : [...centralityKeys, ...attributeKeys];
+
+  const centralityMetrics = useMemo(() => {
+    if (!hoveredNode || displayMode === "attributes") return [];
+    return centralityKeys
+      .filter((key) => keysToShow.includes(key))
+      .map((key) => {
+        const rawValue = hoveredNode[key as keyof typeof hoveredNode];
+        const value =
+          typeof rawValue === "number" ? rawValue : Number(rawValue) || 0;
+        const { min, max } = centralityRanges[key] || { min: 0, max: 1 };
+        const proportion = Math.max(
+          0,
+          Math.min((value - min) / (max - min || 1), 1),
+        );
+
+        let percentage = (proportion * 100).toFixed(2);
+        if (Number(percentage) === 100) percentage = "100";
+        if (Number(percentage) === 0) percentage = "0.0";
+
+        return {
+          key,
+          value,
+          color: getColorForKey(key),
+          percentage,
+          proportion,
+          isAttribute: false,
+        };
+      });
+  }, [hoveredNode, centralityKeys, centralityRanges, displayMode]);
+
+  const attributeMetrics = useMemo(() => {
+    if (!hoveredNode || displayMode === "centrality") return [];
+    return attributeKeys
+      .filter((key) => keysToShow.includes(key))
+      .map((key) => {
+        const value = nodeAttributes[hoveredNode.id]?.[key];
+        const color = getColorForKey(
+          key,
+          value !== undefined
+            ? typeof value === "number"
+              ? value
+              : String(value)
+            : undefined,
+        );
+
+        return {
+          key,
+          value,
+          color,
+          proportion: 1,
+          percentage: "",
+          isAttribute: true,
+        };
+      });
+  }, [hoveredNode, attributeKeys, nodeAttributes, displayMode]);
+
+  const nodeMetrics = [...centralityMetrics, ...attributeMetrics];
 
   if (!hoveredNode) {
     return (
@@ -29,72 +88,6 @@ const Legend = () => {
       </div>
     );
   }
-
-  const displayMode = radialSettings.displayMode;
-  const keysToShow =
-    displayMode === "attributes"
-      ? attributeKeys
-      : displayMode === "centrality"
-        ? centralityKeys
-        : [...centralityKeys, ...attributeKeys];
-
-  const centralityMetrics =
-    displayMode !== "attributes"
-      ? centralityKeys
-          .filter((key) => keysToShow.includes(key))
-          .map((key) => {
-            const rawValue = hoveredNode[key as keyof typeof hoveredNode];
-            const value =
-              typeof rawValue === "number" ? rawValue : Number(rawValue) || 0;
-            const { min, max } = centralityRanges[key] || { min: 0, max: 1 };
-            const proportion = Math.max(
-              0,
-              Math.min((value - min) / (max - min || 1), 1),
-            );
-
-            let percentage = (proportion * 100).toFixed(2);
-            if (Number(percentage) === 100) percentage = "100";
-            if (Number(percentage) === 0) percentage = "0.0";
-
-            return {
-              key,
-              value,
-              color: getColorForKey(key),
-              percentage,
-              proportion,
-              isAttribute: false,
-            };
-          })
-      : [];
-
-  const attributeMetrics =
-    displayMode !== "centrality"
-      ? attributeKeys
-          .filter((key) => keysToShow.includes(key))
-          .map((key) => {
-            const value = nodeAttributes[hoveredNode.id]?.[key];
-            const color = getColorForKey(
-              key,
-              value !== undefined
-                ? typeof value === "number"
-                  ? value
-                  : String(value)
-                : undefined,
-            );
-
-            return {
-              key,
-              value,
-              color,
-              proportion: 1,
-              percentage: "",
-              isAttribute: true,
-            };
-          })
-      : [];
-
-  const nodeMetrics = [...centralityMetrics, ...attributeMetrics];
-
   return (
     <div className="h-auto space-y-1">
       <div className="border-b pb-1">

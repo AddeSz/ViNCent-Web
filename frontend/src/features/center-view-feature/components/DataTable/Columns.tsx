@@ -59,9 +59,10 @@ export const createCentralityColumns = <T,>(
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           style={{ color }}
-          className="w-24"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="w-24 justify-between gap-1"
+          size={"none"}
         >
           <div className="truncate text-sm font-medium capitalize">
             {key.replace(/_/g, " ")}
@@ -73,7 +74,7 @@ export const createCentralityColumns = <T,>(
     cell: ({ row }) => {
       const value = row.getValue(key);
       return (
-        <div className="w-24 truncate text-center font-medium">
+        <div className="w-24 truncate px-2 text-left font-medium">
           {formatValue(value)}
         </div>
       );
@@ -91,9 +92,10 @@ export const createAttributeColumns = <T,>(
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           style={{ color }}
-          className="w-24"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="w-24 justify-between gap-1"
+          size={"none"}
         >
           <div className="truncate text-sm font-medium capitalize">
             {key.replace(/_/g, " ")}
@@ -114,7 +116,7 @@ export const createAttributeColumns = <T,>(
           : undefined;
       return (
         <div
-          className="w-24 truncate text-center font-medium"
+          className="w-24 truncate px-2 text-left font-medium"
           style={{ color }}
         >
           {formatValue(value)}
