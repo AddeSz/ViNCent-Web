@@ -1,4 +1,4 @@
-import { formatValue } from "@/utils/utils";
+import type { AttributeInfo } from "@/types/network";
 import * as d3 from "d3";
 import type { ArcData } from "./RadialChart";
 
@@ -18,9 +18,9 @@ const drawArcs = (
     arcKey: string;
   }) => void,
   onTooltipHide: () => void,
+  attributeInfo: Map<string, AttributeInfo>,
 ): void => {
   const g = svg.append("g").attr("class", "arcs-group");
-
   g.selectAll("path.arc-background")
     .data(arcData)
     .join("path")
@@ -38,8 +38,8 @@ const drawArcs = (
         .endAngle(endAngle);
       return arc(d);
     })
-    .attr("fill", "hsl(var(--muted-foreground))")
-    .attr("fill-opacity", 0.1)
+    .attr("fill", "var(--background)")
+    .attr("opacity", 0.5)
     .attr("stroke", "none");
 
   g.selectAll("path.arc-foreground")
@@ -53,9 +53,17 @@ const drawArcs = (
       const fullOuterRadius = y(d[1]);
 
       let outerRadius = fullOuterRadius;
-
-      if (typeof d.value === "number") {
-        const { min, max } = centralityRanges[d.key] || { min: 0, max: 1 };
+      const attribute = attributeInfo.get(d.key);
+      if (attribute?.isNumeric) {
+        const { min, max } = attribute.range ?? { min: 0, max: 1 };
+        const proportion = Math.max(
+          0,
+          Math.min((d.value - min) / (max - min || 1), 1),
+        );
+        outerRadius =
+          innerRadius + (fullOuterRadius - innerRadius) * proportion;
+      } else if (typeof d.value === "number") {
+        const { min, max } = centralityRanges[d.key] ?? { min: 0, max: 1 };
         const proportion = Math.max(
           0,
           Math.min((d.value - min) / (max - min || 1), 1),
@@ -70,7 +78,6 @@ const drawArcs = (
         .outerRadius(outerRadius)
         .startAngle(startAngle)
         .endAngle(endAngle);
-
       return arc(d);
     })
     .attr("fill", (d) =>
@@ -110,7 +117,7 @@ const drawArcs = (
         )
         .transition()
         .duration(100)
-        .attr("opacity", 0.8);
+        .attr("opacity", 0.85);
 
       g.selectAll("path.arc-background")
         .filter(
@@ -120,7 +127,7 @@ const drawArcs = (
         )
         .transition()
         .duration(100)
-        .attr("fill-opacity", 0.2);
+        .attr("opacity", 0.7);
 
       onTooltipShow({
         type: "arc",
@@ -160,12 +167,12 @@ const drawArcs = (
         )
         .transition()
         .duration(100)
-        .attr("fill-opacity", 0.1);
+        .attr("opacity", 0.7);
 
       onTooltipHide();
     })
     .on("click", function (_, d) {
-      console.log(formatValue(d.value));
+      console.log(attributeInfo.get(d.key));
     });
 };
 

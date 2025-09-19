@@ -56,7 +56,7 @@ const Legend = () => {
     return attributeKeys
       .filter((key) => keysToShow.includes(key))
       .map((key) => {
-        const value = nodeAttributes[hoveredNode.id]?.[key];
+        const value = nodeAttributes.get(hoveredNode.id)?.[key];
         const color = getColorForKey(
           key,
           value !== undefined

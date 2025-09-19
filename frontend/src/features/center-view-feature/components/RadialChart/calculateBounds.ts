@@ -1,34 +1,42 @@
 import type { CombinedData } from "@/types/network";
 
-export interface GroupBound {
+interface GroupBounds {
   id: string;
   startAngle: number;
   endAngle: number;
+}
+
+interface LayerBounds {
+  key: string;
   inner: number;
   outer: number;
+}
+
+export interface BoundsResult {
+  groupBounds: GroupBounds[];
+  layerBounds: LayerBounds[];
 }
 
 const calculateBounds = (
   series: d3.Series<CombinedData, string>[],
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
-): GroupBound[] => {
-  const firstLayer = series[0];
-  const lastLayer = series[series.length - 1];
-
-  const bounds = firstLayer.map((d, i) => {
+): BoundsResult => {
+  const groupBounds = series[0].map((d) => {
     const id = d.data.id;
     const startAngle = x(id) ?? 0;
-    const inner = y(d[0]);
-
-    const dLast = lastLayer[i];
     const endAngle = (x(id) ?? 0) + x.bandwidth();
-    const outer = y(dLast[1]);
-
-    return { id, startAngle, endAngle, inner, outer };
+    return { id, startAngle, endAngle };
   });
 
-  return bounds;
+  const layerBounds = series.map((layer) => {
+    const key = layer.key;
+    const inner = y(layer[0][0]);
+    const outer = y(layer[0][1]);
+    return { key, inner, outer };
+  });
+
+  return { groupBounds, layerBounds };
 };
 
 export default calculateBounds;

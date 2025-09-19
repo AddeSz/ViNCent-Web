@@ -64,6 +64,7 @@ const RadialChart = forwardRef(function RadialChart(
   const attributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const attributeInfo = useAttributeStore((s) => s.attributeInfo);
 
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
   const centralityRanges = useCentralityStore((s) => s.centralityRanges);
@@ -134,9 +135,7 @@ const RadialChart = forwardRef(function RadialChart(
       .domain([0, allKeys.length])
       .range([innerRadius, outerRadius]);
 
-    const groupBounds = calculateBounds(series, x, y);
-    const maxOuter = Math.max(...groupBounds.map((d) => d.outer));
-
+    const bounds = calculateBounds(series, x, y);
     drawArcs(
       svgGroup,
       arcData,
@@ -147,13 +146,14 @@ const RadialChart = forwardRef(function RadialChart(
       handleNodeHover,
       showArcTooltip,
       hideTooltip,
+      attributeInfo,
     );
     drawLinks(svgGroup, networkData.links, x, innerRadius, selectedNodes);
-    drawBounds(svgGroup, groupBounds, innerRadius, maxOuter, selectedNodes);
+    drawBounds(svgGroup, bounds, innerRadius, outerRadius, selectedNodes);
     drawLabels(
       svgGroup,
       x,
-      maxOuter,
+      outerRadius,
       selectedNodes,
       fontSize,
       handleNodeHover,
@@ -172,14 +172,14 @@ const RadialChart = forwardRef(function RadialChart(
   }, [selectedNodes]);
 
   return !dimensions?.width || !dimensions?.height ? (
-    <div className="flex h-full items-center justify-center bg-card"></div>
+    <div className="flex h-full items-center justify-center"></div>
   ) : (
     <div className="relative h-full">
       <svg
         ref={svgRef}
         viewBox="-800 -800 1600 1600"
         preserveAspectRatio="xMidYMid slice"
-        className="h-full w-full bg-card"
+        className="h-full w-full"
         style={{ shapeRendering: "geometricPrecision" }}
       />
       <ChartTooltip {...tooltip} combinedDataMap={combinedDataMap} />

@@ -7,10 +7,10 @@ import { flattenAttributes } from "@/utils/networkProcessing";
 import { create } from "zustand";
 
 interface AttributeStore {
-  nodeAttributes: Record<string, NodeAttributes>;
+  nodeAttributes: Map<string, NodeAttributes>;
   attributeKeys: string[];
   enabledAttributeKeys: string[];
-  attributeInfo: Record<string, AttributeInfo>;
+  attributeInfo: Map<string, AttributeInfo>;
   setNodeAttributes: (nodes: any[]) => void;
   setEnabledAttributeKeys: (keys: string[]) => void;
   toggleAttributeKey: (key: string) => void;
@@ -19,73 +19,76 @@ interface AttributeStore {
 }
 
 export const useAttributeStore = create<AttributeStore>((set, get) => ({
-  nodeAttributes: {},
+  nodeAttributes: new Map(),
   attributeKeys: [],
   enabledAttributeKeys: [],
-  attributeInfo: {},
+  attributeInfo: new Map(),
 
   setNodeAttributes: (nodes) => {
-    const nodeAttributes: Record<string, NodeAttributes> = {};
+    const nodeAttributes = new Map<string, NodeAttributes>();
     nodes.forEach((node) => {
       if (node.attributes) {
         const flattenedAttrs = flattenAttributes(node.attributes);
-        nodeAttributes[node.id] = flattenedAttrs;
+        nodeAttributes.set(node.id, flattenedAttrs);
       }
     });
 
     const attributeKeys = new Set<string>();
-    const attributeInfo: Record<string, AttributeInfo> = {};
+    const attributeInfo = new Map<string, AttributeInfo>();
 
-    Object.values(nodeAttributes).forEach((attrs) => {
-      Object.keys(attrs).forEach((key) => {
+    nodeAttributes.forEach((attrs) => {
+      Object.entries(attrs).forEach(([key, value]) => {
         attributeKeys.add(key);
 
-        if (!attributeInfo[key]) {
-          attributeInfo[key] = {
+        if (!attributeInfo.has(key)) {
+          attributeInfo.set(key, {
             key,
             type: "string",
-            values: new Set(),
-            isCategorical: false,
-          };
+            values: new Set<NodeAttributeValue>(),
+            isNominal: false,
+            isOrdinal: false,
+            isNumeric: false,
+            isBoolean: false,
+          });
         }
 
-        const value = attrs[key];
-        attributeInfo[key].values.add(value);
+        const info = attributeInfo.get(key)!;
+        info.values.add(value);
 
         if (typeof value === "number") {
-          if (attributeInfo[key].type !== "number") {
-            const allNumbers = Array.from(attributeInfo[key].values).every(
-              (v) => typeof v === "number" || !isNaN(Number(v)),
-            );
-            if (allNumbers) {
-              attributeInfo[key].type = "number";
-            }
+          info.type = "number";
+          info.isNumeric = true;
+          if (!info.range) {
+            info.range = { min: value, max: value };
+          } else {
+            info.range = {
+              min: Math.min(info.range.min, value),
+              max: Math.max(info.range.max, value),
+            };
           }
         } else if (typeof value === "boolean") {
-          if (attributeInfo[key].type === "string") {
-            const allBooleans = Array.from(attributeInfo[key].values).every(
-              (v) => typeof v === "boolean" || v === "true" || v === "false",
-            );
-            if (allBooleans) {
-              attributeInfo[key].type = "boolean";
-            }
-          }
+          info.type = "boolean";
+          info.isBoolean = true;
+        } else {
+          info.type = "string";
         }
       });
     });
 
-    Object.values(attributeInfo).forEach((info) => {
+    attributeInfo.forEach((info) => {
       const uniqueCount = info.values.size;
-
       if (info.type === "string") {
-        info.isCategorical = uniqueCount <= 20;
+        info.isNominal = uniqueCount <= 20;
+        info.isOrdinal = false;
       } else if (info.type === "number") {
         const allIntegers = Array.from(info.values).every((v) =>
           Number.isInteger(Number(v)),
         );
-        info.isCategorical = allIntegers && uniqueCount <= 20;
+        info.isNominal = allIntegers && uniqueCount <= 20;
+        info.isOrdinal = allIntegers && uniqueCount > 1;
       } else if (info.type === "boolean") {
-        info.isCategorical = true;
+        info.isNominal = true;
+        info.isOrdinal = false;
       }
     });
 
@@ -117,15 +120,15 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
     }),
 
   getAttributeValuesForKey: (key) => {
-    const info = get().attributeInfo[key];
+    const info = get().attributeInfo.get(key);
     return info ? Array.from(info.values) : [];
   },
 
   clearData: () =>
     set({
-      nodeAttributes: {},
+      nodeAttributes: new Map(),
       attributeKeys: [],
       enabledAttributeKeys: [],
-      attributeInfo: {},
+      attributeInfo: new Map(),
     }),
 }));

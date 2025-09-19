@@ -27,9 +27,9 @@ export const useCombinedData = (): {
       if (displayMode === "centrality") {
         combined = { ...combined, ...c };
       } else if (displayMode === "attributes") {
-        combined = { ...combined, ...(nodeAttributes[c.id] || {}) };
+        combined = { ...combined, ...(nodeAttributes.get(c.id) || {}) };
       } else {
-        combined = { ...combined, ...c, ...(nodeAttributes[c.id] || {}) };
+        combined = { ...combined, ...c, ...(nodeAttributes.get(c.id) || {}) };
       }
 
       map.set(c.id, combined);

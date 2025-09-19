@@ -8,7 +8,11 @@ export type AttributeInfo = {
   key: string;
   type: "string" | "number" | "boolean";
   values: Set<NodeAttributeValue>;
-  isCategorical?: boolean;
+  isNominal: boolean;
+  isOrdinal: boolean;
+  isNumeric: boolean;
+  isBoolean: boolean;
+  range?: { min: number; max: number };
 };
 
 export type Node = SimulationNodeDatum & {

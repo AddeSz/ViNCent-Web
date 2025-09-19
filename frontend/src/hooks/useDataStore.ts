@@ -24,8 +24,8 @@ export const useDataStore = () => {
     setNetwork(data);
     setNodeAttributes(data.nodes);
 
-    const attributeInfos = Object.values(
-      useAttributeStore.getState().attributeInfo,
+    const attributeInfos = Array.from(
+      useAttributeStore.getState().attributeInfo.values(),
     );
     initializeAttributeColorScale(attributeInfos);
   };

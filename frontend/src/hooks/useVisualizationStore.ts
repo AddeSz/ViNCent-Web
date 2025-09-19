@@ -1,4 +1,4 @@
-import type { AttributeInfo } from "@/types/network";
+import type { AttributeInfo, NodeAttributeValue } from "@/types/network";
 import * as d3 from "d3";
 import { create } from "zustand";
 
@@ -12,7 +12,7 @@ interface VisualizationStore {
 
   initializeCentralityColorScale: (keys: string[]) => void;
   initializeAttributeColorScale: (attributeInfos: AttributeInfo[]) => void;
-  getColorForKey: (key: string, value?: string | number) => string;
+  getColorForKey: (key: string, value?: NodeAttributeValue) => string;
   clearData: () => void;
 }
 
@@ -64,14 +64,16 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     );
 
     attributeInfos.forEach((info) => {
-      if (info.isCategorical) {
+      if (info.isNominal || info.isBoolean) {
+        // Categorical/boolean
         Array.from(info.values).forEach((val) => {
           const categoryKey = `${info.key}:${val}`;
           categories.push(categoryKey);
           attributeKeyIndexMap.set(categoryKey, index++);
         });
-      } else if (info.type === "number" && !info.isCategorical) {
-        const values = Array.from(info.values as Set<number>);
+      } else if (info.isNumeric) {
+        // Numeric
+        const values = Array.from(info.values).map(Number);
         const [min, max] = d3.extent(values) as [number, number];
         numericAttributeColorScales.set(
           info.key,
@@ -79,6 +81,7 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
         );
         attributeKeyIndexMap.set(info.key, index++);
       } else {
+        // Fallback fixed color
         const color = fixedColorPalette[index % fixedColorPalette.length];
         fixedAttributeColors.set(info.key, color);
         attributeKeyIndexMap.set(info.key, index++);
@@ -98,7 +101,7 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     });
   },
 
-  getColorForKey: (key: string, value?: string | number) => {
+  getColorForKey: (key: string, value?: NodeAttributeValue) => {
     const {
       centralityColorScale,
       attributeColorScale,
@@ -108,27 +111,33 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       attributeKeyIndexMap,
     } = get();
 
+    // 1. Centrality keys
     if (centralityColorScale && centralityKeyIndexMap.has(key)) {
       return centralityColorScale(centralityKeyIndexMap.get(key)!);
     }
 
-    if (attributeColorScale) {
-      if (value !== undefined) {
-        const colorKey = `${key}:${value}`;
-        if (attributeKeyIndexMap.has(colorKey)) {
-          return attributeColorScale(colorKey);
-        }
+    // 2. Numeric attribute scale
+    if (numericAttributeColorScales.has(key)) {
+      const numericValue = typeof value === "number" ? value : Number(value);
+      if (!isNaN(numericValue)) {
+        return numericAttributeColorScales.get(key)!(numericValue);
       }
     }
 
-    if (numericAttributeColorScales.has(key) && typeof value === "number") {
-      return numericAttributeColorScales.get(key)!(value);
+    // 3. Nominal / boolean category scale
+    if (attributeColorScale && value !== undefined) {
+      const colorKey = `${key}:${value}`;
+      if (attributeKeyIndexMap.has(colorKey)) {
+        return attributeColorScale(colorKey);
+      }
     }
 
+    // 4. Fallback fixed colors
     if (fixedAttributeColors.has(key)) {
       return fixedAttributeColors.get(key)!;
     }
 
+    // 5. Default gray
     return "var(--muted-foreground)";
   },
 
@@ -136,6 +145,8 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     set({
       centralityColorScale: null,
       attributeColorScale: null,
+      numericAttributeColorScales: new Map(),
+      fixedAttributeColors: new Map(),
       centralityKeyIndexMap: new Map(),
       attributeKeyIndexMap: new Map(),
     }),
