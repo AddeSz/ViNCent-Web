@@ -6,11 +6,13 @@ interface NetworkStore {
   nodeMap: Map<string, Node>;
   selectedNodes: Set<string>;
   hoveredNode: null | CombinedData;
+  sortKey: string;
   setNetwork: (data: Network) => void;
   selectNode: (id: string, multi?: boolean) => void;
   deselectNode: (id: string) => void;
   toggleNodeSelection: (id: string) => void;
   setHoveredNode: (node: CombinedData) => void;
+  setSortKey: (key: string) => void;
   clearHoveredNode: () => void;
   clearSelection: () => void;
   clearData: () => void;
@@ -21,6 +23,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   nodeMap: new Map<string, Node>(),
   selectedNodes: new Set<string>(),
   hoveredNode: null,
+  sortKey: "none",
 
   setNetwork: (data) => {
     set({
@@ -55,10 +58,10 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   },
 
   setHoveredNode: (node) => set({ hoveredNode: node }),
+  setSortKey: (key: string) => set({ sortKey: key }),
+
   clearHoveredNode: () => set({ hoveredNode: null }),
-
   clearSelection: () => set({ selectedNodes: new Set<string>() }),
-
   clearData: () =>
     set({
       network: { nodes: [], links: [] },

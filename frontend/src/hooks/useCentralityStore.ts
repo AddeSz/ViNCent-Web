@@ -6,12 +6,10 @@ interface CentralityStore {
   centralityMap: Map<string, Centrality>;
   centralityKeys: string[];
   enabledCentralityKeys: string[];
-  sortKey: string;
   centralityRanges: Record<string, { min: number; max: number }>;
   brushRanges: Record<string, [number, number] | null>;
 
   setCentralityData: (data: Centrality[]) => void;
-  setSortKey: (key: string) => void;
   setCentralityRanges: (
     ranges: Record<string, { min: number; max: number }>,
   ) => void;
@@ -27,7 +25,6 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
   centralityData: [],
   centralityKeys: [],
   enabledCentralityKeys: [],
-  sortKey: "default",
   centralityRanges: {},
   brushRanges: {},
   centralityMap: new Map<string, Centrality>(),
@@ -64,7 +61,6 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
     });
   },
 
-  setSortKey: (key) => set({ sortKey: key }),
   setCentralityRanges: (ranges) => set({ centralityRanges: ranges }),
 
   toggleCentralityKey: (key) =>

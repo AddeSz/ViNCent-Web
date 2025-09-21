@@ -109,7 +109,6 @@ const RadialChart = forwardRef(function RadialChart(
       { type: "label", visible: true, ...data },
       `label-${data.nodeId}`,
     );
-
   useEffect(() => {
     if (!svgRef.current || !dimensions?.width || !dimensions?.height) return;
     const svg = d3.select(svgRef.current);

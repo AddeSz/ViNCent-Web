@@ -4,12 +4,13 @@ import { Label } from "@/components/shadcnUI/label";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import { formatValue } from "@/utils/utils";
 import { type ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 
 export const createSelectColumn = <
   T extends { label?: string },
 >(): ColumnDef<T> => ({
   id: "select",
+  size: 100,
   header: ({ table }) => {
     return (
       <div className="w-24">
@@ -58,21 +59,27 @@ export const createCentralityColumns = <T,>(
   enabledKeys: string[],
 ): ColumnDef<T>[] =>
   enabledKeys.map((key) => ({
-    accessorKey: key,
+    id: key,
+    accessorFn: (row) => row[key as keyof typeof row],
+    size: 100,
+    enableSortingRemoval: true,
     header: ({ column }) => {
       const color = useVisualizationStore.getState().getColorForKey(key);
+      let SortIcon = ArrowUpDown;
+      if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+      if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
       return (
         <Button
           variant="ghost"
           style={{ color }}
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-24 justify-between gap-1"
+          onClick={column.getToggleSortingHandler()}
+          className="w-full justify-between gap-1"
           size={"none"}
         >
           <div className="truncate text-sm font-medium capitalize">
             {key.replace(/_/g, " ")}
           </div>
-          <ArrowUpDown className="h-4 w-4 flex-shrink-0" />
+          <SortIcon className="h-4 w-4 flex-shrink-0" />
         </Button>
       );
     },
@@ -92,23 +99,26 @@ export const createAttributeColumns = <T,>(
   enabledKeys.map((key) => ({
     id: key,
     accessorFn: (row) => row[key as keyof typeof row],
+    size: 100,
+    enableSortingRemoval: true,
     header: ({ column }) => {
       const color = useVisualizationStore.getState().getColorForKey(key);
+      let SortIcon = ArrowUpDown;
+      if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+      if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
       return (
-        <div className="w-24">
-          <Button
-            variant="ghost"
-            style={{ color }}
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="w-24 justify-between gap-1"
-            size={"none"}
-          >
-            <div className="truncate text-sm font-medium capitalize">
-              {key.replace(/_/g, " ")}
-            </div>
-            <ArrowUpDown className="h-4 w-4 flex-shrink-0" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          style={{ color }}
+          onClick={column.getToggleSortingHandler()}
+          className="w-full justify-between gap-1"
+          size={"none"}
+        >
+          <div className="truncate text-sm font-medium capitalize">
+            {key.replace(/_/g, " ")}
+          </div>
+          <SortIcon className="h-4 w-4 flex-shrink-0" />
+        </Button>
       );
     },
     cell: ({ row }) => {
@@ -122,10 +132,7 @@ export const createAttributeColumns = <T,>(
               .getColorForKey(key, value as string | number)
           : undefined;
       return (
-        <div
-          className="w-24 truncate px-2 text-left font-medium"
-          style={{ color }}
-        >
+        <div className="truncate px-2 text-left font-medium" style={{ color }}>
           {formatValue(value)}
         </div>
       );

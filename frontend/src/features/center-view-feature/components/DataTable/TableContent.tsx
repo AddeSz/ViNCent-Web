@@ -38,7 +38,14 @@ const TableContent = <T,>({ table, columnsLength }: TableContentProps<T>) => {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead
+                  key={header.id}
+                  style={{
+                    width: header.column.getSize(),
+                    minWidth: header.column.getSize(),
+                    maxWidth: header.column.getSize(),
+                  }}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -77,7 +84,9 @@ const TableContent = <T,>({ table, columnsLength }: TableContentProps<T>) => {
                       key={cell.id}
                       style={{
                         display: "table-cell",
-                        width: "96px",
+                        width: cell.column.getSize(),
+                        minWidth: cell.column.getSize(),
+                        maxWidth: cell.column.getSize(),
                       }}
                     >
                       {flexRender(

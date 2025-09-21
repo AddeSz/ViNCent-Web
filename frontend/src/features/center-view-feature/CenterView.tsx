@@ -15,9 +15,14 @@ import {
 } from "@/components/shadcnUI/toggle-group";
 import { useEffect, useRef, useState } from "react";
 
+import { useAttributeStore } from "@/hooks/useAttributeStore";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
+import { useChartSettings } from "@/hooks/useChartSettings";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
+import { useVisualizationStore } from "@/hooks/useVisualizationStore";
+import type { CombinedData } from "@/types/network";
 import { formatKeyLabel } from "@/utils/utils";
+import type { SortingState } from "@tanstack/react-table";
 import DataTable from "./components/DataTable/DataTable";
 import NodeLinkDiagram from "./components/NodeLinkDiagram/NodeLinkDiagram";
 import RadialChart from "./components/RadialChart/RadialChart";
@@ -32,13 +37,34 @@ const CenterView = () => {
   const [isViewLoaded, setIsViewLoaded] = useState(false);
   const clearSelection = useNetworkStore((s) => s.clearSelection);
   const centralityKeys = useCentralityStore((s) => s.enabledCentralityKeys);
-  const sortKey = useCentralityStore((s) => s.sortKey);
-  const setSortKey = useCentralityStore((s) => s.setSortKey);
+  const attributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
+  const sortKey = useNetworkStore((s) => s.sortKey);
+  const setSortKey = useNetworkStore((s) => s.setSortKey);
+  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const { combinedData, combinedDataMap } = useCombinedData();
-
+  const displayMode = useChartSettings((s) => s.displayMode);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const radialResetRef = useRef<() => void>(null);
   const nodeLinkResetRef = useRef<() => void>(null);
+
+  const [sorting, setSorting] = useState<SortingState>(
+    sortKey !== "none" ? [{ id: sortKey, desc: false }] : [],
+  );
+
+  const [sortedCombinedData, setSortedCombinedData] = useState<CombinedData[]>(
+    [],
+  );
+
+  const handleSortingChange = (
+    updater: SortingState | ((old: SortingState) => SortingState),
+  ) => {
+    const newSorting =
+      typeof updater === "function" ? updater(sorting) : updater;
+    setSorting(newSorting);
+
+    if (newSorting.length === 0) setSortKey("none");
+    else setSortKey(newSorting[0].id);
+  };
 
   useEffect(() => {
     const savedView = localStorage.getItem(VIEW_KEY);
@@ -59,7 +85,6 @@ const CenterView = () => {
   }, [view, isViewLoaded]);
 
   if (!isViewLoaded) return null;
-
   return (
     <div className="flex h-full flex-col">
       <div className="border-b-2 border-border">
@@ -111,7 +136,7 @@ const CenterView = () => {
               <RadialChart
                 containerRef={containerRef}
                 ref={radialResetRef}
-                combinedData={combinedData}
+                combinedData={sortedCombinedData}
                 combinedDataMap={combinedDataMap}
               />
             </div>
@@ -137,7 +162,12 @@ const CenterView = () => {
                   : "pointer-events-none opacity-0"
               }`}
             >
-              <DataTable combinedData={combinedData} />
+              <DataTable
+                combinedData={combinedData}
+                sorting={sorting}
+                onSortingChange={handleSortingChange}
+                onSortedDataChange={setSortedCombinedData}
+              />
             </div>
           </div>
         </ContextMenuTrigger>
@@ -159,19 +189,59 @@ const CenterView = () => {
           {view === "radial" && (
             <ContextMenuSub>
               <ContextMenuSubTrigger>Sort</ContextMenuSubTrigger>
-              <ContextMenuSubContent>
+              <ContextMenuSubContent className="overflow-y-auto">
                 <ContextMenuRadioGroup
-                  value={centralityKeys.includes(sortKey) ? sortKey : "default"}
-                  onValueChange={(val) => setSortKey(val)}
+                  value={
+                    centralityKeys.includes(sortKey) ||
+                    attributeKeys.includes(sortKey)
+                      ? sortKey
+                      : "none"
+                  }
+                  onValueChange={(val) => {
+                    setSortKey(val);
+
+                    if (val === "none") {
+                      setSorting([]);
+                    } else {
+                      setSorting([{ id: val, desc: true }]);
+                    }
+                  }}
                 >
-                  <ContextMenuRadioItem value="default">
-                    Default
-                  </ContextMenuRadioItem>
-                  {centralityKeys.map((key) => (
-                    <ContextMenuRadioItem key={key} value={key}>
-                      {formatKeyLabel(key)}
-                    </ContextMenuRadioItem>
-                  ))}
+                  <ContextMenuRadioItem value="none">None</ContextMenuRadioItem>
+
+                  <ContextMenuSub>
+                    <ContextMenuSubTrigger>Centralities</ContextMenuSubTrigger>
+                    <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
+                      {centralityKeys.map((key) => (
+                        <ContextMenuRadioItem
+                          key={key}
+                          value={key}
+                          disabled={displayMode === "attributes"}
+                        >
+                          <span style={{ color: getColorForKey(key) }}>
+                            {formatKeyLabel(key)}
+                          </span>
+                        </ContextMenuRadioItem>
+                      ))}
+                    </ContextMenuSubContent>
+                  </ContextMenuSub>
+
+                  <ContextMenuSub>
+                    <ContextMenuSubTrigger>Attributes</ContextMenuSubTrigger>
+                    <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
+                      {attributeKeys.map((key) => (
+                        <ContextMenuRadioItem
+                          key={key}
+                          value={key}
+                          disabled={displayMode === "centrality"}
+                        >
+                          <span style={{ color: getColorForKey(key) }}>
+                            {formatKeyLabel(key)}
+                          </span>
+                        </ContextMenuRadioItem>
+                      ))}
+                    </ContextMenuSubContent>
+                  </ContextMenuSub>
                 </ContextMenuRadioGroup>
               </ContextMenuSubContent>
             </ContextMenuSub>

@@ -16,13 +16,11 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
 
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
-    <div className="flex w-full border-b">
-      <thead
-        data-slot="table-header"
-        className={cn("flex [&_tr]:border-b-0", className)}
-        {...props}
-      />
-    </div>
+    <thead
+      data-slot="table-header"
+      className={cn("flex border-b [&_tr]:border-b-0", className)}
+      {...props}
+    />
   );
 }
 
@@ -67,7 +65,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-9 w-24 px-2 py-1 text-left align-middle font-medium whitespace-nowrap text-foreground",
+        "h-9 px-2 py-1 text-left align-middle font-medium whitespace-nowrap text-foreground",
         className,
       )}
       {...props}
