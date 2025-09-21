@@ -21,6 +21,7 @@ const calculateBounds = (
   series: d3.Series<CombinedData, string>[],
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
+  getKeyIndex: (key: string) => number,
 ): BoundsResult => {
   const groupBounds = series[0].map((d) => {
     const id = d.data.id;
@@ -31,8 +32,8 @@ const calculateBounds = (
 
   const layerBounds = series.map((layer) => {
     const key = layer.key;
-    const inner = y(layer[0][0]);
-    const outer = y(layer[0][1]);
+    const inner = y(getKeyIndex(key));
+    const outer = y(getKeyIndex(key) + 1);
     return { key, inner, outer };
   });
 

@@ -1,11 +1,14 @@
 import { Button } from "@/components/shadcnUI/button";
+import { Checkbox } from "@/components/shadcnUI/checkbox";
+import { Label } from "@/components/shadcnUI/label";
 import { Slider } from "@/components/shadcnUI/slider";
 import { useChartSettings } from "@/hooks/useChartSettings";
 
 const RadialChartSettings = () => {
   const { radialSettings, setRadialSettings, resetRadialSettings } =
     useChartSettings();
-  const { innerRadius, outerRadius, fontSize } = radialSettings;
+  const { innerRadius, outerRadius, fontSize, groupGapEnabled } =
+    radialSettings;
 
   const outerRadiusMin = innerRadius + 200;
   const fontSizeMax = 45;
@@ -74,6 +77,20 @@ const RadialChartSettings = () => {
           <span>0</span>
           <span>{fontSizeMax}</span>
         </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="group-gap"
+          checked={groupGapEnabled}
+          onCheckedChange={(checked) =>
+            setRadialSettings({ groupGapEnabled: !!checked })
+          }
+          className="cursor-pointer"
+        />
+        <Label htmlFor="group-gap" className="cursor-pointer text-sm">
+          Group Gap
+        </Label>
       </div>
 
       <Button className="cursor-pointer" onClick={resetRadialSettings}>

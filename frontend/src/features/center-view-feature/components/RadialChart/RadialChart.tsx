@@ -72,7 +72,8 @@ const RadialChart = forwardRef(function RadialChart(
 
   const radialSettings = useChartSettings((s) => s.radialSettings);
   const displayMode = useChartSettings((s) => s.displayMode);
-  const { innerRadius, outerRadius, fontSize } = radialSettings;
+  const { innerRadius, outerRadius, fontSize, groupGapEnabled } =
+    radialSettings;
   const nodeMap = useNetworkStore((s) => s.nodeMap);
 
   const allKeys = useMemo(() => {
@@ -130,12 +131,35 @@ const RadialChart = forwardRef(function RadialChart(
       .padding(outerPadding)
       .paddingInner(innerPadding);
 
+    const centralityCount = centralityKeys.length;
+    const attributeCount = attributeKeys.length;
+    const gap = groupGapEnabled ? 1 : 0;
+    let totalWithGap = centralityCount + gap + attributeCount;
+    if (displayMode === "attributes" || centralityCount === 0)
+      totalWithGap = attributeCount;
+    if (displayMode === "centrality" || attributeCount === 0)
+      totalWithGap = centralityCount;
+
     const y = d3
       .scaleLinear<number, number>()
-      .domain([0, allKeys.length])
+      .domain([0, totalWithGap])
       .range([innerRadius, outerRadius]);
 
-    const bounds = calculateBounds(series, x, y);
+    const getKeyIndex = (key: string) => {
+      const cIndex = centralityKeys.indexOf(key);
+      if (cIndex !== -1) return cIndex;
+
+      const aIndex = attributeKeys.indexOf(key);
+      if (aIndex !== -1) {
+        if (displayMode === "attributes" || centralityCount === 0)
+          return aIndex;
+        return centralityCount + gap + aIndex;
+      }
+
+      return 0;
+    };
+
+    const bounds = calculateBounds(series, x, y, getKeyIndex);
     drawArcs(
       svgGroup,
       arcData,
@@ -147,6 +171,7 @@ const RadialChart = forwardRef(function RadialChart(
       showArcTooltip,
       hideTooltip,
       attributeInfo,
+      getKeyIndex,
     );
     drawLinks(svgGroup, networkData.links, x, innerRadius, selectedNodes);
     drawBounds(svgGroup, bounds, innerRadius, outerRadius, selectedNodes);

@@ -6,6 +6,7 @@ type RadialSettings = {
   innerRadius: number;
   outerRadius: number;
   fontSize: number;
+  groupGapEnabled: boolean;
 };
 
 type NodeLinkSettings = {
@@ -34,6 +35,7 @@ export const defaultRadialSettings: RadialSettings = {
   innerRadius: 100,
   outerRadius: 600,
   fontSize: 24,
+  groupGapEnabled: false,
 };
 
 export const defaultNodeLinkSettings: NodeLinkSettings = {

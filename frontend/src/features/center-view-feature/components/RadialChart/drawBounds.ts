@@ -18,6 +18,10 @@ const drawBounds = (
   selectedNodes: Set<string>,
 ): void => {
   const { groupBounds, layerBounds } = bounds;
+  const uniqueRadii = Array.from(
+    new Set(layerBounds.flatMap((d) => [d.inner, d.outer])),
+  );
+
   const boundsSVG = svg
     .append("g")
     .attr("class", "bounds-group")
@@ -26,10 +30,10 @@ const drawBounds = (
 
   boundsSVG
     .selectAll("circle.layer-bounds")
-    .data(layerBounds)
+    .data(uniqueRadii)
     .join("circle")
     .attr("class", "layer-bounds")
-    .attr("r", (d) => d.outer)
+    .attr("r", (r) => r)
     .attr("stroke", highlightBoundsColor.default)
     .attr("fill", "none");
 
@@ -67,12 +71,6 @@ const drawBounds = (
     .outerRadius((d) => d.innerRadius + 0.5)
     .startAngle((d) => d.startAngle)
     .endAngle((d) => d.endAngle);
-
-  boundsSVG
-    .append("circle")
-    .attr("r", innerRadius)
-    .attr("stroke", highlightBoundsColor.default)
-    .attr("fill", "none");
 
   boundsSVG
     .selectAll("path.inner-bounds")

@@ -19,6 +19,7 @@ const drawArcs = (
   }) => void,
   onTooltipHide: () => void,
   attributeInfo: Map<string, AttributeInfo>,
+  getKeyIndex: (key: string) => number,
 ): void => {
   const g = svg.append("g").attr("class", "arcs-group");
   g.selectAll("path.arc-background")
@@ -28,8 +29,8 @@ const drawArcs = (
     .attr("d", (d) => {
       const startAngle = x(d.data.id) ?? 0;
       const endAngle = startAngle + x.bandwidth();
-      const innerRadius = y(d[0]);
-      const outerRadius = y(d[1]);
+      const innerRadius = y(getKeyIndex(d.key));
+      const outerRadius = y(getKeyIndex(d.key) + 1);
       const arc = d3
         .arc<ArcData>()
         .innerRadius(innerRadius)
@@ -49,8 +50,8 @@ const drawArcs = (
     .attr("d", (d) => {
       const startAngle = x(d.data.id) ?? 0;
       const endAngle = startAngle + x.bandwidth();
-      const innerRadius = y(d[0]);
-      const fullOuterRadius = y(d[1]);
+      const innerRadius = y(getKeyIndex(d.key));
+      const fullOuterRadius = y(getKeyIndex(d.key) + 1);
 
       let outerRadius = fullOuterRadius;
       const attribute = attributeInfo.get(d.key);
@@ -95,8 +96,8 @@ const drawArcs = (
     .attr("d", (d) => {
       const startAngle = x(d.data.id) ?? 0;
       const endAngle = startAngle + x.bandwidth();
-      const innerRadius = y(d[0]);
-      const outerRadius = y(d[1]);
+      const innerRadius = y(getKeyIndex(d.key));
+      const outerRadius = y(getKeyIndex(d.key) + 1);
       const arc = d3
         .arc<ArcData>()
         .innerRadius(innerRadius)
