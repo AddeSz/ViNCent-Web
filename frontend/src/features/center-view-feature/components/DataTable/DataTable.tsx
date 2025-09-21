@@ -45,6 +45,7 @@ const DataTable = ({ combinedData }: DataTableProps) => {
     pageIndex: 0,
     pageSize: 25,
   });
+  const displayMode = useChartSettings((s) => s.displayMode);
 
   const rowsPerPageOptions = useMemo(() => {
     const baseOptions = [10, 25, 50, 100];
@@ -53,7 +54,6 @@ const DataTable = ({ combinedData }: DataTableProps) => {
     return [...baseOptions.filter((n) => n < total), total];
   }, [combinedData.length]);
 
-  const displayMode = useChartSettings((s) => s.displayMode);
   const columns = useMemo(() => {
     const selectColumn = createSelectColumn<(typeof combinedData)[number]>();
 
@@ -65,7 +65,6 @@ const DataTable = ({ combinedData }: DataTableProps) => {
         (typeof combinedData)[number]
       >(enabledCentralityKeys);
     }
-
     if (displayMode === "attributes" || displayMode === "both") {
       attributeColumns =
         createAttributeColumns<(typeof combinedData)[number]>(
@@ -122,7 +121,7 @@ const DataTable = ({ combinedData }: DataTableProps) => {
       pagination,
     },
   });
-
+  console.log(columns);
   return (
     <div className="flex h-full w-full flex-col px-3">
       <TableControls

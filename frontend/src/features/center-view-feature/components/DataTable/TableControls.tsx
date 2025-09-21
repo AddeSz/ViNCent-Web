@@ -28,6 +28,12 @@ const TableControls = <T,>({
 }: TableControlsProps<T>) => {
   const displayMode = useChartSettings((s) => s.displayMode);
 
+  const validFirstColumnKey = table
+    .getAllColumns()
+    .some((c) => c.id === firstColumnKey)
+    ? firstColumnKey
+    : (table.getAllColumns()[0]?.id ?? "");
+
   const enabledCentralityKeys = useCentralityStore(
     (s) => s.enabledCentralityKeys,
   );
@@ -47,10 +53,13 @@ const TableControls = <T,>({
       <Input
         placeholder="Filter..."
         value={
-          (table.getColumn(firstColumnKey)?.getFilterValue() as string) ?? ""
+          (table.getColumn(validFirstColumnKey)?.getFilterValue() as string) ??
+          ""
         }
         onChange={(event) =>
-          table.getColumn(firstColumnKey)?.setFilterValue(event.target.value)
+          table
+            .getColumn(validFirstColumnKey)
+            ?.setFilterValue(event.target.value)
         }
         className="max-w-sm"
       />

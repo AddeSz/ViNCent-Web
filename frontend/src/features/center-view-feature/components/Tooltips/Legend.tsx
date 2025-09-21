@@ -14,6 +14,7 @@ const Legend = () => {
   const nodeAttributes = useAttributeStore((s) => s.nodeAttributes);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const displayMode = useChartSettings((s) => s.displayMode);
+  const attributeInfo = useAttributeStore((s) => s.attributeInfo);
 
   const keysToShow =
     displayMode === "attributes"
@@ -47,6 +48,7 @@ const Legend = () => {
           percentage,
           proportion,
           isAttribute: false,
+          isNumeric: true,
         };
       });
   }, [hoveredNode, centralityKeys, centralityRanges, displayMode]);
@@ -57,6 +59,7 @@ const Legend = () => {
       .filter((key) => keysToShow.includes(key))
       .map((key) => {
         const value = nodeAttributes.get(hoveredNode.id)?.[key];
+        const info = attributeInfo.get(key);
         const color = getColorForKey(
           key,
           value !== undefined
@@ -66,17 +69,32 @@ const Legend = () => {
             : undefined,
         );
 
+        let proportion = 1;
+        let percentage = "";
+
+        if (info?.isNumeric && typeof value === "number" && info.range) {
+          const { min, max } = info.range;
+          proportion = Math.max(
+            0,
+            Math.min((value - min) / (max - min || 1), 1),
+          );
+
+          percentage = (proportion * 100).toFixed(2);
+          if (Number(percentage) === 100) percentage = "100";
+          if (Number(percentage) === 0) percentage = "0.0";
+        }
+
         return {
           key,
           value,
           color,
-          proportion: 1,
-          percentage: "",
+          proportion,
+          percentage,
           isAttribute: true,
+          isNumeric: info?.isNumeric ?? false,
         };
       });
-  }, [hoveredNode, attributeKeys, nodeAttributes, displayMode]);
-
+  }, [hoveredNode, attributeKeys, nodeAttributes, attributeInfo, displayMode]);
   const nodeMetrics = [...centralityMetrics, ...attributeMetrics];
 
   if (!hoveredNode) {
@@ -101,7 +119,15 @@ const Legend = () => {
       </div>
       <div className="space-y-0.5">
         {nodeMetrics.map(
-          ({ key, value, color, percentage, proportion, isAttribute }) => (
+          ({
+            key,
+            value,
+            color,
+            percentage,
+            proportion,
+            isAttribute,
+            isNumeric,
+          }) => (
             <div key={key} className="flex items-center gap-1 py-1">
               <div
                 className="h-4 w-4 flex-shrink-0 rounded-full"
@@ -111,7 +137,7 @@ const Legend = () => {
                 {key.replace(/_/g, " ")}
               </div>
 
-              {!isAttribute ? (
+              {!isAttribute || isNumeric ? (
                 <>
                   <span className="w-14 min-w-12 font-mono text-xs text-muted-foreground tabular-nums">
                     {percentage}%
