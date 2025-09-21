@@ -12,17 +12,21 @@ export const createSelectColumn = <
   id: "select",
   header: ({ table }) => {
     return (
-      <div className="flex w-24 items-center space-x-2">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-          className="cursor-pointer"
-        />
-        <Label>Labels</Label>
+      <div className="w-24">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
+            aria-label="Select all"
+            className="cursor-pointer"
+          />
+          <Label>Labels</Label>
+        </div>
       </div>
     );
   },
@@ -30,17 +34,19 @@ export const createSelectColumn = <
     const label = row.original.label;
     const rowId = row.id;
     return (
-      <div className="flex w-24 items-center space-x-2">
-        <Checkbox
-          id={`select-${rowId}`}
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-          className="cursor-pointer"
-        />
-        <Label htmlFor={`select-${rowId}`} className="truncate font-medium">
-          {label}
-        </Label>
+      <div className="w-24">
+        <div className="flex w-24 items-center gap-2">
+          <Checkbox
+            id={`select-${rowId}`}
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+            className="cursor-pointer"
+          />
+          <Label htmlFor={`select-${rowId}`} className="truncate font-medium">
+            {label}
+          </Label>
+        </div>
       </div>
     );
   },
@@ -89,18 +95,20 @@ export const createAttributeColumns = <T,>(
     header: ({ column }) => {
       const color = useVisualizationStore.getState().getColorForKey(key);
       return (
-        <Button
-          variant="ghost"
-          style={{ color }}
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-24 justify-between gap-1"
-          size={"none"}
-        >
-          <div className="truncate text-sm font-medium capitalize">
-            {key.replace(/_/g, " ")}
-          </div>
-          <ArrowUpDown className="h-4 w-4 flex-shrink-0" />
-        </Button>
+        <div className="w-24">
+          <Button
+            variant="ghost"
+            style={{ color }}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="w-24 justify-between gap-1"
+            size={"none"}
+          >
+            <div className="truncate text-sm font-medium capitalize">
+              {key.replace(/_/g, " ")}
+            </div>
+            <ArrowUpDown className="h-4 w-4 flex-shrink-0" />
+          </Button>
+        </div>
       );
     },
     cell: ({ row }) => {

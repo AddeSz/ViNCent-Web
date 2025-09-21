@@ -69,11 +69,17 @@ const TableContent = <T,>({ table, columnsLength }: TableContentProps<T>) => {
                     left: 0,
                     width: "100%",
                     transform: `translateY(${virtualRow.start}px)`,
-                    display: "flex",
+                    display: "table-row",
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} style={{ display: "table-cell" }}>
+                    <TableCell
+                      key={cell.id}
+                      style={{
+                        display: "table-cell",
+                        width: "96px",
+                      }}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
