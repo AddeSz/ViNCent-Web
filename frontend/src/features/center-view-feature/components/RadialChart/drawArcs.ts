@@ -1,5 +1,6 @@
 import type { AttributeInfo } from "@/types/network";
 import * as d3 from "d3";
+import type { ContextType } from "../../CenterView";
 import type { ArcData } from "./RadialChart";
 
 const drawArcs = (
@@ -20,6 +21,7 @@ const drawArcs = (
   onTooltipHide: () => void,
   attributeInfo: Map<string, AttributeInfo>,
   getKeyIndex: (key: string) => number,
+  onContextMenuTarget: (target: ContextType, data?: any) => void,
 ): void => {
   const g = svg.append("g").attr("class", "arcs-group");
   g.selectAll("path.arc-background")
@@ -174,6 +176,12 @@ const drawArcs = (
     })
     .on("click", function (_, d) {
       console.log(d.value);
+    })
+    .on("contextmenu", (event, d) => {
+      // event.preventDefault();
+      // event.stopPropagation();
+      event._handledByChild = true;
+      onContextMenuTarget("arc", d);
     });
 };
 

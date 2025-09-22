@@ -16,6 +16,7 @@ import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useChartSettings } from "@/hooks/useChartSettings";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import type { CombinedData } from "@/types/network";
+import type { ContextType } from "../../CenterView";
 import {
   createAttributeColumns,
   createCentralityColumns,
@@ -48,6 +49,7 @@ type DataTableProps = {
   onSortingChange: (
     updater: SortingState | ((old: SortingState) => SortingState),
   ) => void;
+  onContextMenuTarget: (target: ContextType, data?: any) => void;
   onSortedDataChange?: (sortedData: CombinedData[]) => void;
 };
 
@@ -55,6 +57,7 @@ const DataTable = ({
   combinedData,
   sorting,
   onSortingChange,
+  onContextMenuTarget,
   onSortedDataChange,
 }: DataTableProps) => {
   const centralityKeys = useCentralityStore((s) => s.centralityKeys);
@@ -159,7 +162,12 @@ const DataTable = ({
   }, [sortedCombinedData]);
 
   return (
-    <div className="flex h-full w-full flex-col px-3">
+    <div
+      className="flex h-full w-full flex-col px-3"
+      onContextMenu={() => {
+        onContextMenuTarget("data-table");
+      }}
+    >
       <TableControls
         table={table}
         firstColumnKey={firstColumnKey}

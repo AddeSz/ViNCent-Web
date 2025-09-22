@@ -5,11 +5,13 @@ import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
+import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import type { CombinedData, Link, Node } from "@/types/network";
 import type { Simulation } from "d3";
 import * as d3 from "d3";
 import type { Ref, RefObject } from "react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import type { ContextType } from "../../CenterView";
 import selectionStyling from "./selectionStyling";
 import createSimulation from "./setupSimulation";
 import updateGraph from "./updateGraph";
@@ -18,10 +20,11 @@ import { useNodeLinkData } from "./useNodeLinkData";
 type NodeLinkDiagramProps = {
   containerRef: RefObject<HTMLDivElement | null>;
   combinedDataMap: Map<string, CombinedData>;
+  onContextMenuTarget: (target: ContextType, data?: any) => void;
 };
 
 const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
-  { containerRef, combinedDataMap }: NodeLinkDiagramProps,
+  { containerRef, combinedDataMap, onContextMenuTarget }: NodeLinkDiagramProps,
   resetRef: Ref<() => void>,
 ) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -35,6 +38,7 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   const nodeLinkData = useNodeLinkData(networkData, filteredCentralityData);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
   const { tooltip, showTooltip, hideTooltip } = useTooltip();
+  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
 
   useImperativeHandle(resetRef, () => () => resetZoom(svgRef), [resetZoom]);
 
@@ -102,11 +106,15 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
     },
     [],
   );
-
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center bg-card" />
   ) : (
-    <div className="relative h-full">
+    <div
+      className="relative h-full"
+      onContextMenu={() => {
+        onContextMenuTarget("node-link");
+      }}
+    >
       <svg
         ref={svgRef}
         viewBox="-800 -800 1600 1600"
@@ -114,7 +122,11 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
         className="h-full w-full bg-card"
         style={{ shapeRendering: "geometricPrecision" }}
       />
-      <ChartTooltip {...tooltip} combinedDataMap={combinedDataMap} />
+      <ChartTooltip
+        {...tooltip}
+        combinedDataMap={combinedDataMap}
+        getColorForKey={getColorForKey}
+      />
     </div>
   );
 });

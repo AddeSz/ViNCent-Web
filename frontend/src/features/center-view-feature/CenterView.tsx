@@ -11,6 +11,11 @@ import { useSortingLogic } from "./hooks/useSortingLogic";
 
 const VIEW_KEY = "center-view-mode";
 export type ViewType = "radial" | "node-link" | "data-table";
+export type ContextType = "radial" | "arc" | "node-link" | "data-table";
+export type ContextMenuTarget = {
+  type: ContextType;
+  data?: any;
+};
 
 const CenterView = () => {
   const { view, setView, isViewLoaded } = useViewPersistence(VIEW_KEY);
@@ -23,6 +28,18 @@ const CenterView = () => {
   const [sortedCombinedData, setSortedCombinedData] = useState<CombinedData[]>(
     [],
   );
+  const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
+    {
+      type: "radial",
+    },
+  );
+
+  const handleContextMenuTarget = (target: ContextType, data?: any) => {
+    setContextMenuTarget((prev) => {
+      if (prev.type === target && prev.data === data) return prev;
+      return { type: target, data };
+    });
+  };
 
   if (!isViewLoaded) return null;
   return (
@@ -33,6 +50,8 @@ const CenterView = () => {
         view={view}
         viewRendererRef={viewRendererRef}
         onContextMenuSort={handleContextMenuSort}
+        contextMenuTarget={contextMenuTarget}
+        sorting={sorting}
       >
         <div
           ref={containerRef}
@@ -48,6 +67,7 @@ const CenterView = () => {
             sorting={sorting}
             onSortingChange={handleSortingChange}
             onSortedDataChange={setSortedCombinedData}
+            onContextMenuTarget={handleContextMenuTarget}
           />
         </div>
       </ViewContextMenu>

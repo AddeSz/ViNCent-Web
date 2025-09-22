@@ -1,4 +1,7 @@
-import type { ViewType } from "@/features/center-view-feature/CenterView";
+import type {
+  ContextType,
+  ViewType,
+} from "@/features/center-view-feature/CenterView";
 import DataTable from "@/features/center-view-feature/components/DataTable/DataTable";
 import NodeLinkDiagram from "@/features/center-view-feature/components/NodeLinkDiagram/NodeLinkDiagram";
 import RadialChart from "@/features/center-view-feature/components/RadialChart/RadialChart";
@@ -17,6 +20,7 @@ interface ViewRendererProps {
     updater: SortingState | ((old: SortingState) => SortingState),
   ) => void;
   onSortedDataChange: (data: CombinedData[]) => void;
+  onContextMenuTarget: (target: ContextType, data?: any) => void;
 }
 
 export interface ViewRendererRef {
@@ -36,6 +40,7 @@ const ViewRenderer = memo(
         sorting,
         onSortingChange,
         onSortedDataChange,
+        onContextMenuTarget,
       },
       ref,
     ) => {
@@ -61,6 +66,7 @@ const ViewRenderer = memo(
               ref={radialResetRef}
               combinedData={sortedCombinedData}
               combinedDataMap={combinedDataMap}
+              onContextMenuTarget={onContextMenuTarget}
             />
           </div>
 
@@ -75,6 +81,7 @@ const ViewRenderer = memo(
               containerRef={containerRef}
               ref={nodeLinkResetRef}
               combinedDataMap={combinedDataMap}
+              onContextMenuTarget={onContextMenuTarget}
             />
           </div>
 
@@ -90,6 +97,7 @@ const ViewRenderer = memo(
               sorting={sorting}
               onSortingChange={onSortingChange}
               onSortedDataChange={onSortedDataChange}
+              onContextMenuTarget={onContextMenuTarget}
             />
           </div>
         </>

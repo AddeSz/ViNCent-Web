@@ -17,6 +17,8 @@ export const useZoom = () => {
         .filter((event) => {
           if (event.type === "wheel") return true;
 
+          if ("button" in event && event.button === 2) return false;
+
           const target = event.target as HTMLElement;
           if (
             target.closest(".arcs-group") ||

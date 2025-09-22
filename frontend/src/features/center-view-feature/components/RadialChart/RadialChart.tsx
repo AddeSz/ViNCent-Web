@@ -20,6 +20,7 @@ import {
   type Ref,
   type RefObject,
 } from "react";
+import type { ContextType } from "../../CenterView";
 import calculateBounds from "./calculateBounds";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
@@ -49,10 +50,16 @@ type RadialChartProps = {
   containerRef: RefObject<HTMLDivElement | null>;
   combinedData: CombinedData[];
   combinedDataMap: Map<string, CombinedData>;
+  onContextMenuTarget: (target: ContextType, data?: any) => void;
 };
 
 const RadialChart = forwardRef(function RadialChart(
-  { containerRef, combinedData, combinedDataMap }: RadialChartProps,
+  {
+    containerRef,
+    combinedData,
+    combinedDataMap,
+    onContextMenuTarget,
+  }: RadialChartProps,
   resetRef: Ref<() => void>,
 ) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -171,6 +178,7 @@ const RadialChart = forwardRef(function RadialChart(
       hideTooltip,
       attributeInfo,
       getKeyIndex,
+      onContextMenuTarget,
     );
     drawLinks(svgGroup, networkData.links, x, innerRadius, selectedNodes);
     drawBounds(svgGroup, bounds, innerRadius, outerRadius, selectedNodes);
@@ -198,7 +206,13 @@ const RadialChart = forwardRef(function RadialChart(
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center"></div>
   ) : (
-    <div className="relative h-full">
+    <div
+      className="relative h-full"
+      onContextMenu={(e) => {
+        if ((e.nativeEvent as any)._handledByChild) return;
+        onContextMenuTarget("radial");
+      }}
+    >
       <svg
         ref={svgRef}
         viewBox="-800 -800 1600 1600"
@@ -206,7 +220,11 @@ const RadialChart = forwardRef(function RadialChart(
         className="h-full w-full"
         style={{ shapeRendering: "geometricPrecision" }}
       />
-      <ChartTooltip {...tooltip} combinedDataMap={combinedDataMap} />
+      <ChartTooltip
+        {...tooltip}
+        combinedDataMap={combinedDataMap}
+        getColorForKey={getColorForKey}
+      />
     </div>
   );
 });

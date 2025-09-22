@@ -3,7 +3,12 @@ export function getNodeId(value: string | { id: string }): string {
 }
 
 export function formatKeyLabel(key: string): string {
-  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/\./g, ": ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
 }
 
 export function formatValue(x: any): string {

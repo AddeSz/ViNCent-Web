@@ -3,7 +3,7 @@ import { useCentralityStore } from "@/hooks/useCentralityStore";
 import { useChartSettings } from "@/hooks/useChartSettings";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
-import { formatValue } from "@/utils/utils";
+import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo } from "react";
 
 const Legend = () => {
@@ -134,7 +134,7 @@ const Legend = () => {
                 style={{ backgroundColor: color }}
               />
               <div className="w-full max-w-24 truncate text-xs font-medium capitalize">
-                {key.replace(/_/g, " ")}
+                {formatKeyLabel(key)}
               </div>
 
               {!isAttribute || isNumeric ? (
