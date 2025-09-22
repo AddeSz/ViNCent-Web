@@ -8,7 +8,6 @@ export const useFilteredCentralityData = (): Centrality[] => {
     (s) => s.enabledCentralityKeys,
   );
   const brushRanges = useCentralityStore((s) => s.brushRanges);
-  const sortKey = useCentralityStore((s) => s.sortKey);
 
   const filtered = useMemo(() => {
     return centralityData.filter((item) => {
@@ -37,17 +36,5 @@ export const useFilteredCentralityData = (): Centrality[] => {
     });
   }, [filtered, enabledCentralityKeys]);
 
-  const sorted = useMemo(() => {
-    if (sortKey === "default") return mapped;
-
-    return [...mapped].sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
-
-      if (typeof aVal !== "number" || typeof bVal !== "number") return 0;
-      return bVal - aVal;
-    });
-  }, [mapped, sortKey]);
-
-  return sorted;
+  return mapped;
 };

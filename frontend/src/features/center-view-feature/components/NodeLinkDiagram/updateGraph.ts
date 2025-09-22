@@ -16,8 +16,9 @@ const updateLinks = (
       renderLinks,
       (d) => `${(d.source as Node).id}-${(d.target as Node).id}`,
     );
-
-  links.exit().transition().duration(300).style("opacity", 0).remove();
+  requestAnimationFrame(() => {
+    links.exit().transition().duration(300).style("opacity", 0).remove();
+  });
 
   const linksEnter = links
     .enter()
@@ -31,7 +32,9 @@ const updateLinks = (
     .attr("y2", (d) => (d.target as Node).y ?? 0)
     .style("stroke-opacity", 0);
 
-  linksEnter.transition().duration(400).style("stroke-opacity", 0.6);
+  requestAnimationFrame(() => {
+    linksEnter.transition().duration(300).style("stroke-opacity", 0.6);
+  });
 
   return linksEnter.merge(links);
 };
@@ -50,14 +53,15 @@ const updateNodes = (
     .selectAll<SVGCircleElement, Node>("circle.node")
     .data(visibleNodes, (d) => d.id);
 
-  nodes
-    .exit()
-    .transition()
-    .duration(300)
-    .attr("r", 0)
-    .style("opacity", 0)
-    .remove();
-
+  requestAnimationFrame(() => {
+    nodes
+      .exit()
+      .transition()
+      .duration(300)
+      .attr("r", 0)
+      .style("opacity", 0)
+      .remove();
+  });
   const nodesEnter = nodes
     .enter()
     .append("circle")
@@ -70,11 +74,13 @@ const updateNodes = (
     .style("opacity", 0)
     .on("click", handleNodeClick);
 
-  nodesEnter
-    .transition()
-    .duration(300)
-    .attr("r", NODE_RADIUS)
-    .style("opacity", 1);
+  requestAnimationFrame(() => {
+    nodesEnter
+      .transition()
+      .duration(300)
+      .attr("r", NODE_RADIUS)
+      .style("opacity", 1);
+  });
 
   const allNodes = nodesEnter.merge(nodes);
   allNodes.call(createDrag(simulation));

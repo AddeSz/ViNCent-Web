@@ -173,7 +173,7 @@ const drawArcs = (
       onTooltipHide();
     })
     .on("click", function (_, d) {
-      console.log(attributeInfo.get(d.key));
+      console.log(d.value);
     });
 };
 
