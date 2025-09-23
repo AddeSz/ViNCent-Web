@@ -24,114 +24,96 @@ const drawArcs = (
   onContextMenuTarget: (target: ContextType, data?: any) => void,
 ): void => {
   const g = svg.append("g").attr("class", "arcs-group");
-  g.selectAll("path.arc-background")
-    .data(arcData)
-    .join("path")
-    .attr("class", "arc-background")
-    .attr("d", (d) => {
-      const startAngle = x(d.data.id) ?? 0;
-      const endAngle = startAngle + x.bandwidth();
-      const innerRadius = y(getKeyIndex(d.key));
-      const outerRadius = y(getKeyIndex(d.key) + 1);
-      const arc = d3
-        .arc<ArcData>()
-        .innerRadius(innerRadius)
-        .outerRadius(outerRadius)
-        .startAngle(startAngle)
-        .endAngle(endAngle);
-      return arc(d);
-    })
-    .attr("fill", "var(--background)")
-    .attr("opacity", 0.5)
-    .attr("stroke", "none");
 
-  g.selectAll("path.arc-foreground")
-    .data(arcData)
-    .join("path")
-    .attr("class", "arc-foreground")
-    .attr("d", (d) => {
-      const startAngle = x(d.data.id) ?? 0;
-      const endAngle = startAngle + x.bandwidth();
-      const innerRadius = y(getKeyIndex(d.key));
-      const fullOuterRadius = y(getKeyIndex(d.key) + 1);
+  const processedArcData = arcData.map((d) => {
+    const startAngle = x(d.data.id) ?? 0;
+    const endAngle = startAngle + x.bandwidth();
+    const innerRadius = y(getKeyIndex(d.key));
+    const fullOuterRadius = y(getKeyIndex(d.key) + 1);
 
-      let outerRadius = fullOuterRadius;
-      const attribute = attributeInfo.get(d.key);
-      if (attribute?.isNumeric) {
-        const { min, max } = attribute.range ?? { min: 0, max: 1 };
-        const proportion = Math.max(
-          0,
-          Math.min((d.value - min) / (max - min || 1), 1),
-        );
-        outerRadius =
-          innerRadius + (fullOuterRadius - innerRadius) * proportion;
-      } else if (typeof d.value === "number") {
-        const { min, max } = centralityRanges[d.key] ?? { min: 0, max: 1 };
-        const proportion = Math.max(
-          0,
-          Math.min((d.value - min) / (max - min || 1), 1),
-        );
-        outerRadius =
-          innerRadius + (fullOuterRadius - innerRadius) * proportion;
+    const backgroundArcGenerator = d3
+      .arc<ArcData>()
+      .innerRadius(innerRadius)
+      .outerRadius(fullOuterRadius)
+      .startAngle(startAngle)
+      .endAngle(endAngle);
+
+    let foregroundOuterRadius = fullOuterRadius;
+    const attribute = attributeInfo.get(d.key);
+
+    if (typeof d.value === "number") {
+      let min = 0;
+      let max = 1;
+
+      if (attribute?.isNumeric && attribute.range) {
+        ({ min, max } = attribute.range);
+      } else if (centralityRanges[d.key]) {
+        ({ min, max } = centralityRanges[d.key]);
       }
 
-      const arc = d3
-        .arc<ArcData>()
-        .innerRadius(innerRadius)
-        .outerRadius(outerRadius)
-        .startAngle(startAngle)
-        .endAngle(endAngle);
-      return arc(d);
-    })
-    .attr("fill", (d) =>
-      d.value === undefined
-        ? "hsl(var(--muted-foreground))"
-        : getColorForKey(d.key, d.value),
-    )
-    .attr("stroke", "none")
-    .attr("opacity", 1);
+      const proportion = Math.max(
+        0,
+        Math.min((d.value - min) / (max - min || 1), 1),
+      );
+      foregroundOuterRadius =
+        innerRadius + (fullOuterRadius - innerRadius) * proportion;
+    }
 
-  g.selectAll("path.overlay")
-    .data(arcData)
-    .join("path")
-    .attr("class", "overlay")
-    .attr("d", (d) => {
-      const startAngle = x(d.data.id) ?? 0;
-      const endAngle = startAngle + x.bandwidth();
-      const innerRadius = y(getKeyIndex(d.key));
-      const outerRadius = y(getKeyIndex(d.key) + 1);
-      const arc = d3
-        .arc<ArcData>()
-        .innerRadius(innerRadius)
-        .outerRadius(outerRadius)
-        .startAngle(startAngle)
-        .endAngle(endAngle);
-      return arc(d);
-    })
-    .attr("fill", "transparent")
+    const foregroundArcGenerator = d3
+      .arc<ArcData>()
+      .innerRadius(innerRadius)
+      .outerRadius(foregroundOuterRadius)
+      .startAngle(startAngle)
+      .endAngle(endAngle);
+
+    return {
+      ...d,
+      backgroundPath: backgroundArcGenerator(d),
+      foregroundPath: foregroundArcGenerator(d),
+      fillColor:
+        d.value === undefined
+          ? "hsl(var(--muted-foreground))"
+          : getColorForKey(d.key, d.value),
+    };
+  });
+
+  const arcGroups = g
+    .selectAll("g.arc-group")
+    .data(processedArcData)
+    .join("g")
+    .attr("class", "arc-group");
+
+  arcGroups
+    .append("path")
+    .attr("class", "arc-background")
+    .attr("d", (d) => d.backgroundPath)
+    .attr("fill", "var(--background)")
+    .attr("opacity", 0.5)
     .attr("stroke", "none")
-    .style("cursor", "pointer")
-    .on("mouseover", function (event, d) {
-      g.selectAll("path.arc-foreground")
-        .filter(
-          (fd) =>
-            (fd as ArcData).data.id === d.data.id &&
-            (fd as ArcData).key === d.key,
-        )
+    .style("cursor", "pointer");
+
+  arcGroups
+    .append("path")
+    .attr("class", "arc-foreground")
+    .attr("d", (d) => d.foregroundPath)
+    .attr("fill", (d) => d.fillColor)
+    .attr("stroke", "none")
+    .attr("opacity", 1)
+    .style("pointer-events", "none");
+
+  arcGroups
+    .on("mousemove", function (event, d) {
+      d3.select(this)
+        .select(".arc-background")
+        .transition()
+        .duration(100)
+        .attr("opacity", 0.7);
+      d3.select(this)
+        .select(".arc-foreground")
         .transition()
         .duration(100)
         .attr("opacity", 0.85);
 
-      g.selectAll("path.arc-background")
-        .filter(
-          (fd) =>
-            (fd as ArcData).data.id === d.data.id &&
-            (fd as ArcData).key === d.key,
-        )
-        .transition()
-        .duration(100)
-        .attr("opacity", 0.7);
-
       onTooltipShow({
         type: "arc",
         nodeId: d.data.id,
@@ -139,47 +121,25 @@ const drawArcs = (
         y: event.clientY,
         arcKey: d.key,
       });
-
       onNodeHover(d.data.id);
     })
-    .on("mousemove", function (event, d) {
-      onTooltipShow({
-        type: "arc",
-        nodeId: d.data.id,
-        x: event.clientX,
-        y: event.clientY,
-        arcKey: d.key,
-      });
-    })
-    .on("mouseout", function (_, d) {
-      g.selectAll("path.arc-foreground")
-        .filter(
-          (fd) =>
-            (fd as ArcData).data.id === d.data.id &&
-            (fd as ArcData).key === d.key,
-        )
+    .on("mouseout", function () {
+      d3.select(this)
+        .select(".arc-background")
+        .transition()
+        .duration(100)
+        .attr("opacity", 0.5);
+      d3.select(this)
+        .select(".arc-foreground")
         .transition()
         .duration(100)
         .attr("opacity", 1);
-
-      g.selectAll("path.arc-background")
-        .filter(
-          (fd) =>
-            (fd as ArcData).data.id === d.data.id &&
-            (fd as ArcData).key === d.key,
-        )
-        .transition()
-        .duration(100)
-        .attr("opacity", 0.7);
-
       onTooltipHide();
     })
-    .on("click", function (_, d) {
+    .on("click", (_, d) => {
       console.log(d.value);
     })
     .on("contextmenu", (event, d) => {
-      // event.preventDefault();
-      // event.stopPropagation();
       event._handledByChild = true;
       onContextMenuTarget("arc", d);
     });
