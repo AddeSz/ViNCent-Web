@@ -1,20 +1,18 @@
 import { useBrush } from "@/features/data-filtering-feature/hooks/useBrush";
 import { useHistogramData } from "@/features/data-filtering-feature/hooks/useHistogramData";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { useResizeObserver } from "@/hooks/useResizeObserver";
+import type { CombinedData } from "@/types/network";
 import * as d3 from "d3";
-import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
 
 type HistogramProps = {
-  data: number[];
-  containerRef: RefObject<HTMLDivElement | null>;
+  data: CombinedData[];
+  histogramValues: number[];
+  width: number;
   binCount?: number;
-  centralityKey: string;
+  dataKey: string;
   getColorForKey: (key: string) => string;
   onBrushChange?: (key: string, range: [number, number] | null) => void;
   brushRange?: [number, number] | null;
-  allCentralityData?: Record<string, any>[];
   allBrushRanges?: Record<string, [number, number] | null>;
 };
 
@@ -26,39 +24,37 @@ const CHART_CONFIG = {
 };
 
 const HistogramChart = ({
-  data,
-  containerRef,
+  data = [],
+  histogramValues,
+  width,
   binCount = 10,
-  centralityKey,
+  dataKey,
   getColorForKey,
   onBrushChange,
   brushRange,
-  allCentralityData = [],
   allBrushRanges = {},
 }: HistogramProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const brushRef = useRef<d3.BrushBehavior<unknown> | null>(null);
   const isProgrammaticUpdate = useRef(false);
-  const dimensions = useResizeObserver(containerRef);
-  const width = useDebouncedValue(dimensions?.width, 10);
-  const histogramData = useHistogramData(data, binCount);
+  const histogramData = useHistogramData(histogramValues, binCount);
 
   const handleBrushEnd = useBrush({
     histogramData,
     width,
-    centralityKey,
+    dataKey,
     onBrushChange,
     isProgrammaticUpdate,
     margin: CHART_CONFIG.margin,
   });
 
   const getFilteredDataIndices = (): Set<number> => {
-    if (!allCentralityData.length) {
-      return new Set(data.map((_, i) => i));
+    if (!data.length) {
+      return new Set(histogramValues.map((_, i) => i));
     }
 
     return new Set(
-      allCentralityData
+      data
         .map((entry, index) => {
           const isIncluded = Object.entries(allBrushRanges).every(
             ([key, range]) => {
@@ -85,21 +81,19 @@ const HistogramChart = ({
     const { min, max } = histogramData!;
     const binStart = bin.x0 ?? min;
     const binEnd = bin.x1 ?? max;
-
-    if (allCentralityData.length > 0) {
+    if (data.length > 0) {
       const hasValidData = Array.from(filteredIndices).some((index) => {
-        const entry = allCentralityData[index];
-        const value = entry[centralityKey];
-        return typeof value === "number" && value >= binStart && value < binEnd;
+        const entry = data[index];
+        const value = entry[dataKey];
+        return typeof value === "number" && value > binStart && value < binEnd;
       });
-      return hasValidData ? getColorForKey(centralityKey) : "#ccc";
+      return hasValidData ? getColorForKey(dataKey) : "#ccc";
     }
-
-    if (!brushRange) return getColorForKey(centralityKey);
+    if (!brushRange) return getColorForKey(dataKey);
 
     const [rangeMin, rangeMax] = brushRange;
     const overlaps = binEnd > rangeMin && binStart < rangeMax;
-    return overlaps ? getColorForKey(centralityKey) : "#ccc";
+    return overlaps ? getColorForKey(dataKey) : "#ccc";
   };
 
   const createAxes = (
@@ -222,21 +216,14 @@ const HistogramChart = ({
     width,
     histogramData,
     handleBrushEnd,
-    allCentralityData,
+    data,
     allBrushRanges,
     brushRange,
-    centralityKey,
+    dataKey,
     getColorForKey,
   ]);
 
-  return (
-    <svg
-      ref={svgRef}
-      width={width}
-      height={CHART_CONFIG.height}
-      className="w-min"
-    />
-  );
+  return <svg ref={svgRef} width={width} height={CHART_CONFIG.height} />;
 };
 
 export default HistogramChart;

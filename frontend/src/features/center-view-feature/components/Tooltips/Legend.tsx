@@ -1,76 +1,44 @@
 import { useAttributeStore } from "@/hooks/useAttributeStore";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
-import { useChartSettings } from "@/hooks/useChartSettings";
 import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo } from "react";
+import { useKeys } from "../../hooks/useKeys";
 
 const Legend = () => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const centralityKeys = useCentralityStore((s) => s.enabledCentralityKeys);
-  const centralityRanges = useCentralityStore((s) => s.centralityRanges);
-  const attributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
-  const nodeAttributes = useAttributeStore((s) => s.nodeAttributes);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
-  const displayMode = useChartSettings((s) => s.displayMode);
+  const attributeData = useAttributeStore((s) => s.attributeData);
   const attributeInfo = useAttributeStore((s) => s.attributeInfo);
+  const centralityRanges = useCentralityStore((s) => s.centralityRanges);
+  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
 
-  const keysToShow =
-    displayMode === "attributes"
-      ? attributeKeys
-      : displayMode === "centrality"
-        ? centralityKeys
-        : [...centralityKeys, ...attributeKeys];
+  const { allKeys, attributeKeys, centralityKeys } = useKeys();
 
-  const centralityMetrics = useMemo(() => {
-    if (!hoveredNode || displayMode === "attributes") return [];
-    return centralityKeys
-      .filter((key) => keysToShow.includes(key))
-      .map((key) => {
+  const nodeMetrics = useMemo(() => {
+    if (!hoveredNode) return [];
+
+    return allKeys.map((key) => {
+      const isAttribute = attributeKeys.includes(key);
+      const isCentrality = centralityKeys.includes(key);
+
+      let value: any;
+      let proportion = 1;
+      let percentage = "";
+
+      if (isCentrality) {
         const rawValue = hoveredNode[key as keyof typeof hoveredNode];
-        const value =
-          typeof rawValue === "number" ? rawValue : Number(rawValue) || 0;
+        value = typeof rawValue === "number" ? rawValue : Number(rawValue) || 0;
+
         const { min, max } = centralityRanges[key] || { min: 0, max: 1 };
-        const proportion = Math.max(
-          0,
-          Math.min((value - min) / (max - min || 1), 1),
-        );
+        proportion = Math.max(0, Math.min((value - min) / (max - min || 1), 1));
 
-        let percentage = (proportion * 100).toFixed(2);
-        if (Number(percentage) === 100) percentage = "100";
-        if (Number(percentage) === 0) percentage = "0.0";
-
-        return {
-          key,
-          value,
-          color: getColorForKey(key),
-          percentage,
-          proportion,
-          isAttribute: false,
-          isNumeric: true,
-        };
-      });
-  }, [hoveredNode, centralityKeys, centralityRanges, displayMode]);
-
-  const attributeMetrics = useMemo(() => {
-    if (!hoveredNode || displayMode === "centrality") return [];
-    return attributeKeys
-      .filter((key) => keysToShow.includes(key))
-      .map((key) => {
-        const value = nodeAttributes.get(hoveredNode.id)?.[key];
+        percentage = (proportion * 100).toFixed(2);
+        if (+percentage === 100) percentage = "100";
+        if (+percentage === 0) percentage = "0.0";
+      } else if (isAttribute) {
+        value = attributeData.get(hoveredNode.id)?.[key];
         const info = attributeInfo.get(key);
-        const color = getColorForKey(
-          key,
-          value !== undefined
-            ? typeof value === "number"
-              ? value
-              : String(value)
-            : undefined,
-        );
-
-        let proportion = 1;
-        let percentage = "";
 
         if (info?.isNumeric && typeof value === "number" && info.range) {
           const { min, max } = info.range;
@@ -78,24 +46,28 @@ const Legend = () => {
             0,
             Math.min((value - min) / (max - min || 1), 1),
           );
-
           percentage = (proportion * 100).toFixed(2);
-          if (Number(percentage) === 100) percentage = "100";
-          if (Number(percentage) === 0) percentage = "0.0";
+          if (+percentage === 100) percentage = "100";
+          if (+percentage === 0) percentage = "0.0";
         }
+      }
 
-        return {
-          key,
-          value,
-          color,
-          proportion,
-          percentage,
-          isAttribute: true,
-          isNumeric: info?.isNumeric ?? false,
-        };
-      });
-  }, [hoveredNode, attributeKeys, nodeAttributes, attributeInfo, displayMode]);
-  const nodeMetrics = [...centralityMetrics, ...attributeMetrics];
+      const color = getColorForKey(
+        key,
+        value !== undefined ? value : undefined,
+      );
+
+      return {
+        key,
+        value,
+        proportion,
+        percentage,
+        color,
+        isAttribute,
+        isNumeric: isCentrality || attributeInfo.get(key)?.isNumeric,
+      };
+    });
+  }, [hoveredNode, allKeys, attributeKeys, centralityKeys]);
 
   if (!hoveredNode) {
     return (
@@ -106,6 +78,7 @@ const Legend = () => {
       </div>
     );
   }
+
   return (
     <div className="h-auto space-y-1">
       <div className="border-b pb-1">
@@ -113,7 +86,7 @@ const Legend = () => {
           Node Details:
           <span className="mt-1 text-sm text-muted-foreground">
             {" "}
-            {hoveredNode.label ? hoveredNode.label : hoveredNode.id}
+            {hoveredNode.label || hoveredNode.id}
           </span>
         </div>
       </div>

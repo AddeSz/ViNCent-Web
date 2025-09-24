@@ -1,5 +1,6 @@
 import ChartTooltip from "@/features/center-view-feature/components/Tooltips/Tooltip";
 import { useChartData } from "@/features/center-view-feature/hooks/useChartData";
+import { useKeys } from "@/features/center-view-feature/hooks/useKeys";
 import { useTooltip } from "@/features/center-view-feature/hooks/useTooltip";
 import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
@@ -15,7 +16,6 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   type Ref,
   type RefObject,
@@ -66,9 +66,7 @@ const RadialChart = forwardRef(function RadialChart(
   const rawDimensions = useResizeObserver(containerRef);
   const dimensions = useDebouncedValue(rawDimensions, 200);
 
-  const centralityKeys = useCentralityStore((s) => s.enabledCentralityKeys);
   const networkData = useNetworkStore((s) => s.network);
-  const attributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const attributeInfo = useAttributeStore((s) => s.attributeInfo);
@@ -83,11 +81,7 @@ const RadialChart = forwardRef(function RadialChart(
     radialSettings;
   const nodeMap = useNetworkStore((s) => s.nodeMap);
 
-  const allKeys = useMemo(() => {
-    if (displayMode === "attributes") return attributeKeys;
-    if (displayMode === "centrality") return centralityKeys;
-    return [...centralityKeys, ...attributeKeys];
-  }, [centralityKeys, attributeKeys, displayMode]);
+  const { allKeys, attributeKeys, centralityKeys } = useKeys();
 
   const chartData = useChartData(combinedData, allKeys);
 

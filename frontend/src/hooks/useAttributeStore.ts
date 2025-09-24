@@ -7,36 +7,76 @@ import { flattenAttributes } from "@/utils/networkProcessing";
 import { create } from "zustand";
 
 interface AttributeStore {
-  nodeAttributes: Map<string, NodeAttributes>;
+  attributeData: Map<string, NodeAttributes>;
   attributeKeys: string[];
   enabledAttributeKeys: string[];
   attributeInfo: Map<string, AttributeInfo>;
+  brushRanges: Record<string, [number, number] | null>;
+  filteredAttributeData: Map<string, NodeAttributes>;
+
   setNodeAttributes: (nodes: any[]) => void;
   setEnabledAttributeKeys: (keys: string[]) => void;
   toggleAttributeKey: (key: string) => void;
-  getAttributeValuesForKey: (key: string) => NodeAttributeValue[];
+  setBrushRange: (key: string, range: [number, number] | null) => void;
+  clearBrushRange: (key: string) => void;
+  clearAllBrushRanges: () => void;
   clearData: () => void;
+
+  _updateFilteredAttributeData: () => void;
 }
 
+const filterAndMapAttributeData = (
+  attributeData: Map<string, NodeAttributes>,
+  enabledAttributeKeys: string[],
+  brushRanges: Record<string, [number, number] | null>,
+): Map<string, NodeAttributes> => {
+  const filtered = new Map<string, NodeAttributes>();
+
+  attributeData.forEach((attrs, id) => {
+    const matches = enabledAttributeKeys.every((key) => {
+      const value = attrs[key];
+      const range = brushRanges[key];
+      if (!range) return true;
+      if (typeof value !== "number") return true;
+      const [min, max] = range;
+      return value >= min && value <= max;
+    });
+
+    if (matches) {
+      const result: NodeAttributes = {};
+      for (const key of enabledAttributeKeys) {
+        if (key in attrs) {
+          result[key] = attrs[key];
+        }
+      }
+      filtered.set(id, result);
+    }
+  });
+
+  return filtered;
+};
+
 export const useAttributeStore = create<AttributeStore>((set, get) => ({
-  nodeAttributes: new Map(),
+  attributeData: new Map(),
   attributeKeys: [],
   enabledAttributeKeys: [],
   attributeInfo: new Map(),
+  brushRanges: {},
+  filteredAttributeData: new Map<string, NodeAttributes>(),
 
   setNodeAttributes: (nodes) => {
-    const nodeAttributes = new Map<string, NodeAttributes>();
+    const attributeData = new Map<string, NodeAttributes>();
     nodes.forEach((node) => {
       if (node.attributes) {
         const flattenedAttrs = flattenAttributes(node.attributes);
-        nodeAttributes.set(node.id, flattenedAttrs);
+        attributeData.set(node.id, flattenedAttrs);
       }
     });
 
     const attributeKeys = new Set<string>();
     const attributeInfo = new Map<string, AttributeInfo>();
 
-    nodeAttributes.forEach((attrs) => {
+    attributeData.forEach((attrs) => {
       Object.entries(attrs).forEach(([key, value]) => {
         attributeKeys.add(key);
 
@@ -94,11 +134,13 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
 
     const attributeKeysArray = Array.from(attributeKeys);
     set({
-      nodeAttributes,
+      attributeData,
       attributeKeys: attributeKeysArray,
       attributeInfo,
       enabledAttributeKeys: attributeKeysArray,
     });
+
+    get()._updateFilteredAttributeData();
   },
 
   setEnabledAttributeKeys: (keys) => set({ enabledAttributeKeys: keys }),
@@ -119,16 +161,42 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
       }
     }),
 
-  getAttributeValuesForKey: (key) => {
-    const info = get().attributeInfo.get(key);
-    return info ? Array.from(info.values) : [];
+  _updateFilteredAttributeData: () => {
+    const state = get();
+    const filtered = filterAndMapAttributeData(
+      state.attributeData,
+      state.enabledAttributeKeys,
+      state.brushRanges,
+    );
+    set({ filteredAttributeData: filtered });
+  },
+
+  setBrushRange: (key, range) => {
+    set((s) => ({
+      brushRanges: { ...s.brushRanges, [key]: range },
+    }));
+    get()._updateFilteredAttributeData();
+  },
+
+  clearBrushRange: (key) => {
+    set((s) => {
+      const { [key]: removed, ...rest } = s.brushRanges;
+      return { brushRanges: rest };
+    });
+    get()._updateFilteredAttributeData();
+  },
+
+  clearAllBrushRanges: () => {
+    set({ brushRanges: {} });
+    get()._updateFilteredAttributeData();
   },
 
   clearData: () =>
     set({
-      nodeAttributes: new Map(),
+      attributeData: new Map(),
       attributeKeys: [],
       enabledAttributeKeys: [],
       attributeInfo: new Map(),
+      brushRanges: {},
     }),
 }));

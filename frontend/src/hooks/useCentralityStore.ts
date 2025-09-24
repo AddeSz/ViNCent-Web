@@ -2,12 +2,12 @@ import type { Centrality } from "@/types/network";
 import { create } from "zustand";
 
 interface CentralityStore {
-  centralityData: Centrality[];
-  centralityMap: Map<string, Centrality>;
+  centralityData: Map<string, Centrality>;
   centralityKeys: string[];
   enabledCentralityKeys: string[];
   centralityRanges: Record<string, { min: number; max: number }>;
   brushRanges: Record<string, [number, number] | null>;
+  filteredCentralityData: Map<string, Centrality>;
 
   setCentralityData: (data: Centrality[]) => void;
   setCentralityRanges: (
@@ -19,15 +19,58 @@ interface CentralityStore {
   clearBrushRange: (key: string) => void;
   clearAllBrushRanges: () => void;
   clearData: () => void;
+
+  _updateFilteredData: () => void;
 }
 
-export const useCentralityStore = create<CentralityStore>((set) => ({
-  centralityData: [],
+const filterAndMapCentralityData = (
+  centralityData: Map<string, Centrality>,
+  enabledCentralityKeys: string[],
+  brushRanges: Record<string, [number, number] | null>,
+): Map<string, Centrality> => {
+  const filtered = new Map<string, Centrality>();
+
+  centralityData.forEach((item, id) => {
+    const matches = enabledCentralityKeys.every((key) => {
+      const value = item[key];
+      const range = brushRanges[key];
+      if (!range) return true;
+      if (typeof value !== "number") return false;
+      const [min, max] = range;
+      return value >= min && value <= max;
+    });
+
+    if (matches) {
+      const result: Centrality = { id: item.id };
+      for (const key of enabledCentralityKeys) {
+        if (key in item) {
+          result[key] = item[key];
+        }
+      }
+      filtered.set(id, result);
+    }
+  });
+
+  return filtered;
+};
+
+export const useCentralityStore = create<CentralityStore>((set, get) => ({
   centralityKeys: [],
   enabledCentralityKeys: [],
   centralityRanges: {},
   brushRanges: {},
-  centralityMap: new Map<string, Centrality>(),
+  centralityData: new Map<string, Centrality>(),
+  filteredCentralityData: new Map<string, Centrality>(),
+
+  _updateFilteredData: () => {
+    const state = get();
+    const filtered = filterAndMapCentralityData(
+      state.centralityData,
+      state.enabledCentralityKeys,
+      state.brushRanges,
+    );
+    set({ filteredCentralityData: filtered });
+  },
 
   setCentralityData: (data) => {
     const keysSet = new Set<string>();
@@ -38,7 +81,6 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
       Object.entries(item).forEach(([key, value]) => {
         if (key === "id") return;
         keysSet.add(key);
-
         if (typeof value === "number") {
           if (!ranges[key]) ranges[key] = { min: value, max: value };
           else {
@@ -51,19 +93,19 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
     });
 
     const keys = Array.from(keysSet);
-
     set({
-      centralityData: data,
       centralityKeys: keys,
       enabledCentralityKeys: keys,
       centralityRanges: ranges,
-      centralityMap: map,
+      centralityData: map,
     });
+
+    get()._updateFilteredData();
   },
 
   setCentralityRanges: (ranges) => set({ centralityRanges: ranges }),
 
-  toggleCentralityKey: (key) =>
+  toggleCentralityKey: (key) => {
     set((s) => {
       const isEnabled = s.enabledCentralityKeys.includes(key);
       if (isEnabled) {
@@ -79,30 +121,43 @@ export const useCentralityStore = create<CentralityStore>((set) => ({
           ),
         };
       }
-    }),
+    });
 
-  setEnabledCentralityKeys: (keys) => set({ enabledCentralityKeys: keys }),
+    get()._updateFilteredData();
+  },
 
-  setBrushRange: (key, range) =>
+  setEnabledCentralityKeys: (keys) => {
+    set({ enabledCentralityKeys: keys });
+    get()._updateFilteredData();
+  },
+
+  setBrushRange: (key, range) => {
     set((s) => ({
       brushRanges: { ...s.brushRanges, [key]: range },
-    })),
+    }));
+    get()._updateFilteredData();
+  },
 
-  clearBrushRange: (key) =>
+  clearBrushRange: (key) => {
     set((s) => {
       const { [key]: removed, ...rest } = s.brushRanges;
       return { brushRanges: rest };
-    }),
+    });
+    get()._updateFilteredData();
+  },
 
-  clearAllBrushRanges: () => set({ brushRanges: {} }),
+  clearAllBrushRanges: () => {
+    set({ brushRanges: {} });
+    get()._updateFilteredData();
+  },
 
   clearData: () =>
     set({
-      centralityData: [],
       centralityKeys: [],
       enabledCentralityKeys: [],
       centralityRanges: {},
       brushRanges: {},
-      centralityMap: new Map(),
+      centralityData: new Map(),
+      filteredCentralityData: new Map<string, Centrality>(),
     }),
 }));

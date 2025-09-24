@@ -5,7 +5,7 @@ import type { HistogramDataType } from "./useHistogramData";
 type BrushProps = {
   histogramData: HistogramDataType | null;
   width: number | undefined;
-  centralityKey: string;
+  dataKey: string;
   onBrushChange?: (key: string, range: [number, number] | null) => void;
   isProgrammaticUpdate: React.RefObject<boolean>;
   margin: { top: number; right: number; bottom: number; left: number };
@@ -14,7 +14,7 @@ type BrushProps = {
 export const useBrush = ({
   histogramData,
   width,
-  centralityKey,
+  dataKey,
   onBrushChange,
   isProgrammaticUpdate,
   margin,
@@ -29,7 +29,7 @@ export const useBrush = ({
       if (!histogramData || !onBrushChange) return;
 
       if (!event.selection) {
-        onBrushChange(centralityKey, null);
+        onBrushChange(dataKey, null);
         return;
       }
 
@@ -54,11 +54,11 @@ export const useBrush = ({
       ];
 
       if (snappedRange[0] >= snappedRange[1]) {
-        onBrushChange(centralityKey, null);
+        onBrushChange(dataKey, null);
       } else {
-        onBrushChange(centralityKey, snappedRange);
+        onBrushChange(dataKey, snappedRange);
       }
     },
-    [histogramData, width, centralityKey, onBrushChange, isProgrammaticUpdate],
+    [histogramData, width, dataKey, onBrushChange, isProgrammaticUpdate],
   );
 };

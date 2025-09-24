@@ -16,15 +16,11 @@ import { ChevronDown } from "lucide-react";
 interface TableControlsProps<T> {
   table: Table<T>;
   firstColumnKey: string;
-  centralityKeys: string[];
-  attributeKeys: string[];
 }
 
 const TableControls = <T,>({
   table,
   firstColumnKey,
-  centralityKeys,
-  attributeKeys,
 }: TableControlsProps<T>) => {
   const displayMode = useChartSettings((s) => s.displayMode);
 
@@ -34,11 +30,13 @@ const TableControls = <T,>({
     ? firstColumnKey
     : (table.getAllColumns()[0]?.id ?? "");
 
+  const allCentralityKeys = useCentralityStore((s) => s.centralityKeys);
   const enabledCentralityKeys = useCentralityStore(
     (s) => s.enabledCentralityKeys,
   );
   const toggleCentralityKey = useCentralityStore((s) => s.toggleCentralityKey);
 
+  const allAttributeKeys = useAttributeStore((s) => s.attributeKeys);
   const enabledAttributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
   const toggleAttributeKey = useAttributeStore((s) => s.toggleAttributeKey);
 
@@ -47,7 +45,6 @@ const TableControls = <T,>({
 
   const isAttributeVisible =
     displayMode === "attributes" || displayMode === "both";
-
   return (
     <div className="flex items-center space-x-4 py-4">
       <Input
@@ -72,7 +69,7 @@ const TableControls = <T,>({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {isCentralityVisible &&
-            centralityKeys.map((key) => (
+            allCentralityKeys.map((key) => (
               <DropdownMenuCheckboxItem
                 key={key}
                 className="capitalize"
@@ -85,7 +82,7 @@ const TableControls = <T,>({
             ))}
 
           {isAttributeVisible &&
-            attributeKeys.map((key) => (
+            allAttributeKeys.map((key) => (
               <DropdownMenuCheckboxItem
                 key={key}
                 className="capitalize"

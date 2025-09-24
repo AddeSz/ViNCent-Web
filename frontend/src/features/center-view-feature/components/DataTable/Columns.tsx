@@ -55,50 +55,12 @@ export const createSelectColumn = <
   enableHiding: false,
 });
 
-export const createCentralityColumns = <T,>(
-  enabledKeys: string[],
+export const createDataColumns = <T extends Record<string, any>>(
+  keys: string[],
 ): ColumnDef<T>[] =>
-  enabledKeys.map((key) => ({
+  keys.map((key) => ({
     id: key,
-    accessorFn: (row) => row[key as keyof typeof row],
-    size: 100,
-    enableSortingRemoval: true,
-    header: ({ column }) => {
-      const color = useVisualizationStore.getState().getColorForKey(key);
-      let SortIcon = ArrowUpDown;
-      if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
-      if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
-      return (
-        <Button
-          variant="ghost"
-          style={{ color }}
-          onClick={column.getToggleSortingHandler()}
-          className="w-full justify-between gap-1"
-          size={"none"}
-        >
-          <div className="truncate text-sm font-medium capitalize">
-            {key.replace(/_/g, " ")}
-          </div>
-          <SortIcon className="h-4 w-4 flex-shrink-0" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const value = row.getValue(key);
-      return (
-        <div className="w-24 truncate px-2 text-left font-medium">
-          {formatValue(value)}
-        </div>
-      );
-    },
-  }));
-
-export const createAttributeColumns = <T,>(
-  enabledKeys: string[],
-): ColumnDef<T>[] =>
-  enabledKeys.map((key) => ({
-    id: key,
-    accessorFn: (row) => row[key as keyof typeof row],
+    accessorFn: (row) => row[key as keyof T],
     size: 100,
     enableSortingRemoval: true,
     header: ({ column }) => {
@@ -131,6 +93,7 @@ export const createAttributeColumns = <T,>(
               .getState()
               .getColorForKey(key, value as string | number)
           : undefined;
+
       return (
         <div className="truncate px-2 text-left font-medium" style={{ color }}>
           {formatValue(value)}

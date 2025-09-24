@@ -1,5 +1,4 @@
 import ChartTooltip from "@/features/center-view-feature/components/Tooltips/Tooltip";
-import { useFilteredCentralityData } from "@/features/center-view-feature/hooks/useFilteredCentralityData";
 import { useTooltip } from "@/features/center-view-feature/hooks/useTooltip";
 import { useZoom } from "@/features/center-view-feature/hooks/useZoom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -7,15 +6,21 @@ import { useNetworkStore } from "@/hooks/useNetworkStore";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import type { CombinedData, Link, Node } from "@/types/network";
+import { getNodeId } from "@/utils/utils";
 import type { Simulation } from "d3";
 import * as d3 from "d3";
 import type { Ref, RefObject } from "react";
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import type { ContextType } from "../../CenterView";
 import selectionStyling from "./selectionStyling";
 import createSimulation from "./setupSimulation";
 import updateGraph from "./updateGraph";
-import { useNodeLinkData } from "./useNodeLinkData";
 
 type NodeLinkDiagramProps = {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -34,11 +39,29 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
   const dimensions = useDebouncedValue(rawDimensions, 200);
   const networkData = useNetworkStore((s) => s.network);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-  const filteredCentralityData = useFilteredCentralityData();
-  const nodeLinkData = useNodeLinkData(networkData, filteredCentralityData);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
   const { tooltip, showTooltip, hideTooltip } = useTooltip();
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+
+  const nodeLinkData = useMemo(() => {
+    if (!combinedDataMap || combinedDataMap.size === 0) {
+      return { nodes: [], links: [] };
+    }
+
+    const validNodeIds = new Set(combinedDataMap.keys());
+
+    const filteredNodes = networkData.nodes.filter((node) =>
+      validNodeIds.has(node.id),
+    );
+
+    const filteredLinks = networkData.links.filter(
+      (link) =>
+        validNodeIds.has(getNodeId(link.source)) &&
+        validNodeIds.has(getNodeId(link.target)),
+    );
+
+    return { nodes: filteredNodes, links: filteredLinks };
+  }, [networkData, combinedDataMap]);
 
   useImperativeHandle(resetRef, () => () => resetZoom(svgRef), [resetZoom]);
 
@@ -91,7 +114,7 @@ const NodeLinkDiagram = forwardRef(function NodeLinkDiagram(
         );
       })
       .on("mouseleave", () => hideTooltip());
-  }, [nodeLinkData, networkData, dimensions]);
+  }, [nodeLinkData, dimensions]);
 
   useEffect(() => {
     if (!svgRef.current) return;
