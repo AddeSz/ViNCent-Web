@@ -3,25 +3,27 @@ import { useCombinedData } from "@/features/center-view-feature/hooks/useCombine
 import { useKeys } from "@/features/center-view-feature/hooks/useKeys";
 import { useAttributeStore } from "@/hooks/useAttributeStore";
 import { useCentralityStore } from "@/hooks/useCentralityStore";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
+import BarChart from "./components/BarChart";
 import HistogramChart from "./components/HistogramChart";
 
 const DataFiltering = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const dimensions = useResizeObserver(containerRef);
-  const width = dimensions?.width ?? 0;
-  const { combinedData } = useCombinedData();
-  const { allKeys, attributeKeys, centralityKeys } = useKeys();
+  const width = useDebouncedValue(dimensions?.width ?? 0, 10);
+  const { combinedData, combinedDataMap } = useCombinedData();
+  const { allKeys, centralityKeys } = useKeys();
   const [binCount, setBinCount] = useState(16);
 
   const attributeBrushRanges = useAttributeStore((s) => s.brushRanges);
   const setAttributeBrushRange = useAttributeStore((s) => s.setBrushRange);
   const attributeData = useAttributeStore((s) => s.attributeData);
-
+  const attributeInfo = useAttributeStore((s) => s.attributeInfo);
   const centralityBrushRanges = useCentralityStore((s) => s.brushRanges);
   const setCentralityBrushRange = useCentralityStore((s) => s.setBrushRange);
   const centralityData = useCentralityStore((s) => s.centralityData);
@@ -82,39 +84,97 @@ const DataFiltering = () => {
       <div ref={containerRef} className="w-full min-w-60 space-y-6">
         <div className="space-y-4">
           {allKeys.map((key) => {
-            const values = histogramData
+            const info = attributeInfo.get(key);
+            const rawValues = histogramData
               .map((d) => d[key])
-              .filter((val): val is number => typeof val === "number");
-            if (values.length === 0) return null;
-            return (
-              <div
-                key={key}
-                className="h-auto w-full space-y-2 rounded bg-card p-2"
-              >
-                <div className="flex items-center justify-between">
+              .filter((v) => v != null);
+
+            if (centralityKeys.includes(key)) {
+              const numericValues = rawValues.filter(
+                (v): v is number => typeof v === "number",
+              );
+              if (numericValues.length === 0) return null;
+              return (
+                <div
+                  key={key}
+                  className="h-auto w-full space-y-2 rounded bg-card p-2"
+                >
                   <span className="text-sm capitalize">
                     {formatKeyLabel(key)}
                   </span>
+                  <HistogramChart
+                    data={combinedData}
+                    histogramValues={numericValues}
+                    width={width}
+                    binCount={binCount}
+                    dataKey={key}
+                    getColorForKey={getColorForKey}
+                    onBrushChange={handleCentralityBrush}
+                    brushRange={allBrushRanges[key] || null}
+                    allBrushRanges={allBrushRanges}
+                  />
                 </div>
-                <HistogramChart
-                  data={combinedData}
-                  histogramValues={values}
-                  width={width}
-                  binCount={binCount}
-                  dataKey={key}
-                  getColorForKey={getColorForKey}
-                  onBrushChange={(brushKey, range) => {
-                    if (attributeKeys.includes(brushKey)) {
-                      handleAttributeBrush(brushKey, range);
-                    } else if (centralityKeys.includes(brushKey)) {
-                      handleCentralityBrush(brushKey, range);
+              );
+            }
+
+            if (info?.isNumeric) {
+              const numericValues = rawValues.filter(
+                (v): v is number => typeof v === "number",
+              );
+              if (numericValues.length === 0) return null;
+              return (
+                <div
+                  key={key}
+                  className="h-auto w-full space-y-2 rounded bg-card p-2"
+                >
+                  <span className="text-sm capitalize">
+                    {formatKeyLabel(key)}
+                  </span>
+                  <HistogramChart
+                    data={combinedData}
+                    histogramValues={numericValues}
+                    width={width}
+                    binCount={binCount}
+                    dataKey={key}
+                    getColorForKey={getColorForKey}
+                    onBrushChange={handleAttributeBrush}
+                    brushRange={allBrushRanges[key] || null}
+                    allBrushRanges={allBrushRanges}
+                  />
+                </div>
+              );
+            }
+
+            if (info?.isNominal || info?.isOrdinal || info?.isBoolean) {
+              const categoricalValues = rawValues.filter(
+                (v): v is string | boolean =>
+                  typeof v === "string" || typeof v === "boolean",
+              );
+              if (categoricalValues.length === 0) return null;
+              return (
+                <div
+                  key={key}
+                  className="h-auto w-full space-y-2 rounded bg-card p-2"
+                >
+                  <span className="text-sm capitalize">
+                    {formatKeyLabel(key)}
+                  </span>
+                  <BarChart
+                    data={combinedDataMap}
+                    categoricalValues={categoricalValues.map(String)}
+                    width={width}
+                    dataKey={key}
+                    getColorForKey={getColorForKey}
+                    // selectedCategories={allBrushRanges[key] || null}
+                    onSelectionChange={(brushKey, selected) =>
+                      handleAttributeBrush(brushKey, selected as any)
                     }
-                  }}
-                  brushRange={allBrushRanges[key] || null}
-                  allBrushRanges={allBrushRanges}
-                />
-              </div>
-            );
+                  />
+                </div>
+              );
+            }
+
+            return null;
           })}
         </div>
       </div>

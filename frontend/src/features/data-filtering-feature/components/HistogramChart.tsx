@@ -61,10 +61,9 @@ const HistogramChart = ({
               if (!range) return true;
 
               const value = entry[key];
-              if (typeof value !== "number") return true;
-
               const [min, max] = range;
-              return value >= min && value <= max;
+
+              return value >= min && value < max;
             },
           );
 
@@ -81,19 +80,27 @@ const HistogramChart = ({
     const { min, max } = histogramData!;
     const binStart = bin.x0 ?? min;
     const binEnd = bin.x1 ?? max;
+
+    const isInBin = (value: number) => {
+      if (binEnd === max) return value >= binStart && value <= binEnd;
+      return value >= binStart && value < binEnd;
+    };
+
     if (data.length > 0) {
       const hasValidData = Array.from(filteredIndices).some((index) => {
         const entry = data[index];
         const value = entry[dataKey];
-        return typeof value === "number" && value > binStart && value < binEnd;
+        return isInBin(value);
       });
       return hasValidData ? getColorForKey(dataKey) : "#ccc";
     }
+
     if (!brushRange) return getColorForKey(dataKey);
 
     const [rangeMin, rangeMax] = brushRange;
-    const overlaps = binEnd > rangeMin && binStart < rangeMax;
-    return overlaps ? getColorForKey(dataKey) : "#ccc";
+    return isInBin(rangeMin) || isInBin(rangeMax)
+      ? getColorForKey(dataKey)
+      : "#ccc";
   };
 
   const createAxes = (
