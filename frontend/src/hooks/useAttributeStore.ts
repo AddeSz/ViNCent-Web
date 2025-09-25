@@ -12,12 +12,14 @@ interface AttributeStore {
   enabledAttributeKeys: string[];
   attributeInfo: Map<string, AttributeInfo>;
   brushRanges: Record<string, [number, number] | null>;
+  selectedCategories: Record<string, string[]>;
   filteredAttributeData: Map<string, NodeAttributes>;
 
   setNodeAttributes: (nodes: any[]) => void;
   setEnabledAttributeKeys: (keys: string[]) => void;
   toggleAttributeKey: (key: string) => void;
   setBrushRange: (key: string, range: [number, number] | null) => void;
+  setSelectedCategories: (key: string, categories: string[]) => void;
   clearBrushRange: (key: string) => void;
   clearAllBrushRanges: () => void;
   clearData: () => void;
@@ -29,17 +31,26 @@ const filterAndMapAttributeData = (
   attributeData: Map<string, NodeAttributes>,
   enabledAttributeKeys: string[],
   brushRanges: Record<string, [number, number] | null>,
-): Map<string, NodeAttributes> => {
+  selectedCategories: Record<string, string[]>,
+) => {
   const filtered = new Map<string, NodeAttributes>();
 
   attributeData.forEach((attrs, id) => {
     const matches = enabledAttributeKeys.every((key) => {
       const value = attrs[key];
+
       const range = brushRanges[key];
-      if (!range) return true;
-      if (typeof value !== "number") return true;
-      const [min, max] = range;
-      return value >= min && value <= max;
+      if (range && typeof value === "number") {
+        const [min, max] = range;
+        if (value < min || value > max) return false;
+      }
+
+      const selected = selectedCategories[key];
+      if (selected && selected.length > 0) {
+        if (!selected.includes(String(value))) return false;
+      }
+
+      return true;
     });
 
     if (matches) {
@@ -62,6 +73,7 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
   enabledAttributeKeys: [],
   attributeInfo: new Map(),
   brushRanges: {},
+  selectedCategories: {},
   filteredAttributeData: new Map<string, NodeAttributes>(),
 
   setNodeAttributes: (nodes) => {
@@ -161,12 +173,23 @@ export const useAttributeStore = create<AttributeStore>((set, get) => ({
       }
     }),
 
+  setSelectedCategories: (key, categories) => {
+    set((state) => ({
+      selectedCategories: {
+        ...state.selectedCategories,
+        [key]: categories,
+      },
+    }));
+    get()._updateFilteredAttributeData();
+  },
+
   _updateFilteredAttributeData: () => {
     const state = get();
     const filtered = filterAndMapAttributeData(
       state.attributeData,
       state.enabledAttributeKeys,
       state.brushRanges,
+      state.selectedCategories,
     );
     set({ filteredAttributeData: filtered });
   },

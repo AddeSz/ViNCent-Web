@@ -19,7 +19,8 @@ type HistogramProps = {
 const CHART_CONFIG = {
   height: 140,
   barGap: 3,
-  margin: { top: 5, right: 20, bottom: 20, left: 20 },
+  barPadding: 0.01,
+  margin: { top: 5, right: 23, bottom: 20, left: 23 },
   maxXTicks: 5,
 };
 
@@ -82,8 +83,8 @@ const HistogramChart = ({
     const binEnd = bin.x1 ?? max;
 
     const isInBin = (value: number) => {
-      if (binEnd === max) return value >= binStart && value <= binEnd;
-      return value >= binStart && value < binEnd;
+      if (binEnd === max) return value > binStart && value < binEnd;
+      return value > binStart && value < binEnd;
     };
 
     if (data.length > 0) {
@@ -95,8 +96,7 @@ const HistogramChart = ({
       return hasValidData ? getColorForKey(dataKey) : "#ccc";
     }
 
-    if (!brushRange) return getColorForKey(dataKey);
-
+    if (!brushRange) return "#ccc";
     const [rangeMin, rangeMax] = brushRange;
     return isInBin(rangeMin) || isInBin(rangeMax)
       ? getColorForKey(dataKey)
@@ -130,10 +130,14 @@ const HistogramChart = ({
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(
-        d3.axisBottom(x).tickValues(xTickValues).tickFormat(d3.format(".2~f")),
+        d3
+          .axisBottom(x)
+          .tickSizeOuter(0)
+          .tickValues(xTickValues)
+          .tickFormat(d3.format(".2~f")),
       )
       .selectAll("text")
-      .style("font-size", "10px");
+      .style("font-size", "11px");
 
     const yTicks = y.ticks(5).filter((t) => Number.isInteger(t));
     g.append("g")
@@ -144,12 +148,11 @@ const HistogramChart = ({
           .tickFormat((d) => d.toString()),
       )
       .selectAll("text")
-      .style("font-size", "10px");
+      .style("font-size", "11px");
   };
 
   useEffect(() => {
     if (!width || !histogramData) return;
-
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
@@ -158,7 +161,16 @@ const HistogramChart = ({
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = CHART_CONFIG.height - margin.top - margin.bottom;
 
-    const x = d3.scaleLinear().domain([min, max]).range([0, innerWidth]);
+    const dataRange = max - min;
+    const padding = dataRange * CHART_CONFIG.barPadding;
+    const paddedMin = min - padding;
+    const paddedMax = max + padding;
+
+    const x = d3
+      .scaleLinear()
+      .domain([paddedMin, paddedMax])
+      .range([0, innerWidth]);
+
     const y = d3
       .scaleLinear()
       .domain([0, d3.max(bins, (d) => d.length) || 0])
@@ -195,7 +207,6 @@ const HistogramChart = ({
       L${x1 - r},${y0}                 
       Q${x1},${y0} ${x1},${y0 + r}     
       L${x1},${y1}                     
-      Z
     `;
       })
       .attr("fill", (d) => getBarColor(d, filteredIndices));
@@ -230,7 +241,14 @@ const HistogramChart = ({
     getColorForKey,
   ]);
 
-  return <svg ref={svgRef} width={width} height={CHART_CONFIG.height} />;
+  return (
+    <svg
+      ref={svgRef}
+      width={width}
+      height={CHART_CONFIG.height}
+      className="overflow-visible"
+    />
+  );
 };
 
 export default HistogramChart;

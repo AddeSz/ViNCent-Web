@@ -2,7 +2,7 @@ import { Button } from "@/components/shadcnUI/button";
 import { Checkbox } from "@/components/shadcnUI/checkbox";
 import { Label } from "@/components/shadcnUI/label";
 import { useVisualizationStore } from "@/hooks/useVisualizationStore";
-import { formatValue } from "@/utils/utils";
+import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 
@@ -75,9 +75,10 @@ export const createDataColumns = <T extends Record<string, any>>(
           onClick={column.getToggleSortingHandler()}
           className="w-full justify-between gap-1"
           size={"none"}
+          title={formatKeyLabel(key)}
         >
           <div className="truncate text-sm font-medium capitalize">
-            {key.replace(/_/g, " ")}
+            {formatKeyLabel(key)}
           </div>
           <SortIcon className="h-4 w-4 flex-shrink-0" />
         </Button>
@@ -95,7 +96,11 @@ export const createDataColumns = <T extends Record<string, any>>(
           : undefined;
 
       return (
-        <div className="truncate px-2 text-left font-medium" style={{ color }}>
+        <div
+          className="truncate px-2 text-left font-medium"
+          style={{ color }}
+          title={formatValue(value)}
+        >
           {formatValue(value)}
         </div>
       );

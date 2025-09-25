@@ -106,7 +106,10 @@ const Legend = () => {
                 className="h-4 w-4 flex-shrink-0 rounded-full"
                 style={{ backgroundColor: color }}
               />
-              <div className="w-full max-w-24 truncate text-xs font-medium capitalize">
+              <div
+                className="w-full max-w-24 truncate text-xs font-medium capitalize"
+                title={formatKeyLabel(key)}
+              >
                 {formatKeyLabel(key)}
               </div>
 

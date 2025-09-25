@@ -1,33 +1,32 @@
-import type { CombinedData } from "@/types/network";
 import * as d3 from "d3";
 import { useEffect, useRef } from "react";
 
 type BarChartProps = {
-  data: Map<string, CombinedData>;
   categoricalValues: string[];
   width: number;
   dataKey: string;
   getColorForKey: (key: string, value: string | number) => string;
-  onSelectionChange?: (key: string, selected: string[] | null) => void;
-  selectedCategories?: string[] | null;
+  selectedCategories: string[] | null;
+  onBarClick: (category: string) => void;
+  categoryCounts: Map<string, number>;
 };
 
 const CHART_CONFIG = {
   height: 140,
-  margin: { top: 5, right: 20, bottom: 40, left: 20 },
+  margin: { top: 5, right: 20, bottom: 20, left: 20 },
 };
 
 const BarChart = ({
-  data,
   categoricalValues,
   width,
   dataKey,
   getColorForKey,
-  onSelectionChange,
   selectedCategories,
+  onBarClick,
+  categoryCounts,
 }: BarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  console.log(data);
+
   useEffect(() => {
     if (!width || !categoricalValues.length) return;
 
@@ -61,43 +60,104 @@ const BarChart = ({
     const g = svg
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
-    g.selectAll("rect")
+
+    g.selectAll("path")
       .data(categories)
-      .join("rect")
-      .attr("x", (d) => x(d)!)
-      .attr("y", (d) => y(counts.get(d) || 0))
-      .attr("width", x.bandwidth())
-      .attr("height", (d) => innerHeight - y(counts.get(d) || 0))
-      .attr("fill", (d) =>
-        !selectedCategories || selectedCategories.includes(d)
-          ? getColorForKey(dataKey, d)
-          : "#ccc",
-      )
+      .join("path")
+      .attr("d", (d) => {
+        const value = counts.get(d) || 0;
+        const x0 = x(d)!;
+        const x1 = x0 + x.bandwidth();
+        const y0 = y(value);
+        const y1 = innerHeight;
+
+        //ensure width is positive
+        if (x1 <= x0) return "";
+
+        const r = Math.min(3, (x1 - x0) / 2, (y1 - y0) / 2);
+
+        // In case of future changes:
+        // https://css-tricks.com/svg-path-syntax-illustrated-guide/
+        return `
+      M${x0},${y1}
+      L${x0},${y0 + r}
+      Q${x0},${y0} ${x0 + r},${y0}
+      L${x1 - r},${y0}
+      Q${x1},${y0} ${x1},${y0 + r}
+      L${x1},${y1}
+    `;
+      })
       .on("click", (_, d) => {
-        if (!onSelectionChange) return;
-        const alreadySelected = selectedCategories?.includes(d);
-        const newSelection = alreadySelected
-          ? selectedCategories!.filter((c) => c !== d)
-          : [...(selectedCategories || []), d];
-        onSelectionChange(dataKey, newSelection.length ? newSelection : null);
+        if (onBarClick) onBarClick(d);
+      })
+      .attr("fill", (d) => {
+        const hasData = (categoryCounts.get(d) || 0) > 0;
+        if (selectedCategories && selectedCategories.length > 0) {
+          return selectedCategories.includes(d) && hasData
+            ? getColorForKey(dataKey, d)
+            : "#ccc";
+        }
+        return hasData ? getColorForKey(dataKey, d) : "#ccc";
+      })
+      .attr("stroke", (d) =>
+        selectedCategories?.includes(d) ? "orange" : "none",
+      )
+      .attr("stroke-width", (d) => (selectedCategories?.includes(d) ? 3 : 0))
+      .attr("cursor", "pointer");
+
+    const xAxis = g
+      .append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(
+        d3.axisBottom(x).tickFormat((d: string) => {
+          const barWidth = x.bandwidth();
+          const maxChars = Math.floor(barWidth / 6);
+          return d.length > maxChars ? d.slice(0, maxChars - 1) + "…" : d;
+        }),
+      );
+
+    xAxis
+      .selectAll<SVGTextElement, string>("text")
+      .style("text-anchor", "middle")
+      .style("font-size", "11px")
+      .style("fill", (d) =>
+        selectedCategories?.includes(d) ? "orange" : "white",
+      )
+      .style("text-decoration", (d) =>
+        selectedCategories?.includes(d) ? "underline" : "none",
+      )
+      .each(function (d) {
+        d3.select(this).append("title").text(d);
       });
 
-    g.append("g")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x))
-      .selectAll("text")
-      .attr("transform", "rotate(-30)")
-      .style("text-anchor", "end");
+    xAxis
+      .selectAll<SVGLineElement, string>(".tick line")
+      .attr("stroke", (d: any) =>
+        selectedCategories?.includes(d) ? "orange" : "white",
+      )
+      .attr("stroke-width", (d: any) =>
+        selectedCategories?.includes(d) ? 2 : 1,
+      );
+
+    if (selectedCategories?.length) {
+      selectedCategories.forEach((category) => {
+        const xPos = x(category);
+        const barWidth = x.bandwidth();
+
+        if (xPos !== undefined) {
+          g.append("line")
+            .attr("x1", xPos - 1)
+            .attr("x2", xPos + barWidth + 1)
+            .attr("y1", innerHeight)
+            .attr("y2", innerHeight)
+            .attr("stroke", "orange")
+            .attr("stroke-width", 2);
+        }
+      });
+    }
 
     g.append("g").call(d3.axisLeft(y).ticks(5));
-  }, [
-    width,
-    categoricalValues,
-    selectedCategories,
-    dataKey,
-    getColorForKey,
-    onSelectionChange,
-  ]);
+  }, [width, categoricalValues, selectedCategories, dataKey]);
 
   return <svg ref={svgRef} width={width} height={CHART_CONFIG.height} />;
 };

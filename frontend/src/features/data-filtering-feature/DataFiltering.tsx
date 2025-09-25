@@ -24,6 +24,11 @@ const DataFiltering = () => {
   const setAttributeBrushRange = useAttributeStore((s) => s.setBrushRange);
   const attributeData = useAttributeStore((s) => s.attributeData);
   const attributeInfo = useAttributeStore((s) => s.attributeInfo);
+  const selectedCategories = useAttributeStore((s) => s.selectedCategories);
+  const setSelectedCategories = useAttributeStore(
+    (s) => s.setSelectedCategories,
+  );
+
   const centralityBrushRanges = useCentralityStore((s) => s.brushRanges);
   const setCentralityBrushRange = useCentralityStore((s) => s.setBrushRange);
   const centralityData = useCentralityStore((s) => s.centralityData);
@@ -50,6 +55,17 @@ const DataFiltering = () => {
     [setCentralityBrushRange],
   );
 
+  const handleCategoryClick = (key: string, category: string) => {
+    const prev = useAttributeStore.getState().selectedCategories[key] || [];
+    const alreadySelected = prev.includes(category);
+
+    const newSelected = alreadySelected
+      ? prev.filter((c) => c !== category)
+      : [...prev, category];
+
+    setSelectedCategories(key, newSelected);
+  };
+
   const histogramData = useMemo(() => {
     const combinedEntries: Record<string, any>[] = [];
 
@@ -63,6 +79,22 @@ const DataFiltering = () => {
 
     return combinedEntries;
   }, [centralityData, attributeData]);
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    combinedDataMap.forEach((attrs) => {
+      allKeys.forEach((key) => {
+        const value = attrs[key];
+        if (value != null) {
+          const strVal = String(value);
+          counts.set(strVal, (counts.get(strVal) || 0) + 1);
+        }
+      });
+    });
+
+    return counts;
+  }, [combinedDataMap, allKeys]);
 
   return (
     <div className="space-y-4">
@@ -97,7 +129,7 @@ const DataFiltering = () => {
               return (
                 <div
                   key={key}
-                  className="h-auto w-full space-y-2 rounded bg-card p-2"
+                  className="h-auto w-full rounded bg-card px-2 pb-1"
                 >
                   <span className="text-sm capitalize">
                     {formatKeyLabel(key)}
@@ -125,7 +157,7 @@ const DataFiltering = () => {
               return (
                 <div
                   key={key}
-                  className="h-auto w-full space-y-2 rounded bg-card p-2"
+                  className="h-auto w-full rounded bg-card px-2 pb-1"
                 >
                   <span className="text-sm capitalize">
                     {formatKeyLabel(key)}
@@ -154,21 +186,22 @@ const DataFiltering = () => {
               return (
                 <div
                   key={key}
-                  className="h-auto w-full space-y-2 rounded bg-card p-2"
+                  className="h-auto w-full rounded bg-card px-2 pb-1"
                 >
                   <span className="text-sm capitalize">
                     {formatKeyLabel(key)}
                   </span>
+
                   <BarChart
-                    data={combinedDataMap}
                     categoricalValues={categoricalValues.map(String)}
                     width={width}
                     dataKey={key}
                     getColorForKey={getColorForKey}
-                    // selectedCategories={allBrushRanges[key] || null}
-                    onSelectionChange={(brushKey, selected) =>
-                      handleAttributeBrush(brushKey, selected as any)
+                    selectedCategories={selectedCategories[key] || null}
+                    onBarClick={(category) =>
+                      handleCategoryClick(key, category)
                     }
+                    categoryCounts={categoryCounts}
                   />
                 </div>
               );
