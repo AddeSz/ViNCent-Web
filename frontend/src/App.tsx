@@ -1,13 +1,15 @@
 // import { ModeToggle } from "@/components/shadcnUI/mode-toggle";
 import { testData2 } from "@/data/testData";
-import CenterView from "@/features/center-view-feature/CenterView";
-import ChartSettings from "@/features/chart-settings-feature/ChartSettings";
-import DataFiltering from "@/features/data-filtering-feature/DataFiltering";
+import CenterView from "@/features/center-view/CenterView";
+import Legend from "@/features/center-view/components/Tooltips/Legend";
+import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
+import ChartSettings from "@/features/chart-settings/ChartSettings";
+import DataFiltering from "@/features/data-filtering/DataFiltering";
+import { useDataStore } from "@/hooks/useDataStore";
 import {
   defaultRadialSettings,
   useChartSettings,
-} from "@/hooks/useChartSettings";
-import { useDataStore } from "@/hooks/useDataStore";
+} from "@/stores/useChartSettingsStore";
 import { calculateCentralityValues } from "@/utils/networkBackend";
 import {
   calculateLinkCounts,
@@ -15,7 +17,6 @@ import {
 } from "@/utils/networkProcessing";
 import { useEffect, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import Legend from "./features/center-view-feature/components/Tooltips/Legend";
 
 const App = () => {
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
@@ -59,10 +60,10 @@ const App = () => {
   return (
     <div className="flex h-full">
       <PanelGroup direction="horizontal" className="flex">
-        <Panel defaultSize={15} minSize={10}>
+        <Panel defaultSize={15} minSize={10} maxSize={25}>
           <PanelGroup direction="vertical">
             <Panel defaultSize={60} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 [scrollbar-gutter:stable] scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
+              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
                 {/* <ModeToggle /> */}
                 <ChartSettings />
               </div>
@@ -71,7 +72,11 @@ const App = () => {
               onDragging={handleDragging("left-vert")}
               className={`h-2 transition-colors ${draggingBars["left-vert"] ? "bg-ring" : "bg-border"}`}
             />
-            <Panel defaultSize={40} minSize={10}></Panel>
+            <Panel defaultSize={40} minSize={10}>
+              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
+                <DataFiltering />
+              </div>
+            </Panel>
           </PanelGroup>
         </Panel>
         <PanelResizeHandle
@@ -95,11 +100,11 @@ const App = () => {
           onDragging={handleDragging("middle-right")}
           className={`w-2 transition-colors ${draggingBars["middle-right"] ? "bg-ring" : "bg-border"}`}
         />
-        <Panel defaultSize={20} minSize={10}>
+        <Panel defaultSize={20} minSize={15} maxSize={25}>
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 [scrollbar-gutter:stable] scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <DataFiltering />
+              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
+                <ChartFiltering />
               </div>
             </Panel>
             <PanelResizeHandle
@@ -107,7 +112,7 @@ const App = () => {
               className={`h-2 transition-colors ${draggingBars["right-vert"] ? "bg-ring" : "bg-border"}`}
             />
             <Panel defaultSize={30} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 [scrollbar-gutter:stable] scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
+              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
                 <Legend />
               </div>
             </Panel>

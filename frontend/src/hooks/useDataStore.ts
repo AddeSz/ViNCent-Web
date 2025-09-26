@@ -1,9 +1,9 @@
 import type { Centrality, Network } from "@/types/network";
 
-import { useAttributeStore } from "./useAttributeStore";
-import { useCentralityStore } from "./useCentralityStore";
-import { useNetworkStore } from "./useNetworkStore";
-import { useVisualizationStore } from "./useVisualizationStore";
+import { useAttributeStore } from "../stores/useAttributeStore";
+import { useCentralityStore } from "../stores/useCentralityStore";
+import { useNetworkStore } from "../stores/useNetworkStore";
+import { useVisualizationStore } from "../stores/useVisualizationStore";
 
 export const useDataStore = () => {
   const setNetwork = useNetworkStore((s) => s.setNetwork);

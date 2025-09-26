@@ -1,4 +1,4 @@
-import { useNetworkStore } from "@/hooks/useNetworkStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 
 export const handleHighlight = (id: string, multi: boolean) => {
   if (multi) {
