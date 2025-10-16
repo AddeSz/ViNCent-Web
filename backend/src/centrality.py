@@ -1,7 +1,9 @@
-import networkx as nx
-from .models import CentralityType
-from typing import List, Dict
 import logging
+from typing import Dict, List
+
+import networkx as nx
+
+from .models import CentralityType
 
 logger = logging.getLogger(__name__)
 
@@ -87,13 +89,17 @@ def calculate_selected_centralities(G: nx.Graph, centralities: List[CentralityTy
                 except nx.NetworkXError as e:
                     if "alpha" in str(e).lower():
                         try:
-                            alpha = 1.0 / (max(dict(G_calc.degree()).values()) + 1) # type: ignore
+                            alpha = 1.0 / (max(dict(G_calc.degree()).values()) + 1) 
                             results[centrality.value] = nx.katz_centrality(G_calc, alpha=alpha, weight=weight_param, max_iter=1000)
-                        except:
-                            logger.warning(f"Skipping {centrality.value}: failed with adjusted alpha: {e}")
+                        except Exception as inner_e:
+                            logger.warning(f"Skipping {centrality.value}: failed with adjusted alpha: {inner_e}")
                             continue
                     else:
-                        raise
+                        logger.warning(f"Skipping {centrality.value}: {e}")
+                        continue
+                except Exception as e:
+                    logger.warning(f"Skipping {centrality.value}: {e}")
+                    continue
 
             elif centrality == CentralityType.HARMONIC:
                 distance_param = "weight" if use_weights else None
@@ -121,14 +127,14 @@ def calculate_selected_centralities(G: nx.Graph, centralities: List[CentralityTy
                     continue
 
             elif centrality == CentralityType.COMMUNICABILITY_BETWEENNESS:
-                if not is_directed:
+                if not is_directed and is_connected:
                     results[centrality.value] = nx.communicability_betweenness_centrality(G_calc)
 
             elif centrality == CentralityType.PERCOLATION:
                 results[centrality.value] = nx.percolation_centrality(G_calc, weight=weight_param)
 
             elif centrality == CentralityType.SECOND_ORDER:
-                if not is_directed:
+                if not is_directed and is_connected:
                     results[centrality.value] = nx.second_order_centrality(G_calc)
 
             elif centrality == CentralityType.LOCAL_REACHING and is_directed:

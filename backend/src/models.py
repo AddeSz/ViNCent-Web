@@ -1,6 +1,9 @@
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel
+
+
 # These are the ones found in NetWorkX ...
 class CentralityType(str, Enum):
     DEGREE = "degree"
@@ -40,4 +43,13 @@ class NetworkData(BaseModel):
 
 class CentralityRequest(BaseModel):
     network: NetworkData
+    centralities: Optional[List[CentralityType]] = None
+    
+class TimedNetworkData(BaseModel):
+    timesteps: List[int]
+    networks: Dict[str, NetworkData]
+
+class CentralityTimelineRequest(BaseModel):
+    timesteps: List[int]
+    networks: Dict[int, NetworkData] 
     centralities: Optional[List[CentralityType]] = None
