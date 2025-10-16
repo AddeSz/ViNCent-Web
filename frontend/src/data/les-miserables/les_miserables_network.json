@@ -1,0 +1,1584 @@
+{
+  "nodes": [
+    {
+      "id": "AZ",
+      "label": "Anzelma"
+    },
+    {
+      "id": "BA",
+      "label": "Bahorel"
+    },
+    {
+      "id": "BB",
+      "label": "Babet"
+    },
+    {
+      "id": "BJ",
+      "label": "Brujon"
+    },
+    {
+      "id": "BL",
+      "label": "Blacheville"
+    },
+    {
+      "id": "BM",
+      "label": "Monsieur Bamatabois"
+    },
+    {
+      "id": "BO",
+      "label": "Bossuet (Lesgle)"
+    },
+    {
+      "id": "BR",
+      "label": "Brevet"
+    },
+    {
+      "id": "BT",
+      "label": "Baroness of T--"
+    },
+    {
+      "id": "BU",
+      "label": "Madame Burgon"
+    },
+    {
+      "id": "BZ",
+      "label": "Boulatruelle"
+    },
+    {
+      "id": "CC",
+      "label": "Cochepaille"
+    },
+    {
+      "id": "CH",
+      "label": "Champmathieu"
+    },
+    {
+      "id": "CL",
+      "label": "Countess de Lô"
+    },
+    {
+      "id": "CM",
+      "label": "Combeferre"
+    },
+    {
+      "id": "CN",
+      "label": "Chenildieu"
+    },
+    {
+      "id": "CO",
+      "label": "Cosette"
+    },
+    {
+      "id": "CR",
+      "label": "Courfeyrac"
+    },
+    {
+      "id": "CV",
+      "label": "Cravatte"
+    },
+    {
+      "id": "DA",
+      "label": "Dahlia"
+    },
+    {
+      "id": "EN",
+      "label": "Enjolras"
+    },
+    {
+      "id": "EP",
+      "label": "Eponine"
+    },
+    {
+      "id": "FA",
+      "label": "Fameuil"
+    },
+    {
+      "id": "FE",
+      "label": "Feuilly"
+    },
+    {
+      "id": "FF",
+      "label": "Fauchelevent"
+    },
+    {
+      "id": "FN",
+      "label": "Fantine"
+    },
+    {
+      "id": "FT",
+      "label": "Félix Tholomyès"
+    },
+    {
+      "id": "FV",
+      "label": "Favourite"
+    },
+    {
+      "id": "GA",
+      "label": "Gavroche"
+    },
+    {
+      "id": "GE",
+      "label": "Géborand"
+    },
+    {
+      "id": "GG",
+      "label": "G--"
+    },
+    {
+      "id": "GI",
+      "label": "Monsieur Luke Esprit Gillenormand"
+    },
+    {
+      "id": "GP",
+      "label": "George Pontmercy"
+    },
+    {
+      "id": "GR",
+      "label": "Gribier"
+    },
+    {
+      "id": "GT",
+      "label": "Grantaire"
+    },
+    {
+      "id": "GU",
+      "label": "Gueulemer"
+    },
+    {
+      "id": "HL",
+      "label": "Madame Hucheloup"
+    },
+    {
+      "id": "IS",
+      "label": "Isabeau"
+    },
+    {
+      "id": "JA",
+      "label": "Javert"
+    },
+    {
+      "id": "JD",
+      "label": "Jondrette"
+    },
+    {
+      "id": "JL",
+      "label": "Jacquin Labarre"
+    },
+    {
+      "id": "JO",
+      "label": "Joly"
+    },
+    {
+      "id": "JP",
+      "label": "Jean Prouvaire"
+    },
+    {
+      "id": "JU",
+      "label": "Judge of Douai"
+    },
+    {
+      "id": "JV",
+      "label": "Jean Valjean"
+    },
+    {
+      "id": "LI",
+      "label": "Listolier"
+    },
+    {
+      "id": "LL",
+      "label": "Old woman 2"
+    },
+    {
+      "id": "MA",
+      "label": "Marius"
+    },
+    {
+      "id": "MB",
+      "label": "Mademoiselle Baptistine"
+    },
+    {
+      "id": "MC",
+      "label": "Marquis de Champtercier"
+    },
+    {
+      "id": "ME",
+      "label": "Madame Magloire"
+    },
+    {
+      "id": "MG",
+      "label": "Madamoiselle Gillenormand"
+    },
+    {
+      "id": "MI",
+      "label": "Mother Innocent"
+    },
+    {
+      "id": "MM",
+      "label": "Monsieur Mabeuf"
+    },
+    {
+      "id": "MN",
+      "label": "Magnon"
+    },
+    {
+      "id": "MO",
+      "label": "Montparnasse"
+    },
+    {
+      "id": "MP",
+      "label": "Madame Pontmercy"
+    },
+    {
+      "id": "MR",
+      "label": "Madame de R--"
+    },
+    {
+      "id": "MT",
+      "label": "Marguerite"
+    },
+    {
+      "id": "MV",
+      "label": "Madamoiselle Vaubois"
+    },
+    {
+      "id": "MY",
+      "label": "Monsieur Charles François Bienvenu Myriel"
+    },
+    {
+      "id": "NP",
+      "label": "Napoleon"
+    },
+    {
+      "id": "PG",
+      "label": "Petit Gervais"
+    },
+    {
+      "id": "PL",
+      "label": "Mother Plutarch"
+    },
+    {
+      "id": "PO",
+      "label": "Old woman 1"
+    },
+    {
+      "id": "QU",
+      "label": "Claquesous"
+    },
+    {
+      "id": "SC",
+      "label": "Monsieur Scaufflaire"
+    },
+    {
+      "id": "SN",
+      "label": "Count ***"
+    },
+    {
+      "id": "SP",
+      "label": "Sister Perpétue"
+    },
+    {
+      "id": "SS",
+      "label": "Sister Simplice"
+    },
+    {
+      "id": "TG",
+      "label": "Lieutenant Theodule Gillenormand"
+    },
+    {
+      "id": "TH",
+      "label": "Thénardier"
+    },
+    {
+      "id": "TM",
+      "label": "Madame Thénardier"
+    },
+    {
+      "id": "TS",
+      "label": "Toussaint"
+    },
+    {
+      "id": "XA",
+      "label": "Child 1"
+    },
+    {
+      "id": "XB",
+      "label": "Child 2"
+    },
+    {
+      "id": "ZE",
+      "label": "Zephine"
+    }
+  ],
+  "links": [
+    {
+      "source": "MY",
+      "target": "NP",
+      "weight": 1
+    },
+    {
+      "source": "MB",
+      "target": "MY",
+      "weight": 8
+    },
+    {
+      "source": "ME",
+      "target": "MY",
+      "weight": 10
+    },
+    {
+      "source": "MB",
+      "target": "ME",
+      "weight": 6
+    },
+    {
+      "source": "CL",
+      "target": "MY",
+      "weight": 1
+    },
+    {
+      "source": "GE",
+      "target": "MY",
+      "weight": 1
+    },
+    {
+      "source": "MC",
+      "target": "MY",
+      "weight": 1
+    },
+    {
+      "source": "CV",
+      "target": "MY",
+      "weight": 1
+    },
+    {
+      "source": "MY",
+      "target": "SN",
+      "weight": 2
+    },
+    {
+      "source": "GG",
+      "target": "MY",
+      "weight": 1
+    },
+    {
+      "source": "JL",
+      "target": "JV",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "MT",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "MR",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "ME",
+      "weight": 3
+    },
+    {
+      "source": "JV",
+      "target": "MB",
+      "weight": 3
+    },
+    {
+      "source": "JV",
+      "target": "MY",
+      "weight": 5
+    },
+    {
+      "source": "IS",
+      "target": "JV",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "PG",
+      "weight": 1
+    },
+    {
+      "source": "FT",
+      "target": "LI",
+      "weight": 4
+    },
+    {
+      "source": "FA",
+      "target": "FT",
+      "weight": 4
+    },
+    {
+      "source": "BL",
+      "target": "FT",
+      "weight": 4
+    },
+    {
+      "source": "FA",
+      "target": "LI",
+      "weight": 4
+    },
+    {
+      "source": "BL",
+      "target": "LI",
+      "weight": 4
+    },
+    {
+      "source": "BL",
+      "target": "FA",
+      "weight": 4
+    },
+    {
+      "source": "FT",
+      "target": "FV",
+      "weight": 3
+    },
+    {
+      "source": "DA",
+      "target": "FT",
+      "weight": 3
+    },
+    {
+      "source": "FT",
+      "target": "ZE",
+      "weight": 3
+    },
+    {
+      "source": "FN",
+      "target": "FT",
+      "weight": 3
+    },
+    {
+      "source": "FV",
+      "target": "LI",
+      "weight": 3
+    },
+    {
+      "source": "DA",
+      "target": "LI",
+      "weight": 3
+    },
+    {
+      "source": "LI",
+      "target": "ZE",
+      "weight": 3
+    },
+    {
+      "source": "FN",
+      "target": "LI",
+      "weight": 3
+    },
+    {
+      "source": "FA",
+      "target": "FV",
+      "weight": 3
+    },
+    {
+      "source": "DA",
+      "target": "FA",
+      "weight": 3
+    },
+    {
+      "source": "FA",
+      "target": "ZE",
+      "weight": 3
+    },
+    {
+      "source": "FA",
+      "target": "FN",
+      "weight": 3
+    },
+    {
+      "source": "BL",
+      "target": "FV",
+      "weight": 4
+    },
+    {
+      "source": "BL",
+      "target": "DA",
+      "weight": 3
+    },
+    {
+      "source": "BL",
+      "target": "ZE",
+      "weight": 3
+    },
+    {
+      "source": "BL",
+      "target": "FN",
+      "weight": 3
+    },
+    {
+      "source": "DA",
+      "target": "FV",
+      "weight": 5
+    },
+    {
+      "source": "FV",
+      "target": "ZE",
+      "weight": 4
+    },
+    {
+      "source": "FN",
+      "target": "FV",
+      "weight": 4
+    },
+    {
+      "source": "DA",
+      "target": "ZE",
+      "weight": 4
+    },
+    {
+      "source": "DA",
+      "target": "FN",
+      "weight": 4
+    },
+    {
+      "source": "FN",
+      "target": "ZE",
+      "weight": 4
+    },
+    {
+      "source": "FN",
+      "target": "TM",
+      "weight": 2
+    },
+    {
+      "source": "TH",
+      "target": "TM",
+      "weight": 13
+    },
+    {
+      "source": "FN",
+      "target": "TH",
+      "weight": 1
+    },
+    {
+      "source": "FF",
+      "target": "JV",
+      "weight": 8
+    },
+    {
+      "source": "FF",
+      "target": "JA",
+      "weight": 1
+    },
+    {
+      "source": "JA",
+      "target": "JV",
+      "weight": 17
+    },
+    {
+      "source": "FN",
+      "target": "MT",
+      "weight": 2
+    },
+    {
+      "source": "BM",
+      "target": "FN",
+      "weight": 1
+    },
+    {
+      "source": "BM",
+      "target": "JA",
+      "weight": 1
+    },
+    {
+      "source": "FN",
+      "target": "JA",
+      "weight": 5
+    },
+    {
+      "source": "FN",
+      "target": "JV",
+      "weight": 9
+    },
+    {
+      "source": "SP",
+      "target": "SS",
+      "weight": 2
+    },
+    {
+      "source": "JV",
+      "target": "SS",
+      "weight": 3
+    },
+    {
+      "source": "JV",
+      "target": "SC",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "PO",
+      "weight": 2
+    },
+    {
+      "source": "FN",
+      "target": "SS",
+      "weight": 2
+    },
+    {
+      "source": "JU",
+      "target": "JV",
+      "weight": 3
+    },
+    {
+      "source": "CH",
+      "target": "JV",
+      "weight": 3
+    },
+    {
+      "source": "BM",
+      "target": "JV",
+      "weight": 2
+    },
+    {
+      "source": "CH",
+      "target": "JU",
+      "weight": 3
+    },
+    {
+      "source": "BM",
+      "target": "JU",
+      "weight": 2
+    },
+    {
+      "source": "BM",
+      "target": "CH",
+      "weight": 2
+    },
+    {
+      "source": "BR",
+      "target": "JU",
+      "weight": 2
+    },
+    {
+      "source": "CN",
+      "target": "JU",
+      "weight": 2
+    },
+    {
+      "source": "CC",
+      "target": "JU",
+      "weight": 2
+    },
+    {
+      "source": "BR",
+      "target": "CH",
+      "weight": 2
+    },
+    {
+      "source": "CH",
+      "target": "CN",
+      "weight": 2
+    },
+    {
+      "source": "CC",
+      "target": "CH",
+      "weight": 2
+    },
+    {
+      "source": "BR",
+      "target": "CN",
+      "weight": 2
+    },
+    {
+      "source": "BR",
+      "target": "CC",
+      "weight": 2
+    },
+    {
+      "source": "BR",
+      "target": "JV",
+      "weight": 2
+    },
+    {
+      "source": "BM",
+      "target": "BR",
+      "weight": 1
+    },
+    {
+      "source": "CC",
+      "target": "CN",
+      "weight": 2
+    },
+    {
+      "source": "CN",
+      "target": "JV",
+      "weight": 2
+    },
+    {
+      "source": "BM",
+      "target": "CN",
+      "weight": 1
+    },
+    {
+      "source": "CC",
+      "target": "JV",
+      "weight": 2
+    },
+    {
+      "source": "BM",
+      "target": "CC",
+      "weight": 1
+    },
+    {
+      "source": "FN",
+      "target": "SP",
+      "weight": 1
+    },
+    {
+      "source": "JA",
+      "target": "PO",
+      "weight": 1
+    },
+    {
+      "source": "JA",
+      "target": "SS",
+      "weight": 1
+    },
+    {
+      "source": "GP",
+      "target": "TH",
+      "weight": 1
+    },
+    {
+      "source": "BZ",
+      "target": "TH",
+      "weight": 1
+    },
+    {
+      "source": "CO",
+      "target": "TM",
+      "weight": 4
+    },
+    {
+      "source": "CO",
+      "target": "JV",
+      "weight": 31
+    },
+    {
+      "source": "JV",
+      "target": "TM",
+      "weight": 7
+    },
+    {
+      "source": "JV",
+      "target": "TH",
+      "weight": 12
+    },
+    {
+      "source": "AZ",
+      "target": "EP",
+      "weight": 2
+    },
+    {
+      "source": "EP",
+      "target": "TM",
+      "weight": 2
+    },
+    {
+      "source": "JV",
+      "target": "LL",
+      "weight": 3
+    },
+    {
+      "source": "CO",
+      "target": "LL",
+      "weight": 1
+    },
+    {
+      "source": "JA",
+      "target": "TH",
+      "weight": 5
+    },
+    {
+      "source": "JA",
+      "target": "LL",
+      "weight": 1
+    },
+    {
+      "source": "FF",
+      "target": "MI",
+      "weight": 3
+    },
+    {
+      "source": "FF",
+      "target": "GR",
+      "weight": 2
+    },
+    {
+      "source": "JV",
+      "target": "MI",
+      "weight": 1
+    },
+    {
+      "source": "BU",
+      "target": "JD",
+      "weight": 1
+    },
+    {
+      "source": "BU",
+      "target": "GA",
+      "weight": 2
+    },
+    {
+      "source": "GI",
+      "target": "MN",
+      "weight": 1
+    },
+    {
+      "source": "MG",
+      "target": "MP",
+      "weight": 1
+    },
+    {
+      "source": "MG",
+      "target": "MV",
+      "weight": 1
+    },
+    {
+      "source": "MG",
+      "target": "TG",
+      "weight": 2
+    },
+    {
+      "source": "GI",
+      "target": "MG",
+      "weight": 9
+    },
+    {
+      "source": "MA",
+      "target": "MG",
+      "weight": 6
+    },
+    {
+      "source": "GI",
+      "target": "MA",
+      "weight": 12
+    },
+    {
+      "source": "BT",
+      "target": "GI",
+      "weight": 1
+    },
+    {
+      "source": "GP",
+      "target": "MP",
+      "weight": 1
+    },
+    {
+      "source": "BT",
+      "target": "MA",
+      "weight": 1
+    },
+    {
+      "source": "GP",
+      "target": "MA",
+      "weight": 1
+    },
+    {
+      "source": "MA",
+      "target": "MM",
+      "weight": 1
+    },
+    {
+      "source": "MA",
+      "target": "TG",
+      "weight": 1
+    },
+    {
+      "source": "BO",
+      "target": "MA",
+      "weight": 5
+    },
+    {
+      "source": "CR",
+      "target": "MA",
+      "weight": 9
+    },
+    {
+      "source": "BO",
+      "target": "CR",
+      "weight": 12
+    },
+    {
+      "source": "CR",
+      "target": "EN",
+      "weight": 17
+    },
+    {
+      "source": "EN",
+      "target": "MA",
+      "weight": 7
+    },
+    {
+      "source": "BO",
+      "target": "GT",
+      "weight": 3
+    },
+    {
+      "source": "BA",
+      "target": "JO",
+      "weight": 5
+    },
+    {
+      "source": "CM",
+      "target": "CR",
+      "weight": 13
+    },
+    {
+      "source": "CM",
+      "target": "EN",
+      "weight": 15
+    },
+    {
+      "source": "CM",
+      "target": "MA",
+      "weight": 5
+    },
+    {
+      "source": "MM",
+      "target": "PL",
+      "weight": 3
+    },
+    {
+      "source": "GI",
+      "target": "TG",
+      "weight": 1
+    },
+    {
+      "source": "CO",
+      "target": "MA",
+      "weight": 21
+    },
+    {
+      "source": "JV",
+      "target": "MA",
+      "weight": 19
+    },
+    {
+      "source": "FT",
+      "target": "MA",
+      "weight": 1
+    },
+    {
+      "source": "CO",
+      "target": "FT",
+      "weight": 1
+    },
+    {
+      "source": "MA",
+      "target": "TH",
+      "weight": 2
+    },
+    {
+      "source": "EP",
+      "target": "TH",
+      "weight": 3
+    },
+    {
+      "source": "CO",
+      "target": "TH",
+      "weight": 1
+    },
+    {
+      "source": "EP",
+      "target": "MA",
+      "weight": 5
+    },
+    {
+      "source": "AZ",
+      "target": "TH",
+      "weight": 2
+    },
+    {
+      "source": "AZ",
+      "target": "TM",
+      "weight": 1
+    },
+    {
+      "source": "BB",
+      "target": "TH",
+      "weight": 6
+    },
+    {
+      "source": "GU",
+      "target": "TH",
+      "weight": 5
+    },
+    {
+      "source": "QU",
+      "target": "TH",
+      "weight": 4
+    },
+    {
+      "source": "BB",
+      "target": "GU",
+      "weight": 6
+    },
+    {
+      "source": "BB",
+      "target": "QU",
+      "weight": 4
+    },
+    {
+      "source": "GU",
+      "target": "QU",
+      "weight": 4
+    },
+    {
+      "source": "BB",
+      "target": "JV",
+      "weight": 1
+    },
+    {
+      "source": "BB",
+      "target": "TM",
+      "weight": 1
+    },
+    {
+      "source": "GU",
+      "target": "JV",
+      "weight": 1
+    },
+    {
+      "source": "GU",
+      "target": "TM",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "QU",
+      "weight": 1
+    },
+    {
+      "source": "QU",
+      "target": "TM",
+      "weight": 1
+    },
+    {
+      "source": "BB",
+      "target": "JA",
+      "weight": 2
+    },
+    {
+      "source": "JA",
+      "target": "TM",
+      "weight": 1
+    },
+    {
+      "source": "GU",
+      "target": "JA",
+      "weight": 1
+    },
+    {
+      "source": "JA",
+      "target": "QU",
+      "weight": 1
+    },
+    {
+      "source": "JA",
+      "target": "MO",
+      "weight": 1
+    },
+    {
+      "source": "BB",
+      "target": "MO",
+      "weight": 2
+    },
+    {
+      "source": "GU",
+      "target": "MO",
+      "weight": 2
+    },
+    {
+      "source": "MO",
+      "target": "QU",
+      "weight": 2
+    },
+    {
+      "source": "EN",
+      "target": "GT",
+      "weight": 3
+    },
+    {
+      "source": "CM",
+      "target": "GT",
+      "weight": 1
+    },
+    {
+      "source": "CR",
+      "target": "GT",
+      "weight": 2
+    },
+    {
+      "source": "EP",
+      "target": "MM",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "MO",
+      "weight": 1
+    },
+    {
+      "source": "CO",
+      "target": "TG",
+      "weight": 1
+    },
+    {
+      "source": "CO",
+      "target": "TS",
+      "weight": 2
+    },
+    {
+      "source": "MN",
+      "target": "TM",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "XA",
+      "weight": 2
+    },
+    {
+      "source": "GA",
+      "target": "XB",
+      "weight": 2
+    },
+    {
+      "source": "XA",
+      "target": "XB",
+      "weight": 3
+    },
+    {
+      "source": "GA",
+      "target": "MO",
+      "weight": 1
+    },
+    {
+      "source": "BB",
+      "target": "BJ",
+      "weight": 3
+    },
+    {
+      "source": "BJ",
+      "target": "GU",
+      "weight": 3
+    },
+    {
+      "source": "BJ",
+      "target": "TH",
+      "weight": 3
+    },
+    {
+      "source": "BB",
+      "target": "GA",
+      "weight": 1
+    },
+    {
+      "source": "BJ",
+      "target": "GA",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "GU",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "TH",
+      "weight": 1
+    },
+    {
+      "source": "BB",
+      "target": "EP",
+      "weight": 1
+    },
+    {
+      "source": "BJ",
+      "target": "EP",
+      "weight": 1
+    },
+    {
+      "source": "EP",
+      "target": "GU",
+      "weight": 1
+    },
+    {
+      "source": "EP",
+      "target": "QU",
+      "weight": 1
+    },
+    {
+      "source": "EP",
+      "target": "MO",
+      "weight": 1
+    },
+    {
+      "source": "BJ",
+      "target": "QU",
+      "weight": 1
+    },
+    {
+      "source": "BJ",
+      "target": "MO",
+      "weight": 1
+    },
+    {
+      "source": "MO",
+      "target": "TH",
+      "weight": 1
+    },
+    {
+      "source": "CM",
+      "target": "GA",
+      "weight": 6
+    },
+    {
+      "source": "BA",
+      "target": "CM",
+      "weight": 5
+    },
+    {
+      "source": "CR",
+      "target": "GA",
+      "weight": 7
+    },
+    {
+      "source": "BA",
+      "target": "GA",
+      "weight": 5
+    },
+    {
+      "source": "BA",
+      "target": "CR",
+      "weight": 6
+    },
+    {
+      "source": "CM",
+      "target": "MM",
+      "weight": 2
+    },
+    {
+      "source": "CR",
+      "target": "MM",
+      "weight": 2
+    },
+    {
+      "source": "BA",
+      "target": "MM",
+      "weight": 2
+    },
+    {
+      "source": "CR",
+      "target": "EP",
+      "weight": 1
+    },
+    {
+      "source": "BO",
+      "target": "JO",
+      "weight": 7
+    },
+    {
+      "source": "BO",
+      "target": "HL",
+      "weight": 1
+    },
+    {
+      "source": "GT",
+      "target": "JO",
+      "weight": 2
+    },
+    {
+      "source": "HL",
+      "target": "JO",
+      "weight": 1
+    },
+    {
+      "source": "GT",
+      "target": "HL",
+      "weight": 1
+    },
+    {
+      "source": "BO",
+      "target": "GA",
+      "weight": 5
+    },
+    {
+      "source": "EN",
+      "target": "GA",
+      "weight": 7
+    },
+    {
+      "source": "FE",
+      "target": "GA",
+      "weight": 2
+    },
+    {
+      "source": "GA",
+      "target": "JO",
+      "weight": 3
+    },
+    {
+      "source": "GA",
+      "target": "GT",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "JP",
+      "weight": 1
+    },
+    {
+      "source": "BA",
+      "target": "BO",
+      "weight": 4
+    },
+    {
+      "source": "BA",
+      "target": "EN",
+      "weight": 4
+    },
+    {
+      "source": "BA",
+      "target": "FE",
+      "weight": 3
+    },
+    {
+      "source": "BA",
+      "target": "GT",
+      "weight": 1
+    },
+    {
+      "source": "BA",
+      "target": "JP",
+      "weight": 2
+    },
+    {
+      "source": "CR",
+      "target": "FE",
+      "weight": 6
+    },
+    {
+      "source": "CR",
+      "target": "JO",
+      "weight": 5
+    },
+    {
+      "source": "CR",
+      "target": "JP",
+      "weight": 3
+    },
+    {
+      "source": "BO",
+      "target": "EN",
+      "weight": 10
+    },
+    {
+      "source": "BO",
+      "target": "FE",
+      "weight": 6
+    },
+    {
+      "source": "BO",
+      "target": "JP",
+      "weight": 2
+    },
+    {
+      "source": "EN",
+      "target": "FE",
+      "weight": 6
+    },
+    {
+      "source": "EN",
+      "target": "JO",
+      "weight": 5
+    },
+    {
+      "source": "EN",
+      "target": "JP",
+      "weight": 4
+    },
+    {
+      "source": "FE",
+      "target": "JO",
+      "weight": 5
+    },
+    {
+      "source": "FE",
+      "target": "GT",
+      "weight": 1
+    },
+    {
+      "source": "FE",
+      "target": "JP",
+      "weight": 2
+    },
+    {
+      "source": "JO",
+      "target": "JP",
+      "weight": 2
+    },
+    {
+      "source": "GT",
+      "target": "JP",
+      "weight": 1
+    },
+    {
+      "source": "BA",
+      "target": "HL",
+      "weight": 1
+    },
+    {
+      "source": "CR",
+      "target": "HL",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "HL",
+      "weight": 1
+    },
+    {
+      "source": "EN",
+      "target": "HL",
+      "weight": 1
+    },
+    {
+      "source": "CM",
+      "target": "JP",
+      "weight": 2
+    },
+    {
+      "source": "CM",
+      "target": "FE",
+      "weight": 5
+    },
+    {
+      "source": "BO",
+      "target": "CM",
+      "weight": 9
+    },
+    {
+      "source": "CM",
+      "target": "JO",
+      "weight": 5
+    },
+    {
+      "source": "EN",
+      "target": "JA",
+      "weight": 6
+    },
+    {
+      "source": "GA",
+      "target": "JA",
+      "weight": 1
+    },
+    {
+      "source": "EN",
+      "target": "QU",
+      "weight": 1
+    },
+    {
+      "source": "EN",
+      "target": "MM",
+      "weight": 1
+    },
+    {
+      "source": "BO",
+      "target": "MM",
+      "weight": 1
+    },
+    {
+      "source": "JO",
+      "target": "MM",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "MM",
+      "weight": 1
+    },
+    {
+      "source": "FE",
+      "target": "MM",
+      "weight": 1
+    },
+    {
+      "source": "JO",
+      "target": "MA",
+      "weight": 2
+    },
+    {
+      "source": "BA",
+      "target": "MA",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "MA",
+      "weight": 4
+    },
+    {
+      "source": "CO",
+      "target": "JA",
+      "weight": 1
+    },
+    {
+      "source": "JA",
+      "target": "TS",
+      "weight": 1
+    },
+    {
+      "source": "JV",
+      "target": "TS",
+      "weight": 1
+    },
+    {
+      "source": "GA",
+      "target": "JV",
+      "weight": 1
+    },
+    {
+      "source": "EN",
+      "target": "JV",
+      "weight": 4
+    },
+    {
+      "source": "BO",
+      "target": "JV",
+      "weight": 1
+    },
+    {
+      "source": "FE",
+      "target": "MA",
+      "weight": 1
+    },
+    {
+      "source": "CO",
+      "target": "GI",
+      "weight": 3
+    },
+    {
+      "source": "CO",
+      "target": "MG",
+      "weight": 2
+    },
+    {
+      "source": "GI",
+      "target": "JV",
+      "weight": 2
+    },
+    {
+      "source": "JV",
+      "target": "MG",
+      "weight": 2
+    }
+  ]
+}
