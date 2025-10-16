@@ -2,6 +2,12 @@ import type { Centrality } from "@/types/network";
 import { create } from "zustand";
 
 interface CentralityStore {
+  timestepCentralityData: Map<number, Map<string, Centrality>>;
+  timestepCentralityRanges: Map<
+    number,
+    Record<string, { min: number; max: number }>
+  >;
+
   centralityData: Map<string, Centrality>;
   centralityKeys: string[];
   enabledCentralityKeys: string[];
@@ -13,6 +19,11 @@ interface CentralityStore {
   setCentralityRanges: (
     ranges: Record<string, { min: number; max: number }>,
   ) => void;
+  precomputeAllCentralityTimesteps: (
+    timesteps: number[],
+    timelineCentralities: Map<number, Centrality[]>,
+  ) => void;
+  setCurrentTimestep: (timestep: number) => void;
   toggleCentralityKey: (key: string) => boolean;
   setEnabledCentralityKeys: (keys: string[]) => void;
   setBrushRange: (key: string, range: [number, number] | null) => void;
@@ -61,6 +72,11 @@ export const useCentralityStore = create<CentralityStore>((set, get) => ({
   brushRanges: {},
   centralityData: new Map<string, Centrality>(),
   filteredCentralityData: new Map<string, Centrality>(),
+  timestepCentralityData: new Map<number, Map<string, Centrality>>(),
+  timestepCentralityRanges: new Map<
+    number,
+    Record<string, { min: number; max: number }>
+  >(),
 
   _updateFilteredData: () => {
     const state = get();
@@ -98,6 +114,77 @@ export const useCentralityStore = create<CentralityStore>((set, get) => ({
       enabledCentralityKeys: keys,
       centralityRanges: ranges,
       centralityData: map,
+    });
+
+    get()._updateFilteredData();
+  },
+
+  precomputeAllCentralityTimesteps: (timesteps, timelineCentralities) => {
+    const timestepCentralityData = new Map<number, Map<string, Centrality>>();
+    const timestepCentralityRanges = new Map<
+      number,
+      Record<string, { min: number; max: number }>
+    >();
+
+    timesteps.forEach((t) => {
+      const data = timelineCentralities.get(t) ?? [];
+      const map = new Map<string, Centrality>();
+      const ranges: Record<string, { min: number; max: number }> = {};
+      const keysSet = new Set<string>();
+
+      data.forEach((item) => {
+        Object.entries(item).forEach(([key, value]) => {
+          if (key === "id") return;
+          keysSet.add(key);
+          if (typeof value === "number") {
+            if (!ranges[key]) ranges[key] = { min: value, max: value };
+            else {
+              ranges[key].min = Math.min(ranges[key].min, value);
+              ranges[key].max = Math.max(ranges[key].max, value);
+            }
+          }
+        });
+        map.set(item.id, item);
+      });
+
+      timestepCentralityData.set(t, map);
+      timestepCentralityRanges.set(t, ranges);
+    });
+
+    set({
+      timestepCentralityData,
+      timestepCentralityRanges,
+    });
+
+    if (timesteps.length > 0) {
+      get().setCurrentTimestep(timesteps[0]);
+    }
+  },
+
+  setCurrentTimestep: (timestep) => {
+    const { timestepCentralityData, timestepCentralityRanges } = get();
+
+    const centralityData = timestepCentralityData.get(timestep);
+    const centralityRanges = timestepCentralityRanges.get(timestep);
+
+    if (!centralityData || !centralityRanges) {
+      console.warn(`No centrality data for timestep ${timestep}`);
+      return;
+    }
+
+    const keysSet = new Set<string>();
+    centralityData.forEach((data) => {
+      Object.keys(data).forEach((key) => {
+        if (key !== "id") keysSet.add(key);
+      });
+    });
+    const centralityKeys = Array.from(keysSet);
+
+    set({
+      centralityData,
+      centralityRanges,
+      centralityKeys,
+      enabledCentralityKeys: centralityKeys,
     });
 
     get()._updateFilteredData();
@@ -161,5 +248,10 @@ export const useCentralityStore = create<CentralityStore>((set, get) => ({
       brushRanges: {},
       centralityData: new Map(),
       filteredCentralityData: new Map<string, Centrality>(),
+      timestepCentralityData: new Map<number, Map<string, Centrality>>(),
+      timestepCentralityRanges: new Map<
+        number,
+        Record<string, { min: number; max: number }>
+      >(),
     }),
 }));

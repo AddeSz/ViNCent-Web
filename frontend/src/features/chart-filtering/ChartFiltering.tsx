@@ -1,23 +1,27 @@
-import { Slider } from "@/components/shadcnUI/slider";
-import { useCombinedData } from "@/hooks/useCombinedData";
+import { Slider } from "@/components/ui/slider";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useAttributeStore } from "@/stores/useAttributeStore";
 import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
+import type { FullData } from "@/types/network";
 import { formatKeyLabel } from "@/utils/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import BarChart from "./components/BarChart";
 import HistogramChart from "./components/HistogramChart";
 
-const ChartFiltering = () => {
+interface ChartFilteringProps {
+  data: FullData[];
+  dataMap: Map<string, FullData>;
+}
+
+const ChartFiltering = ({ data, dataMap }: ChartFilteringProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const dimensions = useResizeObserver(containerRef);
   const width = useDebouncedValue(dimensions?.width ?? 0, 10);
-  const { combinedData, combinedDataMap } = useCombinedData();
-  const { allKeys, centralityKeys } = useKeys();
+  const { allKeys, enabledCentralityKeys } = useKeys();
   const [binCount, setBinCount] = useState(16);
 
   const attributeBrushRanges = useAttributeStore((s) => s.brushRanges);
@@ -67,23 +71,23 @@ const ChartFiltering = () => {
   };
 
   const histogramData = useMemo(() => {
-    const combinedEntries: Record<string, any>[] = [];
+    const fullEntries: Record<string, any>[] = [];
 
     centralityData.forEach((centrality, nodeId) => {
       const attribute = attributeData.get(nodeId) || {};
-      combinedEntries.push({
+      fullEntries.push({
         ...centrality,
         ...attribute,
       });
     });
 
-    return combinedEntries;
+    return fullEntries;
   }, [centralityData, attributeData]);
 
   const categoryCounts = useMemo(() => {
     const counts = new Map<string, number>();
 
-    combinedDataMap.forEach((attrs) => {
+    dataMap.forEach((attrs) => {
       allKeys.forEach((key) => {
         const value = attrs[key];
         if (value != null) {
@@ -94,7 +98,7 @@ const ChartFiltering = () => {
     });
 
     return counts;
-  }, [combinedDataMap, allKeys]);
+  }, [dataMap, allKeys]);
 
   return (
     <div className="space-y-4">
@@ -121,7 +125,7 @@ const ChartFiltering = () => {
               .map((d) => d[key])
               .filter((v) => v != null);
 
-            if (centralityKeys.includes(key)) {
+            if (enabledCentralityKeys.includes(key)) {
               const numericValues = rawValues.filter(
                 (v): v is number => typeof v === "number",
               );
@@ -135,7 +139,7 @@ const ChartFiltering = () => {
                     {formatKeyLabel(key)}
                   </span>
                   <HistogramChart
-                    data={combinedData}
+                    data={data}
                     histogramValues={numericValues}
                     width={width}
                     binCount={binCount}
@@ -163,7 +167,7 @@ const ChartFiltering = () => {
                     {formatKeyLabel(key)}
                   </span>
                   <HistogramChart
-                    data={combinedData}
+                    data={data}
                     histogramValues={numericValues}
                     width={width}
                     binCount={binCount}

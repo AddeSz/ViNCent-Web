@@ -1,11 +1,11 @@
 import { useBrush } from "@/features/chart-filtering/hooks/useBrush";
 import { useHistogramData } from "@/features/chart-filtering/hooks/useHistogramData";
-import type { CombinedData } from "@/types/network";
+import type { FullData } from "@/types/network";
 import * as d3 from "d3";
 import { useEffect, useRef } from "react";
 
-type HistogramProps = {
-  data: CombinedData[];
+interface HistogramProps {
+  data: FullData[];
   histogramValues: number[];
   width: number;
   binCount?: number;
@@ -14,7 +14,7 @@ type HistogramProps = {
   onBrushChange?: (key: string, range: [number, number] | null) => void;
   brushRange?: [number, number] | null;
   allBrushRanges?: Record<string, [number, number] | null>;
-};
+}
 
 const CHART_CONFIG = {
   height: 140,
@@ -64,7 +64,7 @@ const HistogramChart = ({
               const value = entry[key];
               const [min, max] = range;
 
-              return value >= min && value < max;
+              return (value as number) > min && (value as number) < max;
             },
           );
 
@@ -83,7 +83,7 @@ const HistogramChart = ({
     const binEnd = bin.x1 ?? max;
 
     const isInBin = (value: number) => {
-      if (binEnd === max) return value > binStart && value < binEnd;
+      if (binStart === min) return value > binStart && value < binEnd;
       return value > binStart && value < binEnd;
     };
 
@@ -91,7 +91,7 @@ const HistogramChart = ({
       const hasValidData = Array.from(filteredIndices).some((index) => {
         const entry = data[index];
         const value = entry[dataKey];
-        return isInBin(value);
+        return isInBin(value as number);
       });
       return hasValidData ? getColorForKey(dataKey) : "#ccc";
     }
@@ -198,7 +198,7 @@ const HistogramChart = ({
         if (x1 <= x0) return "";
 
         const r = Math.min(2, (x1 - x0) / 2, (y1 - y0) / 2);
-        // In case of future changes:
+        // in case of future changes:
         // https://css-tricks.com/svg-path-syntax-illustrated-guide/
         return `
       M${x0},${y1}                     

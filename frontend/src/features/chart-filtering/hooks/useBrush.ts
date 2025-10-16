@@ -1,15 +1,15 @@
 import * as d3 from "d3";
 import { useCallback } from "react";
-import type { HistogramDataType } from "./useHistogramData";
+import type { HistogramDataProps } from "./useHistogramData";
 
-type BrushProps = {
-  histogramData: HistogramDataType | null;
+interface BrushProps {
+  histogramData: HistogramDataProps | null;
   width: number | undefined;
   dataKey: string;
   onBrushChange?: (key: string, range: [number, number] | null) => void;
   isProgrammaticUpdate: React.RefObject<boolean>;
   margin: { top: number; right: number; bottom: number; left: number };
-};
+}
 
 export const useBrush = ({
   histogramData,

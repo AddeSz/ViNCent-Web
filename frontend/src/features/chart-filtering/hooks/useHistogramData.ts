@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { useMemo } from "react";
 
-export interface HistogramDataType {
+export interface HistogramDataProps {
   bins: d3.Bin<number, number>[];
   min: number;
   max: number;
@@ -11,7 +11,7 @@ export interface HistogramDataType {
 export const useHistogramData = (
   data: number[],
   binCount: number,
-): HistogramDataType | null => {
+): HistogramDataProps | null => {
   return useMemo(() => {
     if (!data || data.length === 0) return null;
 

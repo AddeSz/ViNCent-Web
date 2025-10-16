@@ -1,33 +1,54 @@
+import type { ViewType } from "@/App";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useResizeObserver } from "@/hooks/useResizeObserver";
+import { useSortingLogic } from "@/hooks/useSortingLogic";
+import type { FullData, Network, NodeChange } from "@/types/network";
 import { useRef, useState } from "react";
-import { useCombinedData } from "../../hooks/useCombinedData";
-import { useSortingLogic } from "../../hooks/useSortingLogic";
-import { useViewPersistence } from "./components/ViewRendering/useViewPersistence";
-import ViewContextMenu from "./components/ViewRendering/ViewContextMenu";
-import ViewRenderer, {
-  type ViewRendererRef,
-} from "./components/ViewRendering/ViewRenderer";
-import ViewToggle from "./components/ViewRendering/ViewToggle";
+import ViewContextMenu from "./ViewRendering/ViewContextMenu";
+import ViewRenderer from "./ViewRendering/ViewRenderer";
+import ViewToggle from "./ViewRendering/ViewToggle";
 
-const VIEW_KEY = "center-view-mode";
-export type ViewType = "radial" | "node-link" | "data-table";
-export type ContextType = "radial" | "arc" | "node-link" | "data-table";
+export type ContextType =
+  | "radial"
+  | "arc"
+  | "node-link"
+  | "data-table"
+  | "label"
+  | "node";
+
 export type ContextMenuTarget = {
   type: ContextType;
   data?: any;
 };
 
-const CenterView = () => {
-  const { view, setView, isViewLoaded } = useViewPersistence(VIEW_KEY);
-  const { combinedData, combinedDataMap } = useCombinedData();
-  const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
-    useSortingLogic(combinedData);
+interface CenterViewProps {
+  data: FullData[];
+  dataMap: Map<string, FullData>;
+  filteredNetwork: Network;
+  lastChanges: NodeChange | null;
+  canPreview?: boolean | null;
+  onPreview?: () => void;
+  view: ViewType;
+  onViewChange: (view: ViewType) => void;
+  isViewLoaded: boolean;
+}
 
+const CenterView = ({
+  data,
+  dataMap,
+  filteredNetwork,
+  lastChanges,
+  canPreview = false,
+  onPreview,
+  view,
+  onViewChange,
+  isViewLoaded,
+}: CenterViewProps) => {
+  const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
+    useSortingLogic(data);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const viewRendererRef = useRef<ViewRendererRef>(null);
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
-    {
-      type: "radial",
-    },
+    { type: "radial" },
   );
 
   const handleContextMenuTarget = (target: ContextType, data?: any) => {
@@ -37,31 +58,38 @@ const CenterView = () => {
     });
   };
 
+  const rawDimensions = useResizeObserver(containerRef);
+  const dimensions = useDebouncedValue(rawDimensions, 200);
+
   if (!isViewLoaded) return null;
+
   return (
     <div className="flex h-full flex-col">
-      <ViewToggle view={view} onViewChange={setView} />
-
+      <ViewToggle view={view} onViewChange={onViewChange} />
       <ViewContextMenu
         view={view}
-        viewRendererRef={viewRendererRef}
         onContextMenuSort={handleContextMenuSort}
         contextMenuTarget={contextMenuTarget}
         sorting={sorting}
+        canPreview={canPreview}
+        onPreview={onPreview}
       >
         <div
           ref={containerRef}
           className="relative flex-grow overflow-hidden bg-card"
         >
           <ViewRenderer
-            ref={viewRendererRef}
             view={view}
-            containerRef={containerRef}
-            sortedData={sortedData}
-            dataMap={combinedDataMap}
+            dimensions={dimensions}
+            data={sortedData}
+            dataMap={dataMap}
+            filteredNetwork={filteredNetwork}
             sorting={sorting}
             onSortingChange={handleSortingChange}
             onContextMenuTarget={handleContextMenuTarget}
+            lastChanges={lastChanges}
+            canPreview={canPreview}
+            onPreview={onPreview}
           />
         </div>
       </ViewContextMenu>

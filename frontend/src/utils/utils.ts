@@ -49,3 +49,33 @@ export function formatValue(x: any): string {
 
   return String(x);
 }
+
+export function scalePadding(
+  value: number,
+  maxItems: number,
+  maxPadding: number,
+): number {
+  if (value <= 1) return 0;
+  if (value <= 2) return 0.01;
+  return Math.min(value / maxItems, 1) * maxPadding;
+}
+
+export function truncateText(
+  textEl: SVGTextElement,
+  label: string,
+  maxWidth: number,
+): string {
+  const ellipsis = "…";
+  textEl.textContent = label;
+
+  if (textEl.getSubStringLength(0, label.length) <= maxWidth) {
+    return label;
+  }
+
+  let i = label.length;
+  while (i > 0 && textEl.getSubStringLength(0, i) > maxWidth - 10) {
+    i--;
+  }
+
+  return label.slice(0, i) + ellipsis;
+}

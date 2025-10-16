@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { useEffect, useRef } from "react";
 
-type BarChartProps = {
+interface BarChartProps {
   categoricalValues: string[];
   width: number;
   dataKey: string;
@@ -9,7 +9,7 @@ type BarChartProps = {
   selectedCategories: string[] | null;
   onBarClick: (category: string) => void;
   categoryCounts: Map<string, number>;
-};
+}
 
 const CHART_CONFIG = {
   height: 140,

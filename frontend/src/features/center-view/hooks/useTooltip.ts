@@ -1,4 +1,4 @@
-import type { TooltipType } from "@/features/center-view/components/Tooltips/Tooltip";
+import type { TooltipType } from "@/features/center-view/Tooltips/ChartTooltip";
 import { useEffect, useRef, useState } from "react";
 
 interface TooltipState {

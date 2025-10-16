@@ -1,22 +1,20 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { CombinedData } from "@/types/network";
+import type { FullData } from "@/types/network";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
 
 function getValueById(obj: any, id: string) {
+  if (obj.hasOwnProperty(id)) return obj[id];
   return id.split(".").reduce((acc, key) => acc?.[key], obj);
 }
 
 function applySorting<T extends object>(data: T[], sorting: SortingState): T[] {
   if (!sorting.length) return data;
-
   const sortEntries = [...sorting].reverse();
-
   return [...data].sort((a, b) => {
     for (const { id, desc } of sortEntries) {
       const va = getValueById(a, id);
       const vb = getValueById(b, id);
-
       if (va === undefined && vb === undefined) continue;
       if (va === undefined) return desc ? 1 : -1;
       if (vb === undefined) return desc ? -1 : 1;
@@ -44,7 +42,7 @@ interface SortingOptions {
 }
 
 export const useSortingLogic = (
-  data?: CombinedData[],
+  data?: FullData[],
   options?: SortingOptions,
 ) => {
   const setSortKey = useNetworkStore((s) => s.setSortKey);
@@ -58,12 +56,12 @@ export const useSortingLogic = (
   ) => {
     const newSorting =
       typeof updater === "function" ? updater(sorting) : updater;
-
     if (newSorting.length === 0) {
       setSorting([]);
       setSortKey("none");
     } else {
       const { id, desc } = newSorting[0];
+
       setSorting([{ id, desc }]);
       setSortKey(id);
     }
@@ -90,7 +88,6 @@ export const useSortingLogic = (
     }
 
     const current = sorting.find((s) => s.id === key);
-
     if (!current) {
       setSorting([{ id: key, desc: true }]);
       setSortKey(key);

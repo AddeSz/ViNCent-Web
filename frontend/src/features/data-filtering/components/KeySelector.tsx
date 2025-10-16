@@ -1,11 +1,11 @@
-import { Button } from "@/components/shadcnUI/button";
-import { Checkbox } from "@/components/shadcnUI/checkbox";
-import { Label } from "@/components/shadcnUI/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/shadcnUI/popover";
+} from "@/components/ui/popover";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";

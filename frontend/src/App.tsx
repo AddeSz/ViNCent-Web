@@ -1,61 +1,53 @@
-// import { ModeToggle } from "@/components/shadcnUI/mode-toggle";
-import { testData2 } from "@/data/testData";
-import CenterView from "@/features/center-view/CenterView";
-import Legend from "@/features/center-view/components/Tooltips/Legend";
-import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
-import ChartSettings from "@/features/chart-settings/ChartSettings";
-import DataFiltering from "@/features/data-filtering/DataFiltering";
-import { useDataStore } from "@/hooks/useDataStore";
-import {
-  defaultRadialSettings,
-  useChartSettings,
-} from "@/stores/useChartSettingsStore";
-import { calculateCentralityValues } from "@/utils/networkBackend";
-import {
-  calculateLinkCounts,
-  calculateRadialSettings,
-} from "@/utils/networkProcessing";
-import { useEffect, useState } from "react";
+import { starwarsData, testData2, testData3 } from "@/data/testData";
+import { useDataStores } from "@/hooks/useDataStores";
+import { useFullData } from "@/hooks/useFullData";
+import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import CenterView from "./features/center-view/CenterView";
+import Legend from "./features/center-view/Tooltips/Legend";
+import { useViewPersistence } from "./features/center-view/ViewRendering/useViewPersistence";
+import ChartFiltering from "./features/chart-filtering/ChartFiltering";
+import ChartSettings from "./features/chart-settings/ChartSettings";
+import DataFiltering from "./features/data-filtering/DataFiltering";
+import { useProcessedData } from "./hooks/useProcessedData";
+
+const datasets = {
+  "Starwars Dataset": starwarsData,
+  "Les Miserables Dataset": testData2,
+  "Test Dataset": testData3,
+};
+
+const VIEW_KEY = "center-view-mode";
+export type ViewType = "radial" | "node-link" | "data-table";
 
 const App = () => {
-  const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
+  const { view, setView, isViewLoaded } = useViewPersistence(VIEW_KEY);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { loadNetwork, loadCentralityData } = useDataStore();
-
+  const { loadNetwork, clearAllData } = useDataStores();
+  const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
   const handleDragging = (id: string) => (isDragging: boolean) => {
     setDraggingBars((prev) => ({ ...prev, [id]: isDragging }));
   };
-  useEffect(() => {
-    const loadNetworkAndCalculateCentrality = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
 
-        const data = calculateLinkCounts(testData2);
-        loadNetwork(data);
-
-        const calculatedRadial = calculateRadialSettings(data.nodes.length);
-        useChartSettings.getState().setInitialRadialSettings({
-          ...defaultRadialSettings,
-          ...calculatedRadial,
-        });
-
-        const centralityData = await calculateCentralityValues(testData2);
-        loadCentralityData(centralityData);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Unknown error occurred";
-        setError(`Failed to calculate centrality values: ${errorMessage}`);
-        console.error("Error in network analysis:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadNetworkAndCalculateCentrality();
-  }, []);
+  const { fullData, changes } = useFullData();
+  const { data, dataMap, filteredNetwork, handlePreview, canPreview } =
+    useProcessedData(fullData, changes);
+  const handleLoadData = async (data: any) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      clearAllData();
+      await loadNetwork(data);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(`Failed to load data: ${errorMessage}`);
+      console.error("Error loading dataset:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex h-full">
@@ -64,8 +56,10 @@ const App = () => {
           <PanelGroup direction="vertical">
             <Panel defaultSize={60} minSize={10}>
               <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                {/* <ModeToggle /> */}
-                <ChartSettings />
+                <ChartSettings
+                  datasets={datasets}
+                  onLoadData={handleLoadData}
+                />
               </div>
             </Panel>
             <PanelResizeHandle
@@ -74,7 +68,11 @@ const App = () => {
             />
             <Panel defaultSize={40} minSize={10}>
               <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <DataFiltering />
+                <DataFiltering
+                  view={view}
+                  dataMap={dataMap}
+                  filteredNetwork={filteredNetwork}
+                />
               </div>
             </Panel>
           </PanelGroup>
@@ -93,7 +91,17 @@ const App = () => {
               {error}
             </div>
           ) : (
-            <CenterView />
+            <CenterView
+              data={data}
+              dataMap={dataMap}
+              filteredNetwork={filteredNetwork}
+              lastChanges={changes}
+              canPreview={canPreview}
+              onPreview={handlePreview}
+              view={view}
+              onViewChange={setView}
+              isViewLoaded={isViewLoaded}
+            />
           )}
         </Panel>
         <PanelResizeHandle
@@ -104,7 +112,7 @@ const App = () => {
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
               <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <ChartFiltering />
+                <ChartFiltering data={data} dataMap={dataMap} />
               </div>
             </Panel>
             <PanelResizeHandle
@@ -122,5 +130,4 @@ const App = () => {
     </div>
   );
 };
-
 export default App;

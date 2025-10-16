@@ -1,14 +1,32 @@
-import { Button } from "@/components/shadcnUI/button";
-import { Checkbox } from "@/components/shadcnUI/checkbox";
-import { Label } from "@/components/shadcnUI/label";
-import { Slider } from "@/components/shadcnUI/slider";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
+import FDEBSettings from "./FDEBSettings";
 
 const RadialChartSettings = () => {
-  const { radialSettings, setRadialSettings, resetRadialSettings } =
-    useChartSettings();
-  const { innerRadius, outerRadius, fontSize, groupGapEnabled } =
-    radialSettings;
+  const {
+    radialSettings,
+    setRadialSettings,
+    resetRadialSettings,
+    displaySettings,
+  } = useChartSettings();
+  const {
+    innerRadius,
+    outerRadius,
+    fontSize,
+    separateMetrics,
+    linkRenderingMode,
+  } = radialSettings;
+  const { displayMode } = displaySettings;
 
   const outerRadiusMin = innerRadius + 200;
   const fontSizeMax = 45;
@@ -79,23 +97,67 @@ const RadialChartSettings = () => {
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id="group-gap"
-          checked={groupGapEnabled}
-          onCheckedChange={(checked) =>
-            setRadialSettings({ groupGapEnabled: !!checked })
-          }
-          className="cursor-pointer"
-        />
-        <Label htmlFor="group-gap" className="cursor-pointer text-sm">
-          Group Gap
+      {displayMode === "both" && (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="group-gap"
+            checked={separateMetrics}
+            onCheckedChange={(checked) =>
+              setRadialSettings({ separateMetrics: !!checked })
+            }
+            className="cursor-pointer"
+          />
+          <Label
+            htmlFor="group-gap"
+            title="Separate Centrality from Attributes"
+            className="cursor-pointer text-sm"
+          >
+            Separate Metrics
+          </Label>
+        </div>
+      )}
+
+      <div className="flex flex-col">
+        <Label htmlFor="link-rendering" className="mb-1 text-sm">
+          Link Rendering
         </Label>
+        <Select
+          value={linkRenderingMode}
+          onValueChange={(val) =>
+            setRadialSettings({ linkRenderingMode: val as any })
+          }
+        >
+          <SelectTrigger
+            id="link-rendering"
+            className="w-full cursor-pointer"
+            title="Link Rendering"
+          >
+            <SelectValue placeholder="Select link mode" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="bezier" title="Bézier Curves">
+              Bézier
+            </SelectItem>
+            <SelectItem value="hierarchy" title="Hierarchy Bundling">
+              Hierarchy
+            </SelectItem>
+            <SelectItem value="fdeB" title="Force-Directed Edge Bundling">
+              FDEB
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <Button className="cursor-pointer" onClick={resetRadialSettings}>
+      {linkRenderingMode === "fdeB" && <FDEBSettings />}
+
+      <Button
+        variant={"outline"}
+        className="cursor-pointer"
+        onClick={() => resetRadialSettings()}
+        title="Reset Settings to Default"
+      >
         <span className="flex-wrap truncate overflow-hidden">
-          Reset to Defaults{" "}
+          Reset Settings
         </span>
       </Button>
     </div>

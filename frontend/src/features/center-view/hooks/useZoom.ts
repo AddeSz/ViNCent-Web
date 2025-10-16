@@ -9,16 +9,15 @@ export const useZoom = () => {
   const setupZoom = useCallback(
     (
       svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-      svgRef: RefObject<SVGSVGElement | null>,
       svgGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
+      initialTransform?: d3.ZoomTransform | null,
+      onZoomChange?: (transform: d3.ZoomTransform) => void,
     ) => {
       const zoomBehavior = d3
         .zoom<SVGSVGElement, unknown>()
         .filter((event) => {
           if (event.type === "wheel") return true;
-
           if ("button" in event && event.button === 2) return false;
-
           const target = event.target as HTMLElement;
           if (
             target.closest(".arcs-group") ||
@@ -26,38 +25,44 @@ export const useZoom = () => {
           ) {
             return false;
           }
-
           return true;
         })
         .scaleExtent([0.1, 6])
         .on("zoom", (event) => {
           svgGroup.attr("transform", event.transform);
           transformRef.current = event.transform;
+          if (onZoomChange) {
+            onZoomChange(event.transform);
+          }
         });
 
       zoomRef.current = zoomBehavior;
-
       svg.call(zoomBehavior);
-      const initialTransform = d3.zoomTransform(svgRef.current!);
-      svg.call(zoomBehavior.transform, initialTransform);
+
+      const transform = initialTransform || d3.zoomIdentity;
+      svg.call(zoomBehavior.transform, transform);
+      transformRef.current = transform;
     },
     [],
   );
 
-  const resetZoom = useCallback((svgRef?: RefObject<SVGSVGElement | null>) => {
-    if (!zoomRef.current) return;
-
-    const svgElement = svgRef?.current;
-    if (!svgElement) return;
-
-    const svgSelection = d3.select<SVGSVGElement, unknown>(svgElement);
-    svgSelection
-      .transition()
-      .duration(750)
-      .call(zoomRef.current.transform, d3.zoomIdentity);
-
-    transformRef.current = d3.zoomIdentity;
-  }, []);
+  const resetZoom = useCallback(
+    (svgRef?: RefObject<SVGSVGElement | null>, onZoomReset?: () => void) => {
+      if (!zoomRef.current) return;
+      const svgElement = svgRef?.current;
+      if (!svgElement) return;
+      const svgSelection = d3.select<SVGSVGElement, unknown>(svgElement);
+      svgSelection
+        .transition()
+        .duration(750)
+        .call(zoomRef.current.transform, d3.zoomIdentity);
+      transformRef.current = d3.zoomIdentity;
+      if (onZoomReset) {
+        onZoomReset();
+      }
+    },
+    [],
+  );
 
   return {
     setupZoom,

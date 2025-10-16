@@ -1,23 +1,61 @@
-import type { Network } from "@/types/network";
+import type {
+  Network,
+  Node,
+  NodeAttributes,
+  TimelineEntry,
+} from "@/types/network";
 
-export const calculateLinkCounts = (network: Network): Network => {
-  const linkCountMap = new Map<string, number>();
-  network.links.forEach((link) => {
-    const sourceId =
-      typeof link.source === "string" ? link.source : link.source.id;
-    const targetId =
-      typeof link.target === "string" ? link.target : link.target.id;
+type PreprocessedNetwork = {
+  network: Network;
+  nodes: Omit<Node, "history">[];
+  timesteps: number[];
+  timelines: Map<string, TimelineEntry[]>;
+  attributes: Map<string, NodeAttributes>;
+};
 
-    linkCountMap.set(sourceId, (linkCountMap.get(sourceId) ?? 0) + 1);
-    linkCountMap.set(targetId, (linkCountMap.get(targetId) ?? 0) + 1);
+export const networkPreprocessing = (network: Network): PreprocessedNetwork => {
+  const networkClone: Network = JSON.parse(JSON.stringify(network));
+
+  const timestepSet = new Set<number>();
+  const timelines = new Map<string, TimelineEntry[]>();
+  const attributeMap = new Map<string, NodeAttributes>();
+
+  const nodeData = networkClone.nodes.map((node) => {
+    const { attributes, history, ...rest } = node;
+
+    const processedAttributes: NodeAttributes = attributes || {};
+    const processedHistory = Array.isArray(history) ? history : [];
+
+    timelines.set(node.id, processedHistory);
+
+    processedHistory.forEach((h) => {
+      if (typeof h.timestep === "number") {
+        timestepSet.add(h.timestep);
+      }
+    });
+
+    if (Object.keys(processedAttributes).length > 0) {
+      attributeMap.set(node.id, processedAttributes);
+    }
+
+    return {
+      ...rest,
+      attributes: processedAttributes,
+    };
   });
 
-  const nodeData = network.nodes.map((node) => ({
-    ...node,
-    linkCount: linkCountMap.get(node.id) ?? 0,
-  }));
+  const cleanNetwork: Network = {
+    ...networkClone,
+    nodes: nodeData.map(({ attributes, ...rest }) => rest),
+  };
 
-  return { ...network, nodes: nodeData };
+  return {
+    network: cleanNetwork,
+    nodes: nodeData,
+    timesteps: Array.from(timestepSet).sort((a, b) => a - b),
+    timelines,
+    attributes: attributeMap,
+  };
 };
 
 export const calculateRadialSettings = (numNodes: number) => {
