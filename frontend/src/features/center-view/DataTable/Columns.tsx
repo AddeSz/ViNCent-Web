@@ -49,6 +49,7 @@ export const createLabelColumn = <
 >(): ColumnDef<T> => ({
   id: "label",
   accessorFn: (row) => row.label ?? row.id,
+  sortDescFirst: true,
   size: 100,
   header: ({ column }) => {
     let SortIcon = ArrowUpDown;
@@ -136,6 +137,7 @@ export const createDataColumns = <T extends Record<string, any>>(
     accessorFn: (row) => row[key as keyof T],
     size: 100,
     enableSortingRemoval: true,
+    sortDescFirst: true,
     filterFn: (row, columnId, filterValue) => {
       const value = row.getValue(columnId);
 

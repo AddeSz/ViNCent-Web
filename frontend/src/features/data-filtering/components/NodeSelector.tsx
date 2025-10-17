@@ -1,5 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
@@ -7,9 +14,10 @@ import {
 } from "@/components/ui/popover";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { ChevronsUpDown, EyeOff, RotateCcw } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const NodeSelector = () => {
+  const [open, setOpen] = useState(false);
   const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
   const nodeMap = useNetworkStore((s) => s.nodeMap);
   const restoreNode = useNetworkStore((s) => s.restoreNode);
@@ -27,60 +35,69 @@ const NodeSelector = () => {
 
   const isDisabled = hiddenNodes.size === 0;
 
+  useEffect(() => {
+    if (hiddenNodes.size === 0 && open) {
+      setOpen(false);
+    }
+  }, [hiddenNodes.size, open]);
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="w-full flex-grow sm:flex-1">
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              title="Hidden Nodes"
-              className="flex w-full cursor-pointer items-center justify-center gap-2 px-2"
+              title="Restore Hidden Nodes"
+              className="flex w-full cursor-pointer items-center px-2"
               disabled={isDisabled}
             >
-              <div className="flex w-full items-center justify-center gap-2">
-                <p className="w-fit truncate">
-                  Hidden Nodes ({hiddenNodes.size})
-                </p>
-
-                <ChevronsUpDown className="h-4 w-4" />
-              </div>
+              <p className="w-fit truncate">
+                Restore Node (
+                <span className="tabular-nums">{hiddenNodes.size}</span>)
+              </p>
+              <ChevronsUpDown />
             </Button>
           </PopoverTrigger>
-
           {!isDisabled && (
-            <PopoverContent className="scrollbar-thin max-h-64 w-46 overflow-y-auto p-1">
-              <div className="flex flex-col space-y-1">
-                {hiddenNodesList.map((node) => (
-                  <div
-                    key={node!.id}
-                    className="flex w-full cursor-pointer items-center justify-between rounded p-1 px-2 text-sm hover:bg-accent"
-                    onClick={() => restoreNode(node!.id)}
-                    title={node!.label}
-                  >
-                    <Label className="flex-1 cursor-pointer truncate">
-                      {node!.label}
-                    </Label>
-                    <EyeOff size={16} className="ml-2 text-muted-foreground" />
-                  </div>
-                ))}
-              </div>
+            <PopoverContent className="w-54 p-0" align="start" side="top">
+              <Command>
+                <CommandInput placeholder="Search nodes..." className="h-9" />
+                <CommandEmpty>No nodes found.</CommandEmpty>
+                <CommandList>
+                  <CommandGroup>
+                    {hiddenNodesList.map((node) => (
+                      <CommandItem
+                        key={node!.id}
+                        value={node!.label}
+                        onSelect={() => {
+                          restoreNode(node!.id);
+                        }}
+                        className="flex cursor-pointer items-center justify-between"
+                        title={`Restore ${node!.label}`}
+                      >
+                        <p className="flex-1 truncate">{node!.label}</p>
+                        <EyeOff />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
             </PopoverContent>
           )}
         </Popover>
       </div>
-
       <div className="w-full flex-grow sm:flex-1">
         <Button
           variant="outline"
           title="Restore All Nodes"
           onClick={() => restoreAllNodes()}
-          disabled={hiddenNodes.size === 0}
+          disabled={isDisabled}
           className="flex w-full cursor-pointer items-center justify-center gap-2 px-2"
         >
           <div className="flex w-full items-center justify-center gap-2">
             <p className="w-fit truncate">Restore All</p>
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw />
           </div>
         </Button>
       </div>

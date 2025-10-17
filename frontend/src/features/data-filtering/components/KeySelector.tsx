@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
@@ -9,7 +16,8 @@ import {
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
 
 interface KeySelectorProps {
   label?: string;
@@ -28,34 +36,41 @@ const KeySelector = ({
   sorting,
   setSorting,
 }: KeySelectorProps) => {
+  const [open, setOpen] = useState(false);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="w-full cursor-pointer"
+          className="flex w-full cursor-pointer items-center px-2"
           title={label}
         >
-          <span className="max-w-20 truncate">{label}</span>
-          <ChevronDown />
+          <p className="w-fit max-w-[160px] truncate">{label}</p>
+          <ChevronsUpDown />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-54 p-1">
-        <div className="">
-          {options.map((key) => {
-            const id = `key-${key}`;
-            return (
-              <Label
-                htmlFor={id}
-                key={key}
-                className="h-full w-full cursor-pointer rounded p-1 leading-normal hover:bg-accent"
-                style={{ color: getColorForKey(key) }}
-                title={formatKeyLabel(key)}
-              >
-                <div className="flex items-center gap-2">
+      <PopoverContent className="w-54 p-0" align="start" side="top">
+        <Command>
+          <CommandInput placeholder="Search keys..." className="h-9" />
+          <CommandEmpty>No keys found.</CommandEmpty>
+          <CommandList>
+            <CommandGroup>
+              {options.map((key) => (
+                <CommandItem
+                  key={key}
+                  value={formatKeyLabel(key)}
+                  onSelect={() => {
+                    const removed = toggleKey(key);
+                    if (removed && sorting[0]?.id === key) {
+                      setSorting([]);
+                    }
+                  }}
+                  className="flex cursor-pointer items-center gap-2 px-2"
+                  title={formatKeyLabel(key)}
+                >
                   <Checkbox
-                    id={id}
                     checked={enabledKeys.includes(key)}
                     onCheckedChange={() => {
                       const removed = toggleKey(key);
@@ -64,15 +79,19 @@ const KeySelector = ({
                       }
                     }}
                     className="cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="truncate leading-normal">
+                  <span
+                    className="flex-1 truncate"
+                    style={{ color: getColorForKey(key) }}
+                  >
                     {formatKeyLabel(key)}
                   </span>
-                </div>
-              </Label>
-            );
-          })}
-        </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
       </PopoverContent>
     </Popover>
   );

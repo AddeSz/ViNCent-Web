@@ -6,7 +6,6 @@ import type { ContextType } from "@/features/center-view/CenterView";
 import DataTable from "@/features/center-view/DataTable/DataTable";
 import NodeLinkDiagram from "@/features/center-view/NodeLinkDiagram/NodeLinkDiagram";
 import RadialChart from "@/features/center-view/RadialChart/RadialChart";
-import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useTimelineStore } from "@/stores/useTimelineStore";
 import type { FullData, Network, NodeChange } from "@/types/network";
 import type { SortingState } from "@tanstack/react-table";
@@ -42,7 +41,6 @@ const ViewRenderer = ({
 }: ViewRendererProps) => {
   const timesteps = useTimelineStore((s) => s.timesteps);
   const timelines = timesteps.length > 0;
-  const network = useNetworkStore((s) => s.network);
 
   return (
     <>
@@ -63,12 +61,7 @@ const ViewRenderer = ({
         />
 
         <div className="pointer-events-none absolute bottom-2 left-2">
-          <DataSummary
-            filteredNetwork={filteredNetwork}
-            fullNetwork={network}
-            dataMap={dataMap}
-            selectedNodes={useNetworkStore.getState().selectedNodes}
-          />
+          <DataSummary filteredNetwork={filteredNetwork} dataMap={dataMap} />
         </div>
 
         {canPreview && onPreview && (
@@ -108,12 +101,7 @@ const ViewRenderer = ({
         />
 
         <div className="pointer-events-none absolute bottom-2 left-2">
-          <DataSummary
-            filteredNetwork={filteredNetwork}
-            fullNetwork={network}
-            dataMap={dataMap}
-            selectedNodes={useNetworkStore.getState().selectedNodes}
-          />
+          <DataSummary filteredNetwork={filteredNetwork} dataMap={dataMap} />
         </div>
 
         {canPreview && onPreview && (

@@ -91,7 +91,11 @@ const NodeLinkDiagram = ({
           d.id,
         );
       })
-      .on("mouseleave", () => hideTooltip());
+      .on("mouseleave", () => hideTooltip())
+      .on("contextmenu", (event, d) => {
+        event._handledByChild = true;
+        onContextMenuTarget("node", d.id);
+      });
   }, [data, dimensions]);
 
   useEffect(() => {
@@ -113,7 +117,8 @@ const NodeLinkDiagram = ({
   ) : (
     <div
       className="relative h-full"
-      onContextMenu={() => {
+      onContextMenu={(e) => {
+        if ((e.nativeEvent as any)._handledByChild) return;
         onContextMenuTarget("node-link");
       }}
     >

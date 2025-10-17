@@ -93,7 +93,7 @@ const ViewContextMenu = ({
             >
               {selectedNodes.has(contextMenuTarget.data.id)
                 ? "Deselect Node"
-                : "Highlight Node"}
+                : "Select Node"}
             </ContextMenuItem>
 
             <ContextMenuItem
@@ -134,15 +134,18 @@ const ViewContextMenu = ({
           </>
         )}
 
-        {contextMenuTarget.type === "label" && (
+        {(contextMenuTarget.type === "label" ||
+          contextMenuTarget.type === "node") && (
           <>
             <ContextMenuItem
-              onSelect={() => handleHighlight(contextMenuTarget.data, true)}
+              onSelect={() => {
+                handleHighlight(contextMenuTarget.data, true);
+              }}
               className="cursor-pointer"
             >
               {selectedNodes.has(contextMenuTarget.data)
                 ? "Deselect Node"
-                : "Highlight Node"}
+                : "Select Node"}
             </ContextMenuItem>
             <ContextMenuItem
               onSelect={() => hideNode(contextMenuTarget.data)}
@@ -155,7 +158,7 @@ const ViewContextMenu = ({
 
         {contextMenuTarget.type === "radial" && (
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Sort</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger>Sort By</ContextMenuSubTrigger>
             <ContextMenuSubContent className="overflow-y-auto">
               <ContextMenuRadioGroup
                 value={sortKey || "none"}
@@ -163,6 +166,9 @@ const ViewContextMenu = ({
               >
                 <ContextMenuRadioItem value="none" className="cursor-pointer">
                   None
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem value="label" className="cursor-pointer">
+                  Label
                 </ContextMenuRadioItem>
 
                 {displayMode === "both" ? (

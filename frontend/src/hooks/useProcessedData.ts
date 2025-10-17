@@ -50,8 +50,11 @@ export const useProcessedData = (
 
       if (processedNode) {
         const isHidden = hiddenNodes.has(processedNode.id!);
-        const nodeWithHidden = { ...processedNode, hidden: isHidden };
-
+        const nodeWithHidden = {
+          ...processedNode,
+          hidden: isHidden,
+          linkCount: 0,
+        };
         processedData.push(nodeWithHidden);
         dataMap.set(nodeWithHidden.id!, nodeWithHidden);
 

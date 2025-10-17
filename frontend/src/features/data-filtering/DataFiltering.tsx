@@ -7,7 +7,6 @@ import { useSortingLogic } from "@/hooks/useSortingLogic";
 import { useAttributeStore } from "@/stores/useAttributeStore";
 import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData, Network } from "@/types/network";
 import NodeSelector from "./components/NodeSelector";
 import SortingSelector from "./components/SortingSelector";
@@ -25,8 +24,6 @@ const DataFiltering = ({
   const displayMode = useChartSettings((s) => s.displaySettings.displayMode);
   const { sorting, setSorting, handleSortKeyChange } = useSortingLogic();
   const toggleCentralityKey = useCentralityStore((s) => s.toggleCentralityKey);
-  const network = useNetworkStore((s) => s.network);
-  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const {
     attributeKeys: allAttributeKeys,
     enabledAttributeKeys,
@@ -40,13 +37,14 @@ const DataFiltering = ({
   const isAttributeVisible =
     (displayMode === "attributes" || displayMode === "both") &&
     allAttributeKeys.length > 0;
-
   return (
     <div className="flex flex-col gap-1">
-      <h2 className="mb-0 cursor-default">Key Filtering</h2>
+      <h2 className="mb-0 w-full cursor-default truncate" title="Key Filtering">
+        Key Filtering
+      </h2>
       <div className="flex flex-wrap gap-2">
         {isCentralityVisible && (
-          <div className="w-full flex-grow sm:w-auto sm:flex-1">
+          <div className="w-full flex-grow sm:flex-1">
             <KeySelector
               label="Centralities"
               options={allCentralityKeys}
@@ -59,9 +57,9 @@ const DataFiltering = ({
         )}
 
         {isAttributeVisible && (
-          <div className="w-full flex-grow sm:w-auto sm:flex-1">
+          <div className="w-full flex-grow sm:flex-1">
             <KeySelector
-              label="Attributes"
+              label={"Attributes"}
               options={allAttributeKeys}
               enabledKeys={enabledAttributeKeys}
               toggleKey={toggleAttributeKey}
@@ -71,23 +69,22 @@ const DataFiltering = ({
           </div>
         )}
       </div>
-      <h2 className="mb-0 cursor-default">Sorting</h2>
+      <h2 className="mb-0 w-full cursor-default truncate" title="Sorting">
+        Sorting
+      </h2>
       <SortingSelector
         sorting={sorting}
         onSortKeyChange={handleSortKeyChange}
         setSorting={setSorting}
       />
 
-      <h2 className="mb-0 cursor-default">Nodes</h2>
+      <h2 className="mb-0 w-full cursor-default truncate" title="Nodes">
+        Nodes
+      </h2>
       <NodeSelector />
       {view === "data-table" && <TimestepSlider />}
       {view === "data-table" && (
-        <DataSummary
-          filteredNetwork={filteredNetwork}
-          fullNetwork={network}
-          dataMap={dataMap}
-          selectedNodes={selectedNodes}
-        />
+        <DataSummary filteredNetwork={filteredNetwork} dataMap={dataMap} />
       )}
     </div>
   );

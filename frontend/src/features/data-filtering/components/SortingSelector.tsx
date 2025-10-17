@@ -1,5 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
@@ -10,6 +17,7 @@ import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, Check, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
 
 interface SortingSelectorProps {
   sorting: SortingState;
@@ -22,12 +30,12 @@ const SortingSelector = ({
   onSortKeyChange,
   setSorting,
 }: SortingSelectorProps) => {
+  const [open, setOpen] = useState(false);
   const { allKeys } = useKeys();
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
 
   const sortKey = sorting[0]?.id || "none";
-  const keys = ["none", ...allKeys];
-
+  const keys = ["none", "label", ...allKeys];
   const isDisabled = sorting.length === 0;
   const currentDirection = sorting[0]?.desc ? "desc" : "asc";
 
@@ -37,60 +45,54 @@ const SortingSelector = ({
     }
   };
 
-  const renderOption = (key: string) => {
-    const isSelected = sortKey === key;
-    return (
-      <div
-        key={key}
-        className={`flex w-full cursor-pointer items-center justify-between rounded-[4px] p-1 px-2 ${
-          isSelected ? "bg-accent" : "hover:bg-accent"
-        }`}
-        onClick={() => {
-          onSortKeyChange(key, false);
-        }}
-        title={formatKeyLabel(key)}
-      >
-        <Label
-          htmlFor={`sort-${key}`}
-          className="flex-1 cursor-pointer truncate"
-        >
-          <span
-            className="truncate leading-normal"
-            style={{ color: getColorForKey(key) }}
-          >
-            {formatKeyLabel(key)}
-          </span>
-        </Label>
-        {isSelected && (
-          <Check size={16} className="ml-2 shrink-0 text-muted-foreground" />
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="w-full flex-grow sm:flex-1">
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               title="Sort By"
-              className="flex w-full cursor-pointer items-center justify-center gap-2 px-2"
+              className="flex w-full cursor-pointer items-center px-2"
             >
-              <div className="flex w-full items-center justify-center gap-2">
-                <p
-                  className="w-fit max-w-[160px] truncate"
-                  style={{ color: getColorForKey(sortKey) }}
-                >
-                  {formatKeyLabel(sortKey)}
-                </p>
-                <ChevronsUpDown />
-              </div>
+              <p
+                className="w-fit max-w-[160px] truncate"
+                style={{ color: getColorForKey(sortKey) }}
+              >
+                {formatKeyLabel(sortKey)}
+              </p>
+              <ChevronsUpDown />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="scrollbar-thin max-h-80 w-54 overflow-y-auto p-1">
-            <>{keys.map((key) => renderOption(key))}</>
+          <PopoverContent className="w-54 p-0" align="start" side="top">
+            <Command>
+              <CommandInput placeholder="Search keys..." className="h-9" />
+              <CommandEmpty>No keys found.</CommandEmpty>
+              <CommandList>
+                <CommandGroup>
+                  {keys.map((key) => (
+                    <CommandItem
+                      key={key}
+                      value={formatKeyLabel(key)}
+                      onSelect={() => {
+                        onSortKeyChange(key, false);
+                        setOpen(false);
+                      }}
+                      className="flex cursor-pointer items-center justify-between"
+                      title={formatKeyLabel(key)}
+                    >
+                      <span
+                        className="flex-1 truncate"
+                        style={{ color: getColorForKey(key) }}
+                      >
+                        {formatKeyLabel(key)}
+                      </span>
+                      {sortKey === key && <Check />}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
           </PopoverContent>
         </Popover>
       </div>
@@ -104,18 +106,16 @@ const SortingSelector = ({
         >
           <div className="flex w-full items-center justify-center gap-2">
             <p className="w-fit truncate">
-              {isDisabled
-                ? "Direction"
-                : currentDirection === "asc"
-                  ? "Ascending"
-                  : "Descending"}
+              {isDisabled ? (
+                "Direction"
+              ) : currentDirection === "asc" ? (
+                <>Ascending&nbsp;</>
+              ) : (
+                "Descending"
+              )}
             </p>
             {!isDisabled &&
-              (currentDirection === "asc" ? (
-                <ArrowUp size={14} />
-              ) : (
-                <ArrowDown size={14} />
-              ))}
+              (currentDirection === "asc" ? <ArrowUp /> : <ArrowDown />)}
           </div>
         </Button>
       </div>
