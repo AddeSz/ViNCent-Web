@@ -44,9 +44,24 @@ export const useDataStores = () => {
   const loadNetwork = async (data: Network) => {
     const { network, nodes, timesteps, timelines, attributes } =
       networkPreprocessing(data);
+
+    let centralityData: Centrality[] | null = null;
+    let timelineCentralities: Map<number, Centrality[]> | null = null;
+
+    if (timesteps.length > 0) {
+      timelineCentralities = await calculateCentralityValuesTimeline(
+        data,
+        timesteps,
+        timelines,
+      );
+    } else {
+      centralityData = await calculateCentralityValues(data);
+    }
+
     setNetwork(network);
     setNodeAttributes(nodes);
     setTimesteps(timesteps);
+
     if (timesteps.length > 0) {
       precomputeAllAttributeTimesteps(timesteps, timelines, attributes);
     }
@@ -62,26 +77,16 @@ export const useDataStores = () => {
     );
     initializeAttributeColorScale(attributeInfos);
 
-    if (!attributeInfos || attributeInfos.length === 0) {
-      useChartSettings
-        .getState()
-        .setDisplaySettings({ displayMode: "centrality" });
-    } else {
-      useChartSettings.getState().setDisplaySettings({ displayMode: "both" });
-    }
+    useChartSettings.getState().setDisplaySettings({
+      displayMode:
+        !attributeInfos || attributeInfos.length === 0 ? "centrality" : "both",
+    });
 
-    if (timesteps.length > 0) {
-      const timelineCentralities = await calculateCentralityValuesTimeline(
-        data,
-        timesteps,
-        timelines,
-      );
+    if (timesteps.length > 0 && timelineCentralities) {
       useCentralityStore
         .getState()
         .precomputeAllCentralityTimesteps(timesteps, timelineCentralities);
-    } else {
-      const centralityData: Centrality[] =
-        await calculateCentralityValues(data);
+    } else if (centralityData) {
       useCentralityStore.getState().setCentralityData(centralityData);
     }
 

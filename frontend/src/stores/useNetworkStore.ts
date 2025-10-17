@@ -16,12 +16,14 @@ interface NetworkStore {
   resetRadialZoomFlag: Boolean;
   resetNodeLinkZoomFlag: Boolean;
   hiddenNodes: Set<string>;
+  currentDataset: string | null;
 
   setNetwork: (data: Network) => void;
   selectNode: (id: string, multi?: boolean) => void;
   deselectNode: (id: string) => void;
   toggleNodeSelection: (id: string) => void;
   setHoveredNode: (node: FullData) => void;
+
   setSortKey: (key: string) => void;
   setSortingState: (sorting: SortingState) => void;
 
@@ -34,8 +36,12 @@ interface NetworkStore {
   restoreNode: (id: string) => void;
   restoreAllNodes: () => void;
 
+  setCurrentDataset: (dataset: string) => void;
+
   clearSelection: () => void;
   clearData: () => void;
+
+  isNetworkEmpty: () => boolean;
 }
 
 export const useNetworkStore = create<NetworkStore>((set, get) => ({
@@ -51,6 +57,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   resetRadialZoomFlag: false,
   resetNodeLinkZoomFlag: false,
   hiddenNodes: new Set<string>(),
+  currentDataset: null,
 
   setNetwork: (data) => {
     const nodeMap = new Map<string, Node>(data.nodes.map((n) => [n.id, n]));
@@ -94,6 +101,8 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   resetRadialZoom: () => set({ resetRadialZoomFlag: true }),
   resetNodeLinkZoom: () => set({ resetNodeLinkZoomFlag: true }),
 
+  setCurrentDataset: (dataset: string) => set({ currentDataset: dataset }),
+
   hideNode: (id) =>
     set((state) => {
       const next = new Set(state.hiddenNodes);
@@ -122,4 +131,9 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       radialZoom: d3.zoomIdentity,
       nodeLinkZoom: d3.zoomIdentity,
     }),
+
+  isNetworkEmpty: () => {
+    const { network } = get();
+    return network.nodes.length === 0 && network.links.length === 0;
+  },
 }));

@@ -76,9 +76,10 @@ const FDEBSettings = () => {
         variant="outline"
         size="sm"
         onClick={resetRadialSettings}
-        className="mt-2"
+        className="flex w-full cursor-pointer items-center px-2"
+        title="Reset Link Bundler Settings"
       >
-        Reset Bundler
+        <p className="w-fit truncate">Reset Bundler</p>
       </Button>
     </div>
   );

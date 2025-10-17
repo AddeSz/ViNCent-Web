@@ -1,6 +1,6 @@
 import type { ContextType } from "@/features/center-view/CenterView";
 import ChartTooltip from "@/features/center-view/Tooltips/ChartTooltip";
-import { useTooltip } from "@/features/center-view/hooks/useTooltip";
+import { useTooltip } from "@/features/center-view/Tooltips/useTooltip";
 import { useZoom } from "@/features/center-view/hooks/useZoom";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData, Link, Network, Node } from "@/types/network";

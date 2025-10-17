@@ -13,6 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useKeys } from "@/hooks/useKeys";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
@@ -38,6 +39,7 @@ const SortingSelector = ({
   const keys = ["none", "label", ...allKeys];
   const isDisabled = sorting.length === 0;
   const currentDirection = sorting[0]?.desc ? "desc" : "asc";
+  const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
 
   const toggleDirection = () => {
     if (sorting.length > 0) {
@@ -54,6 +56,7 @@ const SortingSelector = ({
               variant="outline"
               title="Sort By"
               className="flex w-full cursor-pointer items-center px-2"
+              disabled={isEmpty}
             >
               <p
                 className="w-fit max-w-[160px] truncate"

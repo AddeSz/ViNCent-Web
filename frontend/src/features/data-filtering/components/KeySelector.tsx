@@ -13,6 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
@@ -38,7 +39,7 @@ const KeySelector = ({
 }: KeySelectorProps) => {
   const [open, setOpen] = useState(false);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
-
+  const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -46,6 +47,7 @@ const KeySelector = ({
           variant="outline"
           className="flex w-full cursor-pointer items-center px-2"
           title={label}
+          disabled={isEmpty}
         >
           <p className="w-fit max-w-[160px] truncate">{label}</p>
           <ChevronsUpDown />

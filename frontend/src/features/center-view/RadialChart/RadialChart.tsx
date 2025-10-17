@@ -1,7 +1,7 @@
 import type { ContextType } from "@/features/center-view/CenterView";
 import ChartTooltip from "@/features/center-view/Tooltips/ChartTooltip";
+import { useTooltip } from "@/features/center-view/Tooltips/useTooltip";
 import { useChartData } from "@/features/center-view/hooks/useChartData";
-import { useTooltip } from "@/features/center-view/hooks/useTooltip";
 import { useZoom } from "@/features/center-view/hooks/useZoom";
 import { useKeys } from "@/hooks/useKeys";
 import { useAttributeStore } from "@/stores/useAttributeStore";

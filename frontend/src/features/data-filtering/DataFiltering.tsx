@@ -37,6 +37,7 @@ const DataFiltering = ({
   const isAttributeVisible =
     (displayMode === "attributes" || displayMode === "both") &&
     allAttributeKeys.length > 0;
+
   return (
     <div className="flex flex-col gap-1">
       <h2 className="mb-0 w-full cursor-default truncate" title="Key Filtering">
