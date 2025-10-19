@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
       args:
         BACKEND_PORT: ${BACKEND_PORT}
+        ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
     container_name: backend
     image: vincent/backend
     ports:
@@ -20,6 +21,7 @@ services:
       args:
         VITE_BACKEND_URL: ${VITE_BACKEND_URL}
         VITE_PORT: ${VITE_PORT}
+        VITE_GENERATE_SOURCEMAP: ${VITE_GENERATE_SOURCEMAP:-false}
     container_name: frontend
     image: vincent/frontend
     ports:
@@ -30,8 +32,9 @@ services:
     networks:
       - network
     environment:
-      - VITE_PORT=${VITE_PORT}
-      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+      VITE_PORT: ${VITE_PORT}
+
 networks:
   network:
     driver: bridge

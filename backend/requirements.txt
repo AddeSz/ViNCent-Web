@@ -4,3 +4,4 @@ python-dotenv
 networkx
 numpy
 scipy
+psutil

@@ -53,3 +53,8 @@ class CentralityTimelineRequest(BaseModel):
     timesteps: List[int]
     networks: Dict[int, NetworkData] 
     centralities: Optional[List[CentralityType]] = None
+    
+class CentralityTimestepRequest(BaseModel):
+    timestep: int
+    network: NetworkData
+    centralities: Optional[List[CentralityType]] = None

@@ -40,9 +40,9 @@ const DataFiltering = ({
 
   return (
     <div className="flex flex-col gap-1">
-      <h2 className="mb-0 w-full cursor-default truncate" title="Key Filtering">
+      <p className="mb-0 w-full cursor-default truncate" title="Key Filtering">
         Key Filtering
-      </h2>
+      </p>
       <div className="flex flex-wrap gap-2">
         {isCentralityVisible && (
           <div className="w-full flex-grow sm:flex-1">
@@ -70,18 +70,18 @@ const DataFiltering = ({
           </div>
         )}
       </div>
-      <h2 className="mb-0 w-full cursor-default truncate" title="Sorting">
+      <p className="mb-0 w-full cursor-default truncate" title="Sorting">
         Sorting
-      </h2>
+      </p>
       <SortingSelector
         sorting={sorting}
         onSortKeyChange={handleSortKeyChange}
         setSorting={setSorting}
       />
 
-      <h2 className="mb-0 w-full cursor-default truncate" title="Nodes">
+      <p className="mb-0 w-full cursor-default truncate" title="Nodes">
         Nodes
-      </h2>
+      </p>
       <NodeSelector />
       {view === "data-table" && <TimestepSlider />}
       {view === "data-table" && (

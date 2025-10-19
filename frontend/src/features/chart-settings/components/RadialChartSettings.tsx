@@ -34,9 +34,7 @@ const RadialChartSettings = () => {
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex flex-col">
-        <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
-          Inner Radius: {innerRadius}px
-        </label>
+        <p className="mb-1 truncate text-sm">Inner Radius: {innerRadius}px</p>
         <Slider
           min={50}
           max={outerRadius - 200}
@@ -58,9 +56,7 @@ const RadialChartSettings = () => {
       </div>
 
       <div className="flex flex-col">
-        <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
-          Outer Radius: {outerRadius}px
-        </label>
+        <p className="mb-1 truncate text-sm">Outer Radius: {outerRadius}px</p>
         <Slider
           min={outerRadiusMin}
           max={Math.min(Math.max(outerRadius + 400, 1600), 4000)}
@@ -79,9 +75,7 @@ const RadialChartSettings = () => {
       </div>
 
       <div className="flex flex-col">
-        <label className="mb-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap">
-          Label Size: {fontSize}px
-        </label>
+        <p className="mb-1 truncate text-sm">Label Size: {fontSize}px</p>
         <Slider
           min={0}
           max={fontSizeMax}
@@ -90,6 +84,7 @@ const RadialChartSettings = () => {
           onValueChange={([val]) => {
             setRadialSettings({ fontSize: val });
           }}
+          id=""
         />
         <span className="mt-0.5 flex w-full justify-between text-xs">
           <span>0</span>
@@ -156,9 +151,7 @@ const RadialChartSettings = () => {
         onClick={() => resetRadialSettings()}
         title="Reset Settings to Default"
       >
-        <span className="flex-wrap truncate overflow-hidden">
-          Reset Settings
-        </span>
+        <span className="flex-wrap truncate">Reset Settings</span>
       </Button>
     </div>
   );

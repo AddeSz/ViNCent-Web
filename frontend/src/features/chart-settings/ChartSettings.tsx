@@ -15,44 +15,41 @@ const ChartSettings = ({ datasets, onLoadData }: ChartSettingsProps) => {
     <div className="flex flex-col gap-2">
       {!isEmpty && (
         <div>
-          <h2 className="mb-0 w-full cursor-default truncate" title="Load Data">
+          <p className="mb-0 w-full cursor-default truncate" title="Load Data">
             Load Data
-          </h2>
+          </p>
           <FileUploader datasets={datasets} onLoadData={onLoadData} />
         </div>
       )}
 
       <div>
-        <h2
-          className="mb-0 w-full cursor-default truncate"
-          title="Display Mode"
-        >
+        <p className="mb-0 w-full cursor-default truncate" title="Display Mode">
           Display Mode
-        </h2>
+        </p>
         <div className="rounded-[4px] bg-card p-1">
           <DisplaySettings />
         </div>
       </div>
 
       <div>
-        <h2
+        <p
           className="mb-0 w-full cursor-default truncate"
           title="Radial View Settings"
         >
           Radial View Settings
-        </h2>
+        </p>
         <div className="rounded-[4px] bg-card p-1">
           <RadialChartSettings />
         </div>
       </div>
 
       <div>
-        <h2
+        <p
           className="mb-0 w-full cursor-default truncate"
           title="Node-Link View Settings"
         >
           Node-Link View Settings
-        </h2>
+        </p>
         <div className="rounded-[4px] bg-card p-1">
           <NodeLinkDiagramSettings />
         </div>

@@ -1,7 +1,7 @@
 import FileUploader from "@/components/FileUploader";
 import Legend from "@/components/Legend";
 import { Spinner } from "@/components/ui/spinner";
-import { starwarsData, testData2, testData3 } from "@/data/testData";
+import { miserablesData, starwarsData, testDataSmall } from "@/data/testData";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
@@ -16,8 +16,10 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 const datasets = {
   "Starwars Dataset": starwarsData,
-  "Les Miserables Dataset": testData2,
-  "Test Dataset": testData3,
+  "Les Miserables Dataset": miserablesData,
+  // "Test Dataset": testData,
+  "Test Dataset Small": testDataSmall,
+  // "Test Dataset Time": testDataTime,
 };
 
 const VIEW_KEY = "center-view-mode";

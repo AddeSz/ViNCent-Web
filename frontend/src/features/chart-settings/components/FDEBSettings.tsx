@@ -50,15 +50,20 @@ const FDEBSettings = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <h4 className="text-sm">Link Bundler Settings</h4>
+      <p className="text-sm">Link Bundler Settings</p>
 
       <div className="grid grid-cols-2 gap-2">
         {Object.entries(fdebSettings).map(([key, value]) => (
           <div key={key} className="flex flex-col">
-            <Label className="text-xs" title={formatKeyLabel(key)}>
+            <Label
+              htmlFor={`fdeb-${key}`}
+              className="text-xs"
+              title={formatKeyLabel(key)}
+            >
               {formatKeyLabel(key)}
             </Label>
             <Input
+              id={`fdeb-${key}`}
               type="number"
               step={0.1}
               min={0}

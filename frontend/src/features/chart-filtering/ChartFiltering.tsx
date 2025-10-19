@@ -102,7 +102,7 @@ const ChartFiltering = ({ data, dataMap }: ChartFilteringProps) => {
 
   return (
     <div className="space-y-4">
-      <h2 className="mb-0 cursor-default text-lg">Data Filtering</h2>
+      <p className="mb-0 cursor-default truncate">Data Filtering</p>
       <div className="min-w-60 space-y-2">
         <label htmlFor="binCount" className="text-sm font-medium">
           Bin Count: {binCount}
