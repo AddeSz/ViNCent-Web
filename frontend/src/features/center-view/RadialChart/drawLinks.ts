@@ -17,6 +17,8 @@ import {
 
 const ANIMATION_DURATION = 300;
 const OPACITY_VALUE = 0.4;
+const SELECTED_VALUE = 0.9;
+
 type LinkData = {
   id: string;
   sourceId: string;
@@ -110,11 +112,15 @@ const drawLinks = (
     .duration(ANIMATION_DURATION)
     .attr(
       "stroke",
-      (d) => getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE).stroke,
+      (d) =>
+        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
+          .stroke,
     )
     .attr(
       "opacity",
-      (d) => getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE).opacity,
+      (d) =>
+        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
+          .opacity,
     );
 
   paths
@@ -124,11 +130,15 @@ const drawLinks = (
     .attr("data-removed", (d) => (d.isRemoved ? "true" : "false"))
     .attr(
       "stroke",
-      (d) => getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE).stroke,
+      (d) =>
+        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
+          .stroke,
     )
     .attr(
       "opacity",
-      (d) => getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE).opacity,
+      (d) =>
+        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
+          .opacity,
     );
 };
 export default drawLinks;
@@ -155,11 +165,13 @@ export const updateLinkHighlight = (
       link
         .attr(
           "stroke",
-          getLinkStyle(isRemoved, isSelected, OPACITY_VALUE).stroke,
+          getLinkStyle(isRemoved, isSelected, OPACITY_VALUE, SELECTED_VALUE)
+            .stroke,
         )
         .attr(
           "opacity",
-          getLinkStyle(isRemoved, isSelected, OPACITY_VALUE).opacity,
+          getLinkStyle(isRemoved, isSelected, OPACITY_VALUE, SELECTED_VALUE)
+            .opacity,
         );
     });
 };

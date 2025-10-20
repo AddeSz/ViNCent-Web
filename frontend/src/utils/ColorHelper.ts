@@ -27,6 +27,7 @@ export const getLinkStyle = (
   isRemoved: boolean,
   isSelected: boolean,
   defaultValue: number,
+  selectedValue: number,
 ) => {
   const stroke = isRemoved
     ? "red"
@@ -40,7 +41,7 @@ export const getLinkStyle = (
       : isRemoved
         ? 0.2
         : isSelected
-          ? 0.9
+          ? selectedValue
           : defaultValue;
 
   return { stroke, opacity };

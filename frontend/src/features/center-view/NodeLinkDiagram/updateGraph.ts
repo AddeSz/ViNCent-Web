@@ -35,7 +35,7 @@ const getLinkStyleForNode = (
   const targetRemoved = dataMap.get(targetId)?.removed;
   const isRemoved = (sourceRemoved ?? true) || (targetRemoved ?? true);
   const isSelected = selectedNodes.has(sourceId) || selectedNodes.has(targetId);
-  const style = getLinkStyle(isRemoved, isSelected, OPACITY_VALUE);
+  const style = getLinkStyle(isRemoved, isSelected, OPACITY_VALUE, 0.7);
 
   return {
     stroke: style.stroke,

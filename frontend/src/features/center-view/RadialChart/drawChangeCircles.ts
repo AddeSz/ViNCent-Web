@@ -14,7 +14,6 @@ export const drawChangeCircles = (
     lastChange: NodeChange | null;
   }) => void,
   onTooltipHide: () => void,
-  maxLabelWidth: number,
 ) => {
   svg.selectAll("circle.change-indicator").remove();
   const circleGroup = svg.append("g").attr("class", "change-circles-group");
@@ -32,7 +31,7 @@ export const drawChangeCircles = (
           (d) =>
             `
               rotate(${((x(d)! + x.bandwidth() / 2) * 180) / Math.PI - 90})
-              translate(${outerRadius + maxLabelWidth + 30}, 0)
+              translate(${outerRadius + 20}, 0)
             `,
         )
         .attr("fill", (d) => {
@@ -75,7 +74,6 @@ export const updateChangeCircles = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   lastChange: NodeChange | null,
   outerRadius: number,
-  maxLabelWidth: number,
 ) => {
   const circles = svg.selectAll<SVGCircleElement, string>(
     "g.change-circles-group circle.change-indicator",
@@ -99,7 +97,7 @@ export const updateChangeCircles = (
       const transform = existing.attr("transform");
       return transform.replace(
         /translate\([^)]*\)/,
-        `translate(${outerRadius + maxLabelWidth + 30}, 0)`,
+        `translate(${outerRadius + 20}, 0)`,
       );
     });
 };

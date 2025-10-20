@@ -10,12 +10,14 @@ import { useChartSettings } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { FullData, Link, NodeChange } from "@/types/network";
+import { handleHighlight } from "@/utils/ColorHelper";
 import { scalePadding } from "@/utils/utils";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import calculateBounds from "./calculateBounds";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
+import drawBrush from "./drawBrush";
 import { drawChangeCircles, updateChangeCircles } from "./drawChangeCircles";
 import drawLabels, {
   updateLabelFontSize,
@@ -60,7 +62,7 @@ const RadialChart = ({
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
   const centralityRanges = useCentralityStore((s) => s.centralityRanges);
   const { setupZoom, resetZoom } = useZoom();
-  const [maxLabelWidth, setMaxLabelWidth] = useState(0);
+  const [maxLabelWidth, setMaxLabelWidth] = useState(200);
 
   const radialSettings = useChartSettings((s) => s.radialSettings);
   const {
@@ -118,6 +120,19 @@ const RadialChart = ({
     }
   }, [resetZoomFlag]);
 
+  const visibleData = data.filter((d) => !d.hidden);
+  const dataLength = visibleData.length;
+  const outerPadding = scalePadding(dataLength, 50, 0.25);
+  const innerPadding = scalePadding(dataLength, 50, 0.5);
+
+  const x = d3
+    .scaleBand<string>()
+    .domain(visibleData.map((d) => d.id))
+    .range([0, 2 * Math.PI])
+    .align(0.5)
+    .padding(outerPadding)
+    .paddingInner(innerPadding);
+
   useEffect(() => {
     if (!svgRef.current || !dimensions?.width || !dimensions?.height) return;
     const svg = d3.select(svgRef.current);
@@ -130,18 +145,6 @@ const RadialChart = ({
 
     if (!chartData) return;
     const { series, arcData } = chartData;
-    const visibleData = data.filter((d) => !d.hidden);
-    const dataLength = visibleData.length;
-    const outerPadding = scalePadding(dataLength, 50, 0.25);
-    const innerPadding = scalePadding(dataLength, 50, 0.5);
-
-    const x = d3
-      .scaleBand<string>()
-      .domain(visibleData.map((d) => d.id))
-      .range([0, 2 * Math.PI])
-      .align(0.5)
-      .padding(outerPadding)
-      .paddingInner(innerPadding);
 
     const centralityCount = enabledCentralityKeys.length;
     const attributeCount = enabledAttributeKeys.length;
@@ -172,7 +175,6 @@ const RadialChart = ({
     };
 
     const bounds = calculateBounds(series, x, y, getKeyIndex);
-
     drawArcs(
       svgGroup,
       arcData,
@@ -203,11 +205,10 @@ const RadialChart = ({
       fdebSettings,
     );
     drawBounds(svgGroup, bounds, innerRadius, outerRadius, selectedNodes);
-
     drawLabels(
       svgGroup,
       x,
-      outerRadius,
+      outerRadius + 25,
       selectedNodes,
       fontSize,
       handleNodeHover,
@@ -225,7 +226,6 @@ const RadialChart = ({
       lastChanges,
       showChangeCircleTooltip,
       hideTooltip,
-      maxLabelWidth,
     );
   }, [
     dimensions,
@@ -246,34 +246,38 @@ const RadialChart = ({
 
   useEffect(() => {
     if (!svgRef.current) return;
+    const svgGroup = d3
+      .select(svgRef.current)
+      .select<SVGGElement>("g.zoom-group");
+    if (svgGroup.empty()) return;
+
+    const handleBrushSelection = (selectedIds: string[]) => {
+      if (selectedIds.length === 0) return;
+
+      selectedIds.forEach((id) => {
+        handleHighlight(id, true);
+      });
+    };
+
+    drawBrush(svgGroup, outerRadius, maxLabelWidth, x, handleBrushSelection);
+  }, [maxLabelWidth, outerRadius, chartData]);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
     updateLabelFontSize(svg, fontSize, nodeMap, setMaxLabelWidth);
-    updateChangeCircles(svg, lastChanges, outerRadius, maxLabelWidth);
+    updateChangeCircles(svg, lastChanges, outerRadius);
   }, [fontSize]);
 
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    updateChangeCircles(svg, lastChanges, outerRadius, maxLabelWidth);
+    updateChangeCircles(svg, lastChanges, outerRadius);
   }, [lastChanges, maxLabelWidth]);
 
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB") return;
-
     const svg = d3.select(svgRef.current);
-
-    const dataLength = data.length;
-    const outerPadding = scalePadding(dataLength, 50, 0.25);
-    const innerPadding = scalePadding(dataLength, 50, 0.5);
-
-    const x = d3
-      .scaleBand<string>()
-      .domain(data.map((d) => d.id))
-      .range([0, 2 * Math.PI])
-      .align(0.5)
-      .padding(outerPadding)
-      .paddingInner(innerPadding);
-
     updateFDEBLinks(svg, x, innerRadius, fdebSettings);
   }, [fdebSettings]);
 
