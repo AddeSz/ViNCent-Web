@@ -40,6 +40,19 @@ copy .env.example .env
 
 **NOTE:** On Mac/Linux use **cp** instead of **copy**
 
+#####  Enviornment Variables
+In the created **.env** file you can set the following enviornment variables:
+```bash
+COMPOSE_PROJECT_NAME=vincent            # Name of the docker compose container
+BACKEND_PORT=8000                       # Port for the backend service
+ALLOWED_ORIGINS=http://localhost:3000,* # Allowed origins (CORS) (comma separated list with frontend URLs)
+VITE_BACKEND_URL=http://localhost:8000  # Backend URL used by the frontend
+VITE_PORT=3000                          # Port for the frontend service
+VITE_GENERATE_SOURCEMAP=false           # Disable frontend source map generation for faster builds
+
+```
+Enviornment variables injected at runtime override the enviornment variables set during build.
+
 #### 2. Backend setup
 
 Create and activate a virtual environment:
@@ -118,6 +131,20 @@ copy .env.example .env
 
 **NOTE:** On Mac/Linux use **cp** instead of **copy**
 
+##### Enviornment Variables
+
+In the created **.env** file you can set the following enviornment variables:
+```bash
+COMPOSE_PROJECT_NAME=vincent            # Name of the docker compose container
+BACKEND_PORT=8000                       # Port for the backend service
+ALLOWED_ORIGINS=http://localhost:3000,* # Allowed origins (CORS) (comma separated list with frontend URLs)
+VITE_BACKEND_URL=http://localhost:8000  # Backend URL used by the frontend
+VITE_PORT=3000                          # Port for the frontend service
+VITE_GENERATE_SOURCEMAP=false           # Disable frontend source map generation for faster builds
+
+```
+Enviornment variables injected at runtime override the enviornment variables set during build.
+
 #### 2. Build and Run
 
 ```bash
@@ -136,15 +163,14 @@ docker compose up
 
 - Backend: http://localhost:8000 (default)
 
-#### 4. (Optional) Quit
+#### 4. Docker Clean up
 
-- Run **CTRL+C** in the terminal and then:
+Run **CTRL+C** in the terminal and then:
 
 ```bash
 docker compose down
 ```
-
-for clean up.
+in order to exit and clean up the docker containers.
 
 # Usage
 
