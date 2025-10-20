@@ -23,8 +23,11 @@ const drawArcs = (
   getKeyIndex: (key: string) => number,
   onContextMenuTarget: (target: ContextType, data?: any) => void,
 ): void => {
-  svg.selectAll("g.arcs-group").remove();
-  const g = svg.append("g").attr("class", "arcs-group");
+  const g = svg
+    .selectAll<SVGGElement, unknown>("g.arcs-group")
+    .data([null])
+    .join("g")
+    .attr("class", "arcs-group");
 
   const processedArcData = arcData.map((d) => {
     const startAngle = x(d.data.id) ?? 0;
@@ -32,7 +35,7 @@ const drawArcs = (
     const innerRadius = y(getKeyIndex(d.key));
     const fullOuterRadius = y(getKeyIndex(d.key) + 1);
 
-    const backgroundArcGenerator = d3
+    const backgroundArc = d3
       .arc<ArcData>()
       .innerRadius(innerRadius)
       .outerRadius(fullOuterRadius)
@@ -41,19 +44,15 @@ const drawArcs = (
 
     let foregroundOuterRadius = fullOuterRadius;
     const attribute = attributeInfo.get(d.key);
-
     const isRemoved = d.data.removed === true;
 
     if (typeof d.value === "number") {
       let min = 0;
       let max = 1;
-
-      if (attribute?.isNumeric && attribute.range) {
+      if (attribute?.isNumeric && attribute.range)
         ({ min, max } = attribute.range);
-      } else if (centralityRanges[d.key]) {
+      else if (centralityRanges[d.key])
         ({ min, max } = centralityRanges[d.key]);
-      }
-
       const proportion = Math.max(
         0,
         Math.min((d.value - min) / (max - min || 1), 1),
@@ -62,7 +61,7 @@ const drawArcs = (
         innerRadius + (fullOuterRadius - innerRadius) * proportion;
     }
 
-    const foregroundArcGenerator = d3
+    const foregroundArc = d3
       .arc<ArcData>()
       .innerRadius(innerRadius)
       .outerRadius(foregroundOuterRadius)
@@ -74,49 +73,59 @@ const drawArcs = (
 
     return {
       ...d,
-      backgroundPath: backgroundArcGenerator(d),
-      foregroundPath: !d.data.stable ? foregroundArcGenerator(d) : null,
+      backgroundPath: backgroundArc(d),
+      foregroundPath: !d.data.stable ? foregroundArc(d) : null,
       fillColor,
       arcOpacity,
     };
   });
 
   const arcGroups = g
-    .selectAll("g.arc-group")
-    .data(processedArcData)
-    .join("g")
-    .attr("class", "arc-group");
+    .selectAll<SVGGElement, (typeof processedArcData)[number]>("g.arc-group")
+    .data(processedArcData, (d: any) => `${d.data.id}-${d.key}`);
 
-  arcGroups
+  arcGroups.exit().transition().duration(300).style("opacity", 0).remove();
+
+  const arcGroupsEnter = arcGroups
+    .enter()
+    .append("g")
+    .attr("class", "arc-group")
+    .style("opacity", 0);
+
+  arcGroupsEnter
     .append("path")
     .attr("class", "arc-background")
-    .attr("d", (d) => d.backgroundPath)
     .attr("fill", "var(--background)")
     .attr("opacity", 0.5)
     .attr("stroke", "none")
     .style("cursor", "pointer");
 
-  arcGroups
+  arcGroupsEnter
     .append("path")
     .attr("class", "arc-foreground")
-    .attr("d", (d) => d.foregroundPath)
-    .attr("fill", (d) => d.fillColor)
     .attr("stroke", "none")
-    .attr("opacity", (d) => d.arcOpacity)
     .style("pointer-events", "none");
 
-  arcGroups
-    .on("mousemove", function (event, d) {
-      d3.select(this)
-        .select(".arc-background")
-        .transition()
-        .duration(100)
-        .attr("opacity", 0.7);
+  const arcGroupsMerged = arcGroupsEnter.merge(arcGroups as any);
 
+  arcGroupsMerged.transition().duration(300).style("opacity", 1);
+
+  arcGroupsMerged
+    .select<SVGPathElement>(".arc-background")
+    .attr("d", (d) => d.backgroundPath)
+    .attr("opacity", 0.5);
+
+  arcGroupsMerged
+    .select<SVGPathElement>(".arc-foreground")
+    .attr("d", (d) => d.foregroundPath)
+    .attr("fill", (d) => d.fillColor)
+    .attr("opacity", (d) => d.arcOpacity);
+
+  arcGroupsMerged
+    .on("mousemove", function (event, d) {
+      d3.select(this).select(".arc-background").attr("opacity", 0.7);
       d3.select(this)
         .select(".arc-foreground")
-        .transition()
-        .duration(100)
         .attr("opacity", d.data.removed ? 0.3 : 0.85);
 
       onTooltipShow({
@@ -129,23 +138,11 @@ const drawArcs = (
       onNodeHover(d.data.id);
     })
     .on("mouseout", function (_, d) {
-      d3.select(this)
-        .select(".arc-background")
-        .transition()
-        .duration(100)
-        .attr("opacity", 0.5);
-
+      d3.select(this).select(".arc-background").attr("opacity", 0.5);
       d3.select(this)
         .select(".arc-foreground")
-        .transition()
-        .duration(100)
         .attr("opacity", d.data.removed ? 0.4 : 1);
-
       onTooltipHide();
-    })
-
-    .on("click", (_, d) => {
-      console.log(d.value);
     })
     .on("contextmenu", (event, d) => {
       event._handledByChild = true;

@@ -105,13 +105,14 @@ const Legend = () => {
               <div
                 className="h-4 w-4 flex-shrink-0 rounded-full"
                 style={{ backgroundColor: color }}
+                title={formatKeyLabel(key)}
               />
-              <div
+              <p
                 className="w-full max-w-24 truncate text-xs font-medium capitalize"
                 title={formatKeyLabel(key)}
               >
                 {formatKeyLabel(key)}
-              </div>
+              </p>
 
               {!isAttribute || isNumeric ? (
                 <>
@@ -134,17 +135,17 @@ const Legend = () => {
                   </div>
                 </>
               ) : (
-                <div className="w-fit min-w-24 font-mono text-xs text-muted-foreground tabular-nums">
+                <p className="w-fit min-w-24 font-mono text-xs text-muted-foreground tabular-nums">
                   {formatValue(value)}
-                </div>
+                </p>
               )}
             </div>
           ),
         )}
       </div>
-      <div className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         Last updated: {new Date().toLocaleTimeString()}
-      </div>
+      </p>
     </div>
   );
 };

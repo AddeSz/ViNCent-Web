@@ -22,3 +22,26 @@ export const highlightLabelColor = {
   default: "var(--foreground)",
   selected: "orange",
 };
+
+export const getLinkStyle = (
+  isRemoved: boolean,
+  isSelected: boolean,
+  defaultValue: number,
+) => {
+  const stroke = isRemoved
+    ? "red"
+    : isSelected
+      ? highlightLinksColor.selected
+      : highlightLinksColor.default;
+
+  const opacity =
+    isRemoved && isSelected
+      ? 0.6
+      : isRemoved
+        ? 0.2
+        : isSelected
+          ? 0.9
+          : defaultValue;
+
+  return { stroke, opacity };
+};

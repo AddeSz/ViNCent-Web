@@ -10,7 +10,7 @@ export interface Point {
   y: number;
 }
 
-export interface Node extends Point {
+export interface ForceNode extends Point {
   id: string;
 }
 
@@ -401,7 +401,7 @@ export class ForceEdgeBundling {
     return this.subdivisionPointsForEdge;
   }
 
-  public setNodes(nodes: Node[]): this {
+  public setNodes(nodes: ForceNode[]): this {
     this.dataNodes.clear();
     for (const node of nodes) {
       this.dataNodes.set(node.id, { x: node.x, y: node.y });

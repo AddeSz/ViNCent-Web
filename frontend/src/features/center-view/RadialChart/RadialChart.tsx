@@ -21,7 +21,7 @@ import drawLabels, {
   updateLabelFontSize,
   updateLabelHighlight,
 } from "./drawLabels";
-import drawLinks, { updateDrawLinks, updateLinkHighlight } from "./drawLinks";
+import drawLinks, { updateFDEBLinks, updateLinkHighlight } from "./drawLinks";
 
 export type ArcData = {
   key: string;
@@ -232,7 +232,6 @@ const RadialChart = ({
     innerRadius,
     outerRadius,
     separateMetrics,
-    allKeys,
     chartData,
     linkRenderingMode,
   ]);
@@ -275,7 +274,7 @@ const RadialChart = ({
       .padding(outerPadding)
       .paddingInner(innerPadding);
 
-    updateDrawLinks(svg, x, innerRadius, fdebSettings);
+    updateFDEBLinks(svg, x, innerRadius, fdebSettings);
   }, [fdebSettings]);
 
   return !dimensions?.width || !dimensions?.height ? (

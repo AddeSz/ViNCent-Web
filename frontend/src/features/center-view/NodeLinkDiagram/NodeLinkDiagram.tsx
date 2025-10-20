@@ -7,9 +7,8 @@ import type { FullData, Link, Network, Node } from "@/types/network";
 import type { Simulation } from "d3";
 import * as d3 from "d3";
 import { useEffect, useRef } from "react";
-import selectionStyling from "./selectionStyling";
 import createSimulation from "./setupSimulation";
-import updateGraph from "./updateGraph";
+import updateGraph, { updateStyle } from "./updateGraph";
 
 interface NodeLinkDiagramProps {
   dimensions: DOMRectReadOnly | null;
@@ -96,21 +95,13 @@ const NodeLinkDiagram = ({
         event._handledByChild = true;
         onContextMenuTarget("node", d.id);
       });
-  }, [data, dimensions]);
+  }, [dataMap, dimensions]);
 
   useEffect(() => {
     if (!svgRef.current || !dataMap) return;
-    selectionStyling(d3.select(svgRef.current), selectedNodes, dataMap);
-  }, [selectedNodes, data]);
-
-  useEffect(
-    () => () => {
-      simulationRef.current?.stop();
-      simulationRef.current = null;
-      if (svgRef.current) d3.select(svgRef.current).selectAll("*").remove();
-    },
-    [],
-  );
+    const svg = d3.select(svgRef.current);
+    updateStyle(svg, selectedNodes, dataMap);
+  }, [selectedNodes, dataMap]);
 
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center bg-card" />
