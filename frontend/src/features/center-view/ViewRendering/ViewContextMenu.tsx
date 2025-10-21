@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/context-menu";
 import type { ContextMenuTarget } from "@/features/center-view/CenterView";
 import { useKeys } from "@/hooks/useKeys";
+import { useAttributeStore } from "@/stores/useAttributeStore";
+import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
@@ -49,6 +51,8 @@ const ViewContextMenu = ({
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const hideNode = useNetworkStore((s) => s.hideNode);
   const hiddenCount = useNetworkStore((s) => s.hiddenNodes.size);
+  const toggleAttributeKey = useAttributeStore((s) => s.toggleAttributeKey);
+  const toggleCentralityKey = useCentralityStore((s) => s.toggleCentralityKey);
 
   const handleResetZoom = () => {
     if (view === "radial") {
@@ -127,9 +131,37 @@ const ViewContextMenu = ({
             </ContextMenuItem>
             <ContextMenuItem
               onSelect={() => hideNode(contextMenuTarget.data.id)}
-              className="cursor-pointer text-red-500"
+              className="cursor-pointer"
             >
-              Hide Node
+              <p>
+                <span className="text-red-500">Hide </span>
+                <span>Node</span>
+              </p>
+            </ContextMenuItem>
+            <ContextMenuItem
+              onSelect={() => {
+                const key = contextMenuTarget.data.key;
+                if (centralityKeys.includes(key)) {
+                  toggleCentralityKey(key);
+                } else {
+                  toggleAttributeKey(key);
+                }
+              }}
+              className="cursor-pointer"
+            >
+              <div className="flex items-center gap-1">
+                <span className="text-red-500">Hide</span>
+                <span
+                  style={{
+                    color: getColorForKey(
+                      contextMenuTarget.data.key,
+                      contextMenuTarget.data.value,
+                    ),
+                  }}
+                >
+                  {formatKeyLabel(contextMenuTarget.data.key)}
+                </span>
+              </div>
             </ContextMenuItem>
           </>
         )}

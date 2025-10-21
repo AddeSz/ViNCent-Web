@@ -1,5 +1,6 @@
 import type {
   AttributeInfo,
+  Node,
   NodeAttributes,
   NodeAttributeValue,
   TimelineEntry,
@@ -21,7 +22,7 @@ interface AttributeStore {
 
   currentTimestep: number | null;
 
-  setNodeAttributes: (nodes: any[]) => void;
+  setNodeAttributes: (nodes: Node[]) => void;
   precomputeAllAttributeTimesteps: (
     timesteps: number[],
     timelines: Map<string, TimelineEntry[]>,

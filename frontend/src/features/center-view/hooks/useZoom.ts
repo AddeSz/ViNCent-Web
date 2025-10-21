@@ -16,15 +16,18 @@ export const useZoom = () => {
       const zoomBehavior = d3
         .zoom<SVGSVGElement, unknown>()
         .filter((event) => {
-          if (event.type === "wheel") return true;
-          if ("button" in event && event.button === 2) return false;
           const target = event.target as HTMLElement;
+          if ("button" in event && event.button === 2) return false;
           if (
             target.closest(".arcs-group") ||
             target.closest(".labels-group")
           ) {
             return false;
           }
+          if (event.type === "dblclick" && target.closest(".node")) {
+            return false;
+          }
+          if (event.type === "wheel") return true;
           return true;
         })
         .scaleExtent([0.1, 6])

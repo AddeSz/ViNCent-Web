@@ -58,6 +58,7 @@ const ViewRenderer = ({
           onContextMenuTarget={onContextMenuTarget}
           lastChanges={lastChanges}
           links={filteredNetwork.links}
+          isViewActive={view === "radial"}
         />
 
         <div className="pointer-events-none absolute bottom-2 left-2">
@@ -98,6 +99,7 @@ const ViewRenderer = ({
           data={filteredNetwork}
           dataMap={dataMap}
           onContextMenuTarget={onContextMenuTarget}
+          isViewActive={view === "node-link"}
         />
 
         <div className="pointer-events-none absolute bottom-2 left-2">

@@ -10,20 +10,19 @@ import { useChartSettings } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { FullData, Link, NodeChange } from "@/types/network";
-import { handleHighlight } from "@/utils/ColorHelper";
 import { scalePadding } from "@/utils/utils";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import calculateBounds from "./calculateBounds";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
-import drawBrush from "./drawBrush";
 import { drawChangeCircles, updateChangeCircles } from "./drawChangeCircles";
 import drawLabels, {
   updateLabelFontSize,
   updateLabelHighlight,
 } from "./drawLabels";
 import drawLinks, { updateFDEBLinks, updateLinkHighlight } from "./drawLinks";
+import drawSelectionBrush from "./drawSelectionBrush";
 
 export type ArcData = {
   key: string;
@@ -41,6 +40,7 @@ interface RadialChartProps {
   onContextMenuTarget: (target: ContextType, data?: any) => void;
   lastChanges: NodeChange | null;
   links: Link[];
+  isViewActive: boolean;
 }
 
 const RadialChart = ({
@@ -50,6 +50,7 @@ const RadialChart = ({
   onContextMenuTarget,
   lastChanges,
   links,
+  isViewActive,
 }: RadialChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -246,24 +247,6 @@ const RadialChart = ({
 
   useEffect(() => {
     if (!svgRef.current) return;
-    const svgGroup = d3
-      .select(svgRef.current)
-      .select<SVGGElement>("g.zoom-group");
-    if (svgGroup.empty()) return;
-
-    const handleBrushSelection = (selectedIds: string[]) => {
-      if (selectedIds.length === 0) return;
-
-      selectedIds.forEach((id) => {
-        handleHighlight(id, true);
-      });
-    };
-
-    drawBrush(svgGroup, outerRadius, maxLabelWidth, x, handleBrushSelection);
-  }, [maxLabelWidth, outerRadius, chartData]);
-
-  useEffect(() => {
-    if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
     updateLabelFontSize(svg, fontSize, nodeMap, setMaxLabelWidth);
     updateChangeCircles(svg, lastChanges, outerRadius);
@@ -280,6 +263,15 @@ const RadialChart = ({
     const svg = d3.select(svgRef.current);
     updateFDEBLinks(svg, x, innerRadius, fdebSettings);
   }, [fdebSettings]);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+    const svgGroup = d3
+      .select(svgRef.current)
+      .select<SVGGElement>("g.zoom-group");
+    if (svgGroup.empty()) return;
+    drawSelectionBrush(svgGroup, outerRadius, maxLabelWidth, x, isViewActive);
+  }, [maxLabelWidth, outerRadius, chartData, isViewActive]);
 
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center"></div>

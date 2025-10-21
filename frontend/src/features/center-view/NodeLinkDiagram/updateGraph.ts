@@ -50,7 +50,7 @@ const handleNodeClick = (event: MouseEvent, d: Node) => {
 };
 
 const updateNodes = (
-  nodeGroup: d3.Selection<any, unknown, null, undefined>,
+  nodeGroup: d3.Selection<d3.BaseType, unknown, null, undefined>,
   visibleNodes: Node[],
   simulation: d3.Simulation<Node, Link>,
   dataMap: Map<string, FullData>,
@@ -97,7 +97,7 @@ const updateNodes = (
 };
 
 const updateLinks = (
-  linkGroup: d3.Selection<any, unknown, null, undefined>,
+  linkGroup: d3.Selection<d3.BaseType, unknown, null, undefined>,
   renderLinks: Link[],
   dataMap: Map<string, FullData>,
   selectedNodes: Set<string>,

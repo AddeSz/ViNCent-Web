@@ -157,9 +157,7 @@ const ChartTooltip = ({
       {type === "change" && (
         <div className="font-medium">
           <div>{nodeData.label || nodeId}</div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            {changeMessage}
-          </div>
+          <div className="text-xs text-muted-foreground">{changeMessage}</div>
         </div>
       )}
     </div>

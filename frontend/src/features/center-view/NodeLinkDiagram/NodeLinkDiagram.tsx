@@ -7,6 +7,7 @@ import type { FullData, Link, Network, Node } from "@/types/network";
 import type { Simulation } from "d3";
 import * as d3 from "d3";
 import { useEffect, useRef } from "react";
+import drawSelectionBrush from "./drawSelectionBrush";
 import createSimulation from "./setupSimulation";
 import updateGraph, { updateStyle } from "./updateGraph";
 
@@ -15,6 +16,7 @@ interface NodeLinkDiagramProps {
   data: Network;
   dataMap: Map<string, FullData>;
   onContextMenuTarget: (target: ContextType, data?: any) => void;
+  isViewActive: boolean;
 }
 
 const NodeLinkDiagram = ({
@@ -22,6 +24,7 @@ const NodeLinkDiagram = ({
   data,
   dataMap,
   onContextMenuTarget,
+  isViewActive,
 }: NodeLinkDiagramProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const simulationRef = useRef<Simulation<Node, Link> | null>(null);
@@ -42,7 +45,7 @@ const NodeLinkDiagram = ({
   }, [resetZoomFlag]);
 
   useEffect(() => {
-    if (!svgRef.current || !dimensions?.width || !dimensions?.height) return;
+    if (!svgRef.current) return;
     if (!simulationRef.current) {
       const svg = d3.select(svgRef.current);
       const svgGroup = svg.append("g").attr("class", "zoom-group");
@@ -56,8 +59,20 @@ const NodeLinkDiagram = ({
         svgGroup.selectAll(".node"),
         svgGroup.selectAll(".link"),
       );
+
+      if (data && data.nodes?.length && data.links?.length && dataMap) {
+        updateGraph(
+          svg,
+          simulationRef.current,
+          data.nodes,
+          data.links,
+          dataMap,
+          selectedNodes,
+        );
+        drawSelectionBrush(svgGroup, data.nodes, isViewActive);
+      }
     }
-  }, [dimensions, networkData]);
+  }, [networkData, dimensions]);
 
   useEffect(() => {
     if (!svgRef.current || !simulationRef.current || !dataMap) return;
@@ -95,13 +110,19 @@ const NodeLinkDiagram = ({
         event._handledByChild = true;
         onContextMenuTarget("node", d.id);
       });
-  }, [dataMap, dimensions]);
+
+    const svgGroup = d3
+      .select(svgRef.current)
+      .select<SVGGElement>("g.zoom-group");
+    if (svgGroup.empty()) return;
+    drawSelectionBrush(svgGroup, data.nodes, isViewActive);
+  }, [dataMap, isViewActive]);
 
   useEffect(() => {
     if (!svgRef.current || !dataMap) return;
     const svg = d3.select(svgRef.current);
     updateStyle(svg, selectedNodes, dataMap);
-  }, [selectedNodes, dataMap]);
+  }, [selectedNodes]);
 
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center bg-card" />

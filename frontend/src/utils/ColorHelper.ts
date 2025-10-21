@@ -8,6 +8,14 @@ export const handleHighlight = (id: string, multi: boolean) => {
   }
 };
 
+export const handleBrushSelection = (selectedIds: string[]) => {
+  if (selectedIds.length === 0) return;
+
+  selectedIds.forEach((id) => {
+    handleHighlight(id, true);
+  });
+};
+
 export const highlightBoundsColor = {
   default: "black",
   selected: "orange",

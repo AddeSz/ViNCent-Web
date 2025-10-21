@@ -132,12 +132,10 @@ const BarChart = ({
 
     xAxis
       .selectAll<SVGLineElement, string>(".tick line")
-      .attr("stroke", (d: any) =>
+      .attr("stroke", (d) =>
         selectedCategories?.includes(d) ? "orange" : "white",
       )
-      .attr("stroke-width", (d: any) =>
-        selectedCategories?.includes(d) ? 2 : 1,
-      );
+      .attr("stroke-width", (d) => (selectedCategories?.includes(d) ? 2 : 1));
 
     if (selectedCategories?.length) {
       selectedCategories.forEach((category) => {

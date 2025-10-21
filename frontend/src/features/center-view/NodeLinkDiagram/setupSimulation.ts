@@ -39,15 +39,35 @@ export function createDrag(
   return d3
     .drag<SVGCircleElement, Node>()
     .on("start", (event, d) => {
+      if (
+        event.sourceEvent &&
+        (event.sourceEvent.shiftKey ||
+          event.sourceEvent.ctrlKey ||
+          event.sourceEvent.metaKey ||
+          event.sourceEvent.button === 2)
+      ) {
+        return;
+      }
       if (!event.active) simulation.alphaTarget(0.1).restart();
       d.fx = d.x;
       d.fy = d.y;
     })
     .on("drag", (event, d) => {
-      d.fx = event.x;
-      d.fy = event.y;
+      if (d.fx !== undefined && d.fx !== null) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
     })
     .on("end", (event, d) => {
+      if (
+        event.sourceEvent &&
+        (event.sourceEvent.shiftKey ||
+          event.sourceEvent.ctrlKey ||
+          event.sourceEvent.metaKey ||
+          event.sourceEvent.button === 2)
+      ) {
+        return;
+      }
       if (!event.active) simulation.alphaTarget(0);
       d.fx = null;
       d.fy = null;

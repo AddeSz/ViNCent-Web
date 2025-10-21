@@ -1,11 +1,12 @@
+import { handleBrushSelection } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 
-const drawBrush = (
+const drawSelectionBrush = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   outerRadius: number,
   maxLabelWidth: number,
   x: d3.ScaleBand<string>,
-  onBrushEnd: (selectedIds: string[]) => void,
+  isViewActive: boolean,
 ) => {
   const innerRadius = outerRadius;
   const outerRadiusBrush = outerRadius + maxLabelWidth + 40;
@@ -67,20 +68,10 @@ const drawBrush = (
     backgroundRing = brushGroup
       .append("path")
       .attr("class", "brush-background")
-      .attr("fill", "#eee")
+      .attr("fill", "#ddd")
       .attr("fill-opacity", 0)
       .style("pointer-events", "none");
   }
-
-  backgroundRing.attr(
-    "d",
-    d3.arc()({
-      innerRadius,
-      outerRadius: outerRadiusBrush,
-      startAngle: 0,
-      endAngle: 2 * Math.PI,
-    }),
-  );
 
   let brushArcPath = brushGroup.select<SVGPathElement>("path.brush-selection");
   if (brushArcPath.empty()) {
@@ -149,16 +140,42 @@ const drawBrush = (
         .on("end", () => {
           backgroundRing.style("pointer-events", "none");
         });
+      clearBrushSelection();
     }
   };
 
-  d3.select(window).on("keydown.brush", null).on("keyup.brush", null);
-
-  d3.select(window)
-    .on("keydown.brush", handleKeyDown)
-    .on("keyup.brush", handleKeyUp);
-
   backgroundRing.on(".drag", null);
+  d3.select(window)
+    .on("keydown.radialBrush", null)
+    .on("keyup.radialBrush", null);
+
+  if (!isViewActive) {
+    startAngle = 0;
+    totalRotation = 0;
+    currentAngle = 0;
+    previousAngle = 0;
+    isShiftPressed = false;
+    backgroundRing
+      .style("pointer-events", "none")
+      .style("cursor", "default")
+      .attr("fill-opacity", 0);
+
+    brushArcPath.attr("d", null);
+    return;
+  }
+  d3.select(window)
+    .on("keydown.radialBrush", handleKeyDown)
+    .on("keyup.radialBrush", handleKeyUp);
+
+  backgroundRing.attr(
+    "d",
+    d3.arc()({
+      innerRadius,
+      outerRadius: outerRadiusBrush,
+      startAngle: 0,
+      endAngle: 2 * Math.PI,
+    }),
+  );
 
   const drag = d3
     .drag<SVGPathElement, unknown>()
@@ -205,7 +222,7 @@ const drawBrush = (
     })
     .on("end", () => {
       if (!isShiftPressed || totalRotation === 0) {
-        setTimeout(clearBrushSelection, 100);
+        setTimeout(clearBrushSelection, 50);
         return;
       }
 
@@ -215,14 +232,26 @@ const drawBrush = (
       if (totalRotation < 0) {
         [start, end] = [end, start];
       }
-
       const selectedIds = getSelectedIds(start, end);
-      onBrushEnd(selectedIds);
+      handleBrushSelection(selectedIds);
 
-      setTimeout(clearBrushSelection, 100);
+      setTimeout(clearBrushSelection, 50);
     });
 
   backgroundRing.call(drag);
+
+  return () => {
+    backgroundRing.on(".drag", null);
+    d3.select(window)
+      .on("keydown.radialBrush", null)
+      .on("keyup.radialBrush", null);
+
+    currentAngle = 0;
+    previousAngle = 0;
+    startAngle = 0;
+    totalRotation = 0;
+    isShiftPressed = false;
+  };
 };
 
-export default drawBrush;
+export default drawSelectionBrush;

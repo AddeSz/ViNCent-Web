@@ -9,7 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { useChartSettings } from "@/stores/useChartSettingsStore";
+import {
+  useChartSettings,
+  type LinkRenderingMode,
+} from "@/stores/useChartSettingsStore";
 import FDEBSettings from "./FDEBSettings";
 
 const RadialChartSettings = () => {
@@ -118,8 +121,8 @@ const RadialChartSettings = () => {
         </Label>
         <Select
           value={linkRenderingMode}
-          onValueChange={(val) =>
-            setRadialSettings({ linkRenderingMode: val as any })
+          onValueChange={(val: LinkRenderingMode) =>
+            setRadialSettings({ linkRenderingMode: val })
           }
         >
           <SelectTrigger

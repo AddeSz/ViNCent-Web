@@ -61,5 +61,8 @@ export type Network = {
 export type NodeChange = {
   added: Record<string, FullData>;
   removed: Record<string, FullData>;
-  updated: Record<string, Record<string, { before: any; after: any }>>;
+  updated: Record<
+    string,
+    Record<string, { before: FullData; after: FullData }>
+  >;
 };

@@ -8,7 +8,7 @@ export const diffNodes = (
   const removed: Record<string, FullData> = {};
   const updated: Record<
     string,
-    Record<string, { before: any; after: any }>
+    Record<string, { before: FullData; after: FullData }>
   > = {};
 
   for (const [id, currNode] of currMap.entries()) {
@@ -19,12 +19,12 @@ export const diffNodes = (
       continue;
     }
 
-    const nodeDiff: Record<string, { before: any; after: any }> = {};
+    const nodeDiff: Record<string, { before: FullData; after: FullData }> = {};
     for (const key of Object.keys(currNode)) {
       if (key === "removed" || key === "stable" || key === "fx" || key === "fy")
         continue;
-      const before = (prevNode as any)[key];
-      const after = (currNode as any)[key];
+      const before = prevNode[key];
+      const after = currNode[key];
       if (before !== after) {
         nodeDiff[key] = { before, after };
       }
