@@ -79,7 +79,7 @@ const TablePagination = <T,>({
           value={`${table.getState().pagination.pageSize}`}
           onValueChange={(value) => table.setPageSize(Number(value))}
         >
-          <SelectTrigger className="h-8 w-[64px] p-2" size="sm">
+          <SelectTrigger className="h-8 w-16 p-2" size="sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent side="top">

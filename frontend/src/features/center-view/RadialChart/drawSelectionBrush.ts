@@ -58,7 +58,7 @@ const drawSelectionBrush = (
 
   let brushGroup = svg.select<SVGGElement>("g.brush-group");
   if (brushGroup.empty()) {
-    brushGroup = svg.insert("g", ":first-child").attr("class", "brush-group");
+    brushGroup = svg.insert("g").attr("class", "brush-group");
   }
 
   let backgroundRing = brushGroup.select<SVGPathElement>(
@@ -120,6 +120,11 @@ const drawSelectionBrush = (
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Shift") {
       isShiftPressed = true;
+
+      svg
+        .selectAll(".labels-group, .change-circles-group")
+        .style("pointer-events", "none");
+
       backgroundRing
         .style("cursor", "crosshair")
         .style("pointer-events", "all")
@@ -132,6 +137,11 @@ const drawSelectionBrush = (
   const handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === "Shift") {
       isShiftPressed = false;
+
+      svg
+        .selectAll(".labels-group, .change-circles-group")
+        .style("pointer-events", "all");
+
       backgroundRing
         .style("cursor", "default")
         .transition()

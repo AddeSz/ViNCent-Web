@@ -15,9 +15,13 @@ function applySorting<T extends object>(data: T[], sorting: SortingState): T[] {
     for (const { id, desc } of sortEntries) {
       const va = getValueById(a, id);
       const vb = getValueById(b, id);
-      if (va === undefined && vb === undefined) continue;
-      if (va === undefined) return desc ? 1 : -1;
-      if (vb === undefined) return desc ? -1 : 1;
+
+      const aUndef = va === undefined || va === null;
+      const bUndef = vb === undefined || vb === null;
+
+      if (aUndef && bUndef) continue;
+      if (aUndef) return 1;
+      if (bUndef) return -1;
 
       if (va === vb) continue;
 

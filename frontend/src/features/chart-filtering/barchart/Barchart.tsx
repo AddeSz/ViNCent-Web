@@ -1,0 +1,147 @@
+import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useMemo, useRef, useState } from "react";
+import type { ChartDimensions } from "../ChartFiltering";
+import { Tooltip } from "../components/Tooltip";
+import BarchartAxes from "./components/BarchartAxes";
+import BarchartBars from "./components/BarchartBars";
+
+interface BarchartProps {
+  categoricalValues: string[];
+  dimensions: ChartDimensions;
+  dataKey: string;
+  getColorForKey: (key: string, value?: string | number) => string;
+  selectedCategories: string[] | null;
+  onBarClick: (category: string) => void;
+}
+
+const Barchart = ({
+  categoricalValues,
+  dimensions,
+  dataKey,
+  getColorForKey,
+  selectedCategories,
+  onBarClick,
+}: BarchartProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hoverCategory, setHoverCategory] = useState<string | null>(null);
+
+  const metricsData = useMetricsStore((s) => s.metricsData);
+  const filteredData = useMetricsStore((s) => s.filteredMetricsData);
+  const {
+    svgWidth: width,
+    svgHeight: height,
+    margin,
+    chartWidth,
+    chartHeight,
+  } = dimensions;
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    categoricalValues.forEach((value) => {
+      counts.set(value, (counts.get(value) || 0) + 1);
+    });
+    return counts;
+  }, [categoricalValues]);
+
+  const categories = useMemo(() => {
+    return Array.from(categoryCounts.keys()).sort(
+      (a, b) => (categoryCounts.get(b) || 0) - (categoryCounts.get(a) || 0),
+    );
+  }, [categoryCounts]);
+
+  const filteredCategoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    Array.from(metricsData.keys()).forEach((nodeId) => {
+      if (!filteredData.has(nodeId)) return;
+
+      const value = metricsData.get(nodeId)?.[dataKey];
+      if (value != null) {
+        const strValue = String(value);
+        counts.set(strValue, (counts.get(strValue) || 0) + 1);
+      }
+    });
+
+    return counts;
+  }, [metricsData, filteredData, dataKey]);
+
+  const maxCount = Math.max(...Array.from(categoryCounts.values()));
+
+  const yScale = (count: number) => {
+    return chartHeight - (count / maxCount) * chartHeight;
+  };
+
+  const barWidth = chartWidth / categories.length;
+  const xScale = (index: number) => index * barWidth;
+
+  const isCategorySelected = (category: string): boolean => {
+    if (!selectedCategories || selectedCategories.length === 0) return false;
+    return selectedCategories.includes(category);
+  };
+
+  const getBarColor = (category: string) => getColorForKey(dataKey, category);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <svg width={width} height={height}>
+        <g transform={`translate(${margin.left},${margin.top})`}>
+          <BarchartBars
+            categories={categories}
+            categoryCounts={categoryCounts}
+            filteredCategoryCounts={filteredCategoryCounts}
+            chartHeight={chartHeight}
+            barWidth={barWidth}
+            xScale={xScale}
+            yScale={yScale}
+            isCategorySelected={isCategorySelected}
+            getBarColor={getBarColor}
+            hoverCategory={hoverCategory}
+            setHoverCategory={setHoverCategory}
+            onBarClick={onBarClick}
+          />
+
+          <BarchartAxes
+            chartWidth={chartWidth}
+            chartHeight={chartHeight}
+            xScale={xScale}
+            yScale={yScale}
+            maxCount={maxCount}
+            categories={categories}
+            barWidth={barWidth}
+            selectedCategories={selectedCategories}
+            isCategorySelected={isCategorySelected}
+          />
+        </g>
+      </svg>
+
+      {hoverCategory !== null && (
+        <Tooltip
+          isVisible={true}
+          containerRef={containerRef}
+          margin={margin}
+          targetX={xScale(categories.indexOf(hoverCategory))}
+          targetWidth={barWidth}
+        >
+          <div className="w-full truncate font-medium">{hoverCategory}</div>
+          <div className="text-muted-foreground">
+            {(() => {
+              const filteredCount =
+                filteredCategoryCounts?.get(hoverCategory) ?? 0;
+              const totalCount = categoryCounts?.get(hoverCategory) ?? 0;
+
+              return filteredCount < totalCount ? (
+                <>
+                  Count: {filteredCount} / {totalCount}
+                </>
+              ) : (
+                <>Count: {totalCount}</>
+              );
+            })()}
+          </div>
+        </Tooltip>
+      )}
+    </div>
+  );
+};
+
+export default Barchart;

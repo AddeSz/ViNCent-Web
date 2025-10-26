@@ -9,15 +9,12 @@ import {
 import { getNodeId } from "@/utils/utils";
 import * as d3 from "d3";
 import {
-  createAngleMap,
   createBezierPath,
   createFdebPaths,
   createHierarchyPath,
 } from "./calculateLinks";
 
 const ANIMATION_DURATION = 300;
-const OPACITY_VALUE = 0.4;
-const SELECTED_VALUE = 0.9;
 
 type LinkData = {
   id: string;
@@ -26,6 +23,15 @@ type LinkData = {
   pathData: string;
   isSelected: boolean;
   isRemoved: boolean;
+  stroke: string;
+  opacity: number;
+};
+
+const calculateStyles = (
+  isRemoved: boolean,
+  isSelected: boolean,
+): { stroke: string; opacity: number } => {
+  return getLinkStyle(isRemoved, isSelected, 0.4, 0.9);
 };
 
 const drawLinks = (
@@ -37,110 +43,105 @@ const drawLinks = (
   mode: LinkRenderingMode,
   removedNodeIds: Set<string>,
   fdebSettings: ForceEdgeBundlingOptions,
+  angleMap: Map<string, number>,
 ) => {
   let linkGroup = svg.select<SVGGElement>("g.links-group");
   if (linkGroup.empty()) {
     linkGroup = svg.append("g").attr("class", "links-group");
   }
 
-  const angleMap = createAngleMap(x);
   const fdebPaths =
     mode === "fdeB" ? createFdebPaths(links, x, innerRadius, fdebSettings) : [];
 
-  const linkData: LinkData[] = links
-    .map((link, i) => {
-      const sourceId = getNodeId(link.source);
-      const targetId = getNodeId(link.target);
+  const linkData: LinkData[] = [];
 
-      const sourceRemoved = removedNodeIds.has(sourceId);
-      const targetRemoved = removedNodeIds.has(targetId);
-      const isRemoved = sourceRemoved || targetRemoved;
-      const isSelected =
-        selectedNodes.has(sourceId) || selectedNodes.has(targetId);
+  for (let i = 0; i < links.length; i++) {
+    const link = links[i];
+    const sourceId = getNodeId(link.source);
+    const targetId = getNodeId(link.target);
 
-      let pathData: string | null = null;
-      if (mode === "bezier") {
-        pathData = createBezierPath(
-          angleMap.get(sourceId)!,
-          angleMap.get(targetId)!,
-          innerRadius,
-        );
-      } else if (mode === "hierarchy") {
-        pathData = createHierarchyPath(
-          angleMap.get(sourceId)!,
-          angleMap.get(targetId)!,
-          innerRadius,
-        );
-      } else if (mode === "fdeB") {
-        pathData = fdebPaths[i] ?? null;
+    const sourceRemoved = removedNodeIds.has(sourceId);
+    const targetRemoved = removedNodeIds.has(targetId);
+    const isRemoved = sourceRemoved || targetRemoved;
+    const isSelected =
+      selectedNodes.has(sourceId) || selectedNodes.has(targetId);
+
+    let pathData: string | null = null;
+
+    if (mode === "bezier") {
+      const sourceAngle = angleMap.get(sourceId);
+      const targetAngle = angleMap.get(targetId);
+      if (sourceAngle !== undefined && targetAngle !== undefined) {
+        pathData = createBezierPath(sourceAngle, targetAngle, innerRadius);
       }
+    } else if (mode === "hierarchy") {
+      const sourceAngle = angleMap.get(sourceId);
+      const targetAngle = angleMap.get(targetId);
+      if (sourceAngle !== undefined && targetAngle !== undefined) {
+        pathData = createHierarchyPath(sourceAngle, targetAngle, innerRadius);
+      }
+    } else if (mode === "fdeB") {
+      pathData = fdebPaths[i] ?? null;
+    }
 
-      if (!pathData) return null;
-      return {
-        id: `${sourceId}-${targetId}`,
-        sourceId,
-        targetId,
-        pathData,
-        isSelected,
-        isRemoved,
-      };
-    })
-    .filter((d): d is LinkData => d !== null);
+    if (!pathData) continue;
 
-  const paths = linkGroup
+    const style = calculateStyles(isRemoved, isSelected);
+
+    linkData.push({
+      id: `${sourceId}-${targetId}`,
+      sourceId,
+      targetId,
+      pathData,
+      isSelected,
+      isRemoved,
+      stroke: style.stroke,
+      opacity: style.opacity,
+    });
+  }
+
+  linkGroup
     .selectAll<SVGPathElement, LinkData>("path")
-    .data(linkData, (d) => d.id);
-
-  paths
-    .exit()
-    .transition()
-    .duration(ANIMATION_DURATION)
-    .attr("opacity", 0)
-    .remove();
-
-  paths
-    .enter()
-    .append("path")
-    .attr("d", (d) => d.pathData)
-    .attr("fill", "none")
-    .attr("stroke-width", 1.5)
-    .attr("opacity", 0)
-    .attr("data-source", (d) => d.sourceId)
-    .attr("data-target", (d) => d.targetId)
-    .attr("data-removed", (d) => (d.isRemoved ? "true" : "false"))
-    .transition()
-    .duration(ANIMATION_DURATION)
-    .attr(
-      "stroke",
-      (d) =>
-        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
-          .stroke,
-    )
-    .attr(
-      "opacity",
-      (d) =>
-        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
-          .opacity,
-    );
-
-  paths
-    .transition()
-    .duration(ANIMATION_DURATION)
-    .attr("d", (d) => d.pathData)
-    .attr("data-removed", (d) => (d.isRemoved ? "true" : "false"))
-    .attr(
-      "stroke",
-      (d) =>
-        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
-          .stroke,
-    )
-    .attr(
-      "opacity",
-      (d) =>
-        getLinkStyle(d.isRemoved, d.isSelected, OPACITY_VALUE, SELECTED_VALUE)
-          .opacity,
+    .data(linkData, (d) => d.id)
+    .join(
+      (enter) =>
+        enter
+          .append("path")
+          .attr("d", (d) => d.pathData)
+          .attr("fill", "none")
+          .attr("stroke-width", 1.5)
+          .attr("opacity", 0)
+          .attr("data-source", (d) => d.sourceId)
+          .attr("data-target", (d) => d.targetId)
+          .attr("data-removed", (d) => (d.isRemoved ? "true" : "false"))
+          .call((enter) =>
+            enter
+              .transition()
+              .duration(ANIMATION_DURATION)
+              .attr("stroke", (d) => d.stroke)
+              .attr("opacity", (d) => d.opacity),
+          ),
+      (update) =>
+        update.call((update) =>
+          update
+            .transition()
+            .duration(ANIMATION_DURATION)
+            .attr("d", (d) => d.pathData)
+            .attr("data-removed", (d) => (d.isRemoved ? "true" : "false"))
+            .attr("stroke", (d) => d.stroke)
+            .attr("opacity", (d) => d.opacity),
+        ),
+      (exit) =>
+        exit.call((exit) =>
+          exit
+            .transition()
+            .duration(ANIMATION_DURATION)
+            .attr("opacity", 0)
+            .remove(),
+        ),
     );
 };
+
 export default drawLinks;
 
 export const updateLinkHighlight = (
@@ -162,33 +163,24 @@ export const updateLinkHighlight = (
         (selectedNodes.has(sourceId) || selectedNodes.has(targetId))
       );
 
-      link
-        .attr(
-          "stroke",
-          getLinkStyle(isRemoved, isSelected, OPACITY_VALUE, SELECTED_VALUE)
-            .stroke,
-        )
-        .attr(
-          "opacity",
-          getLinkStyle(isRemoved, isSelected, OPACITY_VALUE, SELECTED_VALUE)
-            .opacity,
-        );
+      const style = calculateStyles(isRemoved, isSelected);
+
+      link.attr("stroke", style.stroke).attr("opacity", style.opacity);
     });
 };
 
 export const updateFDEBLinks = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-  x: d3.ScaleBand<string>,
   innerRadius: number,
   fdebSettings: ForceEdgeBundlingOptions,
+  angleMap: Map<string, number>,
 ) => {
   const linkGroup = svg.select<SVGGElement>("g.links-group");
   if (linkGroup.empty()) return;
 
-  const angleMap = createAngleMap(x);
-
   const nodes: ForceNode[] = [];
   const edges: { source: string; target: string }[] = [];
+  const nodeSet = new Set<string>();
 
   svg
     .selectAll<SVGPathElement, unknown>("g.links-group path")
@@ -202,14 +194,16 @@ export const updateFDEBLinks = (
         const targetAngle = angleMap.get(targetId);
 
         if (sourceAngle !== undefined && targetAngle !== undefined) {
-          if (!nodes.find((n) => n.id === sourceId)) {
+          if (!nodeSet.has(sourceId)) {
+            nodeSet.add(sourceId);
             nodes.push({
               id: sourceId,
               x: Math.cos(sourceAngle - Math.PI / 2) * innerRadius,
               y: Math.sin(sourceAngle - Math.PI / 2) * innerRadius,
             });
           }
-          if (!nodes.find((n) => n.id === targetId)) {
+          if (!nodeSet.has(targetId)) {
+            nodeSet.add(targetId);
             nodes.push({
               id: targetId,
               x: Math.cos(targetAngle - Math.PI / 2) * innerRadius,

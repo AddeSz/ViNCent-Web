@@ -50,7 +50,7 @@ const FDEBSettings = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm">Link Bundler Settings</p>
+      <p className="cursor-default truncate text-sm">Link Bundler Settings</p>
 
       <div className="grid grid-cols-2 gap-2">
         {Object.entries(fdebSettings).map(([key, value]) => (

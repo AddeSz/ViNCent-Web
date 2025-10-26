@@ -1,37 +1,21 @@
-import type { ViewType } from "@/App";
-import DataSummary from "@/components/DataSummary";
-import { TimestepSlider } from "@/components/TimeStepSlider";
 import KeySelector from "@/features/data-filtering/components/KeySelector";
 import { useKeys } from "@/hooks/useKeys";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
-import { useAttributeStore } from "@/stores/useAttributeStore";
-import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
-import type { FullData, Network } from "@/types/network";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import NodeSelector from "./components/NodeSelector";
 import SortingSelector from "./components/SortingSelector";
 
-interface DataFilteringProps {
-  view: ViewType;
-  dataMap: Map<string, FullData>;
-  filteredNetwork: Network;
-}
-const DataFiltering = ({
-  view,
-  dataMap,
-  filteredNetwork,
-}: DataFilteringProps) => {
+const DataFiltering = () => {
   const displayMode = useChartSettings((s) => s.displaySettings.displayMode);
   const { sorting, setSorting, handleSortKeyChange } = useSortingLogic();
-  const toggleCentralityKey = useCentralityStore((s) => s.toggleCentralityKey);
   const {
     attributeKeys: allAttributeKeys,
     enabledAttributeKeys,
     centralityKeys: allCentralityKeys,
     enabledCentralityKeys,
   } = useKeys();
-  const toggleAttributeKey = useAttributeStore((s) => s.toggleAttributeKey);
-
+  const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
   const isCentralityVisible =
     displayMode === "centrality" || displayMode === "both";
   const isAttributeVisible =
@@ -45,12 +29,12 @@ const DataFiltering = ({
       </p>
       <div className="flex flex-wrap gap-2">
         {isCentralityVisible && (
-          <div className="w-full flex-grow sm:flex-1">
+          <div className="w-full grow sm:flex-1">
             <KeySelector
               label="Centralities"
               options={allCentralityKeys}
               enabledKeys={enabledCentralityKeys}
-              toggleKey={toggleCentralityKey}
+              toggleKey={toggleMetricsKey}
               sorting={sorting}
               setSorting={setSorting}
             />
@@ -58,12 +42,12 @@ const DataFiltering = ({
         )}
 
         {isAttributeVisible && (
-          <div className="w-full flex-grow sm:flex-1">
+          <div className="w-full grow sm:flex-1">
             <KeySelector
               label={"Attributes"}
               options={allAttributeKeys}
               enabledKeys={enabledAttributeKeys}
-              toggleKey={toggleAttributeKey}
+              toggleKey={toggleMetricsKey}
               sorting={sorting}
               setSorting={setSorting}
             />
@@ -83,10 +67,6 @@ const DataFiltering = ({
         Nodes
       </p>
       <NodeSelector />
-      {view === "data-table" && <TimestepSlider />}
-      {view === "data-table" && (
-        <DataSummary filteredNetwork={filteredNetwork} dataMap={dataMap} />
-      )}
     </div>
   );
 };

@@ -49,7 +49,7 @@ const SortingSelector = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="w-full flex-grow sm:flex-1">
+      <div className="w-full grow sm:flex-1">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -59,7 +59,7 @@ const SortingSelector = ({
               disabled={isEmpty}
             >
               <p
-                className="w-fit max-w-[160px] truncate"
+                className="w-fit max-w-40 truncate"
                 style={{ color: getColorForKey(sortKey) }}
               >
                 {formatKeyLabel(sortKey)}
@@ -99,7 +99,7 @@ const SortingSelector = ({
           </PopoverContent>
         </Popover>
       </div>
-      <div className="w-full flex-grow sm:flex-1">
+      <div className="w-full grow sm:flex-1">
         <Button
           variant="outline"
           title="Direction"

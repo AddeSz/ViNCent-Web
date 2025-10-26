@@ -1,32 +1,56 @@
-import { useAttributeStore } from "@/stores/useAttributeStore";
-import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useMemo } from "react";
 
 export const useKeys = () => {
-  const enabledAttributeKeys = useAttributeStore((s) => s.enabledAttributeKeys);
-  const enabledCentralityKeys = useCentralityStore(
-    (s) => s.enabledCentralityKeys,
-  );
-  const attributeKeys = useAttributeStore((s) => s.attributeKeys);
-  const centralityKeys = useCentralityStore((s) => s.centralityKeys);
+  const metricsKeys = useMetricsStore((s) => s.metricsKeys);
+  const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
+  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
   const displayMode = useChartSettings((s) => s.displaySettings.displayMode);
 
-  const allKeys = useMemo(() => {
-    const filteredAttributeKeys = enabledAttributeKeys.filter(
-      (key) => key !== "linkCount",
-    );
+  const { attributeKeys, centralityKeys } = useMemo(() => {
+    const attrs: string[] = [];
+    const cents: string[] = [];
 
-    if (displayMode === "attributes") return [...filteredAttributeKeys];
+    metricsKeys.forEach((key) => {
+      const info = metricsInfo.get(key);
+      if (info?.isCentrality) {
+        cents.push(key);
+      } else {
+        attrs.push(key);
+      }
+    });
+
+    return { attributeKeys: attrs, centralityKeys: cents };
+  }, [metricsKeys, metricsInfo]);
+
+  const { enabledAttributeKeys, enabledCentralityKeys } = useMemo(() => {
+    const attrs: string[] = [];
+    const cents: string[] = [];
+
+    enabledMetricsKeys.forEach((key) => {
+      const info = metricsInfo.get(key);
+      if (info?.isCentrality) {
+        cents.push(key);
+      } else {
+        attrs.push(key);
+      }
+    });
+
+    return { enabledAttributeKeys: attrs, enabledCentralityKeys: cents };
+  }, [enabledMetricsKeys, metricsInfo]);
+
+  const allKeys = useMemo(() => {
+    if (displayMode === "attributes") return [...enabledAttributeKeys];
     if (displayMode === "centrality") return [...enabledCentralityKeys];
-    return [...enabledCentralityKeys, ...filteredAttributeKeys];
+    return [...enabledCentralityKeys, ...enabledAttributeKeys];
   }, [enabledAttributeKeys, enabledCentralityKeys, displayMode]);
 
   return {
     allKeys,
-    attributeKeys: attributeKeys.filter((k) => k !== "linkCount"),
+    attributeKeys,
     centralityKeys,
-    enabledAttributeKeys: enabledAttributeKeys.filter((k) => k !== "linkCount"),
+    enabledAttributeKeys,
     enabledCentralityKeys,
   };
 };

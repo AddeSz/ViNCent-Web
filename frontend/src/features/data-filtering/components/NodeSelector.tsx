@@ -43,7 +43,7 @@ const NodeSelector = () => {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="w-full flex-grow sm:flex-1">
+      <div className="w-full grow sm:flex-1">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -87,7 +87,7 @@ const NodeSelector = () => {
           )}
         </Popover>
       </div>
-      <div className="w-full flex-grow sm:flex-1">
+      <div className="w-full grow sm:flex-1">
         <Button
           variant="outline"
           title="Restore All Nodes"

@@ -12,9 +12,8 @@ import {
 } from "@/components/ui/context-menu";
 import type { ContextMenuTarget } from "@/features/center-view/CenterView";
 import { useKeys } from "@/hooks/useKeys";
-import { useAttributeStore } from "@/stores/useAttributeStore";
-import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { handleHighlight } from "@/utils/ColorHelper";
@@ -51,9 +50,7 @@ const ViewContextMenu = ({
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const hideNode = useNetworkStore((s) => s.hideNode);
   const hiddenCount = useNetworkStore((s) => s.hiddenNodes.size);
-  const toggleAttributeKey = useAttributeStore((s) => s.toggleAttributeKey);
-  const toggleCentralityKey = useCentralityStore((s) => s.toggleCentralityKey);
-
+  const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
   const handleResetZoom = () => {
     if (view === "radial") {
       resetRadialZoom();
@@ -142,9 +139,9 @@ const ViewContextMenu = ({
               onSelect={() => {
                 const key = contextMenuTarget.data.key;
                 if (centralityKeys.includes(key)) {
-                  toggleCentralityKey(key);
+                  toggleMetricsKey(key);
                 } else {
-                  toggleAttributeKey(key);
+                  toggleMetricsKey(key);
                 }
               }}
               className="cursor-pointer"

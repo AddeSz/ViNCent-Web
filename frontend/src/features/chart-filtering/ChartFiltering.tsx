@@ -1,218 +1,299 @@
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
-import { useAttributeStore } from "@/stores/useAttributeStore";
-import { useCentralityStore } from "@/stores/useCentralityStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type { FullData } from "@/types/network";
-import { formatKeyLabel } from "@/utils/utils";
-import { useCallback, useMemo, useRef, useState } from "react";
-import BarChart from "./components/BarChart";
-import HistogramChart from "./components/HistogramChart";
+import { formatKeyLabel, formatValue } from "@/utils/utils";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Barchart from "./barchart/Barchart";
+import { createBinnedData } from "./components/createBinnedData";
+import Histogram from "./histogram/Histogram";
 
-interface ChartFilteringProps {
-  data: FullData[];
-  dataMap: Map<string, FullData>;
+export interface ChartDimensions {
+  margin: { top: number; right: number; bottom: number; left: number };
+  svgWidth: number;
+  svgHeight: number;
+  chartWidth: number;
+  chartHeight: number;
 }
 
-const ChartFiltering = ({ data, dataMap }: ChartFilteringProps) => {
+const ChartFiltering = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const dimensions = useResizeObserver(containerRef);
   const width = useDebouncedValue(dimensions?.width ?? 0, 10);
-  const { allKeys, enabledCentralityKeys } = useKeys();
-  const [binCount, setBinCount] = useState(16);
 
-  const attributeBrushRanges = useAttributeStore((s) => s.brushRanges);
-  const setAttributeBrushRange = useAttributeStore((s) => s.setBrushRange);
-  const attributeData = useAttributeStore((s) => s.attributeData);
-  const attributeInfo = useAttributeStore((s) => s.attributeInfo);
-  const selectedCategories = useAttributeStore((s) => s.selectedCategories);
-  const setSelectedCategories = useAttributeStore(
-    (s) => s.setSelectedCategories,
+  const margin = { top: 6, right: 14, bottom: 20, left: 24 };
+  const height = 140;
+  const chartWidth = Math.round(width - margin.left - margin.right);
+  const chartHeight = height - margin.top - margin.bottom;
+
+  const chartDimensions: ChartDimensions = {
+    margin,
+    svgWidth: width,
+    svgHeight: height,
+    chartWidth,
+    chartHeight,
+  };
+
+  const { allKeys } = useKeys();
+
+  const [globalBinCount, setGlobalBinCount] = useState(16);
+  const [useIndividualBinCounts, setUseIndividualBinCounts] = useState(false);
+  const [binCountsByKey, setBinCountsByKey] = useState<Record<string, number>>(
+    {},
   );
 
-  const centralityBrushRanges = useCentralityStore((s) => s.brushRanges);
-  const setCentralityBrushRange = useCentralityStore((s) => s.setBrushRange);
-  const centralityData = useCentralityStore((s) => s.centralityData);
+  const getBinCount = (key: string) => {
+    if (useIndividualBinCounts) {
+      return binCountsByKey[key] ?? globalBinCount;
+    }
+    return globalBinCount;
+  };
 
-  const allBrushRanges = useMemo(
-    () => ({
-      ...attributeBrushRanges,
-      ...centralityBrushRanges,
-    }),
-    [attributeBrushRanges, centralityBrushRanges],
-  );
+  const setBinCountForKey = (key: string, count: number) => {
+    setBinCountsByKey((prev) => ({ ...prev, [key]: count }));
+  };
 
-  const handleAttributeBrush = useCallback(
-    (key: string, range: [number, number] | null) => {
-      setAttributeBrushRange(key, range);
-    },
-    [setAttributeBrushRange],
-  );
+  const metricsData = useMetricsStore((s) => s.metricsData);
+  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
+  const selectedCategories = useMetricsStore((s) => s.selectedCategories);
+  const setSelectedCategories = useMetricsStore((s) => s.setSelectedCategories);
+  const brushRanges = useMetricsStore((s) => s.brushRanges);
+  const setBrushRange = useMetricsStore((s) => s.setBrushRange);
+  const clearBrushRange = useMetricsStore((s) => s.clearBrushRange);
+  const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
+  const setBinnedData = useMetricsStore((s) => s.setBinnedData);
+  const filteredMetricsData = useMetricsStore((s) => s.filteredMetricsData);
 
-  const handleCentralityBrush = useCallback(
-    (key: string, range: [number, number] | null) => {
-      setCentralityBrushRange(key, range);
-    },
-    [setCentralityBrushRange],
-  );
+  const data = useMemo(() => {
+    return Array.from(metricsData.values());
+  }, [metricsData]);
+
+  useEffect(() => {
+    allKeys.forEach((key) => {
+      const info = metricsInfo.get(key);
+
+      if (!info || !info.isNumeric || info.isNominal) return;
+
+      const values = data
+        .map((d) => d[key])
+        .filter((v): v is number => typeof v === "number");
+
+      if (values.length > 0) {
+        const binCount = getBinCount(key);
+        const binnedData = createBinnedData(values, binCount);
+
+        setBinnedData(key, binnedData);
+      }
+    });
+  }, [
+    data,
+    allKeys,
+    globalBinCount,
+    binCountsByKey,
+    useIndividualBinCounts,
+    metricsInfo,
+  ]);
 
   const handleCategoryClick = (key: string, category: string) => {
-    const prev = useAttributeStore.getState().selectedCategories[key] || [];
-    const alreadySelected = prev.includes(category);
-
-    const newSelected = alreadySelected
+    const prev = selectedCategories[key] || [];
+    const newSelected = prev.includes(category)
       ? prev.filter((c) => c !== category)
       : [...prev, category];
-
     setSelectedCategories(key, newSelected);
   };
 
-  const histogramData = useMemo(() => {
-    const fullEntries: Record<string, any>[] = [];
+  const renderBarChart = (key: string) => {
+    const info = metricsInfo.get(key);
+    if (!info || (!info.isNominal && !info.isOrdinal && !info.isBoolean))
+      return null;
 
-    centralityData.forEach((centrality, nodeId) => {
-      const attribute = attributeData.get(nodeId) || {};
-      fullEntries.push({
-        ...centrality,
-        ...attribute,
-      });
-    });
+    const values = data
+      .map((d) => d[key])
+      .filter((v) => typeof v === "string" || typeof v === "boolean");
 
-    return fullEntries;
-  }, [centralityData, attributeData]);
+    if (values.length === 0) return null;
+    return (
+      <div key={key} className="h-full w-full rounded border bg-card pb-1">
+        <div className="flex items-center justify-between gap-1 px-2 py-1">
+          <p
+            className="min-w-[30px] flex-1 truncate text-sm"
+            title={formatKeyLabel(key)}
+          >
+            {formatKeyLabel(key)}
+          </p>
 
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<string, number>();
+          <Button
+            variant="outline"
+            onClick={() => setSelectedCategories(key, [])}
+            className="flex cursor-pointer px-2 py-0.5 text-xs"
+            size="zero"
+            disabled={
+              !selectedCategories[key] || !(selectedCategories[key].length > 0)
+            }
+          >
+            <p className="block truncate text-xs">Clear </p>
+          </Button>
+        </div>
 
-    dataMap.forEach((attrs) => {
-      allKeys.forEach((key) => {
-        const value = attrs[key];
-        if (value != null) {
-          const strVal = String(value);
-          counts.set(strVal, (counts.get(strVal) || 0) + 1);
-        }
-      });
-    });
-
-    return counts;
-  }, [dataMap, allKeys]);
-
-  return (
-    <div className="space-y-4">
-      <p className="mb-0 cursor-default truncate">Data Filtering</p>
-      <div className="min-w-60 space-y-2">
-        <label htmlFor="binCount" className="text-sm font-medium">
-          Bin Count: {binCount}
-        </label>
-        <Slider
-          id="binCount"
-          defaultValue={[binCount]}
-          min={4}
-          max={64}
-          step={1}
-          onValueChange={([value]) => setBinCount(value)}
-          className="w-full"
+        <Barchart
+          categoricalValues={values.map(String)}
+          dimensions={chartDimensions}
+          dataKey={key}
+          getColorForKey={getColorForKey}
+          selectedCategories={selectedCategories[key] || null}
+          onBarClick={(category) => handleCategoryClick(key, category)}
         />
       </div>
-      <div ref={containerRef} className="w-full min-w-60 space-y-6">
+    );
+  };
+
+  const renderHistogram = (key: string) => {
+    const info = metricsInfo.get(key);
+
+    if (!info || !info.isNumeric || info.isNominal) return null;
+
+    const binnedData = binnedDataByKey.get(key);
+    if (!binnedData) return null;
+
+    const binCount = getBinCount(key);
+
+    return (
+      <div key={key} className="h-full w-full rounded border bg-card pb-1">
+        <div className="flex items-center justify-between gap-1 px-2 py-1">
+          <p
+            className="min-w-[30px] flex-1 truncate text-sm"
+            title={formatKeyLabel(key)}
+          >
+            {formatKeyLabel(key)}
+          </p>
+
+          <Button
+            variant="outline"
+            onClick={() => clearBrushRange(key)}
+            className="ml-auto flex cursor-pointer px-2 py-0.5 text-xs"
+            size="zero"
+            disabled={!brushRanges[key]}
+          >
+            <p className="block truncate text-xs">Clear</p>
+          </Button>
+        </div>
+
+        <Histogram
+          data={binnedData}
+          dimensions={chartDimensions}
+          dataKey={key}
+          getColorForKey={getColorForKey}
+          brushRange={brushRanges[key]}
+          onBrushChange={(range) => setBrushRange(key, range)}
+          filteredNodeIds={new Set(filteredMetricsData.keys())}
+        />
+        {brushRanges[key] && (
+          <p className="min-w-[30px] flex-1 truncate pl-2 text-xs text-muted-foreground">
+            {(() => {
+              const { range, inclusive } = brushRanges[key]!;
+              const [min, max] = range;
+              const leftBracket = "[";
+              const rightBracket = inclusive ? "]" : ")";
+              return `Selected Range: ${leftBracket}${formatValue(min)}, ${formatValue(max)}${rightBracket}`;
+            })()}
+          </p>
+        )}
+
+        {useIndividualBinCounts && (
+          <>
+            <Separator orientation="horizontal" />
+            <div className="px-2 py-1">
+              <p className="text-xs">Bin Count: {binCount}</p>
+              <div className="flex items-center pt-1">
+                <Slider
+                  value={[binCount]}
+                  min={2}
+                  max={50}
+                  step={1}
+                  className="flex"
+                  onValueChange={([val]) => setBinCountForKey(key, val)}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="border-b-2 p-2">
+        <p className="mb-0 cursor-default truncate">Bin Counts </p>
+        <div className="rounded-lg bg-card p-1">
+          <RadioGroup
+            value={useIndividualBinCounts ? "individual" : "global"}
+            onValueChange={(value) =>
+              setUseIndividualBinCounts(value === "individual")
+            }
+            className="flex flex-wrap gap-1"
+          >
+            <div className="flex min-w-0 items-center" title="Global">
+              <RadioGroupItem
+                value="global"
+                id="global"
+                className="cursor-pointer"
+              />
+              <Label htmlFor="global" className="cursor-pointer p-1">
+                Global
+              </Label>
+            </div>
+            <div className="flex min-w-0 items-center" title="Individual">
+              <RadioGroupItem
+                value="individual"
+                id="individual"
+                className="cursor-pointer"
+              />
+              <Label
+                htmlFor="individual"
+                title="Individual"
+                className="cursor-pointer p-1"
+              >
+                Individual
+              </Label>
+            </div>
+          </RadioGroup>
+          {!useIndividualBinCounts && (
+            <div className="space-y-1 pb-1">
+              <p
+                className="cursor-default truncate text-sm"
+                title={`Global Bin Count: ${globalBinCount}`}
+              >
+                Global Bin Count: {globalBinCount}
+              </p>
+              <Slider
+                value={[globalBinCount]}
+                min={2}
+                max={50}
+                step={1}
+                onValueChange={([val]) => setGlobalBinCount(val)}
+                className="w-full"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div
+        ref={containerRef}
+        className="scrollbar-thin h-full w-full overflow-y-auto px-2 pt-1 pb-2"
+      >
         <div className="space-y-4">
-          {allKeys.map((key) => {
-            const info = attributeInfo.get(key);
-            const rawValues = histogramData
-              .map((d) => d[key])
-              .filter((v) => v != null);
+          {allKeys.map(renderHistogram)}
 
-            if (enabledCentralityKeys.includes(key)) {
-              const numericValues = rawValues.filter(
-                (v): v is number => typeof v === "number",
-              );
-              if (numericValues.length === 0) return null;
-              return (
-                <div
-                  key={key}
-                  className="h-auto w-full rounded bg-card px-2 pb-1"
-                >
-                  <span className="text-sm capitalize">
-                    {formatKeyLabel(key)}
-                  </span>
-                  <HistogramChart
-                    data={data}
-                    histogramValues={numericValues}
-                    width={width}
-                    binCount={binCount}
-                    dataKey={key}
-                    getColorForKey={getColorForKey}
-                    onBrushChange={handleCentralityBrush}
-                    brushRange={allBrushRanges[key] || null}
-                    allBrushRanges={allBrushRanges}
-                  />
-                </div>
-              );
-            }
-
-            if (info?.isNumeric) {
-              const numericValues = rawValues.filter(
-                (v): v is number => typeof v === "number",
-              );
-              if (numericValues.length === 0) return null;
-              return (
-                <div
-                  key={key}
-                  className="h-auto w-full rounded bg-card px-2 pb-1"
-                >
-                  <span className="text-sm capitalize">
-                    {formatKeyLabel(key)}
-                  </span>
-                  <HistogramChart
-                    data={data}
-                    histogramValues={numericValues}
-                    width={width}
-                    binCount={binCount}
-                    dataKey={key}
-                    getColorForKey={getColorForKey}
-                    onBrushChange={handleAttributeBrush}
-                    brushRange={allBrushRanges[key] || null}
-                    allBrushRanges={allBrushRanges}
-                  />
-                </div>
-              );
-            }
-
-            if (info?.isNominal || info?.isOrdinal || info?.isBoolean) {
-              const categoricalValues = rawValues.filter(
-                (v): v is string | boolean =>
-                  typeof v === "string" || typeof v === "boolean",
-              );
-              if (categoricalValues.length === 0) return null;
-              return (
-                <div
-                  key={key}
-                  className="h-auto w-full rounded bg-card px-2 pb-1"
-                >
-                  <span className="text-sm capitalize">
-                    {formatKeyLabel(key)}
-                  </span>
-
-                  <BarChart
-                    categoricalValues={categoricalValues.map(String)}
-                    width={width}
-                    dataKey={key}
-                    getColorForKey={getColorForKey}
-                    selectedCategories={selectedCategories[key] || null}
-                    onBarClick={(category) =>
-                      handleCategoryClick(key, category)
-                    }
-                    categoryCounts={categoryCounts}
-                  />
-                </div>
-              );
-            }
-
-            return null;
-          })}
+          {allKeys.map(renderBarChart)}
         </div>
       </div>
     </div>

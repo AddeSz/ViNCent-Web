@@ -1,6 +1,5 @@
-import { useAttributeStore } from "@/stores/useAttributeStore";
-import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData, NodeChange } from "@/types/network";
 import { diffNodes } from "@/utils/diffNodes";
@@ -11,13 +10,10 @@ export const useFullData = (): {
   changes: NodeChange | null;
 } => {
   const nodeData = useNetworkStore((s) => s.nodeMap);
-  const attributeData = useAttributeStore((s) => s.filteredAttributeData);
-  const centralityData = useCentralityStore((s) => s.filteredCentralityData);
-
+  const metricsData = useMetricsStore((s) => s.filteredMetricsData);
   const keepPreviewNodes = useChartSettings(
     (s) => s.displaySettings.keepPreviewNodes,
   );
-
   const keepStable = useChartSettings((s) => s.displaySettings.keepStableView);
 
   const prevNodeMapRef = useRef<Map<string, FullData> | null>(null);
@@ -27,16 +23,14 @@ export const useFullData = (): {
     const currentMap = new Map<string, FullData>();
 
     nodeData.forEach((baseNode, id) => {
-      const attrs = attributeData.get(id);
-      const centrality = centralityData.get(id);
+      const metrics = metricsData.get(id);
       const { vx, vy, x, y, attributes, index, ...filteredBaseNode } = baseNode;
 
-      if (!centrality || !attrs) return;
+      if (!metrics) return;
 
       currentMap.set(id, {
         ...filteredBaseNode,
-        ...centrality,
-        ...attrs,
+        ...metrics,
         removed: false,
         stable: false,
       });
@@ -75,10 +69,8 @@ export const useFullData = (): {
         const baseNode = nodeData.get(id)!;
         const { vx, vy, x, y, attributes, index, ...filteredBaseNode } =
           baseNode;
-
         ordered.push({
           ...filteredBaseNode,
-
           removed: false,
           stable: true,
         });
@@ -101,5 +93,5 @@ export const useFullData = (): {
       fullData: ordered,
       changes: activeChanges,
     };
-  }, [nodeData, attributeData, centralityData, keepPreviewNodes, keepStable]);
+  }, [nodeData, metricsData, keepPreviewNodes, keepStable]);
 };

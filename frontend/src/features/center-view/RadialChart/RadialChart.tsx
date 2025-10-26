@@ -4,16 +4,16 @@ import { useTooltip } from "@/features/center-view/Tooltips/useTooltip";
 import { useChartData } from "@/features/center-view/hooks/useChartData";
 import { useZoom } from "@/features/center-view/hooks/useZoom";
 import { useKeys } from "@/hooks/useKeys";
-import { useAttributeStore } from "@/stores/useAttributeStore";
-import { useCentralityStore } from "@/stores/useCentralityStore";
 import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { FullData, Link, NodeChange } from "@/types/network";
 import { scalePadding } from "@/utils/utils";
 import * as d3 from "d3";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import calculateBounds from "./calculateBounds";
+import { createAngleMap } from "./calculateLinks";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
 import { drawChangeCircles, updateChangeCircles } from "./drawChangeCircles";
@@ -58,10 +58,8 @@ const RadialChart = ({
   const radialZoom = useNetworkStore((s) => s.radialZoom);
   const setRadialZoom = useNetworkStore((s) => s.setRadialZoom);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
-  const attributeInfo = useAttributeStore((s) => s.attributeInfo);
-
+  const attributeInfo = useMetricsStore((s) => s.metricsInfo);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
-  const centralityRanges = useCentralityStore((s) => s.centralityRanges);
   const { setupZoom, resetZoom } = useZoom();
   const [maxLabelWidth, setMaxLabelWidth] = useState(200);
 
@@ -121,36 +119,37 @@ const RadialChart = ({
     }
   }, [resetZoomFlag]);
 
-  const visibleData = data.filter((d) => !d.hidden);
-  const dataLength = visibleData.length;
-  const outerPadding = scalePadding(dataLength, 50, 0.25);
-  const innerPadding = scalePadding(dataLength, 50, 0.5);
+  const visibleData = useMemo(() => data.filter((d) => !d.hidden), [data]);
+  const xScale = useMemo(() => {
+    const dataLength = visibleData.length;
+    const outerPadding = scalePadding(dataLength, 50, 0.25);
+    const innerPadding = scalePadding(dataLength, 50, 0.5);
 
-  const x = d3
-    .scaleBand<string>()
-    .domain(visibleData.map((d) => d.id))
-    .range([0, 2 * Math.PI])
-    .align(0.5)
-    .padding(outerPadding)
-    .paddingInner(innerPadding);
+    return d3
+      .scaleBand<string>()
+      .domain(visibleData.map((d) => d.id))
+      .range([0, 2 * Math.PI])
+      .align(0.5)
+      .padding(outerPadding)
+      .paddingInner(innerPadding);
+  }, [visibleData]);
 
-  useEffect(() => {
-    if (!svgRef.current || !dimensions?.width || !dimensions?.height) return;
-    const svg = d3.select(svgRef.current);
-    let svgGroup = svg.select<SVGGElement>("g.zoom-group");
+  const angleMap = useMemo(() => {
+    if (!xScale) return new Map<string, number>();
+    return createAngleMap(xScale);
+  }, [xScale]);
 
-    if (svgGroup.empty()) {
-      svgGroup = svg.append("g").attr("class", "zoom-group");
-      setupZoom(svg, svgGroup, radialZoom, setRadialZoom);
-    }
+  const removedIds = useMemo(
+    () => new Set(lastChanges?.removed ? Object.keys(lastChanges.removed) : []),
+    [lastChanges?.removed],
+  );
 
-    if (!chartData) return;
-    const { series, arcData } = chartData;
-
+  const { yScale, getKeyIndex } = useMemo(() => {
     const centralityCount = enabledCentralityKeys.length;
     const attributeCount = enabledAttributeKeys.length;
     const gap = separateMetrics ? 1 : 0;
     let totalWithGap = centralityCount + gap + attributeCount;
+
     if (displayMode === "attributes" || centralityCount === 0)
       totalWithGap = attributeCount;
     if (displayMode === "centrality" || attributeCount === 0)
@@ -175,14 +174,42 @@ const RadialChart = ({
       return 0;
     };
 
-    const bounds = calculateBounds(series, x, y, getKeyIndex);
+    return { yScale: y, getKeyIndex };
+  }, [
+    innerRadius,
+    outerRadius,
+    separateMetrics,
+    displayMode,
+    enabledCentralityKeys,
+    enabledAttributeKeys,
+  ]);
+
+  useEffect(() => {
+    if (
+      !svgRef.current ||
+      !dimensions?.width ||
+      !dimensions?.height ||
+      !chartData
+    )
+      return;
+
+    const svg = d3.select(svgRef.current);
+    let svgGroup = svg.select<SVGGElement>("g.zoom-group");
+
+    if (svgGroup.empty()) {
+      svgGroup = svg.append("g").attr("class", "zoom-group");
+      setupZoom(svg, svgGroup, radialZoom, setRadialZoom);
+    }
+
+    const { series, arcData } = chartData;
+
+    const bounds = calculateBounds(series, xScale, yScale, getKeyIndex);
     drawArcs(
       svgGroup,
       arcData,
-      x,
-      y,
+      xScale,
+      yScale,
       getColorForKey,
-      centralityRanges,
       handleNodeHover,
       showArcTooltip,
       hideTooltip,
@@ -191,24 +218,21 @@ const RadialChart = ({
       onContextMenuTarget,
     );
 
-    const removedIds = new Set(
-      lastChanges?.removed ? Object.keys(lastChanges.removed) : [],
-    );
-
     drawLinks(
       svgGroup,
       links,
-      x,
+      xScale,
       innerRadius,
       selectedNodes,
       linkRenderingMode,
       removedIds,
       fdebSettings,
+      angleMap,
     );
     drawBounds(svgGroup, bounds, innerRadius, outerRadius, selectedNodes);
     drawLabels(
       svgGroup,
-      x,
+      xScale,
       outerRadius + 25,
       selectedNodes,
       fontSize,
@@ -222,7 +246,7 @@ const RadialChart = ({
 
     drawChangeCircles(
       svgGroup,
-      x,
+      xScale,
       outerRadius,
       lastChanges,
       showChangeCircleTooltip,
@@ -261,7 +285,7 @@ const RadialChart = ({
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB") return;
     const svg = d3.select(svgRef.current);
-    updateFDEBLinks(svg, x, innerRadius, fdebSettings);
+    updateFDEBLinks(svg, innerRadius, fdebSettings, angleMap);
   }, [fdebSettings]);
 
   useEffect(() => {
@@ -270,7 +294,13 @@ const RadialChart = ({
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
     if (svgGroup.empty()) return;
-    drawSelectionBrush(svgGroup, outerRadius, maxLabelWidth, x, isViewActive);
+    drawSelectionBrush(
+      svgGroup,
+      outerRadius,
+      maxLabelWidth,
+      xScale,
+      isViewActive,
+    );
   }, [maxLabelWidth, outerRadius, chartData, isViewActive]);
 
   return !dimensions?.width || !dimensions?.height ? (

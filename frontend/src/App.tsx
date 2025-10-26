@@ -5,7 +5,6 @@ import { miserablesData, starwarsData, testDataSmall } from "@/data/testData";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
-import ChartSettings from "@/features/chart-settings/ChartSettings";
 import DataFiltering from "@/features/data-filtering/DataFiltering";
 import { useDataStores } from "@/hooks/useDataStores";
 import { useFullData } from "@/hooks/useFullData";
@@ -13,6 +12,7 @@ import { useProcessedData } from "@/hooks/useProcessedData";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import ViewSettings from "./features/view-settings/ViewSettings";
 
 const datasets = {
   "Starwars Dataset": starwarsData,
@@ -85,10 +85,11 @@ const App = () => {
         <Panel defaultSize={15} minSize={10} maxSize={25}>
           <PanelGroup direction="vertical">
             <Panel defaultSize={60} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <ChartSettings
+              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2">
+                <ViewSettings
                   datasets={datasets}
                   onLoadData={handleLoadData}
+                  view={view}
                 />
               </div>
             </Panel>
@@ -97,12 +98,8 @@ const App = () => {
               className={`h-2 transition-colors ${draggingBars["left-vert"] ? "bg-ring" : "bg-border"}`}
             />
             <Panel defaultSize={40} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <DataFiltering
-                  view={view}
-                  dataMap={dataMap}
-                  filteredNetwork={filteredNetwork}
-                />
+              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2">
+                <DataFiltering />
               </div>
             </Panel>
           </PanelGroup>
@@ -115,20 +112,20 @@ const App = () => {
           {isLoading ? (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <Spinner className="size-10" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-center text-sm text-muted-foreground">
                 Processing dataset and calculating centrality values...
               </p>
             </div>
           ) : error ? (
             <div className="flex h-full flex-col items-center justify-center gap-4">
               <div className="flex flex-col items-center gap-2">
-                <p className="text-red-500">{error}</p>
+                <p className="text-center text-red-500">{error}</p>
               </div>
               <FileUploader datasets={datasets} onLoadData={handleLoadData} />
             </div>
           ) : isEmpty ? (
             <div className="flex h-full flex-col items-center justify-center gap-2">
-              <p className="text-muted-foreground">
+              <p className="text-center text-muted-foreground">
                 No data loaded. Select or import a dataset to begin.
               </p>
               <FileUploader datasets={datasets} onLoadData={handleLoadData} />
@@ -151,20 +148,22 @@ const App = () => {
           onDragging={handleDragging("middle-right")}
           className={`w-2 transition-colors ${draggingBars["middle-right"] ? "bg-ring" : "bg-border"}`}
         />
-        <Panel defaultSize={20} minSize={15} maxSize={25}>
+        <Panel defaultSize={20} minSize={15} maxSize={55}>
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <ChartFiltering data={data} dataMap={dataMap} />
+              {/* <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent"> */}
+              <div className="h-full w-full">
+                <ChartFiltering />
               </div>
+              {/* </div> */}
             </Panel>
             <PanelResizeHandle
               onDragging={handleDragging("right-vert")}
               className={`h-2 transition-colors ${draggingBars["right-vert"] ? "bg-ring" : "bg-border"}`}
             />
             <Panel defaultSize={30} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent">
-                <Legend />
+              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2">
+                <Legend dataMap={dataMap} />
               </div>
             </Panel>
           </PanelGroup>

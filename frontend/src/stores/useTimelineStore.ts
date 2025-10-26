@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import { useAttributeStore } from "./useAttributeStore";
-import { useCentralityStore } from "./useCentralityStore";
+import { useMetricsStore } from "./useMetricsStore";
 
 interface TimelineStore {
   timesteps: number[];
@@ -53,10 +52,8 @@ export const useTimelineStore = create<TimelineStore>((set) => ({
       },
     }));
 
-    const attributeStore = useAttributeStore.getState();
-    attributeStore.setCurrentTimestep(current);
-    const centralityStore = useCentralityStore.getState();
-    centralityStore.setCurrentTimestep(current);
+    const metricsStore = useMetricsStore.getState();
+    metricsStore.setCurrentTimestep(current);
   },
 
   clearData: () => {

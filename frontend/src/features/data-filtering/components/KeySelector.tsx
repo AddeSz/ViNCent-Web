@@ -49,7 +49,7 @@ const KeySelector = ({
           title={label}
           disabled={isEmpty}
         >
-          <p className="w-fit max-w-[160px] truncate">{label}</p>
+          <p className="w-fit max-w-40 truncate">{label}</p>
           <ChevronsUpDown />
         </Button>
       </PopoverTrigger>

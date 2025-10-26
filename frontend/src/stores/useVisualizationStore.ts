@@ -8,9 +8,7 @@ interface VisualizationStore {
   fixedAttributeColors: Map<string, string>;
   centralityKeyIndexMap: Map<string, number>;
   attributeKeyIndexMap: Map<string, number>;
-
-  initializeCentralityColorScale: (keys: string[]) => void;
-  initializeAttributeColorScale: (attributeInfos: AttributeInfo[]) => void;
+  initializeColorScales: (metricInfos: AttributeInfo[]) => void;
   getColorForKey: (key: string, value?: NodeAttributeValue) => string;
   clearData: () => void;
 }
@@ -24,64 +22,63 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
   attributeKeyIndexMap: new Map(),
   fixedAttributeColors: new Map(),
 
-  initializeCentralityColorScale: (keys) => {
-    if (keys.length === 0) {
-      set({ centralityColorScale: null, centralityKeyIndexMap: new Map() });
-      return;
+  initializeColorScales: (metricInfos) => {
+    const centralityInfos = metricInfos.filter((info) => info.isCentrality);
+    const attributeInfos = metricInfos.filter((info) => !info.isCentrality);
+
+    let centralityColorScale: d3.ScaleSequential<string> | null = null;
+    let centralityKeyIndexMap = new Map<string, number>();
+
+    if (centralityInfos.length > 0) {
+      const centralityKeys = centralityInfos.map((info) => info.key);
+      centralityKeyIndexMap = new Map(centralityKeys.map((key, i) => [key, i]));
+      centralityColorScale = d3
+        .scaleSequential<string>()
+        .domain([0, Math.max(0, centralityKeys.length - 1)])
+        .interpolator(d3.interpolateSpectral);
     }
 
-    const centralityKeyIndexMap = new Map(keys.map((key, i) => [key, i]));
-    const centralityColorScale = d3
-      .scaleSequential<string>()
-      .domain([0, Math.max(0, keys.length - 1)])
-      .interpolator(d3.interpolateSpectral);
+    let attributeColorScale: d3.ScaleOrdinal<string, string> | null = null;
+    let attributeKeyIndexMap = new Map<string, number>();
+    let fixedAttributeColors = new Map<string, string>();
 
-    set({ centralityColorScale, centralityKeyIndexMap });
-  },
+    if (attributeInfos.length > 0) {
+      const categories: string[] = [];
 
-  initializeAttributeColorScale: (attributeInfos) => {
-    if (attributeInfos.length === 0) {
-      set({
-        attributeColorScale: null,
-        attributeKeyIndexMap: new Map(),
-        fixedAttributeColors: new Map(),
+      const numericKeys = attributeInfos.filter(
+        (info) => !(info.isNominal || info.isBoolean),
+      );
+
+      numericKeys.forEach((info, idx) => {
+        const t = idx / Math.max(1, numericKeys.length - 1);
+        const color = d3.interpolateCool(t);
+        fixedAttributeColors.set(info.key, color);
+        attributeKeyIndexMap.set(info.key, idx);
       });
-      return;
-    }
 
-    const categories: string[] = [];
-    const attributeKeyIndexMap = new Map<string, number>();
-    const fixedAttributeColors = new Map<string, string>();
+      let catIndex = 0;
+      attributeInfos.forEach((info) => {
+        if (info.isNominal || info.isBoolean) {
+          Array.from(info.values).forEach((val) => {
+            const categoryKey = `${info.key}:${val}`;
+            categories.push(categoryKey);
+            attributeKeyIndexMap.set(categoryKey, catIndex++);
+          });
+        }
+      });
 
-    const numericKeys = attributeInfos.filter(
-      (info) => !(info.isNominal || info.isBoolean),
-    );
-
-    numericKeys.forEach((info, idx) => {
-      const t = idx / Math.max(1, numericKeys.length - 1);
-      const color = d3.interpolateCool(t);
-      fixedAttributeColors.set(info.key, color);
-      attributeKeyIndexMap.set(info.key, idx);
-    });
-
-    let catIndex = 0;
-    attributeInfos.forEach((info) => {
-      if (info.isNominal || info.isBoolean) {
-        Array.from(info.values).forEach((val) => {
-          const categoryKey = `${info.key}:${val}`;
-          categories.push(categoryKey);
-          attributeKeyIndexMap.set(categoryKey, catIndex++);
-        });
+      if (categories.length > 0) {
+        attributeColorScale = d3
+          .scaleOrdinal<string, string>()
+          .domain(categories)
+          .range(categoryPalette);
       }
-    });
-
-    const attributeColorScale = d3
-      .scaleOrdinal<string, string>()
-      .domain(categories)
-      .range(categoryPalette);
+    }
 
     set({
+      centralityColorScale,
       attributeColorScale,
+      centralityKeyIndexMap,
       attributeKeyIndexMap,
       fixedAttributeColors,
     });

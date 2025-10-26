@@ -1,73 +1,55 @@
 import { useKeys } from "@/hooks/useKeys";
-import { useAttributeStore } from "@/stores/useAttributeStore";
-import { useCentralityStore } from "@/stores/useCentralityStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
+import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo } from "react";
 
-const Legend = () => {
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const attributeData = useAttributeStore((s) => s.attributeData);
-  const attributeInfo = useAttributeStore((s) => s.attributeInfo);
-  const centralityRanges = useCentralityStore((s) => s.centralityRanges);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+interface LegendProps {
+  dataMap: Map<string, FullData>;
+}
 
-  const { allKeys, enabledAttributeKeys, enabledCentralityKeys } = useKeys();
+const Legend = ({ dataMap }: LegendProps) => {
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
+  const { allKeys } = useKeys();
 
   const nodeMetrics = useMemo(() => {
     if (!hoveredNode) return [];
 
+    const nodeData = dataMap.get(hoveredNode.id);
+    const isStable = nodeData?.stable ?? false;
     return allKeys.map((key) => {
-      const isAttribute = enabledAttributeKeys.includes(key);
-      const isCentrality = enabledCentralityKeys.includes(key);
+      const info = metricsInfo.get(key);
+      const value = nodeData?.[key];
 
-      let value: any;
-      let proportion = 1;
+      let proportion = 0;
       let percentage = "";
+      let formattedValue = formatValue(value);
 
-      if (isCentrality) {
-        const rawValue = hoveredNode[key as keyof typeof hoveredNode];
-        value = typeof rawValue === "number" ? rawValue : Number(rawValue) || 0;
-
-        const { min, max } = centralityRanges[key] || { min: 0, max: 1 };
+      if (info?.isNumeric && info.range && typeof value === "number") {
+        const { min, max } = info.range;
         proportion = Math.max(0, Math.min((value - min) / (max - min || 1), 1));
-
         percentage = (proportion * 100).toFixed(2);
         if (+percentage === 100) percentage = "100";
         if (+percentage === 0) percentage = "0.0";
-      } else if (isAttribute) {
-        value = attributeData.get(hoveredNode.id)?.[key];
-        const info = attributeInfo.get(key);
-
-        if (info?.isNumeric && typeof value === "number" && info.range) {
-          const { min, max } = info.range;
-          proportion = Math.max(
-            0,
-            Math.min((value - min) / (max - min || 1), 1),
-          );
-          percentage = (proportion * 100).toFixed(2);
-          if (+percentage === 100) percentage = "100";
-          if (+percentage === 0) percentage = "0.0";
-        }
       }
 
-      const color = getColorForKey(
-        key,
-        value !== undefined ? value : undefined,
-      );
+      const color = getColorForKey(key, value);
 
       return {
         key,
-        value,
-        proportion,
-        percentage,
+        proportion: isStable ? 0 : proportion,
+        percentage: isStable ? "" : percentage,
         color,
-        isAttribute,
-        isNumeric: isCentrality || attributeInfo.get(key)?.isNumeric,
+        isNumeric: info?.isNumeric,
+        isStable,
+        formattedValue: isStable ? "N/A" : formattedValue,
       };
     });
-  }, [hoveredNode, allKeys, enabledAttributeKeys, enabledCentralityKeys]);
+  }, [hoveredNode, allKeys, dataMap, metricsInfo]);
 
   if (!hoveredNode) {
     return (
@@ -87,40 +69,44 @@ const Legend = () => {
           <span className="mt-1 text-sm text-muted-foreground">
             {" "}
             {hoveredNode.label || hoveredNode.id}
-          </span>
+          </span>{" "}
+          {dataMap.get(hoveredNode.id)?.stable && (
+            <span className="text-xs text-muted-foreground italic">
+              (Stable Node)
+            </span>
+          )}
         </div>
       </div>
       <div className="space-y-0.5">
         {nodeMetrics.map(
           ({
             key,
-            value,
             color,
             percentage,
             proportion,
-            isAttribute,
             isNumeric,
+            formattedValue,
           }) => (
             <div key={key} className="flex items-center gap-1 py-1">
               <div
-                className="h-4 w-4 flex-shrink-0 rounded-full"
+                className="h-4 w-4 shrink-0 rounded-full"
                 style={{ backgroundColor: color }}
-                title={formatKeyLabel(key)}
+                title="N/A"
               />
               <p
-                className="w-full max-w-24 truncate text-xs font-medium capitalize"
+                className="w-24 truncate text-xs font-medium capitalize"
                 title={formatKeyLabel(key)}
               >
                 {formatKeyLabel(key)}
               </p>
 
-              {!isAttribute || isNumeric ? (
+              {isNumeric ? (
                 <>
                   <span className="w-14 min-w-12 font-mono text-xs text-muted-foreground tabular-nums">
-                    {percentage}%
+                    {percentage ? `${percentage}%` : "N/A"}
                   </span>
                   <span className="w-12 min-w-10 font-mono text-xs text-muted-foreground tabular-nums">
-                    {formatValue(value)}
+                    {formattedValue || "N/A"}
                   </span>
                   <div className="flex-1">
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -128,7 +114,7 @@ const Legend = () => {
                         className="h-full rounded-full transition-all duration-300"
                         style={{
                           backgroundColor: color,
-                          width: `${(proportion || 1) * 100}%`,
+                          width: `${(proportion || 0) * 100}%`,
                         }}
                       />
                     </div>
@@ -136,7 +122,7 @@ const Legend = () => {
                 </>
               ) : (
                 <p className="w-fit min-w-24 font-mono text-xs text-muted-foreground tabular-nums">
-                  {formatValue(value)}
+                  {formattedValue || "N/A"}
                 </p>
               )}
             </div>

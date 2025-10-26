@@ -30,10 +30,7 @@ const DisplaySettings = () => {
               id="attributes"
               className="cursor-pointer"
             />
-            <Label
-              htmlFor="attributes"
-              className="cursor-pointer truncate p-1 text-ellipsis whitespace-nowrap"
-            >
+            <Label htmlFor="attributes" className="cursor-pointer truncate p-1">
               Attributes
             </Label>
           </div>
@@ -43,19 +40,13 @@ const DisplaySettings = () => {
               id="centrality"
               className="cursor-pointer"
             />
-            <Label
-              htmlFor="centrality"
-              className="cursor-pointer truncate overflow-hidden p-1 whitespace-nowrap"
-            >
+            <Label htmlFor="centrality" className="cursor-pointer truncate p-1">
               Centrality
             </Label>
           </div>
           <div className="flex min-w-0 items-center">
             <RadioGroupItem value="both" id="both" className="cursor-pointer" />
-            <Label
-              htmlFor="both"
-              className="cursor-pointer truncate overflow-hidden p-1 whitespace-nowrap"
-            >
+            <Label htmlFor="both" className="cursor-pointer truncate p-1">
               Both
             </Label>
           </div>

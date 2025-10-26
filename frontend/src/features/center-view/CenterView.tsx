@@ -76,7 +76,7 @@ const CenterView = ({
       >
         <div
           ref={containerRef}
-          className="relative flex-grow overflow-hidden bg-card"
+          className="relative grow overflow-hidden bg-card"
         >
           <ViewRenderer
             view={view}

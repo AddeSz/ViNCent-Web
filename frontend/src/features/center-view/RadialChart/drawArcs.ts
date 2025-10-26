@@ -9,7 +9,6 @@ const drawArcs = (
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
   getColorForKey: (key: string, value: string | number) => string,
-  centralityRanges: Record<string, { min: number; max: number }>,
   onNodeHover: (nodeId: string) => void,
   onTooltipShow: (tooltipData: {
     type: "arc";
@@ -51,8 +50,6 @@ const drawArcs = (
       let max = 1;
       if (attribute?.isNumeric && attribute.range)
         ({ min, max } = attribute.range);
-      else if (centralityRanges[d.key])
-        ({ min, max } = centralityRanges[d.key]);
       const proportion = Math.max(
         0,
         Math.min((d.value - min) / (max - min || 1), 1),

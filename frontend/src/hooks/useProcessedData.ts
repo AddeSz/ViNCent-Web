@@ -90,12 +90,17 @@ export const useProcessedData = (
       if (node) dataMap.set(id, { ...node, linkCount: count });
     }
 
+    const finalData = processedData.map((n) => {
+      const updated = dataMap.get(n.id!);
+      return updated ?? n;
+    });
+
     const filteredNetwork: Network = {
       nodes: filteredNodes,
       links: filteredLinks,
     };
 
-    return { data: processedData, dataMap, filteredNetwork, linkCountMap };
+    return { data: finalData, dataMap, filteredNetwork, linkCountMap };
   }, [
     fullData,
     acceptedRemovals,

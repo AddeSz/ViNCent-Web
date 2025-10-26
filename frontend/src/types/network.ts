@@ -20,6 +20,7 @@ export type AttributeInfo = {
   isOrdinal: boolean;
   isNumeric: boolean;
   isBoolean: boolean;
+  isCentrality?: boolean;
   range?: { min: number; max: number };
 };
 

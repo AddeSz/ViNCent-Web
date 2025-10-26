@@ -17,6 +17,7 @@ export const useZoom = () => {
         .zoom<SVGSVGElement, unknown>()
         .filter((event) => {
           const target = event.target as HTMLElement;
+          if (event.type === "wheel") return true;
           if ("button" in event && event.button === 2) return false;
           if (
             target.closest(".arcs-group") ||
@@ -27,7 +28,6 @@ export const useZoom = () => {
           if (event.type === "dblclick" && target.closest(".node")) {
             return false;
           }
-          if (event.type === "wheel") return true;
           return true;
         })
         .scaleExtent([0.1, 6])
