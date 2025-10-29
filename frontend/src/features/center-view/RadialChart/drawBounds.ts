@@ -1,3 +1,4 @@
+import type { FullData } from "@/types/network";
 import { highlightBoundsColor } from "@/utils/ColorHelper";
 import { arc } from "d3-shape";
 import type { BoundsResult } from "./calculateBounds";
@@ -8,6 +9,7 @@ const drawBounds = (
   innerRadius: number,
   outerRadius: number,
   selectedNodes: Set<string>,
+  hoveredNode: FullData | null,
 ): void => {
   const { groupBounds, layerBounds } = bounds;
   const uniqueRadii = Array.from(
@@ -98,20 +100,25 @@ const drawBounds = (
     .attr("fill", "none")
     .attr("d", (d) => outerArcGen({ ...d, outerRadius: outerRadius })!);
 
-  updateBoundHighlight(boundsSVG, selectedNodes);
+  updateBoundHighlight(boundsSVG, selectedNodes, hoveredNode);
 };
 
 export const updateBoundHighlight = <T extends SVGElement>(
   svg: d3.Selection<T, unknown, null, undefined>,
   selectedNodes: Set<string>,
+  hoveredNode: FullData | null,
 ) => {
   svg
     .selectAll<SVGPathElement, { id: string }>("path.boundary-line")
-    .attr("stroke", (d) =>
-      selectedNodes.has(d.id)
-        ? highlightBoundsColor.selected
-        : highlightBoundsColor.default,
-    )
+    .attr("stroke", (d) => {
+      if (selectedNodes.has(d.id)) {
+        return highlightBoundsColor.selected;
+      }
+      if (hoveredNode?.id === d.id) {
+        return highlightBoundsColor.hover;
+      }
+      return highlightBoundsColor.default;
+    })
     .attr("stroke-width", (d) => (selectedNodes.has(d.id) ? 2 : 1));
 };
 

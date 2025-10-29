@@ -1,29 +1,46 @@
 import type { ContextType } from "@/features/center-view/CenterView";
 import ChartTooltip from "@/features/center-view/Tooltips/ChartTooltip";
-import { useTooltip } from "@/features/center-view/Tooltips/useTooltip";
+import {
+  useTooltip,
+  type InteractionProps,
+} from "@/features/center-view/Tooltips/useTooltip";
 import { useZoom } from "@/features/center-view/hooks/useZoom";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { FullData, Link, Network, Node } from "@/types/network";
+import type {
+  FullData,
+  Link,
+  Network,
+  Node,
+  NodeChange,
+} from "@/types/network";
 import type { Simulation } from "d3";
 import * as d3 from "d3";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import drawSelectionBrush from "./drawSelectionBrush";
-import createSimulation from "./setupSimulation";
+import {
+  calculateLinkWeights,
+  calculateNodeSizes,
+  setupNodeEvents,
+} from "./nodeLinkUtils";
+import createSimulation, { updateSimulationForces } from "./setupSimulation";
 import updateGraph, { updateStyle } from "./updateGraph";
 
 interface NodeLinkDiagramProps {
   dimensions: DOMRectReadOnly | null;
-  data: Network;
+  filteredNetwork: Network;
   dataMap: Map<string, FullData>;
   onContextMenuTarget: (target: ContextType, data?: any) => void;
+  changes: NodeChange;
   isViewActive: boolean;
 }
 
 const NodeLinkDiagram = ({
   dimensions,
-  data,
+  filteredNetwork,
   dataMap,
   onContextMenuTarget,
+  changes,
   isViewActive,
 }: NodeLinkDiagramProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -36,6 +53,76 @@ const NodeLinkDiagram = ({
   const setNodeLinkZoom = useNetworkStore((s) => s.setNodeLinkZoom);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
   const { tooltip, showTooltip, hideTooltip } = useTooltip();
+  const restartSimulationFlag = useNetworkStore((s) => s.restartSimulationFlag);
+  const setRestartSimulationFlag = useNetworkStore(
+    (s) => s.setRestartSimulationFlag,
+  );
+  const nodeLinkSettings = useSettingsStore((s) => s.nodeLinkSettings);
+  const keepStableView = useSettingsStore(
+    (s) => s.displaySettings.keepStableView,
+  );
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+
+  const activeNetwork = keepStableView ? networkData : filteredNetwork;
+
+  const handleNodeHover = (nodeId: string | null) => {
+    if (nodeId === null) {
+      setHoveredNode(null);
+      return;
+    }
+
+    const data = dataMap.get(nodeId);
+    if (data) {
+      setHoveredNode(data);
+    }
+  };
+
+  const interactionProps: InteractionProps = {
+    onHover: handleNodeHover,
+    onTooltipShow: showTooltip,
+    onTooltipHide: hideTooltip,
+    onContextMenu: onContextMenuTarget,
+  };
+
+  const nodeSizes = useMemo(() => {
+    return calculateNodeSizes(
+      networkData.nodes,
+      dataMap,
+      nodeLinkSettings.nodeSizeMode,
+      nodeLinkSettings.nodeSizeMetric,
+      nodeLinkSettings.fixedNodeSize,
+      nodeLinkSettings.minNodeSize,
+      nodeLinkSettings.maxNodeSize,
+      nodeLinkSettings.nodeScaleType,
+    );
+  }, [
+    networkData.nodes,
+    dataMap,
+    nodeLinkSettings.nodeSizeMode,
+    nodeLinkSettings.nodeSizeMetric,
+    nodeLinkSettings.fixedNodeSize,
+    nodeLinkSettings.minNodeSize,
+    nodeLinkSettings.maxNodeSize,
+    nodeLinkSettings.nodeScaleType,
+  ]);
+
+  const linkWeights = useMemo(() => {
+    return calculateLinkWeights(
+      activeNetwork.links,
+      nodeLinkSettings.linkThicknessMode,
+      nodeLinkSettings.fixedLinkThickness,
+      nodeLinkSettings.minLinkThickness,
+      nodeLinkSettings.maxLinkThickness,
+      nodeLinkSettings.linkScaleType,
+    );
+  }, [
+    activeNetwork.links,
+    nodeLinkSettings.linkThicknessMode,
+    nodeLinkSettings.fixedLinkThickness,
+    nodeLinkSettings.minLinkThickness,
+    nodeLinkSettings.maxLinkThickness,
+    nodeLinkSettings.linkScaleType,
+  ]);
 
   useEffect(() => {
     if (resetZoomFlag) {
@@ -43,6 +130,13 @@ const NodeLinkDiagram = ({
       useNetworkStore.setState({ resetNodeLinkZoomFlag: false });
     }
   }, [resetZoomFlag]);
+
+  useEffect(() => {
+    if (restartSimulationFlag && simulationRef.current) {
+      simulationRef.current.alpha(1).restart();
+      setRestartSimulationFlag(false);
+    }
+  }, [restartSimulationFlag]);
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -58,21 +152,96 @@ const NodeLinkDiagram = ({
         networkData.links,
         svgGroup.selectAll(".node"),
         svgGroup.selectAll(".link"),
+        {
+          linkDistance: nodeLinkSettings.linkDistance,
+          chargeStrength: nodeLinkSettings.chargeStrength,
+          collisionEnabled: nodeLinkSettings.collisionEnabled,
+          collisionRadiuses: nodeSizes,
+        },
       );
 
-      if (data && data.nodes?.length && data.links?.length && dataMap) {
+      if (
+        networkData &&
+        networkData.nodes?.length &&
+        networkData.links?.length &&
+        dataMap
+      ) {
         updateGraph(
           svg,
           simulationRef.current,
-          data.nodes,
-          data.links,
+          filteredNetwork,
           dataMap,
           selectedNodes,
+          nodeLinkSettings,
+          changes,
+          nodeSizes,
+          linkWeights,
+          hoveredNode,
         );
-        drawSelectionBrush(svgGroup, data.nodes, isViewActive);
+        drawSelectionBrush(svgGroup, networkData.nodes, isViewActive);
+        setupNodeEvents(svg, interactionProps);
       }
     }
   }, [networkData, dimensions]);
+
+  useEffect(() => {
+    if (!simulationRef.current) return;
+
+    const existingPositions = new Map<
+      string,
+      { x: number; y: number; vx?: number; vy?: number }
+    >();
+    simulationRef.current.nodes().forEach((node) => {
+      if (node.x !== undefined && node.y !== undefined) {
+        existingPositions.set(node.id, {
+          x: node.x,
+          y: node.y,
+          vx: node.vx,
+          vy: node.vy,
+        });
+      }
+    });
+
+    activeNetwork.nodes.forEach((node) => {
+      const existing = existingPositions.get(node.id);
+      if (existing) {
+        node.x = existing.x;
+        node.y = existing.y;
+        node.vx = existing.vx;
+        node.vy = existing.vy;
+      } else if (node.x === undefined || node.y === undefined) {
+        node.x = Math.random() * 100 - 50;
+        node.y = Math.random() * 100 - 50;
+      }
+    });
+
+    simulationRef.current.nodes(activeNetwork.nodes);
+    const linkForce = simulationRef.current.force("link") as d3.ForceLink<
+      Node,
+      Link
+    >;
+    if (linkForce) {
+      linkForce.links(activeNetwork.links);
+    }
+
+    simulationRef.current.alpha(0.3).restart();
+  }, [activeNetwork]);
+
+  useEffect(() => {
+    if (!simulationRef.current) return;
+
+    updateSimulationForces(simulationRef.current, {
+      linkDistance: nodeLinkSettings.linkDistance,
+      chargeStrength: nodeLinkSettings.chargeStrength,
+      collisionEnabled: nodeLinkSettings.collisionEnabled,
+      collisionRadiuses: nodeSizes,
+    });
+  }, [
+    nodeLinkSettings.linkDistance,
+    nodeLinkSettings.chargeStrength,
+    nodeLinkSettings.collisionEnabled,
+    nodeSizes,
+  ]);
 
   useEffect(() => {
     if (!svgRef.current || !simulationRef.current || !dataMap) return;
@@ -81,48 +250,40 @@ const NodeLinkDiagram = ({
     updateGraph(
       d3.select(svgRef.current),
       simulationRef.current,
-      data.nodes,
-      data.links,
+      filteredNetwork,
       dataMap,
       selectedNodes,
+      nodeLinkSettings,
+      changes,
+      nodeSizes,
+      linkWeights,
+      hoveredNode,
     );
-    svg
-      .select(".nodes-group")
-      .selectAll<SVGCircleElement, Node>(".node")
-      .on("mousemove", function (event, d) {
-        const [x, y] = [event.clientX, event.clientY];
-        const hoveredNodeData = dataMap.get(d.id);
-        if (!hoveredNodeData) return;
 
-        setHoveredNode(hoveredNodeData);
-        showTooltip(
-          {
-            type: "node",
-            nodeId: d.id,
-            x,
-            y,
-          },
-          d.id,
-        );
-      })
-      .on("mouseleave", () => hideTooltip())
-      .on("contextmenu", (event, d) => {
-        event._handledByChild = true;
-        onContextMenuTarget("node", d.id);
-      });
+    setupNodeEvents(svg, interactionProps);
 
     const svgGroup = d3
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
     if (svgGroup.empty()) return;
-    drawSelectionBrush(svgGroup, data.nodes, isViewActive);
-  }, [dataMap, isViewActive]);
+    drawSelectionBrush(svgGroup, activeNetwork.nodes, isViewActive);
+  }, [dataMap, isViewActive, nodeLinkSettings, activeNetwork]);
 
   useEffect(() => {
     if (!svgRef.current || !dataMap) return;
     const svg = d3.select(svgRef.current);
-    updateStyle(svg, selectedNodes, dataMap);
-  }, [selectedNodes]);
+
+    updateStyle(
+      svg,
+      selectedNodes,
+      dataMap,
+      nodeSizes,
+      linkWeights,
+      nodeLinkSettings.fixedNodeSize,
+      changes,
+      hoveredNode,
+    );
+  }, [selectedNodes, changes, filteredNetwork, hoveredNode]);
 
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center bg-card" />
@@ -139,7 +300,9 @@ const NodeLinkDiagram = ({
         viewBox="-800 -800 1600 1600"
         preserveAspectRatio="xMidYMid slice"
         className="h-full w-full bg-card"
-        style={{ shapeRendering: "geometricPrecision" }}
+        style={{
+          shapeRendering: "geometricPrecision",
+        }}
       />
       <ChartTooltip {...tooltip} dataMap={dataMap} />
     </div>

@@ -1,20 +1,16 @@
 import type { NodeChange } from "@/types/network";
 import * as d3 from "d3";
+import type { InteractionProps } from "../Tooltips/useTooltip";
 
 export const drawChangeCircles = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   x: d3.ScaleBand<string>,
   outerRadius: number,
-  lastChange: NodeChange | null,
-  onTooltipShow: (tooltipData: {
-    type: "change";
-    nodeId: string;
-    x: number;
-    y: number;
-    lastChange: NodeChange | null;
-  }) => void,
-  onTooltipHide: () => void,
+  lastChange: NodeChange,
+  interactionProps: InteractionProps,
 ) => {
+  const { onTooltipShow, onTooltipHide } = interactionProps;
+
   svg.selectAll("circle.change-indicator").remove();
   const circleGroup = svg.append("g").attr("class", "change-circles-group");
 

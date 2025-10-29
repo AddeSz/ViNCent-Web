@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/context-menu";
 import type { ContextMenuTarget } from "@/features/center-view/CenterView";
 import { useKeys } from "@/hooks/useKeys";
-import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
@@ -46,7 +46,7 @@ const ViewContextMenu = ({
   const { centralityKeys, attributeKeys } = useKeys();
   const sortKey = useNetworkStore((s) => s.sortKey);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
-  const displayMode = useChartSettings((s) => s.displaySettings.displayMode);
+  const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const hideNode = useNetworkStore((s) => s.hideNode);
   const hiddenCount = useNetworkStore((s) => s.hiddenNodes.size);

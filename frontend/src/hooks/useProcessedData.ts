@@ -1,15 +1,12 @@
-import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData, Network, NodeChange } from "@/types/network";
 import { getNodeId } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 
-export const useProcessedData = (
-  fullData: FullData[],
-  changes: NodeChange | null,
-) => {
-  const keepStable = useChartSettings((s) => s.displaySettings.keepStableView);
-  const keepDeletedNodes = useChartSettings(
+export const useProcessedData = (fullData: FullData[], changes: NodeChange) => {
+  const keepStable = useSettingsStore((s) => s.displaySettings.keepStableView);
+  const keepDeletedNodes = useSettingsStore(
     (s) => s.displaySettings.keepPreviewNodes,
   );
 

@@ -1,3 +1,4 @@
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { type ScaleLinear } from "d3";
 import type { BinnedData } from "../../components/createBinnedData";
 
@@ -10,6 +11,8 @@ interface HistogramBarsProps {
   isBinSelected: (binIndex: number) => boolean;
   hoverBin: number | null;
   filteredBinCounts: number[] | null;
+  dataKey: string;
+  disabledBins: Set<number>;
 }
 
 export const HistogramBars = ({
@@ -21,7 +24,15 @@ export const HistogramBars = ({
   isBinSelected,
   hoverBin,
   filteredBinCounts,
+  dataKey,
 }: HistogramBarsProps) => {
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+
+  const hoveredValue = hoveredNode?.[dataKey];
+  const hoveredBinIndex =
+    hoveredValue != null && !hoveredNode?.removed && !hoveredNode?.stable
+      ? (data.valueToBinIndex.get(hoveredValue) ?? null)
+      : null;
   return (
     <>
       {data.bins.map((bin, i) => {
@@ -64,6 +75,19 @@ export const HistogramBars = ({
                 height={chartHeight}
                 fill="currentColor"
                 opacity={0.2}
+                pointerEvents="none"
+              />
+            )}
+
+            {hoveredBinIndex === i && (
+              <rect
+                x={startPos + 1}
+                y={yScale(bin.values.length)}
+                width={binWidth - 2}
+                height={barHeight}
+                stroke="var(--accent-foreground)"
+                strokeWidth={2}
+                fill="none"
                 pointerEvents="none"
               />
             )}

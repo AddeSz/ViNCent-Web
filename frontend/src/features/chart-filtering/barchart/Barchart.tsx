@@ -98,6 +98,7 @@ const Barchart = ({
             hoverCategory={hoverCategory}
             setHoverCategory={setHoverCategory}
             onBarClick={onBarClick}
+            dataKey={dataKey}
           />
 
           <BarchartAxes

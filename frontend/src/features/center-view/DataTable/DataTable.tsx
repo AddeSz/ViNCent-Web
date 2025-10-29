@@ -50,12 +50,6 @@ const DataTable = ({
 
   const { allKeys } = useKeys();
 
-  const rowsPerPageOptions = useMemo(() => {
-    const baseOptions = [10, 25, 50, 100];
-    const total = data.length;
-    return [...baseOptions.filter((n) => n < total), total];
-  }, [data.length]);
-
   const columns = useMemo(() => {
     const selectColumn = createSelectColumn<(typeof data)[number]>();
     const labelColumn = createLabelColumn<(typeof data)[number]>();
@@ -118,7 +112,7 @@ const DataTable = ({
     >
       <TableControls table={table} setVisibilityFilter={setVisibilityFilter} />
       <TableContent table={table} columnsLength={columns.length} />
-      <TablePagination table={table} rowsPerPageOptions={rowsPerPageOptions} />
+      <TablePagination table={table} rowsPerPageOptions={[10, 25, 50, 100]} />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useMemo } from "react";
 
@@ -6,7 +6,7 @@ export const useKeys = () => {
   const metricsKeys = useMetricsStore((s) => s.metricsKeys);
   const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
-  const displayMode = useChartSettings((s) => s.displaySettings.displayMode);
+  const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
 
   const { attributeKeys, centralityKeys } = useMemo(() => {
     const attrs: string[] = [];
@@ -52,5 +52,6 @@ export const useKeys = () => {
     centralityKeys,
     enabledAttributeKeys,
     enabledCentralityKeys,
+    metricsKeys,
   };
 };

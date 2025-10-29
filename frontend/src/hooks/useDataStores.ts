@@ -1,6 +1,6 @@
 import {
   defaultRadialSettings,
-  useChartSettings,
+  useSettingsStore,
 } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
@@ -91,7 +91,7 @@ export const useDataStores = () => {
     }
 
     const calculatedRadial = calculateRadialSettings(nodes.length);
-    useChartSettings.getState().setInitialRadialSettings({
+    useSettingsStore.getState().setInitialRadialSettings({
       ...defaultRadialSettings,
       ...calculatedRadial,
     });
@@ -100,7 +100,7 @@ export const useDataStores = () => {
       useMetricsStore.getState().metricsInfo.values(),
     ).filter((info) => !info.isCentrality).length;
 
-    useChartSettings.getState().setDisplaySettings({
+    useSettingsStore.getState().setDisplaySettings({
       displayMode: attributeCount === 0 ? "centrality" : "both",
     });
   };

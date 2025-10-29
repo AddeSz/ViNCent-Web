@@ -1,7 +1,13 @@
 import FileUploader from "@/components/FileUploader";
 import Legend from "@/components/Legend";
 import { Spinner } from "@/components/ui/spinner";
-import { miserablesData, starwarsData, testDataSmall } from "@/data/testData";
+import {
+  miserablesData,
+  starwarsData,
+  testData,
+  testDataSmall,
+  testDataTime,
+} from "@/data/testData";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
@@ -17,9 +23,9 @@ import ViewSettings from "./features/view-settings/ViewSettings";
 const datasets = {
   "Starwars Dataset": starwarsData,
   "Les Miserables Dataset": miserablesData,
-  // "Test Dataset": testData,
   "Test Dataset Small": testDataSmall,
-  // "Test Dataset Time": testDataTime,
+  "Test Dataset Large": testData,
+  "Test Dataset Time": testDataTime,
 };
 
 const VIEW_KEY = "center-view-mode";
@@ -78,13 +84,12 @@ const App = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="flex h-full">
       <PanelGroup direction="horizontal" className="flex">
-        <Panel defaultSize={15} minSize={10} maxSize={25}>
+        <Panel defaultSize={15} minSize={12} maxSize={22}>
           <PanelGroup direction="vertical">
-            <Panel defaultSize={60} minSize={10}>
+            <Panel defaultSize={60} minSize={15}>
               <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2">
                 <ViewSettings
                   datasets={datasets}
@@ -97,7 +102,7 @@ const App = () => {
               onDragging={handleDragging("left-vert")}
               className={`h-2 transition-colors ${draggingBars["left-vert"] ? "bg-ring" : "bg-border"}`}
             />
-            <Panel defaultSize={40} minSize={10}>
+            <Panel defaultSize={40} minSize={15}>
               <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2">
                 <DataFiltering />
               </div>
@@ -135,7 +140,7 @@ const App = () => {
               data={data}
               dataMap={dataMap}
               filteredNetwork={filteredNetwork}
-              lastChanges={changes}
+              changes={changes}
               canPreview={canPreview}
               onPreview={handlePreview}
               view={view}
@@ -151,11 +156,9 @@ const App = () => {
         <Panel defaultSize={20} minSize={15} maxSize={55}>
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
-              {/* <div className="scrollbar-thin h-full w-full overflow-y-auto p-2 scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full scrollbar-track-transparent"> */}
               <div className="h-full w-full">
                 <ChartFiltering />
               </div>
-              {/* </div> */}
             </Panel>
             <PanelResizeHandle
               onDragging={handleDragging("right-vert")}

@@ -47,7 +47,7 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <div className="w-full flex-grow sm:flex-1">
+        <div className="w-full grow sm:flex-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -71,7 +71,7 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="w-full flex-grow sm:flex-1">
+        <div className="w-full grow sm:flex-1">
           <Button
             variant="outline"
             title="Import Dataset"

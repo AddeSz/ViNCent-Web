@@ -3,12 +3,12 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useKeys } from "@/hooks/useKeys";
 import {
-  useChartSettings,
+  useSettingsStore,
   type DisplayMode,
 } from "@/stores/useChartSettingsStore";
 
 const DisplaySettings = () => {
-  const { displaySettings, setDisplaySettings } = useChartSettings();
+  const { displaySettings, setDisplaySettings } = useSettingsStore();
   const { keepPreviewNodes, keepStableView, displayMode } = displaySettings;
   const { attributeKeys } = useKeys();
 

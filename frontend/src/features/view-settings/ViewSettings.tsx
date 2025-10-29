@@ -29,7 +29,7 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
         <p className="mb-0 w-full cursor-default truncate" title="Display Mode">
           Display Mode
         </p>
-        <div className="rounded-lg bg-card p-1">
+        <div className="rounded-lg bg-card px-2 py-1">
           <DisplaySettings />
         </div>
       </div>
@@ -42,7 +42,9 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
           >
             Radial View Settings
           </p>
-          <RadialChartSettings />
+          <div className="rounded-lg bg-card px-2 py-1">
+            <RadialChartSettings />
+          </div>
         </div>
       )}
 
@@ -54,7 +56,7 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
           >
             Node-Link View Settings
           </p>
-          <div className="rounded-lg bg-card p-1">
+          <div className="rounded-lg bg-card px-2 py-1">
             <NodeLinkDiagramSettings />
           </div>
         </div>
@@ -64,11 +66,11 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
         <div>
           <p
             className="mb-0 w-full cursor-default truncate"
-            title="Node-Link View Settings"
+            title="Data Tabel View Settings"
           >
             Data Tabel View Settings
           </p>
-          <div className="rounded-lg bg-card p-1">
+          <div className="min-h-10 rounded-lg bg-card px-2 py-1">
             <TimestepSlider />
           </div>
         </div>

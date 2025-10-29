@@ -212,7 +212,7 @@ const computeMetricsDataForTimestep = (
 
       Object.keys(centralityMetrics).forEach((k) => centralityKeys.add(k));
 
-      metricsData.set(centrality.id, { ...existing, ...centralityMetrics });
+      metricsData.set(centrality.id, { ...centralityMetrics, ...existing });
     });
   }
 

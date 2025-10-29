@@ -1,23 +1,25 @@
-import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData, NodeChange } from "@/types/network";
 import { diffNodes } from "@/utils/diffNodes";
 import { useMemo, useRef } from "react";
 
+const emptyChanges: NodeChange = { added: {}, removed: {}, updated: {} };
+
 export const useFullData = (): {
   fullData: FullData[];
-  changes: NodeChange | null;
+  changes: NodeChange;
 } => {
   const nodeData = useNetworkStore((s) => s.nodeMap);
   const metricsData = useMetricsStore((s) => s.filteredMetricsData);
-  const keepPreviewNodes = useChartSettings(
+  const keepPreviewNodes = useSettingsStore(
     (s) => s.displaySettings.keepPreviewNodes,
   );
-  const keepStable = useChartSettings((s) => s.displaySettings.keepStableView);
+  const keepStable = useSettingsStore((s) => s.displaySettings.keepStableView);
 
   const prevNodeMapRef = useRef<Map<string, FullData> | null>(null);
-  const prevChangesRef = useRef<NodeChange | null>(null);
+  const prevChangesRef = useRef<NodeChange>(emptyChanges);
 
   return useMemo(() => {
     const currentMap = new Map<string, FullData>();

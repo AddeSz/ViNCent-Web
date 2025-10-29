@@ -1,6 +1,8 @@
-import type { ContextType } from "@/features/center-view/CenterView";
+import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { AttributeInfo } from "@/types/network";
+import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
+import type { InteractionProps } from "../Tooltips/useTooltip";
 import type { ArcData } from "./RadialChart";
 
 const drawArcs = (
@@ -8,20 +10,13 @@ const drawArcs = (
   arcData: ArcData[],
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
-  getColorForKey: (key: string, value: string | number) => string,
-  onNodeHover: (nodeId: string) => void,
-  onTooltipShow: (tooltipData: {
-    type: "arc";
-    nodeId: string;
-    x: number;
-    y: number;
-    arcKey: string;
-  }) => void,
-  onTooltipHide: () => void,
   attributeInfo: Map<string, AttributeInfo>,
+  interactionProps: InteractionProps,
   getKeyIndex: (key: string) => number,
-  onContextMenuTarget: (target: ContextType, data?: any) => void,
 ): void => {
+  const { getColorForKey } = useVisualizationStore.getState();
+  const { onHover, onContextMenu, onTooltipShow, onTooltipHide } =
+    interactionProps;
   const g = svg
     .selectAll<SVGGElement, unknown>("g.arcs-group")
     .data([null])
@@ -132,7 +127,7 @@ const drawArcs = (
         y: event.clientY,
         arcKey: d.key,
       });
-      onNodeHover(d.data.id);
+      onHover(d.data.id);
     })
     .on("mouseout", function (_, d) {
       d3.select(this).select(".arc-background").attr("opacity", 0.5);
@@ -143,7 +138,11 @@ const drawArcs = (
     })
     .on("contextmenu", (event, d) => {
       event._handledByChild = true;
-      onContextMenuTarget("arc", d);
+      onContextMenu("arc", d);
+    })
+    .on("click", (event, d) => {
+      const multi = event.shiftKey || event.ctrlKey;
+      handleHighlight(d.id, multi);
     });
 };
 

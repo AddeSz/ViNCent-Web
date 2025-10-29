@@ -1,6 +1,6 @@
 import { useMetricsStore, type BrushRange } from "@/stores/useMetricsStore";
 import { formatValue } from "@/utils/utils";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
 import type { BinnedData } from "../components/createBinnedData";
 import { Tooltip } from "../components/Tooltip";
@@ -39,6 +39,7 @@ const Histogram = ({
     chartHeight,
   } = dimensions;
   const metricsData = useMetricsStore((s) => s.metricsData);
+  const [disabledBins, setDisabledBins] = useState<Set<number>>(new Set());
 
   const color = getColorForKey(dataKey);
 
@@ -52,14 +53,14 @@ const Histogram = ({
       const value = metricsData.get(nodeId)?.[dataKey];
       if (typeof value === "number") {
         const binIndex = data.valueToBinIndex.get(value);
-        if (binIndex !== undefined) {
+        if (binIndex !== undefined && !disabledBins.has(binIndex)) {
           counts[binIndex]++;
         }
       }
     });
 
     return counts;
-  }, [data, filteredNodeIds, metricsData, dataKey]);
+  }, [data, filteredNodeIds, metricsData, dataKey, disabledBins]);
 
   const { yScale, yTicks, xTicks, getBinPosition } = useHistogramScales(
     data,
@@ -128,6 +129,8 @@ const Histogram = ({
             isBinSelected={(binIndex) => isBinSelected(binIndex, data.bins)}
             hoverBin={hoverBin}
             filteredBinCounts={filteredBinCounts}
+            dataKey={dataKey}
+            disabledBins={disabledBins}
           />
 
           {/* interaction layer, didnt need to be its own component... */}
@@ -137,10 +140,26 @@ const Histogram = ({
             width={chartWidth}
             height={chartHeight}
             fill="transparent"
-            onMouseDown={(e) => handleMouseDown(getBinIndexFromEvent(e))}
+            onMouseDown={(e) => {
+              const binIndex = getBinIndexFromEvent(e);
+              if (e.button === 2) {
+                e.preventDefault();
+
+                setDisabledBins((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(binIndex)) next.delete(binIndex);
+                  else next.add(binIndex);
+                  return next;
+                });
+                return;
+              }
+              if (e.button !== 0) return;
+              handleMouseDown(binIndex);
+            }}
             onMouseMove={(e) => handleMouseMove(getBinIndexFromEvent(e))}
             className="cursor-crosshair"
             style={{ pointerEvents: "all" }}
+            onContextMenu={(e) => e.preventDefault()}
           />
 
           <HistogramAxes

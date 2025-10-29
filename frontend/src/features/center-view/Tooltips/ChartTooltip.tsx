@@ -14,7 +14,7 @@ interface ChartTooltipProps {
   visible: boolean;
   dataMap: Map<string, FullData>;
   arcKey?: string;
-  lastChange?: NodeChange | null;
+  lastChange?: NodeChange;
 }
 
 const ChartTooltip = ({
@@ -117,7 +117,7 @@ const ChartTooltip = ({
   return (
     <div
       style={tooltipStyle}
-      className="animate-in rounded-md border bg-popover p-2 text-sm shadow-md fade-in-0 zoom-in-95"
+      className="animate-in rounded-md border bg-popover px-2 py-1 text-sm shadow-md fade-in-0 zoom-in-95"
     >
       {type === "arc" && (
         <>

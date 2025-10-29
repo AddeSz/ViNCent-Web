@@ -17,7 +17,7 @@ import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, Check, ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 interface SortingSelectorProps {
@@ -55,19 +55,19 @@ const SortingSelector = ({
             <Button
               variant="outline"
               title="Sort By"
-              className="flex w-full cursor-pointer items-center px-2"
+              className="flex w-full cursor-pointer items-center justify-between px-2 text-sm"
               disabled={isEmpty}
             >
-              <p
-                className="w-fit max-w-40 truncate"
+              <span
+                className="truncate"
                 style={{ color: getColorForKey(sortKey) }}
               >
                 {formatKeyLabel(sortKey)}
-              </p>
-              <ChevronsUpDown />
+              </span>
+              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-54 p-0" align="start" side="top">
+          <PopoverContent className="p-0" align="start">
             <Command>
               <CommandInput placeholder="Search keys..." className="h-9" />
               <CommandEmpty>No keys found.</CommandEmpty>
@@ -76,21 +76,19 @@ const SortingSelector = ({
                   {keys.map((key) => (
                     <CommandItem
                       key={key}
-                      value={formatKeyLabel(key)}
+                      value={key}
                       onSelect={() => {
                         onSortKeyChange(key, false);
                         setOpen(false);
                       }}
-                      className="flex cursor-pointer items-center justify-between"
-                      title={formatKeyLabel(key)}
+                      className="flex cursor-pointer items-center justify-between gap-2"
+                      style={{ color: getColorForKey(key) }}
                     >
-                      <span
-                        className="flex-1 truncate"
-                        style={{ color: getColorForKey(key) }}
-                      >
-                        {formatKeyLabel(key)}
-                      </span>
-                      {sortKey === key && <Check />}
+                      <span className="truncate">{formatKeyLabel(key)}</span>
+                      {sortKey === key && (
+                        <Check className="h-4 w-4 shrink-0" />
+                      )}
+                      {sortKey !== key && <span className="h-4 w-4 shrink-0" />}
                     </CommandItem>
                   ))}
                 </CommandGroup>

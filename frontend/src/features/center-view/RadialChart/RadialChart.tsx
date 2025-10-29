@@ -1,26 +1,25 @@
 import type { ContextType } from "@/features/center-view/CenterView";
 import ChartTooltip from "@/features/center-view/Tooltips/ChartTooltip";
-import { useTooltip } from "@/features/center-view/Tooltips/useTooltip";
+import {
+  useTooltip,
+  type InteractionProps,
+} from "@/features/center-view/Tooltips/useTooltip";
 import { useChartData } from "@/features/center-view/hooks/useChartData";
 import { useZoom } from "@/features/center-view/hooks/useZoom";
 import { useKeys } from "@/hooks/useKeys";
-import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { FullData, Link, NodeChange } from "@/types/network";
 import { scalePadding } from "@/utils/utils";
 import * as d3 from "d3";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import calculateBounds from "./calculateBounds";
 import { createAngleMap } from "./calculateLinks";
 import drawArcs from "./drawArcs";
 import drawBounds, { updateBoundHighlight } from "./drawBounds";
-import { drawChangeCircles, updateChangeCircles } from "./drawChangeCircles";
-import drawLabels, {
-  updateLabelFontSize,
-  updateLabelHighlight,
-} from "./drawLabels";
+import { drawChangeCircles } from "./drawChangeCircles";
+import drawLabels, { updateLabelHighlight, updateLabels } from "./drawLabels";
 import drawLinks, { updateFDEBLinks, updateLinkHighlight } from "./drawLinks";
 import drawSelectionBrush from "./drawSelectionBrush";
 
@@ -38,7 +37,7 @@ interface RadialChartProps {
   data: FullData[];
   dataMap: Map<string, FullData>;
   onContextMenuTarget: (target: ContextType, data?: any) => void;
-  lastChanges: NodeChange | null;
+  changes: NodeChange;
   links: Link[];
   isViewActive: boolean;
 }
@@ -48,7 +47,7 @@ const RadialChart = ({
   data,
   dataMap,
   onContextMenuTarget,
-  lastChanges,
+  changes,
   links,
   isViewActive,
 }: RadialChartProps) => {
@@ -57,60 +56,46 @@ const RadialChart = ({
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const radialZoom = useNetworkStore((s) => s.radialZoom);
   const setRadialZoom = useNetworkStore((s) => s.setRadialZoom);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const attributeInfo = useMetricsStore((s) => s.metricsInfo);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const { setupZoom, resetZoom } = useZoom();
-  const [maxLabelWidth, setMaxLabelWidth] = useState(200);
-
-  const radialSettings = useChartSettings((s) => s.radialSettings);
+  const radialSettings = useSettingsStore((s) => s.radialSettings);
   const {
     innerRadius,
     outerRadius,
     fontSize,
+    truncateLabels,
+    labelWidth,
+    maxLabelWidth,
     separateMetrics,
     linkRenderingMode,
     fdebSettings,
   } = radialSettings;
-  const displayMode = useChartSettings((s) => s.displaySettings.displayMode);
-  const nodeMap = useNetworkStore((s) => s.nodeMap);
+  const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
   const { allKeys, enabledAttributeKeys, enabledCentralityKeys } = useKeys();
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
   const chartData = useChartData(data, allKeys);
-
   const { tooltip, showTooltip, hideTooltip } = useTooltip();
 
-  const handleNodeHover = (nodeId: string) => {
+  const handleNodeHover = (nodeId: string | null) => {
+    if (nodeId === null) {
+      setHoveredNode(null);
+      return;
+    }
+
     const data = dataMap.get(nodeId);
-    if (data) setHoveredNode(data);
+    if (data) {
+      setHoveredNode(data);
+    }
   };
 
-  const showArcTooltip = (data: {
-    nodeId: string;
-    x: number;
-    y: number;
-    arcKey: string;
-  }) =>
-    showTooltip(
-      { type: "arc", visible: true, ...data },
-      `${data.nodeId}-${data.arcKey}`,
-    );
-
-  const showLabelTooltip = (data: { nodeId: string; x: number; y: number }) =>
-    showTooltip(
-      { type: "label", visible: true, ...data },
-      `label-${data.nodeId}`,
-    );
-
-  const showChangeCircleTooltip = (data: {
-    nodeId: string;
-    x: number;
-    y: number;
-  }) =>
-    showTooltip(
-      { type: "change", visible: true, ...data },
-      `change-${data.nodeId}`,
-    );
+  const interactionProps: InteractionProps = {
+    onHover: handleNodeHover,
+    onTooltipShow: showTooltip,
+    onTooltipHide: hideTooltip,
+    onContextMenu: onContextMenuTarget,
+  };
 
   useEffect(() => {
     if (resetZoomFlag) {
@@ -119,7 +104,10 @@ const RadialChart = ({
     }
   }, [resetZoomFlag]);
 
-  const visibleData = useMemo(() => data.filter((d) => !d.hidden), [data]);
+  const visibleData = useMemo(() => {
+    return data.filter((d) => !d.hidden);
+  }, [data]);
+
   const xScale = useMemo(() => {
     const dataLength = visibleData.length;
     const outerPadding = scalePadding(dataLength, 50, 0.25);
@@ -140,8 +128,8 @@ const RadialChart = ({
   }, [xScale]);
 
   const removedIds = useMemo(
-    () => new Set(lastChanges?.removed ? Object.keys(lastChanges.removed) : []),
-    [lastChanges?.removed],
+    () => new Set(Object.keys(changes.removed)),
+    [changes.removed],
   );
 
   const { yScale, getKeyIndex } = useMemo(() => {
@@ -184,6 +172,8 @@ const RadialChart = ({
     enabledAttributeKeys,
   ]);
 
+  const totalLabelWidth = truncateLabels ? maxLabelWidth : labelWidth;
+
   useEffect(() => {
     if (
       !svgRef.current ||
@@ -209,13 +199,9 @@ const RadialChart = ({
       arcData,
       xScale,
       yScale,
-      getColorForKey,
-      handleNodeHover,
-      showArcTooltip,
-      hideTooltip,
       attributeInfo,
+      interactionProps,
       getKeyIndex,
-      onContextMenuTarget,
     );
 
     drawLinks(
@@ -228,29 +214,36 @@ const RadialChart = ({
       removedIds,
       fdebSettings,
       angleMap,
+      hoveredNode,
     );
-    drawBounds(svgGroup, bounds, innerRadius, outerRadius, selectedNodes);
+    drawBounds(
+      svgGroup,
+      bounds,
+      innerRadius,
+      outerRadius,
+      selectedNodes,
+      hoveredNode,
+    );
     drawLabels(
       svgGroup,
       xScale,
       outerRadius + 25,
       selectedNodes,
       fontSize,
-      handleNodeHover,
-      showLabelTooltip,
-      hideTooltip,
-      nodeMap,
-      setMaxLabelWidth,
-      onContextMenuTarget,
+      totalLabelWidth,
+      truncateLabels,
+      interactionProps,
+      hoveredNode,
     );
 
-    drawChangeCircles(
+    drawChangeCircles(svgGroup, xScale, outerRadius, changes, interactionProps);
+
+    drawSelectionBrush(
       svgGroup,
-      xScale,
       outerRadius,
-      lastChanges,
-      showChangeCircleTooltip,
-      hideTooltip,
+      totalLabelWidth,
+      xScale,
+      isViewActive,
     );
   }, [
     dimensions,
@@ -259,28 +252,22 @@ const RadialChart = ({
     separateMetrics,
     chartData,
     linkRenderingMode,
+    changes,
   ]);
 
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    updateBoundHighlight(svg, selectedNodes);
-    updateLabelHighlight(svg, selectedNodes);
-    updateLinkHighlight(svg, selectedNodes);
-  }, [selectedNodes]);
+    updateBoundHighlight(svg, selectedNodes, hoveredNode);
+    updateLabelHighlight(svg, selectedNodes, hoveredNode);
+    updateLinkHighlight(svg, selectedNodes, hoveredNode);
+  }, [selectedNodes, hoveredNode]);
 
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    updateLabelFontSize(svg, fontSize, nodeMap, setMaxLabelWidth);
-    updateChangeCircles(svg, lastChanges, outerRadius);
-  }, [fontSize]);
-
-  useEffect(() => {
-    if (!svgRef.current) return;
-    const svg = d3.select(svgRef.current);
-    updateChangeCircles(svg, lastChanges, outerRadius);
-  }, [lastChanges, maxLabelWidth]);
+    updateLabels(svg, fontSize, totalLabelWidth, truncateLabels);
+  }, [fontSize, totalLabelWidth, truncateLabels]);
 
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB") return;
@@ -297,11 +284,21 @@ const RadialChart = ({
     drawSelectionBrush(
       svgGroup,
       outerRadius,
-      maxLabelWidth,
+      totalLabelWidth,
       xScale,
       isViewActive,
     );
-  }, [maxLabelWidth, outerRadius, chartData, isViewActive]);
+  }, [totalLabelWidth, isViewActive]);
+
+  useEffect(() => {
+    if (!hoveredNode) return;
+    const freshData = dataMap.get(hoveredNode.id);
+    if (freshData) {
+      setHoveredNode(freshData);
+    } else {
+      setHoveredNode(null);
+    }
+  }, [dataMap, hoveredNode?.id]);
 
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center"></div>
@@ -316,9 +313,8 @@ const RadialChart = ({
       <svg
         ref={svgRef}
         viewBox="-800 -800 1600 1600"
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio="xMidYMid meet"
         className="h-full w-full"
-        style={{ shapeRendering: "geometricPrecision" }}
       />
       <ChartTooltip {...tooltip} dataMap={dataMap} />
     </div>

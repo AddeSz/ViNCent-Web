@@ -17,12 +17,14 @@ interface NetworkStore {
   resetNodeLinkZoomFlag: Boolean;
   hiddenNodes: Set<string>;
   currentDataset: string | null;
+  restartSimulationFlag: boolean;
+  setRestartSimulationFlag: (flag: boolean) => void;
 
   setNetwork: (data: Network) => void;
   selectNode: (id: string, multi?: boolean) => void;
   deselectNode: (id: string) => void;
   toggleNodeSelection: (id: string) => void;
-  setHoveredNode: (node: FullData) => void;
+  setHoveredNode: (node: FullData | null) => void;
 
   setSortKey: (key: string) => void;
   setSortingState: (sorting: SortingState) => void;
@@ -58,6 +60,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   resetNodeLinkZoomFlag: false,
   hiddenNodes: new Set<string>(),
   currentDataset: null,
+  restartSimulationFlag: false,
 
   setNetwork: (data) => {
     const nodeMap = new Map<string, Node>(data.nodes.map((n) => [n.id, n]));
@@ -131,6 +134,8 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       radialZoom: d3.zoomIdentity,
       nodeLinkZoom: d3.zoomIdentity,
     }),
+
+  setRestartSimulationFlag: (flag) => set({ restartSimulationFlag: flag }),
 
   isNetworkEmpty: () => {
     const { network } = get();

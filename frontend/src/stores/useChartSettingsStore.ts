@@ -3,20 +3,38 @@ import { create } from "zustand";
 
 export type DisplayMode = "attributes" | "centrality" | "both";
 export type LinkRenderingMode = "bezier" | "hierarchy" | "fdeB";
+export type NodeSizeMode = "fixed" | "metric";
+export type LinkThicknessMode = "fixed" | "weight";
+export type ScaleType = "linear" | "log";
 
 type RadialSettings = {
   innerRadius: number;
   outerRadius: number;
   fontSize: number;
+  truncateLabels: boolean;
+  labelWidth: number;
+  maxLabelWidth: number;
   separateMetrics: boolean;
   linkRenderingMode: LinkRenderingMode;
   fdebSettings: ForceEdgeBundlingOptions;
 };
 
-//idk what settings to use yet
 type NodeLinkSettings = {
   linkDistance: number;
   chargeStrength: number;
+  showLabels: boolean;
+  nodeSizeMode: NodeSizeMode;
+  nodeSizeMetric: string;
+  fixedNodeSize: number;
+  minNodeSize: number;
+  maxNodeSize: number;
+  linkThicknessMode: LinkThicknessMode;
+  fixedLinkThickness: number;
+  minLinkThickness: number;
+  maxLinkThickness: number;
+  collisionEnabled: boolean;
+  nodeScaleType: ScaleType;
+  linkScaleType: ScaleType;
 };
 
 type DisplaySettings = {
@@ -25,7 +43,7 @@ type DisplaySettings = {
   displayMode: DisplayMode;
 };
 
-type ChartSettingsStore = {
+type SettingsStore = {
   radialSettings: RadialSettings;
   nodeLinkSettings: NodeLinkSettings;
   displaySettings: DisplaySettings;
@@ -51,23 +69,39 @@ export const defaultRadialSettings: RadialSettings = {
   innerRadius: 100,
   outerRadius: 600,
   fontSize: 24,
+  truncateLabels: false,
+  labelWidth: 200,
+  maxLabelWidth: 200,
   separateMetrics: false,
   linkRenderingMode: "fdeB",
   fdebSettings: defaultFDEBSettings,
 };
 
 export const defaultNodeLinkSettings: NodeLinkSettings = {
-  linkDistance: 50,
-  chargeStrength: -200,
+  linkDistance: 100,
+  chargeStrength: -300,
+  showLabels: false,
+  nodeSizeMode: "fixed",
+  nodeSizeMetric: "",
+  fixedNodeSize: 10,
+  minNodeSize: 5,
+  maxNodeSize: 20,
+  linkThicknessMode: "fixed",
+  fixedLinkThickness: 1.5,
+  minLinkThickness: 1,
+  maxLinkThickness: 5,
+  collisionEnabled: true,
+  nodeScaleType: "linear",
+  linkScaleType: "linear",
 };
 
 export const defaultDisplaySettings: DisplaySettings = {
   keepPreviewNodes: true,
-  keepStableView: false,
+  keepStableView: true,
   displayMode: "both",
 };
 
-export const useChartSettings = create<ChartSettingsStore>((set) => {
+export const useSettingsStore = create<SettingsStore>((set) => {
   let initialRadial = defaultRadialSettings;
   let initialNodeLink = defaultNodeLinkSettings;
   let initialDisplay = defaultDisplaySettings;

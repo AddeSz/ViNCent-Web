@@ -45,7 +45,6 @@ const Legend = ({ dataMap }: LegendProps) => {
         percentage: isStable ? "" : percentage,
         color,
         isNumeric: info?.isNumeric,
-        isStable,
         formattedValue: isStable ? "N/A" : formattedValue,
       };
     });
@@ -73,6 +72,11 @@ const Legend = ({ dataMap }: LegendProps) => {
           {dataMap.get(hoveredNode.id)?.stable && (
             <span className="text-xs text-muted-foreground italic">
               (Stable Node)
+            </span>
+          )}
+          {dataMap.get(hoveredNode.id)?.removed && (
+            <span className="text-xs text-muted-foreground italic">
+              (Removed Node)
             </span>
           )}
         </div>
@@ -106,7 +110,7 @@ const Legend = ({ dataMap }: LegendProps) => {
                     {percentage ? `${percentage}%` : "N/A"}
                   </span>
                   <span className="w-12 min-w-10 font-mono text-xs text-muted-foreground tabular-nums">
-                    {formattedValue || "N/A"}
+                    {formattedValue}
                   </span>
                   <div className="flex-1">
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -122,7 +126,7 @@ const Legend = ({ dataMap }: LegendProps) => {
                 </>
               ) : (
                 <p className="w-fit min-w-24 font-mono text-xs text-muted-foreground tabular-nums">
-                  {formattedValue || "N/A"}
+                  {formattedValue}
                 </p>
               )}
             </div>

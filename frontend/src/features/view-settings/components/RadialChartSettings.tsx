@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -10,8 +9,9 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import {
-  useChartSettings,
+  useSettingsStore,
   type LinkRenderingMode,
 } from "@/stores/useChartSettingsStore";
 import FDEBSettings from "./FDEBSettings";
@@ -22,48 +22,57 @@ const RadialChartSettings = () => {
     setRadialSettings,
     resetRadialSettings,
     displaySettings,
-  } = useChartSettings();
+  } = useSettingsStore();
   const {
     innerRadius,
     outerRadius,
     fontSize,
+    truncateLabels,
+    maxLabelWidth,
     separateMetrics,
     linkRenderingMode,
   } = radialSettings;
   const { displayMode } = displaySettings;
 
   const outerRadiusMin = innerRadius + 200;
-  const fontSizeMax = 45;
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex flex-col gap-1.5 rounded-lg bg-card p-1">
-        {displayMode === "both" && (
-          <>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="group-gap"
-                checked={separateMetrics}
-                onCheckedChange={(checked) =>
-                  setRadialSettings({ separateMetrics: !!checked })
-                }
-                className="cursor-pointer"
-              />
-              <Label
-                htmlFor="group-gap"
-                title="Separate Centrality from Attributes"
-                className="cursor-pointer text-sm"
-              >
+    <div className="flex flex-col gap-2">
+      {displayMode === "both" && (
+        <>
+          <div className="space-y-2">
+            <h3 className="mb-1 text-sm font-semibold">Display</h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="separate-metrics" className="text-sm">
                 Separate Metrics
               </Label>
+              <Switch
+                id="separate-metrics"
+                checked={separateMetrics}
+                onCheckedChange={(checked) =>
+                  setRadialSettings({ separateMetrics: checked })
+                }
+              />
             </div>
-            <Separator orientation="horizontal" />
-          </>
-        )}
+          </div>
+          <Separator />
+        </>
+      )}
 
-        <div className="flex flex-col">
-          <p className="mb-1 truncate text-sm">Inner Radius: {innerRadius}px</p>
+      <div className="space-y-2">
+        <h3 className="mb-1 text-sm font-semibold">Display</h3>
+
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="inner-radius" className="text-sm">
+              Inner Radius
+            </Label>
+            <span className="text-xs text-muted-foreground">
+              {innerRadius}px
+            </span>
+          </div>
           <Slider
+            id="inner-radius"
             min={50}
             max={outerRadius - 200}
             step={10}
@@ -77,15 +86,19 @@ const RadialChartSettings = () => {
               });
             }}
           />
-          <span className="mt-0.5 flex w-full justify-between text-xs">
-            <span>{50}</span>
-            <span>{outerRadius - 200}</span>
-          </span>
         </div>
 
-        <div className="flex flex-col">
-          <p className="mb-1 truncate text-sm">Outer Radius: {outerRadius}px</p>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="outer-radius" className="text-sm">
+              Outer Radius
+            </Label>
+            <span className="text-xs text-muted-foreground">
+              {outerRadius}px
+            </span>
+          </div>
           <Slider
+            id="outer-radius"
             min={outerRadiusMin}
             max={Math.min(Math.max(outerRadius + 400, 1600), 4000)}
             step={10}
@@ -96,32 +109,70 @@ const RadialChartSettings = () => {
               });
             }}
           />
-          <span className="mt-0.5 flex w-full justify-between text-xs">
-            <span>{outerRadiusMin}</span>
-            <span>{outerRadius}</span>
-          </span>
         </div>
 
-        <div className="flex flex-col">
-          <p className="mb-1 truncate text-sm">Label Size: {fontSize}px</p>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="font-size" className="text-sm">
+              Label Size
+            </Label>
+            <span className="text-xs text-muted-foreground">{fontSize}px</span>
+          </div>
           <Slider
+            id="font-size"
             min={0}
-            max={fontSizeMax}
+            max={100}
             step={1}
             value={[fontSize]}
             onValueChange={([val]) => {
               setRadialSettings({ fontSize: val });
             }}
           />
-          <span className="mt-0.5 flex w-full justify-between text-xs">
-            <span>0</span>
-            <span>{fontSizeMax}</span>
-          </span>
         </div>
-        <Separator orientation="horizontal" />
 
-        <div className="flex flex-col">
-          <p className="mb-1 cursor-default text-sm">Link Rendering</p>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="truncate-label" className="text-sm">
+            Truncate Labels
+          </Label>
+          <Switch
+            id="truncate-label"
+            checked={truncateLabels}
+            onCheckedChange={(checked) =>
+              setRadialSettings({ truncateLabels: checked })
+            }
+          />
+        </div>
+        {truncateLabels && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="label-width" className="text-sm">
+                Label Width
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {maxLabelWidth}px
+              </span>
+            </div>
+            <Slider
+              id="label-width"
+              min={0}
+              max={500}
+              step={10}
+              value={[maxLabelWidth]}
+              onValueChange={([val]) => {
+                setRadialSettings({ maxLabelWidth: val });
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <h3 className="mb-1 text-sm font-semibold">Links</h3>
+
+        <div className="space-y-1">
+          <Label htmlFor="link-rendering">Link Rendering Mode</Label>
           <Select
             value={linkRenderingMode}
             onValueChange={(val: LinkRenderingMode) =>
@@ -129,34 +180,33 @@ const RadialChartSettings = () => {
             }
           >
             <SelectTrigger
-              className="w-full cursor-pointer"
-              title="Link Rendering"
+              id="link-rendering"
+              className="w-full text-sm"
+              size="sm"
             >
-              <SelectValue placeholder="Select link mode" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="bezier" title="Bézier Curves">
-                Bézier
-              </SelectItem>
-              <SelectItem value="hierarchy" title="Hierarchy Bundling">
-                Hierarchy
-              </SelectItem>
-              <SelectItem value="fdeB" title="Force-Directed Edge Bundling">
-                FDEB
-              </SelectItem>
+              <SelectItem value="fdeB">FDEB</SelectItem>
+              <SelectItem value="bezier">Bézier</SelectItem>
+              {/* <SelectItem value="hierarchy">Hierarchy</SelectItem> */}
             </SelectContent>
           </Select>
         </div>
 
         {linkRenderingMode === "fdeB" && <FDEBSettings />}
-        <Separator orientation="horizontal" />
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
         <Button
+          onClick={resetRadialSettings}
           variant="outline"
-          className="cursor-pointer"
-          onClick={() => resetRadialSettings()}
-          title="Reset Radial Settings to Default"
+          size="sm"
+          className="w-full"
         >
-          <span className="flex-wrap truncate">Reset Radial Settings</span>
+          <span className="flex-wrap truncate">Reset Settings</span>
         </Button>
       </div>
     </div>

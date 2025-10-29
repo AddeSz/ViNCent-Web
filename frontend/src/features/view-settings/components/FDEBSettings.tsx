@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useChartSettings } from "@/stores/useChartSettingsStore";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { formatKeyLabel } from "@/utils/utils";
 
 const FDEBSettings = () => {
   const { setRadialSettings, resetRadialSettings, radialSettings } =
-    useChartSettings();
+    useSettingsStore();
   const { fdebSettings } = radialSettings;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

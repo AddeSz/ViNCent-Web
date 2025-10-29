@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -17,7 +16,7 @@ import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
-import { ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 interface KeySelectorProps {
@@ -40,20 +39,28 @@ const KeySelector = ({
   const [open, setOpen] = useState(false);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
+
+  const handleToggle = (key: string) => {
+    const removed = toggleKey(key);
+    if (removed && sorting[0]?.id === key) {
+      setSorting([]);
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="flex w-full cursor-pointer items-center px-2"
+          className="flex w-full cursor-pointer items-center justify-between px-2 text-sm"
           title={label}
           disabled={isEmpty}
         >
-          <p className="w-fit max-w-40 truncate">{label}</p>
-          <ChevronsUpDown />
+          <span className="truncate">{label}</span>
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-54 p-0" align="start" side="top">
+      <PopoverContent className="p-0" align="start">
         <Command>
           <CommandInput placeholder="Search keys..." className="h-9" />
           <CommandEmpty>No keys found.</CommandEmpty>
@@ -62,33 +69,20 @@ const KeySelector = ({
               {options.map((key) => (
                 <CommandItem
                   key={key}
-                  value={formatKeyLabel(key)}
-                  onSelect={() => {
-                    const removed = toggleKey(key);
-                    if (removed && sorting[0]?.id === key) {
-                      setSorting([]);
-                    }
+                  value={key}
+                  onSelect={() => handleToggle(key)}
+                  className="flex cursor-pointer items-center justify-between gap-2"
+                  style={{
+                    color: getColorForKey(key),
                   }}
-                  className="flex cursor-pointer items-center gap-2 px-2"
-                  title={formatKeyLabel(key)}
                 >
-                  <Checkbox
-                    checked={enabledKeys.includes(key)}
-                    onCheckedChange={() => {
-                      const removed = toggleKey(key);
-                      if (removed && sorting[0]?.id === key) {
-                        setSorting([]);
-                      }
-                    }}
-                    className="cursor-pointer"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <span
-                    className="flex-1 truncate"
-                    style={{ color: getColorForKey(key) }}
-                  >
-                    {formatKeyLabel(key)}
-                  </span>
+                  <span className="truncate">{formatKeyLabel(key)}</span>
+                  {enabledKeys.includes(key) && (
+                    <Check className="h-4 w-4 shrink-0" />
+                  )}
+                  {!enabledKeys.includes(key) && (
+                    <span className="h-4 w-4 shrink-0" />
+                  )}
                 </CommandItem>
               ))}
             </CommandGroup>

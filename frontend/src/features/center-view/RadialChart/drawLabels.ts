@@ -1,11 +1,12 @@
-import type { ContextType } from "@/features/center-view/CenterView";
-import type { Node } from "@/types/network";
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
+import type { FullData } from "@/types/network";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
 import { truncateText } from "@/utils/utils";
 import * as d3 from "d3";
+import type { InteractionProps } from "../Tooltips/useTooltip";
 
 let LONGESTLABEL = 0;
-const MAX_LABEL_WIDTH = 200;
 
 const drawLabels = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -13,20 +14,15 @@ const drawLabels = (
   outerRadius: number,
   selectedNodes: Set<string>,
   fontSize: number,
-  onNodeHover: (nodeId: string) => void,
-  onTooltipShow: (tooltipData: {
-    type: "label";
-    nodeId: string;
-    x: number;
-    y: number;
-  }) => void,
-  onTooltipHide: () => void,
-  nodeMap: Map<string, Node>,
-  setMaxLabelWidth: (width: number) => void,
-  onContextMenuTarget: (target: ContextType, data?: any) => void,
+  labelWidth: number,
+  truncateLabels: boolean,
+  interactionProps: InteractionProps,
+  hoveredNode: FullData | null,
 ): void => {
+  const { nodeMap } = useNetworkStore.getState();
+  const { onHover, onContextMenu, onTooltipShow, onTooltipHide } =
+    interactionProps;
   svg.selectAll("g.labels-group").remove();
-
   const labelGroup = svg.append("g").attr("class", "labels-group");
 
   LONGESTLABEL = 0;
@@ -69,8 +65,11 @@ const drawLabels = (
 
       const textNode = text.node();
       if (textNode) {
-        const truncated = truncateText(textNode, label, MAX_LABEL_WIDTH);
-        text.text(truncated);
+        const displayText = truncateLabels
+          ? truncateText(textNode, label, labelWidth)
+          : label;
+
+        text.text(displayText);
 
         const w = textNode.getBBox().width;
         if (w > LONGESTLABEL) {
@@ -78,23 +77,27 @@ const drawLabels = (
         }
       }
     })
-    .attr("fill", (d) =>
-      selectedNodes.has(d)
-        ? highlightLabelColor.selected
-        : highlightLabelColor.default,
-    )
+    .attr("fill", (d) => {
+      if (selectedNodes.has(d)) {
+        return highlightLabelColor.selected;
+      } else if (hoveredNode && hoveredNode.id === d) {
+        return highlightLabelColor.hover;
+      } else {
+        return highlightLabelColor.default;
+      }
+    })
     .on("click", (event, d) => {
-      const multi = event.shiftKey || event.ctrlKey || event.metaKey;
+      const multi = event.shiftKey || event.ctrlKey;
       handleHighlight(d, multi);
     })
     .on("contextmenu", (event, d) => {
       event._handledByChild = true;
-      onContextMenuTarget("label", d);
+      onContextMenu("label", d);
     })
     .on("mouseover", function (_, d) {
       const [mouseX, mouseY] = d3.pointer(_, document.body);
       onTooltipShow({ type: "label", nodeId: d, x: mouseX, y: mouseY });
-      onNodeHover(d);
+      onHover(d);
     })
     .on("mousemove", function (event, d) {
       const [mouseX, mouseY] = d3.pointer(event, document.body);
@@ -103,28 +106,40 @@ const drawLabels = (
     .on("mouseout", () => {
       onTooltipHide();
     });
-  setMaxLabelWidth(LONGESTLABEL);
+  useSettingsStore.getState().setRadialSettings({
+    labelWidth: truncateLabels ? labelWidth : Math.ceil(LONGESTLABEL / 10) * 10,
+  });
 };
 
 export const updateLabelHighlight = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
+  hoveredNode: FullData | null,
 ) => {
   svg
     .selectAll<SVGGElement, string>("g.labels-group g.label text")
-    .attr("fill", (d) =>
-      selectedNodes.has(d)
-        ? highlightLabelColor.selected
-        : highlightLabelColor.default,
-    );
+    .attr("fill", (d) => {
+      if (selectedNodes.has(d)) {
+        return highlightLabelColor.selected;
+      } else if (hoveredNode && hoveredNode.id === d) {
+        return highlightLabelColor.hover;
+      } else {
+        return highlightLabelColor.default;
+      }
+    })
+    .attr("font-weight", (d) => {
+      if (hoveredNode && hoveredNode.id === d) return "600";
+      return "normal";
+    });
 };
 
-export const updateLabelFontSize = (
+export const updateLabels = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   fontSize: number,
-  nodeMap: Map<string, Node>,
-  setMaxLabelWidth: (width: number) => void,
+  labelWidth: number,
+  truncateLabels: boolean,
 ) => {
+  const { nodeMap } = useNetworkStore.getState();
   LONGESTLABEL = 0;
 
   svg
@@ -136,15 +151,22 @@ export const updateLabelFontSize = (
       if (!textNode) return;
 
       const id = (textEl.attr("data-type") as string) ?? "";
-      const label = nodeMap.get(id)?.label;
+      const label = nodeMap.get(id)?.label ?? id;
+
       textEl.attr("font-size", `${fontSize}px`);
 
-      const truncated = truncateText(textNode, label ?? id, MAX_LABEL_WIDTH);
-      textEl.text(truncated);
+      const displayText = truncateLabels
+        ? truncateText(textNode, label, labelWidth)
+        : label;
+      textEl.text(displayText);
 
       const textWidth = textNode.getBBox().width;
       if (textWidth > LONGESTLABEL) LONGESTLABEL = textWidth;
     });
-  setMaxLabelWidth(LONGESTLABEL);
+
+  useSettingsStore.getState().setRadialSettings({
+    labelWidth: truncateLabels ? labelWidth : Math.ceil(LONGESTLABEL / 10) * 10,
+  });
 };
+
 export default drawLabels;

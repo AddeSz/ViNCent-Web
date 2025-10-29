@@ -65,6 +65,7 @@ export function truncateText(
   label: string,
   maxWidth: number,
 ): string {
+  if (maxWidth === 0) return "";
   const ellipsis = "…";
   textEl.textContent = label;
 

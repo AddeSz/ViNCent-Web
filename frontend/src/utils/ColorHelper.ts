@@ -1,3 +1,4 @@
+import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 
 export const handleHighlight = (id: string, multi: boolean) => {
@@ -19,38 +20,66 @@ export const handleBrushSelection = (selectedIds: string[]) => {
 export const highlightBoundsColor = {
   default: "black",
   selected: "orange",
-};
-
-export const highlightLinksColor = {
-  default: "#999",
-  selected: "orange",
+  hover: "var(--accent-foreground)",
 };
 
 export const highlightLabelColor = {
   default: "var(--foreground)",
   selected: "orange",
+  hover: "var(--accent-foreground)",
+};
+
+export const highlightLinksColor = {
+  default: "#999",
+  selected: "orange",
+  hover: "var(--accent-foreground)",
+};
+
+export const highlightNodeColor = {
+  removed: "#9c0202",
+  added: "green",
+  default: "steelblue",
+  selectedOutline: "orange",
+  hoveredOutline: "var(--accent-foreground)",
 };
 
 export const getLinkStyle = (
   isRemoved: boolean,
   isSelected: boolean,
-  defaultValue: number,
-  selectedValue: number,
+  isHovered: boolean,
+  defaultOpacity: number,
+  selectedOpacity: number,
 ) => {
-  const stroke = isRemoved
-    ? "red"
-    : isSelected
-      ? highlightLinksColor.selected
-      : highlightLinksColor.default;
+  const { displaySettings } = useSettingsStore.getState();
+  const { keepPreviewNodes } = displaySettings;
 
-  const opacity =
-    isRemoved && isSelected
-      ? 0.6
-      : isRemoved
-        ? 0.2
-        : isSelected
-          ? selectedValue
-          : defaultValue;
+  let stroke: string;
+
+  if (isRemoved) {
+    stroke = keepPreviewNodes ? "red" : highlightLinksColor.default;
+  } else if (isSelected) {
+    stroke = highlightLinksColor.selected;
+  } else if (isHovered) {
+    stroke = highlightLinksColor.hover;
+  } else {
+    stroke = highlightLinksColor.default;
+  }
+
+  let opacity: number;
+
+  if (isRemoved && isSelected) {
+    opacity = 0.6;
+  } else if (isRemoved && isHovered) {
+    opacity = defaultOpacity;
+  } else if (isRemoved) {
+    opacity = keepPreviewNodes ? 0.2 : 0;
+  } else if (isSelected) {
+    opacity = selectedOpacity;
+  } else if (isHovered) {
+    opacity = selectedOpacity;
+  } else {
+    opacity = defaultOpacity;
+  }
 
   return { stroke, opacity };
 };

@@ -1,5 +1,5 @@
 import { type LinkRenderingMode } from "@/stores/useChartSettingsStore";
-import type { Link } from "@/types/network";
+import type { FullData, Link } from "@/types/network";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import {
   ForceEdgeBundling,
@@ -30,8 +30,9 @@ type LinkData = {
 const calculateStyles = (
   isRemoved: boolean,
   isSelected: boolean,
+  isHovered: boolean,
 ): { stroke: string; opacity: number } => {
-  return getLinkStyle(isRemoved, isSelected, 0.4, 0.9);
+  return getLinkStyle(isRemoved, isSelected, isHovered, 0.4, 0.9);
 };
 
 const drawLinks = (
@@ -44,17 +45,20 @@ const drawLinks = (
   removedNodeIds: Set<string>,
   fdebSettings: ForceEdgeBundlingOptions,
   angleMap: Map<string, number>,
+  hoveredNode: FullData | null,
 ) => {
   let linkGroup = svg.select<SVGGElement>("g.links-group");
   if (linkGroup.empty()) {
-    linkGroup = svg.append("g").attr("class", "links-group");
+    linkGroup = svg
+      .append("g")
+      .attr("class", "links-group")
+      .style("will-change", "opacity, stroke");
   }
 
   const fdebPaths =
     mode === "fdeB" ? createFdebPaths(links, x, innerRadius, fdebSettings) : [];
 
   const linkData: LinkData[] = [];
-
   for (let i = 0; i < links.length; i++) {
     const link = links[i];
     const sourceId = getNodeId(link.source);
@@ -65,7 +69,12 @@ const drawLinks = (
     const isRemoved = sourceRemoved || targetRemoved;
     const isSelected =
       selectedNodes.has(sourceId) || selectedNodes.has(targetId);
-
+    const isHovered = !!(
+      hoveredNode &&
+      sourceId &&
+      targetId &&
+      (sourceId === hoveredNode.id || targetId === hoveredNode.id)
+    );
     let pathData: string | null = null;
 
     if (mode === "bezier") {
@@ -86,7 +95,7 @@ const drawLinks = (
 
     if (!pathData) continue;
 
-    const style = calculateStyles(isRemoved, isSelected);
+    const style = calculateStyles(isRemoved, isSelected, isHovered);
 
     linkData.push({
       id: `${sourceId}-${targetId}`,
@@ -109,6 +118,7 @@ const drawLinks = (
           .append("path")
           .attr("d", (d) => d.pathData)
           .attr("fill", "none")
+          .attr("stroke", (d) => d.stroke ?? "#999")
           .attr("stroke-width", 1.5)
           .attr("opacity", 0)
           .attr("data-source", (d) => d.sourceId)
@@ -126,9 +136,9 @@ const drawLinks = (
           update
             .transition()
             .duration(ANIMATION_DURATION)
+            .attr("stroke", (d) => d.stroke)
             .attr("d", (d) => d.pathData)
             .attr("data-removed", (d) => (d.isRemoved ? "true" : "false"))
-            .attr("stroke", (d) => d.stroke)
             .attr("opacity", (d) => d.opacity),
         ),
       (exit) =>
@@ -147,6 +157,7 @@ export default drawLinks;
 export const updateLinkHighlight = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
+  hoveredNode: FullData | null,
 ) => {
   svg
     .selectAll<SVGPathElement, unknown>("g.links-group path")
@@ -163,9 +174,19 @@ export const updateLinkHighlight = (
         (selectedNodes.has(sourceId) || selectedNodes.has(targetId))
       );
 
-      const style = calculateStyles(isRemoved, isSelected);
+      const isHovered = !!(
+        hoveredNode &&
+        sourceId &&
+        targetId &&
+        (sourceId === hoveredNode.id || targetId === hoveredNode.id)
+      );
+
+      const style = calculateStyles(isRemoved, isSelected, isHovered);
 
       link.attr("stroke", style.stroke).attr("opacity", style.opacity);
+      if (isHovered || isSelected) {
+        link.raise();
+      }
     });
 };
 

@@ -1,3 +1,5 @@
+import { useNetworkStore } from "@/stores/useNetworkStore";
+
 interface BarchartBarsProps {
   categories: string[];
   categoryCounts: Map<string, number>;
@@ -11,6 +13,7 @@ interface BarchartBarsProps {
   hoverCategory: string | null;
   setHoverCategory: (category: string | null) => void;
   onBarClick: (category: string) => void;
+  dataKey: string;
 }
 
 const BarchartBars = ({
@@ -26,7 +29,11 @@ const BarchartBars = ({
   hoverCategory,
   setHoverCategory,
   onBarClick,
+  dataKey,
 }: BarchartBarsProps) => {
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+  const hoveredValue = hoveredNode?.[dataKey];
+
   return (
     <>
       {categories.map((category, i) => {
@@ -40,7 +47,10 @@ const BarchartBars = ({
         const color = getBarColor(category);
         const startPos = i === 0 ? x + 3 : x + 2;
         const width = i === 0 ? barWidth - 5 : barWidth - 4;
-
+        const nodeHoveredCategory =
+          hoveredValue != null && !hoveredNode?.removed && !hoveredNode?.stable
+            ? hoveredValue === category
+            : null;
         return (
           <g key={category}>
             <rect
@@ -89,6 +99,18 @@ const BarchartBars = ({
                 fill={color}
                 rx={1.5}
                 ry={1.5}
+              />
+            )}
+            {nodeHoveredCategory && (
+              <rect
+                x={startPos + 1}
+                y={yScale(totalCount)}
+                width={width - 2}
+                height={barHeight}
+                stroke="var(--accent-foreground)"
+                strokeWidth={2}
+                fill="none"
+                pointerEvents="none"
               />
             )}
           </g>

@@ -1,11 +1,17 @@
 import type { ViewType } from "@/App";
+import DataSummary from "@/components/DataSummary";
+import { TimestepSlider } from "@/components/TimeStepSlider";
+import { Button } from "@/components/ui/button";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
+import { useTimelineStore } from "@/stores/useTimelineStore";
 import type { FullData, Network, NodeChange } from "@/types/network";
 import { useRef, useState } from "react";
+import DataTable from "./DataTable/DataTable";
+import NodeLinkDiagram from "./NodeLinkDiagram/NodeLinkDiagram";
+import RadialChart from "./RadialChart/RadialChart";
 import ViewContextMenu from "./ViewRendering/ViewContextMenu";
-import ViewRenderer from "./ViewRendering/ViewRenderer";
 import ViewToggle from "./ViewRendering/ViewToggle";
 
 export type ContextType =
@@ -25,7 +31,7 @@ interface CenterViewProps {
   data: FullData[];
   dataMap: Map<string, FullData>;
   filteredNetwork: Network;
-  lastChanges: NodeChange | null;
+  changes: NodeChange;
   canPreview?: boolean | null;
   onPreview?: () => void;
   view: ViewType;
@@ -37,7 +43,7 @@ const CenterView = ({
   data,
   dataMap,
   filteredNetwork,
-  lastChanges,
+  changes,
   canPreview = false,
   onPreview,
   view,
@@ -50,6 +56,9 @@ const CenterView = ({
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
     { type: "radial" },
   );
+
+  const timesteps = useTimelineStore((s) => s.timesteps);
+  const timelines = timesteps.length > 0;
 
   const handleContextMenuTarget = (target: ContextType, data?: any) => {
     setContextMenuTarget((prev) => {
@@ -78,19 +87,83 @@ const CenterView = ({
           ref={containerRef}
           className="relative grow overflow-hidden bg-card"
         >
-          <ViewRenderer
-            view={view}
-            dimensions={dimensions}
-            data={sortedData}
-            dataMap={dataMap}
-            filteredNetwork={filteredNetwork}
-            sorting={sorting}
-            onSortingChange={handleSortingChange}
-            onContextMenuTarget={handleContextMenuTarget}
-            lastChanges={lastChanges}
-            canPreview={canPreview}
-            onPreview={onPreview}
-          />
+          <div
+            className={`absolute inset-0 transition-opacity duration-200 ${
+              view === "radial"
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <RadialChart
+              dimensions={dimensions}
+              data={sortedData}
+              dataMap={dataMap}
+              onContextMenuTarget={handleContextMenuTarget}
+              changes={changes}
+              links={filteredNetwork.links}
+              isViewActive={view === "radial"}
+            />
+          </div>
+
+          <div
+            className={`absolute inset-0 transition-opacity duration-200 ${
+              view === "node-link"
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <NodeLinkDiagram
+              dimensions={dimensions}
+              filteredNetwork={filteredNetwork}
+              dataMap={dataMap}
+              onContextMenuTarget={handleContextMenuTarget}
+              changes={changes}
+              isViewActive={view === "node-link"}
+            />
+          </div>
+
+          {view === "data-table" && (
+            <div className="absolute inset-0">
+              <DataTable
+                data={sortedData}
+                sorting={sorting}
+                onSortingChange={handleSortingChange}
+                onContextMenuTarget={handleContextMenuTarget}
+              />
+            </div>
+          )}
+
+          {view !== "data-table" && (
+            <>
+              <div className="pointer-events-none absolute bottom-2 left-2">
+                <DataSummary
+                  filteredNetwork={filteredNetwork}
+                  dataMap={dataMap}
+                />
+              </div>
+
+              {canPreview && onPreview && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
+                  <Button
+                    onClick={onPreview}
+                    size="sm"
+                    variant="outline"
+                    className="pointer-events-auto shadow-lg"
+                  >
+                    Remove Preview
+                  </Button>
+                </div>
+              )}
+
+              {timelines && (
+                <div className="pointer-events-none absolute right-2 bottom-2">
+                  <div className="pointer-events-auto w-54 rounded-lg border bg-background px-2 py-1 shadow-lg">
+                    <TimestepSlider />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </ViewContextMenu>
     </div>
