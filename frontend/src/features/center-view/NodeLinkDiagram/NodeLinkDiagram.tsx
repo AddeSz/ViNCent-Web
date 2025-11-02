@@ -5,8 +5,8 @@ import {
   type InteractionProps,
 } from "@/features/center-view/Tooltips/useTooltip";
 import { useZoom } from "@/features/center-view/hooks/useZoom";
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
   FullData,
   Link,
@@ -45,14 +45,14 @@ const NodeLinkDiagram = ({
 }: NodeLinkDiagramProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const simulationRef = useRef<Simulation<Node, Link> | null>(null);
-  const { setupZoom, resetZoom } = useZoom();
+
+  const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.1, 6]);
+
   const networkData = useNetworkStore((s) => s.network);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-  const nodeLinkZoom = useNetworkStore((s) => s.nodeLinkZoom);
   const resetZoomFlag = useNetworkStore((s) => s.resetNodeLinkZoomFlag);
-  const setNodeLinkZoom = useNetworkStore((s) => s.setNodeLinkZoom);
-  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
-  const { tooltip, showTooltip, hideTooltip } = useTooltip();
+
+  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(dataMap);
   const restartSimulationFlag = useNetworkStore((s) => s.restartSimulationFlag);
   const setRestartSimulationFlag = useNetworkStore(
     (s) => s.setRestartSimulationFlag,
@@ -65,20 +65,8 @@ const NodeLinkDiagram = ({
 
   const activeNetwork = keepStableView ? networkData : filteredNetwork;
 
-  const handleNodeHover = (nodeId: string | null) => {
-    if (nodeId === null) {
-      setHoveredNode(null);
-      return;
-    }
-
-    const data = dataMap.get(nodeId);
-    if (data) {
-      setHoveredNode(data);
-    }
-  };
-
   const interactionProps: InteractionProps = {
-    onHover: handleNodeHover,
+    onNodeHover: onNodeHover,
     onTooltipShow: showTooltip,
     onTooltipHide: hideTooltip,
     onContextMenu: onContextMenuTarget,
@@ -126,10 +114,10 @@ const NodeLinkDiagram = ({
 
   useEffect(() => {
     if (resetZoomFlag) {
-      resetZoom(svgRef, () => setNodeLinkZoom(d3.zoomIdentity));
+      resetZoom(svgRef);
       useNetworkStore.setState({ resetNodeLinkZoomFlag: false });
     }
-  }, [resetZoomFlag]);
+  }, [resetZoomFlag, resetZoom]);
 
   useEffect(() => {
     if (restartSimulationFlag && simulationRef.current) {
@@ -143,7 +131,9 @@ const NodeLinkDiagram = ({
     if (!simulationRef.current) {
       const svg = d3.select(svgRef.current);
       const svgGroup = svg.append("g").attr("class", "zoom-group");
-      setupZoom(svg, svgGroup, nodeLinkZoom, setNodeLinkZoom);
+
+      setupZoom(svg, svgGroup, getCurrentTransform());
+
       svgGroup.append("g").attr("class", "links-group");
       svgGroup.append("g").attr("class", "nodes-group");
 
@@ -267,7 +257,13 @@ const NodeLinkDiagram = ({
       .select<SVGGElement>("g.zoom-group");
     if (svgGroup.empty()) return;
     drawSelectionBrush(svgGroup, activeNetwork.nodes, isViewActive);
-  }, [dataMap, isViewActive, nodeLinkSettings, activeNetwork]);
+  }, [
+    dataMap,
+    isViewActive,
+    nodeLinkSettings,
+    activeNetwork,
+    interactionProps,
+  ]);
 
   useEffect(() => {
     if (!svgRef.current || !dataMap) return;
@@ -283,7 +279,30 @@ const NodeLinkDiagram = ({
       changes,
       hoveredNode,
     );
-  }, [selectedNodes, changes, filteredNetwork, hoveredNode]);
+  }, [
+    changes,
+    filteredNetwork,
+    dataMap,
+    nodeSizes,
+    linkWeights,
+    nodeLinkSettings.fixedNodeSize,
+  ]);
+
+  useEffect(() => {
+    if (!svgRef.current || !dataMap) return;
+    const svg = d3.select(svgRef.current);
+
+    updateStyle(
+      svg,
+      selectedNodes,
+      dataMap,
+      nodeSizes,
+      linkWeights,
+      nodeLinkSettings.fixedNodeSize,
+      changes,
+      hoveredNode,
+    );
+  }, [selectedNodes, hoveredNode]);
 
   return !dimensions?.width || !dimensions?.height ? (
     <div className="flex h-full items-center justify-center bg-card" />
@@ -304,7 +323,7 @@ const NodeLinkDiagram = ({
           shapeRendering: "geometricPrecision",
         }}
       />
-      <ChartTooltip {...tooltip} dataMap={dataMap} />
+      <ChartTooltip dataMap={dataMap} />
     </div>
   );
 };

@@ -2,7 +2,7 @@
  * Force-Directed Edge Bundling (FDEB) algorithm implementation
  * Based on: https://github.com/upphiminn/d3.ForceBundle
  *
- * Modernized TypeScript version
+ * Modernized TypeScript version by me
  */
 
 export interface Point {
@@ -30,11 +30,21 @@ export interface ForceEdgeBundlingOptions {
   compatibilityThreshold?: number;
 }
 
+interface EdgeCache {
+  vector: Point;
+  length: number;
+  midpoint: Point;
+  sourcePoint: Point;
+  targetPoint: Point;
+}
+
 export class ForceEdgeBundling {
   private dataNodes: Map<string, Point> = new Map();
   private dataEdges: Edge[] = [];
   private compatibilityListForEdge: number[][] = [];
   private subdivisionPointsForEdge: Point[][] = [];
+
+  private edgeCache: EdgeCache[] = [];
 
   // Algorithm parameters
   private K: number; // global bundling constant controlling edge stiffness
@@ -58,94 +68,61 @@ export class ForceEdgeBundling {
     this.compatibilityThreshold = options.compatibilityThreshold ?? 0.6;
   }
 
-  private vectorDotProduct(p: Point, q: Point): number {
-    return p.x * q.x + p.y * q.y;
-  }
+  private buildEdgeCache(): void {
+    this.edgeCache = new Array(this.dataEdges.length);
 
-  private edgeAsVector(edge: Edge): Point {
-    const source = this.dataNodes.get(edge.source)!;
-    const target = this.dataNodes.get(edge.target)!;
-    return {
-      x: target.x - source.x,
-      y: target.y - source.y,
-    };
-  }
+    for (let i = 0; i < this.dataEdges.length; i++) {
+      const edge = this.dataEdges[i];
+      const source = this.dataNodes.get(edge.source)!;
+      const target = this.dataNodes.get(edge.target)!;
 
-  private edgeLength(edge: Edge): number {
-    const source = this.dataNodes.get(edge.source)!;
-    const target = this.dataNodes.get(edge.target)!;
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const length = Math.sqrt(dx * dx + dy * dy) || this.eps;
 
-    if (
-      Math.abs(source.x - target.x) < this.eps &&
-      Math.abs(source.y - target.y) < this.eps
-    ) {
-      return this.eps;
+      this.edgeCache[i] = {
+        vector: { x: dx, y: dy },
+        length,
+        midpoint: {
+          x: (source.x + target.x) * 0.5,
+          y: (source.y + target.y) * 0.5,
+        },
+        sourcePoint: source,
+        targetPoint: target,
+      };
     }
-
-    return Math.sqrt(
-      Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2),
-    );
-  }
-
-  private customEdgeLength(edge: { source: Point; target: Point }): number {
-    return Math.sqrt(
-      Math.pow(edge.source.x - edge.target.x, 2) +
-        Math.pow(edge.source.y - edge.target.y, 2),
-    );
-  }
-
-  private edgeMidpoint(edge: Edge): Point {
-    const source = this.dataNodes.get(edge.source)!;
-    const target = this.dataNodes.get(edge.target)!;
-
-    return {
-      x: (source.x + target.x) / 2.0,
-      y: (source.y + target.y) / 2.0,
-    };
-  }
-
-  private computeDividedEdgeLength(edgeIdx: number): number {
-    let length = 0;
-    const points = this.subdivisionPointsForEdge[edgeIdx];
-
-    for (let i = 1; i < points.length; i++) {
-      length += this.euclideanDistance(points[i], points[i - 1]);
-    }
-
-    return length;
-  }
-
-  private euclideanDistance(p: Point, q: Point): number {
-    return Math.sqrt(Math.pow(p.x - q.x, 2) + Math.pow(p.y - q.y, 2));
   }
 
   private projectPointOnLine(
     p: Point,
     Q: { source: Point; target: Point },
   ): Point {
-    const L = Math.sqrt(
-      (Q.target.x - Q.source.x) * (Q.target.x - Q.source.x) +
-        (Q.target.y - Q.source.y) * (Q.target.y - Q.source.y),
-    );
+    const dx = Q.target.x - Q.source.x;
+    const dy = Q.target.y - Q.source.y;
+    const L_sq = dx * dx + dy * dy;
     const r =
       ((Q.source.y - p.y) * (Q.source.y - Q.target.y) -
         (Q.source.x - p.x) * (Q.target.x - Q.source.x)) /
-      (L * L);
+      L_sq;
 
     return {
-      x: Q.source.x + r * (Q.target.x - Q.source.x),
-      y: Q.source.y + r * (Q.target.y - Q.source.y),
+      x: Q.source.x + r * dx,
+      y: Q.source.y + r * dy,
     };
   }
 
   private initializeEdgeSubdivisions(): void {
+    this.subdivisionPointsForEdge = new Array(this.dataEdges.length);
+
     for (let i = 0; i < this.dataEdges.length; i++) {
       if (this.P_initial === 1) {
         this.subdivisionPointsForEdge[i] = [];
       } else {
-        const source = this.dataNodes.get(this.dataEdges[i].source)!;
-        const target = this.dataNodes.get(this.dataEdges[i].target)!;
-        this.subdivisionPointsForEdge[i] = [source, target];
+        const cache = this.edgeCache[i];
+        this.subdivisionPointsForEdge[i] = [
+          cache.sourcePoint,
+          cache.targetPoint,
+        ];
       }
     }
   }
@@ -171,43 +148,35 @@ export class ForceEdgeBundling {
     const next = points[i + 1];
     const crnt = points[i];
 
-    const x = (prev.x - crnt.x + next.x - crnt.x) * kP;
-    const y = (prev.y - crnt.y + next.y - crnt.y) * kP;
-
-    return { x, y };
+    return {
+      x: (prev.x - crnt.x + next.x - crnt.x) * kP,
+      y: (prev.y - crnt.y + next.y - crnt.y) * kP,
+    };
   }
 
   private applyElectrostaticForce(edgeIdx: number, i: number): Point {
-    const sumOfForces: Point = { x: 0, y: 0 };
-    const compatibleEdgesList = this.compatibilityListForEdge[edgeIdx];
+    let sumX = 0;
+    let sumY = 0;
+    const compatibleEdges = this.compatibilityListForEdge[edgeIdx];
+    const currentPoint = this.subdivisionPointsForEdge[edgeIdx][i];
 
-    for (const oe of compatibleEdgesList) {
-      const force: Point = {
-        x:
-          this.subdivisionPointsForEdge[oe][i].x -
-          this.subdivisionPointsForEdge[edgeIdx][i].x,
-        y:
-          this.subdivisionPointsForEdge[oe][i].y -
-          this.subdivisionPointsForEdge[edgeIdx][i].y,
-      };
+    for (let j = 0; j < compatibleEdges.length; j++) {
+      const oe = compatibleEdges[j];
+      const otherPoint = this.subdivisionPointsForEdge[oe][i];
 
-      if (Math.abs(force.x) > this.eps || Math.abs(force.y) > this.eps) {
-        const diff =
-          1 /
-          Math.pow(
-            this.customEdgeLength({
-              source: this.subdivisionPointsForEdge[oe][i],
-              target: this.subdivisionPointsForEdge[edgeIdx][i],
-            }),
-            1,
-          );
+      const dx = otherPoint.x - currentPoint.x;
+      const dy = otherPoint.y - currentPoint.y;
 
-        sumOfForces.x += force.x * diff;
-        sumOfForces.y += force.y * diff;
+      if (Math.abs(dx) > this.eps || Math.abs(dy) > this.eps) {
+        const distSq = dx * dx + dy * dy;
+        const diff = 1 / Math.sqrt(distSq);
+
+        sumX += dx * diff;
+        sumY += dy * diff;
       }
     }
 
-    return sumOfForces;
+    return { x: sumX, y: sumY };
   }
 
   private applyResultingForcesOnSubdivisionPoints(
@@ -215,59 +184,66 @@ export class ForceEdgeBundling {
     P: number,
     S: number,
   ): Point[] {
-    const kP = this.K / (this.edgeLength(this.dataEdges[edgeIdx]) * (P + 1));
-    const resultingForcesForSubdivisionPoints: Point[] = [{ x: 0, y: 0 }];
+    const kP = this.K / (this.edgeCache[edgeIdx].length * (P + 1));
+    const forces = new Array(P + 2);
+
+    forces[0] = { x: 0, y: 0 };
 
     for (let i = 1; i < P + 1; i++) {
       const springForce = this.applySpringForce(edgeIdx, i, kP);
       const electrostaticForce = this.applyElectrostaticForce(edgeIdx, i);
 
-      resultingForcesForSubdivisionPoints.push({
+      forces[i] = {
         x: S * (springForce.x + electrostaticForce.x),
         y: S * (springForce.y + electrostaticForce.y),
-      });
+      };
     }
 
-    resultingForcesForSubdivisionPoints.push({ x: 0, y: 0 });
-    return resultingForcesForSubdivisionPoints;
+    forces[P + 1] = { x: 0, y: 0 };
+    return forces;
+  }
+
+  private computeDividedEdgeLength(edgeIdx: number): number {
+    let length = 0;
+    const points = this.subdivisionPointsForEdge[edgeIdx];
+
+    for (let i = 1; i < points.length; i++) {
+      const dx = points[i].x - points[i - 1].x;
+      const dy = points[i].y - points[i - 1].y;
+      length += Math.sqrt(dx * dx + dy * dy);
+    }
+
+    return length;
   }
 
   private updateEdgeDivisions(P: number): void {
     for (let edgeIdx = 0; edgeIdx < this.dataEdges.length; edgeIdx++) {
-      const edge = this.dataEdges[edgeIdx];
-      const source = this.dataNodes.get(edge.source)!;
-      const target = this.dataNodes.get(edge.target)!;
+      const cache = this.edgeCache[edgeIdx];
 
       if (P === 1) {
         this.subdivisionPointsForEdge[edgeIdx] = [
-          source,
-          this.edgeMidpoint(edge),
-          target,
+          cache.sourcePoint,
+          cache.midpoint,
+          cache.targetPoint,
         ];
       } else {
         const dividedEdgeLength = this.computeDividedEdgeLength(edgeIdx);
         const segmentLength = dividedEdgeLength / (P + 1);
         let currentSegmentLength = segmentLength;
-        const newSubdivisionPoints: Point[] = [source];
+        const newSubdivisionPoints: Point[] = [cache.sourcePoint];
         const oldPoints = this.subdivisionPointsForEdge[edgeIdx];
 
         for (let i = 1; i < oldPoints.length; i++) {
-          let oldSegmentLength = this.euclideanDistance(
-            oldPoints[i],
-            oldPoints[i - 1],
-          );
+          const dx = oldPoints[i].x - oldPoints[i - 1].x;
+          const dy = oldPoints[i].y - oldPoints[i - 1].y;
+          let oldSegmentLength = Math.sqrt(dx * dx + dy * dy);
 
           while (oldSegmentLength > currentSegmentLength) {
             const percentPosition = currentSegmentLength / oldSegmentLength;
-            const newPoint: Point = {
-              x:
-                oldPoints[i - 1].x +
-                percentPosition * (oldPoints[i].x - oldPoints[i - 1].x),
-              y:
-                oldPoints[i - 1].y +
-                percentPosition * (oldPoints[i].y - oldPoints[i - 1].y),
-            };
-            newSubdivisionPoints.push(newPoint);
+            newSubdivisionPoints.push({
+              x: oldPoints[i - 1].x + percentPosition * dx,
+              y: oldPoints[i - 1].y + percentPosition * dy,
+            });
 
             oldSegmentLength -= currentSegmentLength;
             currentSegmentLength = segmentLength;
@@ -275,85 +251,91 @@ export class ForceEdgeBundling {
           currentSegmentLength -= oldSegmentLength;
         }
 
-        newSubdivisionPoints.push(target);
+        newSubdivisionPoints.push(cache.targetPoint);
         this.subdivisionPointsForEdge[edgeIdx] = newSubdivisionPoints;
       }
     }
   }
 
-  private angleCompatibility(P: Edge, Q: Edge): number {
-    return Math.abs(
-      this.vectorDotProduct(this.edgeAsVector(P), this.edgeAsVector(Q)) /
-        (this.edgeLength(P) * this.edgeLength(Q)),
-    );
+  private angleCompatibility(edgeIdxP: number, edgeIdxQ: number): number {
+    const cacheP = this.edgeCache[edgeIdxP];
+    const cacheQ = this.edgeCache[edgeIdxQ];
+
+    const dotProduct =
+      cacheP.vector.x * cacheQ.vector.x + cacheP.vector.y * cacheQ.vector.y;
+
+    return Math.abs(dotProduct / (cacheP.length * cacheQ.length));
   }
 
-  private scaleCompatibility(P: Edge, Q: Edge): number {
-    const lavg = (this.edgeLength(P) + this.edgeLength(Q)) / 2.0;
-    return (
-      2.0 /
-      (lavg / Math.min(this.edgeLength(P), this.edgeLength(Q)) +
-        Math.max(this.edgeLength(P), this.edgeLength(Q)) / lavg)
-    );
+  private scaleCompatibility(edgeIdxP: number, edgeIdxQ: number): number {
+    const lenP = this.edgeCache[edgeIdxP].length;
+    const lenQ = this.edgeCache[edgeIdxQ].length;
+    const lavg = (lenP + lenQ) * 0.5;
+    const minLen = Math.min(lenP, lenQ);
+    const maxLen = Math.max(lenP, lenQ);
+
+    return 2.0 / (lavg / minLen + maxLen / lavg);
   }
 
-  private positionCompatibility(P: Edge, Q: Edge): number {
-    const lavg = (this.edgeLength(P) + this.edgeLength(Q)) / 2.0;
-    const midP = this.edgeMidpoint(P);
-    const midQ = this.edgeMidpoint(Q);
-    return lavg / (lavg + this.euclideanDistance(midP, midQ));
+  private positionCompatibility(edgeIdxP: number, edgeIdxQ: number): number {
+    const cacheP = this.edgeCache[edgeIdxP];
+    const cacheQ = this.edgeCache[edgeIdxQ];
+    const lavg = (cacheP.length + cacheQ.length) * 0.5;
+
+    const dx = cacheP.midpoint.x - cacheQ.midpoint.x;
+    const dy = cacheP.midpoint.y - cacheQ.midpoint.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    return lavg / (lavg + dist);
   }
 
-  private edgeVisibility(P: Edge, Q: Edge): number {
-    const sourceP = this.dataNodes.get(P.source)!;
-    const targetP = this.dataNodes.get(P.target)!;
-    const sourceQ = this.dataNodes.get(Q.source)!;
-    const targetQ = this.dataNodes.get(Q.target)!;
+  private edgeVisibility(edgeIdxP: number, edgeIdxQ: number): number {
+    const cacheP = this.edgeCache[edgeIdxP];
+    const cacheQ = this.edgeCache[edgeIdxQ];
 
-    const I0 = this.projectPointOnLine(sourceQ, {
-      source: sourceP,
-      target: targetP,
+    const I0 = this.projectPointOnLine(cacheQ.sourcePoint, {
+      source: cacheP.sourcePoint,
+      target: cacheP.targetPoint,
     });
-    const I1 = this.projectPointOnLine(targetQ, {
-      source: sourceP,
-      target: targetP,
+    const I1 = this.projectPointOnLine(cacheQ.targetPoint, {
+      source: cacheP.sourcePoint,
+      target: cacheP.targetPoint,
     });
 
-    const midI: Point = {
-      x: (I0.x + I1.x) / 2.0,
-      y: (I0.y + I1.y) / 2.0,
-    };
-    const midP = this.edgeMidpoint(P);
+    const midIx = (I0.x + I1.x) * 0.5;
+    const midIy = (I0.y + I1.y) * 0.5;
 
-    return Math.max(
-      0,
-      1 -
-        (2 * this.euclideanDistance(midP, midI)) /
-          this.euclideanDistance(I0, I1),
+    const dx1 = cacheP.midpoint.x - midIx;
+    const dy1 = cacheP.midpoint.y - midIy;
+    const dist1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+
+    const dx2 = I0.x - I1.x;
+    const dy2 = I0.y - I1.y;
+    const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+    return Math.max(0, 1 - (2 * dist1) / dist2);
+  }
+
+  private visibilityCompatibility(edgeIdxP: number, edgeIdxQ: number): number {
+    return Math.min(
+      this.edgeVisibility(edgeIdxP, edgeIdxQ),
+      this.edgeVisibility(edgeIdxQ, edgeIdxP),
     );
   }
 
-  private visibilityCompatibility(P: Edge, Q: Edge): number {
-    return Math.min(this.edgeVisibility(P, Q), this.edgeVisibility(Q, P));
-  }
-
-  private compatibilityScore(P: Edge, Q: Edge): number {
+  private compatibilityScore(edgeIdxP: number, edgeIdxQ: number): number {
     return (
-      this.angleCompatibility(P, Q) *
-      this.scaleCompatibility(P, Q) *
-      this.positionCompatibility(P, Q) *
-      this.visibilityCompatibility(P, Q)
+      this.angleCompatibility(edgeIdxP, edgeIdxQ) *
+      this.scaleCompatibility(edgeIdxP, edgeIdxQ) *
+      this.positionCompatibility(edgeIdxP, edgeIdxQ) *
+      this.visibilityCompatibility(edgeIdxP, edgeIdxQ)
     );
-  }
-
-  private areCompatible(P: Edge, Q: Edge): boolean {
-    return this.compatibilityScore(P, Q) >= this.compatibilityThreshold;
   }
 
   private computeCompatibilityLists(): void {
     for (let e = 0; e < this.dataEdges.length - 1; e++) {
       for (let oe = e + 1; oe < this.dataEdges.length; oe++) {
-        if (this.areCompatible(this.dataEdges[e], this.dataEdges[oe])) {
+        if (this.compatibilityScore(e, oe) >= this.compatibilityThreshold) {
           this.compatibilityListForEdge[e].push(oe);
           this.compatibilityListForEdge[oe].push(e);
         }
@@ -366,6 +348,8 @@ export class ForceEdgeBundling {
     let I = this.I_initial;
     let P = this.P_initial;
 
+    this.buildEdgeCache();
+
     this.initializeEdgeSubdivisions();
     this.initializeCompatibilityLists();
     this.updateEdgeDivisions(P);
@@ -373,7 +357,7 @@ export class ForceEdgeBundling {
 
     for (let cycle = 0; cycle < this.C; cycle++) {
       for (let iteration = 0; iteration < I; iteration++) {
-        const forces: Point[][] = [];
+        const forces: Point[][] = new Array(this.dataEdges.length);
 
         for (let edge = 0; edge < this.dataEdges.length; edge++) {
           forces[edge] = this.applyResultingForcesOnSubdivisionPoints(
@@ -384,16 +368,19 @@ export class ForceEdgeBundling {
         }
 
         for (let e = 0; e < this.dataEdges.length; e++) {
+          const edgeForces = forces[e];
+          const points = this.subdivisionPointsForEdge[e];
+
           for (let i = 0; i < P + 1; i++) {
-            this.subdivisionPointsForEdge[e][i].x += forces[e][i].x;
-            this.subdivisionPointsForEdge[e][i].y += forces[e][i].y;
+            points[i].x += edgeForces[i].x;
+            points[i].y += edgeForces[i].y;
           }
         }
       }
 
-      S = S / 2;
-      P = P * this.P_rate;
-      I = this.I_rate * I;
+      S *= 0.5;
+      P *= this.P_rate;
+      I *= this.I_rate;
 
       this.updateEdgeDivisions(P);
     }

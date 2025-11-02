@@ -1,5 +1,5 @@
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 
 export const handleHighlight = (id: string, multi: boolean) => {
   if (multi) {
@@ -30,7 +30,7 @@ export const highlightLabelColor = {
 };
 
 export const highlightLinksColor = {
-  default: "#999",
+  default: "#888",
   selected: "orange",
   hover: "var(--accent-foreground)",
 };

@@ -59,15 +59,38 @@ export const networkPreprocessing = (network: Network): PreprocessedNetwork => {
 };
 
 export const calculateRadialSettings = (numNodes: number) => {
-  let innerRadius = 150;
-  let outerRadius = 600;
+  let innerRadius: number;
+  let outerRadius: number;
 
-  if (numNodes > 50) {
-    innerRadius = Math.round((150 + (numNodes - 50)) / 10) * 10;
-    outerRadius = Math.round((600 + (numNodes - 50)) / 10) * 12;
+  if (numNodes <= 50) {
+    innerRadius = 150;
+    outerRadius = 600;
+  } else if (numNodes <= 150) {
+    const t = (numNodes - 50) / (150 - 50);
+    innerRadius = 150 + t * (250 - 150);
+    outerRadius = 600 + t * (850 - 600);
+  } else if (numNodes <= 1000) {
+    const t = (numNodes - 150) / (1000 - 150);
+    innerRadius = 250 + t * (400 - 250);
+    outerRadius = 850 + t * (1000 - 850);
+  } else if (numNodes <= 2000) {
+    const t = (numNodes - 1000) / (2000 - 1000);
+    innerRadius = 400 + t * (1000 - 400);
+    outerRadius = 1000 + t * (1600 - 1000);
+  } else {
+    const maxNodes = 5000;
+    const t = Math.min((numNodes - 2000) / (maxNodes - 2000), 1);
+    const eased = Math.sqrt(t);
+    innerRadius = 800 + eased * (3400 - 800);
+    outerRadius = 1600 + eased * (4000 - 1600);
   }
 
-  return { innerRadius, outerRadius };
+  const snapTo10 = (value: number) => Math.round(value / 10) * 10;
+
+  return {
+    innerRadius: snapTo10(innerRadius),
+    outerRadius: snapTo10(outerRadius),
+  };
 };
 
 export const flattenAttributes = (

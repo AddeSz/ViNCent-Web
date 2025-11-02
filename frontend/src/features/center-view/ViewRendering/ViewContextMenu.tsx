@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/context-menu";
 import type { ContextMenuTarget } from "@/features/center-view/CenterView";
 import { useKeys } from "@/hooks/useKeys";
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { handleHighlight } from "@/utils/ColorHelper";
 import { formatKeyLabel } from "@/utils/utils";

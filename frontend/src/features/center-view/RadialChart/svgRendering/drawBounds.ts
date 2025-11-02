@@ -1,7 +1,7 @@
 import type { FullData } from "@/types/network";
 import { highlightBoundsColor } from "@/utils/ColorHelper";
 import { arc } from "d3-shape";
-import type { BoundsResult } from "./calculateBounds";
+import type { BoundsResult } from "../utils/calculateBounds";
 
 const drawBounds = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -67,8 +67,8 @@ const drawBounds = (
     endAngle: number;
     innerRadius: number;
   }>()
-    .innerRadius((d) => d.innerRadius + 0.6)
-    .outerRadius((d) => d.innerRadius + 0.5)
+    .innerRadius((d) => d.innerRadius + 0.5)
+    .outerRadius((d) => d.innerRadius + 0.4)
     .startAngle((d) => d.startAngle)
     .endAngle((d) => d.endAngle);
 

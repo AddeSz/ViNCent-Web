@@ -1,9 +1,9 @@
+import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import {
   defaultRadialSettings,
   useSettingsStore,
-} from "@/stores/useChartSettingsStore";
-import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+} from "@/stores/useSettingsStore";
 import { useTimelineStore } from "@/stores/useTimelineStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { AttributeInfo, Centrality, Network } from "@/types/network";

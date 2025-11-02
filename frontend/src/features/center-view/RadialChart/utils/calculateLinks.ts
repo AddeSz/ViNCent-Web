@@ -103,3 +103,77 @@ export const createFdebPaths = (
 
   return fdebPaths;
 };
+
+export const createFdebPathsWorker = async (
+  links: Link[],
+  x: d3.ScaleBand<string>,
+  innerRadius: number,
+  fdebSettings: ForceEdgeBundlingOptions,
+): Promise<(string | null)[]> => {
+  const nodes: ForceNode[] = x.domain().map((id) => {
+    const angle = (x(id) ?? 0) + x.bandwidth() / 2;
+    return {
+      id,
+      x: Math.cos(angle - Math.PI / 2) * innerRadius,
+      y: Math.sin(angle - Math.PI / 2) * innerRadius,
+    };
+  });
+
+  const nodeIds = new Set(nodes.map((n) => n.id));
+  const validEdges = links
+    .map((l, i) => ({
+      index: i,
+      source: getNodeId(l.source),
+      target: getNodeId(l.target),
+    }))
+    .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target));
+
+  const edgesForBundling = validEdges.map((e) => ({
+    source: e.source,
+    target: e.target,
+  }));
+
+  if (!edgesForBundling.length) return new Array(links.length).fill(null);
+
+  const worker = new Worker(
+    new URL("@/workers/fdebWorker.ts", import.meta.url),
+    {
+      type: "module",
+    },
+  );
+
+  return new Promise((resolve, reject) => {
+    worker.onmessage = (e) => {
+      const { type, result, error } = e.data;
+      if (type === "result") {
+        const line = d3
+          .line<{ x: number; y: number }>()
+          .x((d) => d.x)
+          .y((d) => d.y)
+          .curve(d3.curveBundle.beta(0.85));
+
+        const fdebPaths = new Array(links.length).fill(null);
+        result.forEach((b: { x: number; y: number }[], j: number) => {
+          const originalIndex = validEdges[j].index;
+          fdebPaths[originalIndex] = line(b) ?? null;
+        });
+
+        resolve(fdebPaths);
+      } else if (type === "error") {
+        reject(new Error(error));
+      }
+      worker.terminate();
+    };
+
+    worker.onerror = (err) => {
+      worker.terminate();
+      reject(err);
+    };
+
+    worker.postMessage({
+      nodes,
+      edges: edgesForBundling,
+      settings: fdebSettings,
+    });
+  });
+};

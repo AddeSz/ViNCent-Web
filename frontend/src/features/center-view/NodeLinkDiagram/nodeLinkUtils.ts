@@ -2,7 +2,7 @@ import type {
   LinkThicknessMode,
   NodeSizeMode,
   ScaleType,
-} from "@/stores/useChartSettingsStore";
+} from "@/stores/useSettingsStore";
 import type { FullData, Link, Node } from "@/types/network";
 import { getNodeId } from "@/utils/utils";
 import type { InteractionProps } from "../Tooltips/useTooltip";
@@ -162,14 +162,14 @@ export const setupNodeEvents = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   interactionProps: InteractionProps,
 ) => {
-  const { onHover, onContextMenu, onTooltipShow, onTooltipHide } =
+  const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
   svg
     .select(".nodes-group")
     .selectAll<SVGCircleElement, Node>(".node")
     .on("mousemove", function (event, d) {
       const [x, y] = [event.clientX, event.clientY];
-      onHover(d.id);
+      onNodeHover(d.id);
       onTooltipShow({ type: "node", nodeId: d.id, x, y });
     })
     .on("mouseleave", () => onTooltipHide())

@@ -8,40 +8,55 @@ export const drawChangeCircles = (
   outerRadius: number,
   lastChange: NodeChange,
   interactionProps: InteractionProps,
+  radius: number,
 ) => {
   const { onTooltipShow, onTooltipHide } = interactionProps;
+  let circleGroup = svg.select<SVGGElement>("g.change-circles-group");
+  if (circleGroup.empty()) {
+    circleGroup = svg.append("g").attr("class", "change-circles-group");
+  }
 
-  svg.selectAll("circle.change-indicator").remove();
-  const circleGroup = svg.append("g").attr("class", "change-circles-group");
+  const getFillColor = (d: string) => {
+    const isAdded = lastChange?.added && d in lastChange.added;
+    const isRemoved = lastChange?.removed && d in lastChange.removed;
+    const isUpdated =
+      lastChange?.updated &&
+      Object.prototype.hasOwnProperty.call(lastChange.updated, d);
+    if (isAdded) return "green";
+    if (isRemoved) return "red";
+    if (isUpdated) return "yellow";
+    return "none";
+  };
+
+  const getTransform = (d: string) =>
+    `rotate(${((x(d)! + x.bandwidth() / 2) * 180) / Math.PI - 90}) translate(${outerRadius + radius * 2}, 0)`;
 
   circleGroup
-    .selectAll("circle.change-indicator")
-    .data(x.domain())
-    .join((enter) =>
-      enter
-        .append("circle")
-        .attr("class", "change-indicator")
-        .attr("r", 10)
-        .attr(
-          "transform",
-          (d) =>
-            `
-              rotate(${((x(d)! + x.bandwidth() / 2) * 180) / Math.PI - 90})
-              translate(${outerRadius + 20}, 0)
-            `,
-        )
-        .attr("fill", (d) => {
-          const isAdded = lastChange?.added && d in lastChange.added;
-          const isRemoved = lastChange?.removed && d in lastChange.removed;
-          const isUpdated =
-            lastChange?.updated &&
-            Object.prototype.hasOwnProperty.call(lastChange.updated, d);
-
-          if (isAdded) return "green";
-          if (isRemoved) return "red";
-          if (isUpdated) return "yellow";
-          return "none";
-        }),
+    .selectAll<SVGCircleElement, string>("circle.change-indicator")
+    .data(x.domain(), (d) => d)
+    .join(
+      (enter) =>
+        enter
+          .append("circle")
+          .attr("class", "change-indicator")
+          .attr("r", radius)
+          .attr("transform", getTransform)
+          .attr("fill", getFillColor)
+          .attr("opacity", 0)
+          .call((enter) => enter.transition().duration(150).attr("opacity", 1)),
+      (update) =>
+        update.call((update) =>
+          update
+            .transition()
+            .duration(150)
+            .attr("transform", getTransform)
+            .attr("fill", getFillColor)
+            .attr("r", radius),
+        ),
+      (exit) =>
+        exit.call((exit) =>
+          exit.transition().duration(150).attr("opacity", 0).remove(),
+        ),
     )
     .on("mouseover", function (event, d) {
       const [mouseX, mouseY] = d3.pointer(event, document.body);
@@ -64,36 +79,4 @@ export const drawChangeCircles = (
       });
     })
     .on("mouseout", onTooltipHide);
-};
-
-export const updateChangeCircles = (
-  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-  lastChange: NodeChange | null,
-  outerRadius: number,
-) => {
-  const circles = svg.selectAll<SVGCircleElement, string>(
-    "g.change-circles-group circle.change-indicator",
-  );
-
-  circles
-    .attr("fill", (d) => {
-      const isAdded = lastChange?.added && d in lastChange.added;
-      const isRemoved = lastChange?.removed && d in lastChange.removed;
-      const isUpdated =
-        lastChange?.updated &&
-        Object.prototype.hasOwnProperty.call(lastChange.updated, d);
-
-      if (isAdded) return "green";
-      if (isRemoved) return "red";
-      if (isUpdated) return "yellow";
-      return "none";
-    })
-    .attr("transform", (_, i, nodes) => {
-      const existing = d3.select(nodes[i]);
-      const transform = existing.attr("transform");
-      return transform.replace(
-        /translate\([^)]*\)/,
-        `translate(${outerRadius + 20}, 0)`,
-      );
-    });
 };

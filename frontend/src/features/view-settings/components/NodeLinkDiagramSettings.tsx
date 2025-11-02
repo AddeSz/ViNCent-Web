@@ -24,13 +24,10 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useKeys } from "@/hooks/useKeys";
-import type {
-  LinkThicknessMode,
-  ScaleType,
-} from "@/stores/useChartSettingsStore";
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import type { LinkThicknessMode, ScaleType } from "@/stores/useSettingsStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { Check, ChevronDown } from "lucide-react";
@@ -92,7 +89,7 @@ const NodeLinkDiagramSettings = () => {
   return (
     <div className="flex flex-col gap-2">
       <div className="space-y-2">
-        <h3 className="mb-1 text-sm font-semibold">Physics</h3>
+        <p className="mb-1 text-sm font-semibold">Physics</p>
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <Label htmlFor="link-distance" className="text-sm">
@@ -148,7 +145,7 @@ const NodeLinkDiagramSettings = () => {
       <Separator />
 
       <div className="space-y-2">
-        <h3 className="mb-1 text-sm font-semibold">Nodes</h3>
+        <p className="mb-1 text-sm font-semibold">Nodes</p>
 
         <div className="space-y-1">
           <Label htmlFor="node-size-mode">Node Size Mode</Label>
@@ -323,7 +320,7 @@ const NodeLinkDiagramSettings = () => {
       <Separator />
 
       <div className="space-y-2">
-        <h3 className="mb-1 text-sm font-semibold">Links</h3>
+        <p className="mb-1 text-sm font-semibold">Links</p>
 
         <div className="space-y-1">
           <Label htmlFor="link-thickness-mode">Link Thickness Mode</Label>

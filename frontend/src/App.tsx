@@ -4,28 +4,34 @@ import { Spinner } from "@/components/ui/spinner";
 import {
   miserablesData,
   starwarsData,
-  testData,
+  testDataCluster,
+  testDataInteraction,
+  testDataMassive,
   testDataSmall,
   testDataTime,
-} from "@/data/testData";
+  testHierarchical,
+} from "@/data/datasets";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
 import DataFiltering from "@/features/data-filtering/DataFiltering";
 import { useDataStores } from "@/hooks/useDataStores";
-import { useFullData } from "@/hooks/useFullData";
-import { useProcessedData } from "@/hooks/useProcessedData";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ViewSettings from "./features/view-settings/ViewSettings";
+import { useFullData } from "./hooks/useFullData";
+import { useProcessedData } from "./hooks/useProcessedData";
 
 const datasets = {
   "Starwars Dataset": starwarsData,
   "Les Miserables Dataset": miserablesData,
   "Test Dataset Small": testDataSmall,
-  "Test Dataset Large": testData,
   "Test Dataset Time": testDataTime,
+  "Test Dataset Clusters": testDataCluster,
+  "Test Dataset Interactions": testDataInteraction,
+  "Test Dataset Massive": testDataMassive,
+  "Test Dataset Hierarchical": testHierarchical,
 };
 
 const VIEW_KEY = "center-view-mode";
@@ -42,6 +48,7 @@ const App = () => {
   };
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
   const { fullData, changes } = useFullData();
+
   const { data, dataMap, filteredNetwork, handlePreview, canPreview } =
     useProcessedData(fullData, changes);
 

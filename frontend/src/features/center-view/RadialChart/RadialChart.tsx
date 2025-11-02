@@ -1,250 +1,231 @@
+import { Spinner } from "@/components/ui/spinner";
 import type { ContextType } from "@/features/center-view/CenterView";
-import ChartTooltip from "@/features/center-view/Tooltips/ChartTooltip";
+import { useRadialChartData } from "@/features/center-view/RadialChart/utils/useRadialChartData";
 import {
-  useTooltip,
-  type InteractionProps,
-} from "@/features/center-view/Tooltips/useTooltip";
-import { useChartData } from "@/features/center-view/hooks/useChartData";
-import { useZoom } from "@/features/center-view/hooks/useZoom";
+  getClosestZoomLevel,
+  useZoom,
+} from "@/features/center-view/hooks/useZoom";
 import { useKeys } from "@/hooks/useKeys";
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData, Link, NodeChange } from "@/types/network";
-import { scalePadding } from "@/utils/utils";
 import * as d3 from "d3";
-import { useEffect, useMemo, useRef } from "react";
-import calculateBounds from "./calculateBounds";
-import { createAngleMap } from "./calculateLinks";
-import drawArcs from "./drawArcs";
-import drawBounds, { updateBoundHighlight } from "./drawBounds";
+import throttle from "lodash.throttle";
+import { useEffect, useRef, useState } from "react";
+import ChartTooltip from "../Tooltips/ChartTooltip";
+import { useTooltip, type InteractionProps } from "../Tooltips/useTooltip";
+import drawArcsCanvas, { redrawArcsCanvasOnZoom } from "./drawArcsCanvas";
+import {
+  drawBoundsHighlight,
+  updateBoundsHighlight,
+} from "./drawBoundsHighlight ";
 import { drawChangeCircles } from "./drawChangeCircles";
 import drawLabels, { updateLabelHighlight, updateLabels } from "./drawLabels";
-import drawLinks, { updateFDEBLinks, updateLinkHighlight } from "./drawLinks";
+import drawLinksCanvas, {
+  redrawLinksCanvasOnZoom,
+  updateLinkHighlightCanvas,
+} from "./drawLinksCanvas";
 import drawSelectionBrush from "./drawSelectionBrush";
-
-export type ArcData = {
-  key: string;
-  0: number;
-  1: number;
-  data: FullData;
-  value: any;
-  id: string;
-};
+import calculateBounds from "./utils/calculateBounds";
 
 interface RadialChartProps {
   dimensions: DOMRectReadOnly | null;
   data: FullData[];
   dataMap: Map<string, FullData>;
-  onContextMenuTarget: (target: ContextType, data?: any) => void;
   changes: NodeChange;
   links: Link[];
   isViewActive: boolean;
+  handleContextMenuTarget: (target: ContextType, data?: any) => void;
 }
 
 const RadialChart = ({
   dimensions,
   data,
   dataMap,
-  onContextMenuTarget,
   changes,
   links,
   isViewActive,
+  handleContextMenuTarget,
 }: RadialChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const lastZoomLevel = useRef(1);
+  const [isCanvasReady, setIsCanvasReady] = useState(false);
 
-  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-  const radialZoom = useNetworkStore((s) => s.radialZoom);
-  const setRadialZoom = useNetworkStore((s) => s.setRadialZoom);
   const attributeInfo = useMetricsStore((s) => s.metricsInfo);
-  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const { setupZoom, resetZoom } = useZoom();
+  const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
+
+  const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
   const radialSettings = useSettingsStore((s) => s.radialSettings);
+  const { separateMetrics, linkRenderingMode, fdebSettings } = radialSettings;
+  const { allKeys, enabledAttributeKeys, enabledCentralityKeys } = useKeys();
+
+  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(dataMap);
+
+  const interactionProps: InteractionProps = {
+    onNodeHover: onNodeHover,
+    onTooltipShow: showTooltip,
+    onTooltipHide: hideTooltip,
+    onContextMenu: handleContextMenuTarget,
+  };
+
   const {
+    chartData,
+    xScale,
+    angleMap,
+    removedIds,
+    yScale,
+    getKeyIndex,
+    totalLabelWidth,
+    radius,
     innerRadius,
     outerRadius,
     fontSize,
     truncateLabels,
-    labelWidth,
-    maxLabelWidth,
-    separateMetrics,
-    linkRenderingMode,
-    fdebSettings,
-  } = radialSettings;
-  const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
-  const { allKeys, enabledAttributeKeys, enabledCentralityKeys } = useKeys();
-  const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
-  const chartData = useChartData(data, allKeys);
-  const { tooltip, showTooltip, hideTooltip } = useTooltip();
+  } = useRadialChartData({
+    data,
+    changes,
+    allKeys,
+    enabledCentralityKeys,
+    enabledAttributeKeys,
+  });
 
-  const handleNodeHover = (nodeId: string | null) => {
-    if (nodeId === null) {
-      setHoveredNode(null);
-      return;
-    }
+  const latestValuesRef = useRef({
+    chartData,
+    innerRadius,
+    outerRadius,
+  });
 
-    const data = dataMap.get(nodeId);
-    if (data) {
-      setHoveredNode(data);
-    }
-  };
+  useEffect(() => {
+    latestValuesRef.current = {
+      chartData,
+      innerRadius,
+      outerRadius,
+    };
+  }, [chartData, innerRadius, outerRadius]);
 
-  const interactionProps: InteractionProps = {
-    onHover: handleNodeHover,
-    onTooltipShow: showTooltip,
-    onTooltipHide: hideTooltip,
-    onContextMenu: onContextMenuTarget,
-  };
+  const redrawCanvas = useRef(
+    throttle((currentK: number) => {
+      const { chartData, innerRadius, outerRadius } = latestValuesRef.current;
+
+      if (!svgRef.current || !chartData) return;
+
+      const zoomLevel = getClosestZoomLevel(currentK);
+
+      if (zoomLevel === lastZoomLevel.current) return;
+      lastZoomLevel.current = zoomLevel;
+      requestAnimationFrame(() => {
+        if (!svgRef.current || !chartData) return;
+
+        const svg = d3.select(svgRef.current);
+        const svgGroup = svg.select<SVGGElement>("g.zoom-group");
+        if (svgGroup.empty()) return;
+
+        redrawArcsCanvasOnZoom(svgGroup, outerRadius, currentK);
+        redrawLinksCanvasOnZoom(svgGroup, innerRadius, currentK);
+      });
+    }, 150),
+  ).current;
 
   useEffect(() => {
     if (resetZoomFlag) {
-      resetZoom(svgRef, () => setRadialZoom(d3.zoomIdentity));
+      resetZoom(svgRef);
       useNetworkStore.setState({ resetRadialZoomFlag: false });
     }
-  }, [resetZoomFlag]);
-
-  const visibleData = useMemo(() => {
-    return data.filter((d) => !d.hidden);
-  }, [data]);
-
-  const xScale = useMemo(() => {
-    const dataLength = visibleData.length;
-    const outerPadding = scalePadding(dataLength, 50, 0.25);
-    const innerPadding = scalePadding(dataLength, 50, 0.5);
-
-    return d3
-      .scaleBand<string>()
-      .domain(visibleData.map((d) => d.id))
-      .range([0, 2 * Math.PI])
-      .align(0.5)
-      .padding(outerPadding)
-      .paddingInner(innerPadding);
-  }, [visibleData]);
-
-  const angleMap = useMemo(() => {
-    if (!xScale) return new Map<string, number>();
-    return createAngleMap(xScale);
-  }, [xScale]);
-
-  const removedIds = useMemo(
-    () => new Set(Object.keys(changes.removed)),
-    [changes.removed],
-  );
-
-  const { yScale, getKeyIndex } = useMemo(() => {
-    const centralityCount = enabledCentralityKeys.length;
-    const attributeCount = enabledAttributeKeys.length;
-    const gap = separateMetrics ? 1 : 0;
-    let totalWithGap = centralityCount + gap + attributeCount;
-
-    if (displayMode === "attributes" || centralityCount === 0)
-      totalWithGap = attributeCount;
-    if (displayMode === "centrality" || attributeCount === 0)
-      totalWithGap = centralityCount;
-
-    const y = d3
-      .scaleLinear<number, number>()
-      .domain([0, totalWithGap])
-      .range([innerRadius, outerRadius]);
-
-    const getKeyIndex = (key: string) => {
-      const cIndex = enabledCentralityKeys.indexOf(key);
-      if (cIndex !== -1) return cIndex;
-
-      const aIndex = enabledAttributeKeys.indexOf(key);
-      if (aIndex !== -1) {
-        if (displayMode === "attributes" || centralityCount === 0)
-          return aIndex;
-        return centralityCount + gap + aIndex;
-      }
-
-      return 0;
-    };
-
-    return { yScale: y, getKeyIndex };
-  }, [
-    innerRadius,
-    outerRadius,
-    separateMetrics,
-    displayMode,
-    enabledCentralityKeys,
-    enabledAttributeKeys,
-  ]);
-
-  const totalLabelWidth = truncateLabels ? maxLabelWidth : labelWidth;
+  }, [resetZoomFlag, resetZoom]);
 
   useEffect(() => {
-    if (
-      !svgRef.current ||
-      !dimensions?.width ||
-      !dimensions?.height ||
-      !chartData
-    )
-      return;
+    let cancelled = false;
 
-    const svg = d3.select(svgRef.current);
-    let svgGroup = svg.select<SVGGElement>("g.zoom-group");
+    (async () => {
+      if (!svgRef.current || !chartData) return;
 
-    if (svgGroup.empty()) {
-      svgGroup = svg.append("g").attr("class", "zoom-group");
-      setupZoom(svg, svgGroup, radialZoom, setRadialZoom);
-    }
+      const svg = d3.select(svgRef.current);
+      let svgGroup = svg.select<SVGGElement>("g.zoom-group");
 
-    const { series, arcData } = chartData;
+      if (svgGroup.empty()) {
+        svgGroup = svg.append("g").attr("class", "zoom-group");
+        setupZoom(svg, svgGroup, getCurrentTransform(), (k) => redrawCanvas(k));
+      }
 
-    const bounds = calculateBounds(series, xScale, yScale, getKeyIndex);
-    drawArcs(
-      svgGroup,
-      arcData,
-      xScale,
-      yScale,
-      attributeInfo,
-      interactionProps,
-      getKeyIndex,
-    );
+      const { series } = chartData;
+      const bounds = calculateBounds(series, xScale, yScale, getKeyIndex);
+      const hoveredNode = useNetworkStore.getState().hoveredNode;
+      const selectedNodes = useNetworkStore.getState().selectedNodes;
+      const zoomLevel = getClosestZoomLevel(getCurrentTransform().k);
 
-    drawLinks(
-      svgGroup,
-      links,
-      xScale,
-      innerRadius,
-      selectedNodes,
-      linkRenderingMode,
-      removedIds,
-      fdebSettings,
-      angleMap,
-      hoveredNode,
-    );
-    drawBounds(
-      svgGroup,
-      bounds,
-      innerRadius,
-      outerRadius,
-      selectedNodes,
-      hoveredNode,
-    );
-    drawLabels(
-      svgGroup,
-      xScale,
-      outerRadius + 25,
-      selectedNodes,
-      fontSize,
-      totalLabelWidth,
-      truncateLabels,
-      interactionProps,
-      hoveredNode,
-    );
+      await drawLinksCanvas(
+        svgGroup,
+        links,
+        xScale,
+        innerRadius,
+        selectedNodes,
+        linkRenderingMode,
+        removedIds,
+        fdebSettings,
+        angleMap,
+        hoveredNode,
+        innerRadius,
+        zoomLevel,
+      );
 
-    drawChangeCircles(svgGroup, xScale, outerRadius, changes, interactionProps);
+      if (cancelled) return;
 
-    drawSelectionBrush(
-      svgGroup,
-      outerRadius,
-      totalLabelWidth,
-      xScale,
-      isViewActive,
-    );
+      drawArcsCanvas(
+        svgGroup,
+        series,
+        xScale,
+        yScale,
+        attributeInfo,
+        interactionProps,
+        getKeyIndex,
+        innerRadius,
+        outerRadius,
+        bounds,
+        zoomLevel,
+      );
+      drawBoundsHighlight(
+        svgGroup,
+        bounds,
+        innerRadius,
+        outerRadius,
+        selectedNodes,
+        hoveredNode,
+      );
+      drawLabels(
+        svgGroup,
+        xScale,
+        outerRadius,
+        selectedNodes,
+        fontSize,
+        totalLabelWidth,
+        truncateLabels,
+        interactionProps,
+        hoveredNode,
+        radius,
+      );
+      drawChangeCircles(
+        svgGroup,
+        xScale,
+        outerRadius,
+        changes,
+        interactionProps,
+        radius,
+      );
+      drawSelectionBrush(
+        svgGroup,
+        outerRadius,
+        totalLabelWidth,
+        xScale,
+        isViewActive,
+      );
+
+      requestAnimationFrame(() => setIsCanvasReady(true));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     dimensions,
     innerRadius,
@@ -252,27 +233,71 @@ const RadialChart = ({
     separateMetrics,
     chartData,
     linkRenderingMode,
-    changes,
   ]);
 
   useEffect(() => {
-    if (!svgRef.current) return;
-    const svg = d3.select(svgRef.current);
-    updateBoundHighlight(svg, selectedNodes, hoveredNode);
-    updateLabelHighlight(svg, selectedNodes, hoveredNode);
-    updateLinkHighlight(svg, selectedNodes, hoveredNode);
-  }, [selectedNodes, hoveredNode]);
+    let previousHoveredNode = useNetworkStore.getState().hoveredNode;
+    let previousSelectedNodes = useNetworkStore.getState().selectedNodes;
+
+    const unsubscribe = useNetworkStore.subscribe((state) => {
+      if (
+        state.hoveredNode === previousHoveredNode &&
+        state.selectedNodes === previousSelectedNodes
+      )
+        return;
+      previousHoveredNode = state.hoveredNode;
+      previousSelectedNodes = state.selectedNodes;
+
+      if (!svgRef.current) return;
+      const svgGroup = d3
+        .select(svgRef.current)
+        .select<SVGGElement>("g.zoom-group");
+
+      updateLabelHighlight(svgGroup, state.selectedNodes, state.hoveredNode);
+      updateBoundsHighlight(svgGroup, state.selectedNodes, state.hoveredNode);
+      updateLinkHighlightCanvas(
+        svgGroup,
+        state.selectedNodes,
+        state.hoveredNode,
+      );
+    });
+
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    updateLabels(svg, fontSize, totalLabelWidth, truncateLabels);
-  }, [fontSize, totalLabelWidth, truncateLabels]);
+    updateLabels(svg, fontSize, totalLabelWidth, truncateLabels, radius);
+  }, [fontSize, totalLabelWidth, truncateLabels, radius]);
 
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB") return;
-    const svg = d3.select(svgRef.current);
-    updateFDEBLinks(svg, innerRadius, fdebSettings, angleMap);
+
+    (async () => {
+      const svgGroup = d3
+        .select(svgRef.current)
+        .select<SVGGElement>("g.zoom-group");
+
+      const hoveredNode = useNetworkStore.getState().hoveredNode;
+      const selectedNodes = useNetworkStore.getState().selectedNodes;
+      const zoomLevel = getClosestZoomLevel(getCurrentTransform().k);
+
+      await drawLinksCanvas(
+        svgGroup,
+        links,
+        xScale,
+        innerRadius,
+        selectedNodes,
+        linkRenderingMode,
+        removedIds,
+        fdebSettings,
+        angleMap,
+        hoveredNode,
+        innerRadius,
+        zoomLevel,
+      );
+    })();
   }, [fdebSettings]);
 
   useEffect(() => {
@@ -280,7 +305,6 @@ const RadialChart = ({
     const svgGroup = d3
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
-    if (svgGroup.empty()) return;
     drawSelectionBrush(
       svgGroup,
       outerRadius,
@@ -288,36 +312,53 @@ const RadialChart = ({
       xScale,
       isViewActive,
     );
-  }, [totalLabelWidth, isViewActive]);
+  }, [totalLabelWidth, isViewActive, outerRadius, xScale]);
 
   useEffect(() => {
+    const hoveredNode = useNetworkStore.getState().hoveredNode;
     if (!hoveredNode) return;
     const freshData = dataMap.get(hoveredNode.id);
     if (freshData) {
-      setHoveredNode(freshData);
+      onNodeHover(hoveredNode.id);
     } else {
-      setHoveredNode(null);
+      onNodeHover(null);
     }
-  }, [dataMap, hoveredNode?.id]);
+  }, [dataMap]);
 
-  return !dimensions?.width || !dimensions?.height ? (
-    <div className="flex h-full items-center justify-center"></div>
-  ) : (
-    <div
-      className="relative h-full"
-      onContextMenu={(e) => {
-        if ((e.nativeEvent as any)._handledByChild) return;
-        onContextMenuTarget("radial");
-      }}
-    >
-      <svg
-        ref={svgRef}
-        viewBox="-800 -800 1600 1600"
-        preserveAspectRatio="xMidYMid meet"
-        className="h-full w-full"
-      />
-      <ChartTooltip {...tooltip} dataMap={dataMap} />
-    </div>
+  const showSpinner =
+    !dimensions?.width || !dimensions?.height || !chartData || !isCanvasReady;
+
+  return (
+    <>
+      {showSpinner && (
+        <div className="flex h-full w-full items-center justify-center">
+          <Spinner className="size-10" />
+          <p className="mt-2 text-center text-muted-foreground">
+            Rendering visualization...
+          </p>
+        </div>
+      )}
+      <div
+        className="relative h-full"
+        style={{
+          opacity: showSpinner ? 0 : 1,
+          transition: "opacity 0.2s ease-in-out",
+        }}
+        onContextMenu={(e) => {
+          if ((e.nativeEvent as any)._handledByChild) return;
+          handleContextMenuTarget("radial");
+        }}
+      >
+        <svg
+          ref={svgRef}
+          viewBox="-800 -800 1600 1600"
+          preserveAspectRatio="xMidYMid meet"
+          className="h-full w-full"
+          style={{ shapeRendering: "geometricPrecision" }}
+        />
+        <ChartTooltip dataMap={dataMap} />
+      </div>
+    </>
   );
 };
 

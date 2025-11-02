@@ -1,6 +1,6 @@
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData, NodeChange } from "@/types/network";
 import { diffNodes } from "@/utils/diffNodes";
 import { useMemo, useRef } from "react";

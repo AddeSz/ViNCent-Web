@@ -50,9 +50,9 @@ const CenterView = ({
   onViewChange,
   isViewLoaded,
 }: CenterViewProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
     useSortingLogic(data);
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
     { type: "radial" },
   );
@@ -68,10 +68,9 @@ const CenterView = ({
   };
 
   const rawDimensions = useResizeObserver(containerRef);
-  const dimensions = useDebouncedValue(rawDimensions, 200);
+  const dimensions = useDebouncedValue(rawDimensions, 300);
 
   if (!isViewLoaded) return null;
-
   return (
     <div className="flex h-full flex-col">
       <ViewToggle view={view} onViewChange={onViewChange} />
@@ -88,31 +87,32 @@ const CenterView = ({
           className="relative grow overflow-hidden bg-card"
         >
           <div
-            className={`absolute inset-0 transition-opacity duration-200 ${
+            className={`absolute inset-0 ${
               view === "radial"
-                ? "pointer-events-auto opacity-100"
-                : "pointer-events-none opacity-0"
+                ? "pointer-events-auto block"
+                : "pointer-events-none hidden"
             }`}
           >
             <RadialChart
+              key="radial-chart"
               dimensions={dimensions}
               data={sortedData}
               dataMap={dataMap}
-              onContextMenuTarget={handleContextMenuTarget}
               changes={changes}
               links={filteredNetwork.links}
               isViewActive={view === "radial"}
+              handleContextMenuTarget={handleContextMenuTarget}
             />
           </div>
-
           <div
-            className={`absolute inset-0 transition-opacity duration-200 ${
+            className={`absolute inset-0 ${
               view === "node-link"
-                ? "pointer-events-auto opacity-100"
-                : "pointer-events-none opacity-0"
+                ? "pointer-events-auto block"
+                : "pointer-events-none hidden"
             }`}
           >
             <NodeLinkDiagram
+              key="nodeLink-chart"
               dimensions={dimensions}
               filteredNetwork={filteredNetwork}
               dataMap={dataMap}
@@ -125,6 +125,7 @@ const CenterView = ({
           {view === "data-table" && (
             <div className="absolute inset-0">
               <DataTable
+                key="data-table-component"
                 data={sortedData}
                 sorting={sorting}
                 onSortingChange={handleSortingChange}
@@ -132,7 +133,6 @@ const CenterView = ({
               />
             </div>
           )}
-
           {view !== "data-table" && (
             <>
               <div className="pointer-events-none absolute bottom-2 left-2">

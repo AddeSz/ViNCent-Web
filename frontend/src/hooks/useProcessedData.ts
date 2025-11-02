@@ -1,5 +1,5 @@
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData, Network, NodeChange } from "@/types/network";
 import { getNodeId } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";

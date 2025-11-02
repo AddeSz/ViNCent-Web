@@ -2,10 +2,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useKeys } from "@/hooks/useKeys";
-import {
-  useSettingsStore,
-  type DisplayMode,
-} from "@/stores/useChartSettingsStore";
+import { useSettingsStore, type DisplayMode } from "@/stores/useSettingsStore";
 
 const DisplaySettings = () => {
   const { displaySettings, setDisplaySettings } = useSettingsStore();

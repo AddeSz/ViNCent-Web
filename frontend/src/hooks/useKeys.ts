@@ -1,5 +1,5 @@
-import { useSettingsStore } from "@/stores/useChartSettingsStore";
 import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useMemo } from "react";
 
 export const useKeys = () => {

@@ -1,7 +1,5 @@
 import type { FullData, Network, Node } from "@/types/network";
 import type { SortingState } from "@tanstack/react-table";
-import type { ZoomTransform } from "d3";
-import * as d3 from "d3";
 import { create } from "zustand";
 
 interface NetworkStore {
@@ -11,12 +9,12 @@ interface NetworkStore {
   hoveredNode: null | FullData;
   sortKey: string;
   sortingState: SortingState;
-  radialZoom: ZoomTransform | null;
-  nodeLinkZoom: ZoomTransform | null;
+
   resetRadialZoomFlag: Boolean;
   resetNodeLinkZoomFlag: Boolean;
   hiddenNodes: Set<string>;
   currentDataset: string | null;
+
   restartSimulationFlag: boolean;
   setRestartSimulationFlag: (flag: boolean) => void;
 
@@ -29,8 +27,6 @@ interface NetworkStore {
   setSortKey: (key: string) => void;
   setSortingState: (sorting: SortingState) => void;
 
-  setRadialZoom: (transform: ZoomTransform) => void;
-  setNodeLinkZoom: (transform: ZoomTransform) => void;
   resetRadialZoom: () => void;
   resetNodeLinkZoom: () => void;
 
@@ -54,8 +50,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   hoveredNode: null,
   sortKey: "none",
   sortingState: [],
-  radialZoom: null,
-  nodeLinkZoom: null,
+
   resetRadialZoomFlag: false,
   resetNodeLinkZoomFlag: false,
   hiddenNodes: new Set<string>(),
@@ -99,8 +94,6 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   setSortKey: (key: string) => set({ sortKey: key }),
   setSortingState: (sorting: SortingState) => set({ sortingState: sorting }),
 
-  setRadialZoom: (transform) => set({ radialZoom: transform }),
-  setNodeLinkZoom: (transform) => set({ nodeLinkZoom: transform }),
   resetRadialZoom: () => set({ resetRadialZoomFlag: true }),
   resetNodeLinkZoom: () => set({ resetNodeLinkZoomFlag: true }),
 
@@ -131,8 +124,6 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       hoveredNode: null,
       sortKey: "none",
       sortingState: [],
-      radialZoom: d3.zoomIdentity,
-      nodeLinkZoom: d3.zoomIdentity,
     }),
 
   setRestartSimulationFlag: (flag) => set({ restartSimulationFlag: flag }),

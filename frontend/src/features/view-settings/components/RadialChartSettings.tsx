@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   useSettingsStore,
   type LinkRenderingMode,
-} from "@/stores/useChartSettingsStore";
+} from "@/stores/useSettingsStore";
 import FDEBSettings from "./FDEBSettings";
 
 const RadialChartSettings = () => {
@@ -41,7 +41,7 @@ const RadialChartSettings = () => {
       {displayMode === "both" && (
         <>
           <div className="space-y-2">
-            <h3 className="mb-1 text-sm font-semibold">Display</h3>
+            <p className="mb-1 text-sm font-semibold">Display</p>
             <div className="flex items-center justify-between">
               <Label htmlFor="separate-metrics" className="text-sm">
                 Separate Metrics
@@ -60,7 +60,7 @@ const RadialChartSettings = () => {
       )}
 
       <div className="space-y-2">
-        <h3 className="mb-1 text-sm font-semibold">Display</h3>
+        <p className="mb-1 text-sm font-semibold">Display</p>
 
         <div className="space-y-1">
           <div className="flex items-center justify-between">
@@ -169,7 +169,7 @@ const RadialChartSettings = () => {
       <Separator />
 
       <div className="space-y-2">
-        <h3 className="mb-1 text-sm font-semibold">Links</h3>
+        <p className="mb-1 text-sm font-semibold">Links</p>
 
         <div className="space-y-1">
           <Label htmlFor="link-rendering">Link Rendering Mode</Label>
@@ -189,7 +189,6 @@ const RadialChartSettings = () => {
             <SelectContent>
               <SelectItem value="fdeB">FDEB</SelectItem>
               <SelectItem value="bezier">Bézier</SelectItem>
-              {/* <SelectItem value="hierarchy">Hierarchy</SelectItem> */}
             </SelectContent>
           </Select>
         </div>

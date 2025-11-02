@@ -2,8 +2,8 @@ import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { AttributeInfo } from "@/types/network";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
-import type { InteractionProps } from "../Tooltips/useTooltip";
-import type { ArcData } from "./RadialChart";
+import type { InteractionProps } from "../../Tooltips/useTooltip";
+import type { ArcData } from "../RadialChart";
 
 const drawArcs = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -15,7 +15,7 @@ const drawArcs = (
   getKeyIndex: (key: string) => number,
 ): void => {
   const { getColorForKey } = useVisualizationStore.getState();
-  const { onHover, onContextMenu, onTooltipShow, onTooltipHide } =
+  const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
   const g = svg
     .selectAll<SVGGElement, unknown>("g.arcs-group")
@@ -24,7 +24,7 @@ const drawArcs = (
     .attr("class", "arcs-group");
 
   const processedArcData = arcData.map((d) => {
-    const startAngle = x(d.data.id) ?? 0;
+    const startAngle = x(d.id) ?? 0;
     const endAngle = startAngle + x.bandwidth();
     const innerRadius = y(getKeyIndex(d.key));
     const fullOuterRadius = y(getKeyIndex(d.key) + 1);
@@ -38,7 +38,7 @@ const drawArcs = (
 
     let foregroundOuterRadius = fullOuterRadius;
     const attribute = attributeInfo.get(d.key);
-    const isRemoved = d.data.removed === true;
+    const isRemoved = d.removed === true;
 
     if (typeof d.value === "number") {
       let min = 0;
@@ -66,7 +66,7 @@ const drawArcs = (
     return {
       ...d,
       backgroundPath: backgroundArc(d),
-      foregroundPath: !d.data.stable ? foregroundArc(d) : null,
+      foregroundPath: !d.stable ? foregroundArc(d) : null,
       fillColor,
       arcOpacity,
     };
@@ -127,7 +127,7 @@ const drawArcs = (
         y: event.clientY,
         arcKey: d.key,
       });
-      onHover(d.data.id);
+      onNodeHover(d.data.id);
     })
     .on("mouseout", function (_, d) {
       d3.select(this).select(".arc-background").attr("opacity", 0.5);

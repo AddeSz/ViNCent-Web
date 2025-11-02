@@ -2,7 +2,7 @@ import {
   useSettingsStore,
   type LinkThicknessMode,
   type NodeSizeMode,
-} from "@/stores/useChartSettingsStore";
+} from "@/stores/useSettingsStore";
 import type {
   FullData,
   Link,

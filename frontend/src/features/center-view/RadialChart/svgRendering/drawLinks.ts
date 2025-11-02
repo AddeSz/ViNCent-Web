@@ -1,4 +1,4 @@
-import { type LinkRenderingMode } from "@/stores/useChartSettingsStore";
+import { type LinkRenderingMode } from "@/stores/useSettingsStore";
 import type { FullData, Link } from "@/types/network";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import {
@@ -12,7 +12,7 @@ import {
   createBezierPath,
   createFdebPaths,
   createHierarchyPath,
-} from "./calculateLinks";
+} from "../utils/calculateLinks";
 
 const ANIMATION_DURATION = 300;
 

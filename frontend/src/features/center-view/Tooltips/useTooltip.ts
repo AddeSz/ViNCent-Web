@@ -1,80 +1,80 @@
-import type { TooltipType } from "@/features/center-view/Tooltips/ChartTooltip";
-import type { NodeChange } from "@/types/network";
-import { useEffect, useRef, useState } from "react";
+import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useTooltipStore, type TooltipState } from "@/stores/useTooltipStore";
+import type { FullData } from "@/types/network";
+import throttle from "lodash.throttle";
+import { useCallback, useEffect, useRef } from "react";
 import type { ContextType } from "../CenterView";
 
-export interface TooltipState {
-  type: TooltipType;
-  nodeId: string;
-  x: number;
-  y: number;
-  visible: boolean;
-  arcKey?: string;
-  lastChange?: NodeChange;
-}
-
 export interface InteractionProps {
-  onHover: (nodeId: string | null) => void;
+  onNodeHover: (nodeId: string | null) => void;
   onTooltipShow: (tooltipData: Partial<TooltipState>) => void;
   onTooltipHide: () => void;
   onContextMenu: (target: ContextType, data?: any) => void;
 }
 
-interface TooltipData extends Partial<TooltipState> {}
+export const useTooltip = (dataMap?: Map<string, FullData>) => {
+  const showTooltip = useTooltipStore((s) => s.showTooltip);
+  const hideTooltip = useTooltipStore((s) => s.hideTooltip);
+  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
 
-export const useTooltip = (initial?: Partial<TooltipState>) => {
-  const [tooltip, setTooltip] = useState<TooltipState>(() => ({
-    type: "arc",
-    nodeId: "",
-    x: 0,
-    y: 0,
-    visible: false,
-    ...initial,
-  }));
-
-  const tooltipTimer = useRef<NodeJS.Timeout | null>(null);
   const currentHoveredKey = useRef<string | null>(null);
 
-  const showTooltip = (data: TooltipData) => {
-    const key = `${data.type ?? "unknown"}-${data.nodeId ?? "unknown"}-${
-      data.arcKey ?? ""
-    }`;
-
-    if (currentHoveredKey.current === key) {
-      if (tooltipTimer.current) {
-        clearTimeout(tooltipTimer.current);
-        tooltipTimer.current = null;
-      }
-      setTooltip((prev) => ({ ...prev, ...data, visible: true }));
-      return;
-    }
-
-    if (tooltipTimer.current) {
-      clearTimeout(tooltipTimer.current);
-      tooltipTimer.current = null;
-    }
-
-    tooltipTimer.current = setTimeout(() => {
-      setTooltip((prev) => ({ ...prev, ...data, visible: true }));
+  const throttledShowTooltip = useRef(
+    throttle((data: Partial<TooltipState>, key: string) => {
+      showTooltip(data);
       currentHoveredKey.current = key;
-      tooltipTimer.current = null;
-    }, 150);
-  };
+    }, 150),
+  ).current;
 
-  const hideTooltip = () => {
-    if (tooltipTimer.current) {
-      clearTimeout(tooltipTimer.current);
-      tooltipTimer.current = null;
-    }
+  const handleShowTooltip = useCallback(
+    (data: Partial<TooltipState>) => {
+      const key = `${data.type ?? "unknown"}-${data.nodeId ?? "unknown"}-${
+        data.arcKey ?? ""
+      }`;
+
+      if (currentHoveredKey.current === key) {
+        showTooltip(data);
+        return;
+      }
+
+      throttledShowTooltip(data, key);
+    },
+    [showTooltip, throttledShowTooltip],
+  );
+
+  const handleHideTooltip = useCallback(() => {
+    throttledShowTooltip.cancel?.();
     currentHoveredKey.current = null;
-    setTooltip((prev) => ({ ...prev, visible: false }));
-  };
+    hideTooltip();
+  }, [hideTooltip, throttledShowTooltip]);
+
+  const onNodeHover = useCallback(
+    throttle(
+      (nodeId: string | null) => {
+        if (!dataMap) return;
+        if (nodeId === null) {
+          setHoveredNode(null);
+          return;
+        }
+        const data = dataMap.get(nodeId);
+        if (data) setHoveredNode(data);
+      },
+      20,
+      { trailing: true },
+    ),
+    [dataMap, setHoveredNode],
+  );
 
   useEffect(() => {
     return () => {
-      if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
+      throttledShowTooltip.cancel?.();
+      onNodeHover.cancel?.();
     };
-  }, []);
+  }, [throttledShowTooltip, onNodeHover]);
 
-  return { tooltip, setTooltip, showTooltip, hideTooltip };
+  return {
+    onNodeHover,
+    showTooltip: handleShowTooltip,
+    hideTooltip: handleHideTooltip,
+  };
 };

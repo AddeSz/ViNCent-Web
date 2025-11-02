@@ -1,36 +1,23 @@
 import { useKeys } from "@/hooks/useKeys";
+import { useTooltipStore } from "@/stores/useTooltipStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type { FullData, NodeChange } from "@/types/network";
+import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import type { JSX } from "react";
 
-export type TooltipType = "arc" | "label" | "node" | "change";
-
 interface ChartTooltipProps {
-  type: TooltipType;
-  nodeId: string;
-  x: number;
-  y: number;
-  visible: boolean;
   dataMap: Map<string, FullData>;
-  arcKey?: string;
-  lastChange?: NodeChange;
 }
 
-const ChartTooltip = ({
-  type,
-  nodeId,
-  x,
-  y,
-  visible,
-  dataMap,
-  arcKey,
-  lastChange,
-}: ChartTooltipProps) => {
+const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
+  const tooltip = useTooltipStore((s) => s.tooltip);
   const { attributeKeys, centralityKeys } = useKeys();
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
 
+  const { type, nodeId, x, y, visible, arcKey, lastChange } = tooltip;
+
   if (!visible) return null;
+
   const nodeData = dataMap.get(nodeId);
   if (!nodeData) return null;
 
