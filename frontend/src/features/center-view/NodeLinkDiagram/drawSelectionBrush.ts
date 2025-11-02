@@ -102,7 +102,7 @@ const drawSelectionBrush = (
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Shift" && !isShiftPressed) {
+    if (event.key === "Shift" && !isShiftPressed && isViewActive) {
       isShiftPressed = true;
 
       svg.selectAll(".links-group").style("pointer-events", "none");
@@ -117,7 +117,7 @@ const drawSelectionBrush = (
   };
 
   const handleKeyUp = (event: KeyboardEvent) => {
-    if (event.key === "Shift") {
+    if (event.key === "Shift" && isViewActive) {
       isShiftPressed = false;
       isDragging = false;
       lassoPoints = [];
@@ -141,6 +141,7 @@ const drawSelectionBrush = (
   d3.select(window)
     .on("keydown.nodeLinkLasso", null)
     .on("keyup.nodeLinkLasso", null);
+
   if (!isViewActive) {
     isShiftPressed = false;
     isDragging = false;

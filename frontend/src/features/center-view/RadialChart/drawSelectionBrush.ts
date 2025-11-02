@@ -118,11 +118,16 @@ const drawSelectionBrush = (
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Shift") {
+    if (event.key === "Shift" && isViewActive) {
       isShiftPressed = true;
 
       svg
         .selectAll(".labels-group, .change-circles-group")
+        .style("pointer-events", "none");
+
+      svg
+        .select("foreignObject.arc-canvas-container")
+        .select("canvas.arc-canvas")
         .style("pointer-events", "none");
 
       backgroundRing
@@ -135,11 +140,16 @@ const drawSelectionBrush = (
   };
 
   const handleKeyUp = (event: KeyboardEvent) => {
-    if (event.key === "Shift") {
+    if (event.key === "Shift" && isViewActive) {
       isShiftPressed = false;
 
       svg
         .selectAll(".labels-group, .change-circles-group")
+        .style("pointer-events", "all");
+
+      svg
+        .select("foreignObject.arc-canvas-container")
+        .select("canvas.arc-canvas")
         .style("pointer-events", "all");
 
       backgroundRing
@@ -150,6 +160,7 @@ const drawSelectionBrush = (
         .on("end", () => {
           backgroundRing.style("pointer-events", "none");
         });
+
       clearBrushSelection();
     }
   };
@@ -173,6 +184,7 @@ const drawSelectionBrush = (
     brushArcPath.attr("d", null);
     return;
   }
+
   d3.select(window)
     .on("keydown.radialBrush", handleKeyDown)
     .on("keyup.radialBrush", handleKeyUp);

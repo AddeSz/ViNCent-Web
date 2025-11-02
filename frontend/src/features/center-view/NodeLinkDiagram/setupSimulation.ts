@@ -48,7 +48,6 @@ const createSimulation = (
       .attr("y2", (d) => (d.target as Node).y ?? 0);
 
     nodeSelection.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
-    if (simulation.alpha() < 0.001) simulation.stop();
   });
 
   return simulation;
@@ -98,7 +97,7 @@ export function createDrag(
       ) {
         return;
       }
-      if (!event.active) simulation.alphaTarget(0.1).restart();
+      if (!event.active) simulation.alphaTarget(0.2).restart();
       d.fx = d.x;
       d.fy = d.y;
     })

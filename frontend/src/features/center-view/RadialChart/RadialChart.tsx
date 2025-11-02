@@ -12,7 +12,8 @@ import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData, Link, NodeChange } from "@/types/network";
 import * as d3 from "d3";
 import throttle from "lodash.throttle";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import ChartTooltip from "../Tooltips/ChartTooltip";
 import { useTooltip, type InteractionProps } from "../Tooltips/useTooltip";
 import drawArcsCanvas, { redrawArcsCanvasOnZoom } from "./drawArcsCanvas";
@@ -36,7 +37,7 @@ interface RadialChartProps {
   changes: NodeChange;
   links: Link[];
   isViewActive: boolean;
-  handleContextMenuTarget: (target: ContextType, data?: any) => void;
+  handleContextMenu: (target: ContextType, data?: any) => void;
 }
 
 const RadialChart = ({
@@ -46,7 +47,7 @@ const RadialChart = ({
   changes,
   links,
   isViewActive,
-  handleContextMenuTarget,
+  handleContextMenu,
 }: RadialChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const lastZoomLevel = useRef(1);
@@ -56,18 +57,21 @@ const RadialChart = ({
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
 
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
-  const radialSettings = useSettingsStore((s) => s.radialSettings);
+  const radialSettings = useSettingsStore(useShallow((s) => s.radialSettings));
   const { separateMetrics, linkRenderingMode, fdebSettings } = radialSettings;
   const { allKeys, enabledAttributeKeys, enabledCentralityKeys } = useKeys();
 
   const { onNodeHover, showTooltip, hideTooltip } = useTooltip(dataMap);
 
-  const interactionProps: InteractionProps = {
-    onNodeHover: onNodeHover,
-    onTooltipShow: showTooltip,
-    onTooltipHide: hideTooltip,
-    onContextMenu: handleContextMenuTarget,
-  };
+  const interactionProps: InteractionProps = useMemo(
+    () => ({
+      onNodeHover: onNodeHover,
+      onTooltipShow: showTooltip,
+      onTooltipHide: hideTooltip,
+      onContextMenu: handleContextMenu,
+    }),
+    [onNodeHover, showTooltip, hideTooltip, handleContextMenu],
+  );
 
   const {
     chartData,
@@ -158,7 +162,6 @@ const RadialChart = ({
         svgGroup,
         links,
         xScale,
-        innerRadius,
         selectedNodes,
         linkRenderingMode,
         removedIds,
@@ -212,14 +215,6 @@ const RadialChart = ({
         interactionProps,
         radius,
       );
-      drawSelectionBrush(
-        svgGroup,
-        outerRadius,
-        totalLabelWidth,
-        xScale,
-        isViewActive,
-      );
-
       requestAnimationFrame(() => setIsCanvasReady(true));
     })();
 
@@ -287,7 +282,6 @@ const RadialChart = ({
         svgGroup,
         links,
         xScale,
-        innerRadius,
         selectedNodes,
         linkRenderingMode,
         removedIds,
@@ -312,7 +306,7 @@ const RadialChart = ({
       xScale,
       isViewActive,
     );
-  }, [totalLabelWidth, isViewActive, outerRadius, xScale]);
+  }, [totalLabelWidth, isViewActive, xScale]);
 
   useEffect(() => {
     const hoveredNode = useNetworkStore.getState().hoveredNode;
@@ -327,7 +321,6 @@ const RadialChart = ({
 
   const showSpinner =
     !dimensions?.width || !dimensions?.height || !chartData || !isCanvasReady;
-
   return (
     <>
       {showSpinner && (
@@ -346,7 +339,7 @@ const RadialChart = ({
         }}
         onContextMenu={(e) => {
           if ((e.nativeEvent as any)._handledByChild) return;
-          handleContextMenuTarget("radial");
+          handleContextMenu("radial");
         }}
       >
         <svg

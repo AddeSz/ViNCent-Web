@@ -60,7 +60,7 @@ const CenterView = ({
   const timesteps = useTimelineStore((s) => s.timesteps);
   const timelines = timesteps.length > 0;
 
-  const handleContextMenuTarget = (target: ContextType, data?: any) => {
+  const handleContextMenu = (target: ContextType, data?: any) => {
     setContextMenuTarget((prev) => {
       if (prev.type === target && prev.data === data) return prev;
       return { type: target, data };
@@ -101,7 +101,7 @@ const CenterView = ({
               changes={changes}
               links={filteredNetwork.links}
               isViewActive={view === "radial"}
-              handleContextMenuTarget={handleContextMenuTarget}
+              handleContextMenu={handleContextMenu}
             />
           </div>
           <div
@@ -116,7 +116,7 @@ const CenterView = ({
               dimensions={dimensions}
               filteredNetwork={filteredNetwork}
               dataMap={dataMap}
-              onContextMenuTarget={handleContextMenuTarget}
+              handleContextMenu={handleContextMenu}
               changes={changes}
               isViewActive={view === "node-link"}
             />
@@ -129,7 +129,7 @@ const CenterView = ({
                 data={sortedData}
                 sorting={sorting}
                 onSortingChange={handleSortingChange}
-                onContextMenuTarget={handleContextMenuTarget}
+                handleContextMenu={handleContextMenu}
               />
             </div>
           )}

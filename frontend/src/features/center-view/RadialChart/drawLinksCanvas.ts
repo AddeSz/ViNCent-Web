@@ -48,7 +48,6 @@ const drawLinksCanvas = async (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   links: Link[],
   x: d3.ScaleBand<string>,
-  innerRadius: number,
   selectedNodes: Set<string>,
   mode: LinkRenderingMode,
   removedNodeIds: Set<string>,
@@ -71,11 +70,11 @@ const drawLinksCanvas = async (
   }
 
   // const fdebPaths =
-  //   mode === "fdeB" ? createFdebPaths(links, x, innerRadius, fdebSettings) : [];
+  //   mode === "fdeB" ? createFdebPaths(links, x, outerRadius, fdebSettings) : [];
 
   const fdebPaths =
     mode === "fdeB"
-      ? await createFdebPathsWorker(links, x, innerRadius, fdebSettings)
+      ? await createFdebPathsWorker(links, x, outerRadius, fdebSettings)
       : [];
 
   const processedLinks: ProcessedLink[] = [];
@@ -95,13 +94,13 @@ const drawLinksCanvas = async (
       const sourceAngle = angleMap.get(sourceId);
       const targetAngle = angleMap.get(targetId);
       if (sourceAngle !== undefined && targetAngle !== undefined) {
-        pathData = createBezierPath(sourceAngle, targetAngle, innerRadius);
+        pathData = createBezierPath(sourceAngle, targetAngle, outerRadius);
       }
     } else if (mode === "hierarchy") {
       const sourceAngle = angleMap.get(sourceId);
       const targetAngle = angleMap.get(targetId);
       if (sourceAngle !== undefined && targetAngle !== undefined) {
-        pathData = createHierarchyPath(sourceAngle, targetAngle, innerRadius);
+        pathData = createHierarchyPath(sourceAngle, targetAngle, outerRadius);
       }
     } else if (mode === "fdeB") {
       pathData = fdebPaths[i] ?? null;

@@ -1,8 +1,4 @@
-import {
-  useSettingsStore,
-  type LinkThicknessMode,
-  type NodeSizeMode,
-} from "@/stores/useSettingsStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
   FullData,
   Link,
@@ -21,19 +17,6 @@ import { getNodeLabel } from "./nodeLinkUtils";
 import { createDrag } from "./setupSimulation";
 
 const OPACITY_VALUE = 0.6;
-
-interface RenderSettings {
-  nodeSizeMode: NodeSizeMode;
-  nodeSizeMetric: string;
-  fixedNodeSize: number;
-  minNodeSize: number;
-  maxNodeSize: number;
-  linkThicknessMode: LinkThicknessMode;
-  fixedLinkThickness: number;
-  minLinkThickness: number;
-  maxLinkThickness: number;
-  showLabels: boolean;
-}
 
 const getNodeStyle = (
   node: Node,
@@ -113,7 +96,6 @@ const updateNodes = (
   visibleNodes: Node[],
   simulation: d3.Simulation<Node, Link>,
   selectedNodes: Set<string>,
-  settings: RenderSettings,
   nodeSizes: Map<string, number>,
   lastChanges: NodeChange,
   hoveredNode: FullData | null,
@@ -146,14 +128,14 @@ const updateNodes = (
     .transition()
     .delay(10)
     .duration(300)
-    .attr("r", (d) => nodeSizes.get(d.id) || settings.fixedNodeSize)
+    .attr("r", (d) => nodeSizes.get(d.id)!)
     .style("opacity", 1);
 
   const nodesUpdate = nodesEnter.merge(nodes);
 
   nodesUpdate.each(function (d) {
     const style = getNodeStyle(d, selectedNodes, lastChanges, hoveredNode);
-    const size = nodeSizes.get(d.id) || settings.fixedNodeSize;
+    const size = nodeSizes.get(d.id)!;
     d3.select(this)
       .attr("r", size)
       .attr("fill", style.fill)
@@ -270,13 +252,12 @@ export const updateStyle = (
   dataMap: Map<string, FullData>,
   nodeSizes: Map<string, number>,
   linkWeights: Map<string, number>,
-  fixedNodeSize: number,
   lastChanges: NodeChange,
   hoveredNode: FullData | null,
 ) => {
   svg.selectAll<SVGCircleElement, Node>("circle.node").each(function (d) {
     const style = getNodeStyle(d, selectedNodes, lastChanges, hoveredNode);
-    const size = nodeSizes.get(d.id) || fixedNodeSize;
+    const size = nodeSizes.get(d.id)!;
     d3.select(this)
       .attr("r", size)
       .attr("fill", style.fill)
@@ -306,11 +287,11 @@ const updateGraph = (
   network: Network,
   dataMap: Map<string, FullData>,
   selectedNodes: Set<string>,
-  settings: RenderSettings,
   lastChanges: NodeChange,
   nodeSizes: Map<string, number>,
   linkWeights: Map<string, number>,
   hoveredNode: FullData | null,
+  showLabels: boolean,
 ) => {
   const svgGroup = svg.select("g.zoom-group");
   const linkGroup = svgGroup.select("g.links-group");
@@ -329,7 +310,6 @@ const updateGraph = (
     network.nodes,
     simulation,
     selectedNodes,
-    settings,
     nodeSizes,
     lastChanges,
     hoveredNode,
@@ -337,7 +317,7 @@ const updateGraph = (
   const allLabels = updateLabels(
     nodeGroup,
     network.nodes,
-    settings.showLabels,
+    showLabels,
     nodeSizes,
   );
 
@@ -350,7 +330,7 @@ const updateGraph = (
 
     allNodes.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
 
-    if (settings.showLabels && allLabels) {
+    if (showLabels && allLabels) {
       allLabels.attr("x", (d) => d.x ?? 0).attr("y", (d) => d.y ?? 0);
     }
   });

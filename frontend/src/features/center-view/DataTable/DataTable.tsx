@@ -30,14 +30,14 @@ interface DataTableProps {
   onSortingChange: (
     updater: SortingState | ((old: SortingState) => SortingState),
   ) => void;
-  onContextMenuTarget: (target: ContextType, data?: any) => void;
+  handleContextMenu: (target: ContextType, data?: any) => void;
 }
 
 const DataTable = ({
   data,
   sorting,
   onSortingChange,
-  onContextMenuTarget,
+  handleContextMenu,
 }: DataTableProps) => {
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
 
@@ -108,7 +108,7 @@ const DataTable = ({
   return (
     <div
       className="flex h-full w-full flex-col px-3"
-      onContextMenu={() => onContextMenuTarget("data-table")}
+      onContextMenu={() => handleContextMenu("data-table")}
     >
       <TableControls table={table} setVisibilityFilter={setVisibilityFilter} />
       <TableContent table={table} columnsLength={columns.length} />
