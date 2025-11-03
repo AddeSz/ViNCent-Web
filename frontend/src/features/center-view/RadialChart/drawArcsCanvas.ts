@@ -1,5 +1,5 @@
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type { AttributeInfo, FullData } from "@/types/network";
+import type { AttributeInfo, FullData, NodeChange } from "@/types/network";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 import {
@@ -33,6 +33,14 @@ interface ProcessedArc {
   backgroundPath?: Path2D;
 }
 
+interface ChangeCircle {
+  id: string;
+  angle: number;
+  radius: number;
+  color: string;
+  changeType: "added" | "removed" | "updated";
+}
+
 interface ArcsByColor {
   [color: string]: ProcessedArc[];
 }
@@ -40,6 +48,7 @@ interface ArcsByColor {
 interface ZoomLevelCache {
   canvas: HTMLCanvasElement;
   processedArcs: ProcessedArc[];
+  changeCircles: ChangeCircle[];
 }
 
 const zoomLevelCaches = new Map<ZoomLevel, ZoomLevelCache>();
@@ -56,10 +65,12 @@ const drawArcsCanvas = (
   innerRadius: number,
   outerRadius: number,
   bounds: BoundsResult,
+  lastChange: NodeChange,
+  changeCircleRadius: number,
   initialZoomFactor: number = 1,
 ): void => {
   const { getColorForKey } = useVisualizationStore.getState();
-  const requiredRadius = outerRadius + 50;
+  const requiredRadius = outerRadius + +50 + changeCircleRadius;
   const canvasSize = Math.ceil(requiredRadius * 2);
   const center = canvasSize / 2;
 
@@ -182,6 +193,49 @@ const drawArcsCanvas = (
     }
   }
 
+  const changeCircles: ChangeCircle[] = [];
+  const getChangeType = (
+    id: string,
+  ): "added" | "removed" | "updated" | null => {
+    if (lastChange?.added && id in lastChange.added) return "added";
+    if (lastChange?.removed && id in lastChange.removed) return "removed";
+    if (
+      lastChange?.updated &&
+      Object.prototype.hasOwnProperty.call(lastChange.updated, id)
+    )
+      return "updated";
+    return null;
+  };
+
+  const getFillColor = (
+    changeType: "added" | "removed" | "updated" | null,
+  ): string => {
+    if (changeType === "added") return "green";
+    if (changeType === "removed") return "red";
+    if (changeType === "updated") return "yellow";
+    return "none";
+  };
+
+  const domain = x.domain();
+  for (const id of domain) {
+    const changeType = getChangeType(id);
+    if (!changeType) continue;
+
+    const angle = x(id)! + x.bandwidth() / 2;
+    const color = getFillColor(changeType);
+    const circleRadius = outerRadius + changeCircleRadius * 2;
+
+    changeCircles.push({
+      id,
+      angle,
+      radius: circleRadius,
+      color,
+      changeType,
+    });
+  }
+
+  const nodeCount = series[0]?.length || 0;
+
   ZOOM_LEVELS.forEach((zoomLevel) => {
     const offscreenCanvas = document.createElement("canvas");
     const pixelRatio = zoomLevel;
@@ -200,12 +254,21 @@ const drawArcsCanvas = (
         outerRadius,
         canvasSize,
         pixelRatio,
+        nodeCount,
+      );
+      drawChangeCirclesOnCanvas(
+        ctx,
+        changeCircles,
+        changeCircleRadius,
+        center,
+        pixelRatio,
       );
     }
 
     zoomLevelCaches.set(zoomLevel, {
       canvas: offscreenCanvas,
       processedArcs: processedArcs,
+      changeCircles: changeCircles,
     });
   });
 
@@ -223,9 +286,12 @@ const drawArcsCanvas = (
     setupCanvasInteractions(
       displayCanvas,
       cache.processedArcs,
+      cache.changeCircles,
       interactionProps,
       center,
       canvasSize,
+      changeCircleRadius,
+      lastChange,
     );
   }
 };
@@ -256,6 +322,7 @@ function swapToZoomLevel(
 export function redrawArcsCanvasOnZoom(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   outerRadius: number,
+  changeCircleRadius: number,
   zoomFactor: number = 1,
 ): void {
   const targetZoomLevel = getClosestZoomLevel(zoomFactor);
@@ -265,7 +332,7 @@ export function redrawArcsCanvasOnZoom(
   const g = svg.select<SVGGElement>("g.arcs-group");
   if (g.empty()) return;
 
-  const requiredRadius = outerRadius + 50;
+  const requiredRadius = outerRadius + 50 + changeCircleRadius;
   const canvasSize = Math.ceil(requiredRadius * 2);
 
   const foreignObject = g.select<SVGForeignObjectElement>(
@@ -383,6 +450,7 @@ function drawBoundsOnCanvas(
   outerRadius: number,
   canvasSize: number,
   pixelRatio: number,
+  nodeCount: number,
 ): void {
   const { groupBounds, layerBounds } = bounds;
 
@@ -409,8 +477,9 @@ function drawBoundsOnCanvas(
   }
 
   if (groupBounds.length > 1) {
-    groupBounds.forEach((group) => {
-      [group.startAngle, group.endAngle].forEach((angle) => {
+    if (nodeCount > 850) {
+      groupBounds.forEach((group) => {
+        const angle = group.startAngle;
         ctx.beginPath();
         ctx.moveTo(
           Math.cos(angle) * innerRadius,
@@ -422,7 +491,48 @@ function drawBoundsOnCanvas(
         );
         ctx.stroke();
       });
-    });
+    } else {
+      groupBounds.forEach((group) => {
+        [group.startAngle, group.endAngle].forEach((angle) => {
+          ctx.beginPath();
+          ctx.moveTo(
+            Math.cos(angle) * innerRadius,
+            Math.sin(angle) * innerRadius,
+          );
+          ctx.lineTo(
+            Math.cos(angle) * outerRadius,
+            Math.sin(angle) * outerRadius,
+          );
+          ctx.stroke();
+        });
+      });
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawChangeCirclesOnCanvas(
+  ctx: CanvasRenderingContext2D,
+  circles: ChangeCircle[],
+  circleRadius: number,
+  center: number,
+  pixelRatio: number,
+): void {
+  ctx.save();
+  ctx.scale(pixelRatio, pixelRatio);
+  ctx.translate(center, center);
+  ctx.rotate(-Math.PI / 2);
+
+  for (const circle of circles) {
+    const x = Math.cos(circle.angle) * circle.radius;
+    const y = Math.sin(circle.angle) * circle.radius;
+
+    ctx.beginPath();
+    ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+    ctx.fillStyle = circle.color;
+    ctx.globalAlpha = 1;
+    ctx.fill();
   }
 
   ctx.restore();
@@ -431,14 +541,18 @@ function drawBoundsOnCanvas(
 function setupCanvasInteractions(
   canvas: d3.Selection<HTMLCanvasElement, unknown, null, undefined>,
   processedArcs: ProcessedArc[],
+  changeCircles: ChangeCircle[],
   interactionProps: InteractionProps,
   center: number,
   canvasSize: number,
+  changeCircleRadius: number,
+  lastChange: NodeChange,
 ): void {
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
 
   let hoveredArc: ProcessedArc | null = null;
+  let hoveredCircle: ChangeCircle | null = null;
 
   function getArcAtPoint(x: number, y: number): ProcessedArc | null {
     const canvasX = x - center;
@@ -461,6 +575,30 @@ function setupCanvasInteractions(
     return null;
   }
 
+  function getCircleAtPoint(x: number, y: number): ChangeCircle | null {
+    const canvasX = x - center;
+    const canvasY = y - center;
+
+    const rotatedX =
+      canvasX * Math.cos(Math.PI / 2) - canvasY * Math.sin(Math.PI / 2);
+    const rotatedY =
+      canvasX * Math.sin(Math.PI / 2) + canvasY * Math.cos(Math.PI / 2);
+
+    for (const circle of changeCircles) {
+      const circleX = Math.cos(circle.angle) * circle.radius;
+      const circleY = Math.sin(circle.angle) * circle.radius;
+
+      const distance = Math.sqrt(
+        Math.pow(rotatedX - circleX, 2) + Math.pow(rotatedY - circleY, 2),
+      );
+
+      if (distance <= changeCircleRadius) {
+        return circle;
+      }
+    }
+    return null;
+  }
+
   canvas
     .on("mousemove", function (event) {
       const rect = this.getBoundingClientRect();
@@ -469,19 +607,32 @@ function setupCanvasInteractions(
       const x = (event.clientX - rect.left) * scaleX;
       const y = (event.clientY - rect.top) * scaleY;
 
-      const arc = getArcAtPoint(x, y);
+      const circle = getCircleAtPoint(x, y);
+      const arc = circle ? null : getArcAtPoint(x, y);
 
-      if (arc !== hoveredArc) {
+      if (circle !== hoveredCircle || arc !== hoveredArc) {
+        hoveredCircle = circle;
         hoveredArc = arc;
-        if (arc) {
-          onNodeHover(arc.data.id);
+
+        if (circle || arc) {
           (this as HTMLCanvasElement).style.cursor = "pointer";
+          if (arc) {
+            onNodeHover(arc.data.id);
+          }
         } else {
           (this as HTMLCanvasElement).style.cursor = "default";
         }
       }
 
-      if (arc) {
+      if (circle) {
+        onTooltipShow({
+          type: "change",
+          nodeId: circle.id,
+          x: event.clientX,
+          y: event.clientY,
+          lastChange,
+        });
+      } else if (arc) {
         onTooltipShow({
           type: "arc",
           nodeId: arc.data.id,
@@ -494,8 +645,9 @@ function setupCanvasInteractions(
       }
     })
     .on("mouseout", function () {
-      if (hoveredArc) {
+      if (hoveredArc || hoveredCircle) {
         hoveredArc = null;
+        hoveredCircle = null;
         (this as HTMLCanvasElement).style.cursor = "default";
         onTooltipHide();
       }
@@ -507,7 +659,9 @@ function setupCanvasInteractions(
       const x = (event.clientX - rect.left) * scaleX;
       const y = (event.clientY - rect.top) * scaleY;
 
-      const arc = getArcAtPoint(x, y);
+      const circle = getCircleAtPoint(x, y);
+      const arc = circle ? null : getArcAtPoint(x, y);
+
       if (arc) {
         (event as any)._handledByChild = true;
         onContextMenu("arc", arc.data);
@@ -520,7 +674,9 @@ function setupCanvasInteractions(
       const x = (event.clientX - rect.left) * scaleX;
       const y = (event.clientY - rect.top) * scaleY;
 
-      const arc = getArcAtPoint(x, y);
+      const circle = getCircleAtPoint(x, y);
+      const arc = circle ? null : getArcAtPoint(x, y);
+
       if (arc) {
         const multi = event.shiftKey || event.ctrlKey;
         handleHighlight(arc.data.id, multi);

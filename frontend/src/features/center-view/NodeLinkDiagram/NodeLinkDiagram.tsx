@@ -344,7 +344,7 @@ const NodeLinkDiagram = ({
   return (
     <>
       {showSpinner && (
-        <div className="flex h-full w-full items-center justify-center">
+        <div className="flex h-full w-full flex-col items-center justify-center">
           <Spinner className="size-10" />
           <p className="mt-2 text-center text-muted-foreground">
             Rendering visualization...

@@ -21,7 +21,6 @@ import {
   drawBoundsHighlight,
   updateBoundsHighlight,
 } from "./drawBoundsHighlight ";
-import { drawChangeCircles } from "./drawChangeCircles";
 import drawLabels, { updateLabelHighlight, updateLabels } from "./drawLabels";
 import drawLinksCanvas, {
   redrawLinksCanvasOnZoom,
@@ -98,6 +97,7 @@ const RadialChart = ({
     chartData,
     innerRadius,
     outerRadius,
+    radius,
   });
 
   useEffect(() => {
@@ -105,8 +105,9 @@ const RadialChart = ({
       chartData,
       innerRadius,
       outerRadius,
+      radius,
     };
-  }, [chartData, innerRadius, outerRadius]);
+  }, [chartData, innerRadius, outerRadius, radius]);
 
   const redrawCanvas = useRef(
     throttle((currentK: number) => {
@@ -125,7 +126,7 @@ const RadialChart = ({
         const svgGroup = svg.select<SVGGElement>("g.zoom-group");
         if (svgGroup.empty()) return;
 
-        redrawArcsCanvasOnZoom(svgGroup, outerRadius, currentK);
+        redrawArcsCanvasOnZoom(svgGroup, outerRadius, radius, currentK);
         redrawLinksCanvasOnZoom(svgGroup, innerRadius, currentK);
       });
     }, 150),
@@ -185,8 +186,11 @@ const RadialChart = ({
         innerRadius,
         outerRadius,
         bounds,
+        changes,
+        radius,
         zoomLevel,
       );
+
       drawBoundsHighlight(
         svgGroup,
         bounds,
@@ -195,6 +199,7 @@ const RadialChart = ({
         selectedNodes,
         hoveredNode,
       );
+
       drawLabels(
         svgGroup,
         xScale,
@@ -205,14 +210,6 @@ const RadialChart = ({
         truncateLabels,
         interactionProps,
         hoveredNode,
-        radius,
-      );
-      drawChangeCircles(
-        svgGroup,
-        xScale,
-        outerRadius,
-        changes,
-        interactionProps,
         radius,
       );
       requestAnimationFrame(() => setIsCanvasReady(true));
@@ -264,7 +261,7 @@ const RadialChart = ({
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
     updateLabels(svg, fontSize, totalLabelWidth, truncateLabels, radius);
-  }, [fontSize, totalLabelWidth, truncateLabels, radius]);
+  }, [fontSize, totalLabelWidth, truncateLabels]);
 
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB") return;
@@ -306,7 +303,7 @@ const RadialChart = ({
       xScale,
       isViewActive,
     );
-  }, [totalLabelWidth, isViewActive, xScale]);
+  }, [totalLabelWidth, isViewActive]);
 
   useEffect(() => {
     const hoveredNode = useNetworkStore.getState().hoveredNode;
@@ -324,7 +321,7 @@ const RadialChart = ({
   return (
     <>
       {showSpinner && (
-        <div className="flex h-full w-full items-center justify-center">
+        <div className="flex h-full w-full flex-col items-center justify-center">
           <Spinner className="size-10" />
           <p className="mt-2 text-center text-muted-foreground">
             Rendering visualization...

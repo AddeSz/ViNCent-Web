@@ -1,6 +1,6 @@
 import type { NodeChange } from "@/types/network";
 import * as d3 from "d3";
-import type { InteractionProps } from "../Tooltips/useTooltip";
+import type { InteractionProps } from "../../Tooltips/useTooltip";
 
 export const drawChangeCircles = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,

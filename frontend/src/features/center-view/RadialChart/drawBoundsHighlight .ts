@@ -23,8 +23,8 @@ export const drawBoundsHighlight = (
     endAngle: number;
     innerRadius: number;
   }>()
-    .innerRadius((d) => d.innerRadius + 0.4)
-    .outerRadius((d) => d.innerRadius + 0.5)
+    .innerRadius((d) => d.innerRadius)
+    .outerRadius((d) => d.innerRadius)
     .startAngle((d) => d.startAngle)
     .endAngle((d) => d.endAngle);
 
@@ -33,7 +33,7 @@ export const drawBoundsHighlight = (
     endAngle: number;
     outerRadius: number;
   }>()
-    .innerRadius((d) => d.outerRadius - 0.1)
+    .innerRadius((d) => d.outerRadius)
     .outerRadius((d) => d.outerRadius)
     .startAngle((d) => d.startAngle)
     .endAngle((d) => d.endAngle);
@@ -42,10 +42,10 @@ export const drawBoundsHighlight = (
     groupBounds.forEach((group) => {
       ["start", "end"].forEach((side) => {
         const angle = side === "start" ? group.startAngle : group.endAngle;
-        const x1 = Math.cos(angle - Math.PI / 2) * innerRadius;
-        const y1 = Math.sin(angle - Math.PI / 2) * innerRadius;
-        const x2 = Math.cos(angle - Math.PI / 2) * outerRadius;
-        const y2 = Math.sin(angle - Math.PI / 2) * outerRadius;
+        const x1 = Math.cos(angle - Math.PI / 2) * (innerRadius - 0.5);
+        const y1 = Math.sin(angle - Math.PI / 2) * (innerRadius - 0.5);
+        const x2 = Math.cos(angle - Math.PI / 2) * (outerRadius + 0.5);
+        const y2 = Math.sin(angle - Math.PI / 2) * (outerRadius + 0.5);
 
         boundPaths.push({
           id: group.id,
@@ -103,7 +103,7 @@ export const updateBoundsHighlight = (
     stroke: selectedNodes.has(bound.id)
       ? highlightBoundsColor.selected
       : highlightBoundsColor.hover,
-    strokeWidth: selectedNodes.has(bound.id) ? 1.5 : 1.5,
+    strokeWidth: 1.5,
   }));
 
   svg
@@ -119,7 +119,7 @@ export const updateBoundsHighlight = (
           .attr("stroke", (d) => d.stroke)
           .attr("stroke-width", (d) => d.strokeWidth)
           .attr("opacity", 0)
-          .call((enter) => enter.attr("opacity", 0.9)),
+          .call((enter) => enter.attr("opacity", 1)),
       (update) =>
         update
           .attr("d", (d) => d.pathData)

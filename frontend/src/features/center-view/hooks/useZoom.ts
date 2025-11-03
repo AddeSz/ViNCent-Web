@@ -33,8 +33,7 @@ export const useZoom = (scaleExtent: [number, number] = [0.3, 6]) => {
           if ("button" in event && event.button === 2) return false;
           if (target.classList.contains("arc-canvas")) return true;
 
-          if (target.closest(".arcs-group") || target.closest(".labels-group"))
-            return false;
+          if (target.closest(".labels-group")) return false;
 
           if (event.type === "dblclick" && target.closest(".node"))
             return false;

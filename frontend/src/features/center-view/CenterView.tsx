@@ -84,7 +84,7 @@ const CenterView = ({
       >
         <div
           ref={containerRef}
-          className="relative grow overflow-hidden bg-card"
+          className="relative h-full w-full grow overflow-hidden bg-card"
         >
           <div
             className={`absolute inset-0 ${

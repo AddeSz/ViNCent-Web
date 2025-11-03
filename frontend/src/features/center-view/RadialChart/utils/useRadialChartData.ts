@@ -87,11 +87,11 @@ export const useRadialChartData = ({
   const radiusScale = d3
     .scalePow()
     .exponent(0.05)
-    .domain([100, 1000])
+    .domain([100, 1200])
     .range([10, 2])
-    .clamp(false);
+    .clamp(true);
 
-  const radius = Math.max(radiusScale(visibleData.length), 1.5);
+  const radius = Math.max(radiusScale(visibleData.length), 1);
 
   return {
     chartData,
