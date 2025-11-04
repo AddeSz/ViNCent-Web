@@ -287,7 +287,11 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   },
 
   setCurrentTimestep: (timestep) => {
-    const { timestepMetricsData, timestepMetricsInfo } = get();
+    const {
+      timestepMetricsData,
+      timestepMetricsInfo,
+      brushRanges: existingBrushRanges,
+    } = get();
 
     const metricsData = timestepMetricsData.get(timestep);
     const metricsInfo = timestepMetricsInfo.get(timestep);
@@ -299,9 +303,13 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
     const metricsKeysArray = Array.from(metricsInfo.keys());
 
-    const brushRanges: Record<string, BrushRange | null> = {};
+    const brushRanges: Record<string, BrushRange | null> = {
+      ...existingBrushRanges,
+    };
     metricsKeysArray.forEach((key) => {
-      brushRanges[key] = null;
+      if (!(key in brushRanges)) {
+        brushRanges[key] = null;
+      }
     });
 
     set({

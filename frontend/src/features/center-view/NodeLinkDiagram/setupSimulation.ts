@@ -85,13 +85,13 @@ export function updateCollisionRadiuses(
           const r = collisionRadiuses?.get(d.id) ?? 1;
           return r + 1;
         })
-        .iterations(1),
+        .iterations(3),
     );
   } else {
     simulation.force("collision", null);
   }
 
-  if (collisionEnabled) simulation.alpha(0.01).alphaTarget(0.001).restart();
+  if (collisionEnabled) simulation.alpha(0.01).alphaTarget(0).restart();
 }
 
 export function createDrag(

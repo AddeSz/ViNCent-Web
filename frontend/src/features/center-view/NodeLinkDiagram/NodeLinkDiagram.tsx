@@ -219,48 +219,6 @@ const NodeLinkDiagram = ({
 
   useEffect(() => {
     if (!simulationRef.current || !isSimulationStable || !dimensions) return;
-    const existingPositions = new Map<
-      string,
-      { x: number; y: number; vx?: number; vy?: number }
-    >();
-    simulationRef.current.nodes().forEach((node) => {
-      if (node.x !== undefined && node.y !== undefined) {
-        existingPositions.set(node.id, {
-          x: node.x,
-          y: node.y,
-          vx: node.vx,
-          vy: node.vy,
-        });
-      }
-    });
-
-    activeNetwork.nodes.forEach((node) => {
-      const existing = existingPositions.get(node.id);
-      if (existing) {
-        node.x = existing.x;
-        node.y = existing.y;
-        node.vx = existing.vx;
-        node.vy = existing.vy;
-      } else if (node.x === undefined || node.y === undefined) {
-        node.x = Math.random() * 100 - 50;
-        node.y = Math.random() * 100 - 50;
-      }
-    });
-
-    simulationRef.current.nodes(activeNetwork.nodes);
-    const linkForce = simulationRef.current.force("link") as d3.ForceLink<
-      Node,
-      Link
-    >;
-    if (linkForce) {
-      linkForce.links(activeNetwork.links);
-    }
-
-    simulationRef.current.alpha(0.3).restart();
-  }, [activeNetwork]);
-
-  useEffect(() => {
-    if (!simulationRef.current || !isSimulationStable || !dimensions) return;
 
     updateSimulationForces(simulationRef.current, linkDistance, chargeStrength);
   }, [linkDistance, chargeStrength]);

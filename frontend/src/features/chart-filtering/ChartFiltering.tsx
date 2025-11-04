@@ -74,6 +74,7 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
   const clearBrushRange = useMetricsStore((s) => s.clearBrushRange);
   const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
   const setBinnedData = useMetricsStore((s) => s.setBinnedData);
+
   const data = useMemo(() => {
     return Array.from(metricsData.values());
   }, [metricsData]);
