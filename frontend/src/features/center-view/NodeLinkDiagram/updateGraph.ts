@@ -220,21 +220,10 @@ const updateLinks = (
   const linksUpdate = linksEnter.merge(links);
 
   linksUpdate
-    .transition()
-    .duration(300)
-    .ease(d3.easeCubicOut)
     .attr("x1", (d) => (d.source as Node).x ?? 0)
     .attr("y1", (d) => (d.source as Node).y ?? 0)
     .attr("x2", (d) => (d.target as Node).x ?? 0)
     .attr("y2", (d) => (d.target as Node).y ?? 0)
-    .style("stroke-opacity", (d) => {
-      const style = getLinkStyleForNode(d, dataMap, selectedNodes, hoveredNode);
-      return style.strokeOpacity;
-    })
-    .style("stroke", (d) => {
-      const style = getLinkStyleForNode(d, dataMap, selectedNodes, hoveredNode);
-      return style.stroke;
-    })
     .attr("stroke-width", (d) => {
       const sourceId = getNodeId(d.source);
       const targetId = getNodeId(d.target);
@@ -243,6 +232,19 @@ const updateLinks = (
       const isSelected =
         selectedNodes.has(sourceId) || selectedNodes.has(targetId);
       return isSelected ? thickness * 1.5 : thickness;
+    });
+
+  linksUpdate
+    .transition()
+    .duration(300)
+    .ease(d3.easeCubicOut)
+    .style("stroke-opacity", (d) => {
+      const style = getLinkStyleForNode(d, dataMap, selectedNodes, hoveredNode);
+      return style.strokeOpacity;
+    })
+    .style("stroke", (d) => {
+      const style = getLinkStyleForNode(d, dataMap, selectedNodes, hoveredNode);
+      return style.stroke;
     });
 
   return linksUpdate;
