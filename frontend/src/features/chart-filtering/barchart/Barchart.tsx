@@ -7,6 +7,7 @@ import BarchartBars from "./components/BarchartBars";
 
 interface BarchartProps {
   categoricalValues: string[];
+  filteredData: Set<string>;
   dimensions: ChartDimensions;
   dataKey: string;
   getColorForKey: (key: string, value?: string | number) => string;
@@ -16,6 +17,7 @@ interface BarchartProps {
 
 const Barchart = ({
   categoricalValues,
+  filteredData,
   dimensions,
   dataKey,
   getColorForKey,
@@ -26,7 +28,7 @@ const Barchart = ({
   const [hoverCategory, setHoverCategory] = useState<string | null>(null);
 
   const metricsData = useMetricsStore((s) => s.metricsData);
-  const filteredData = useMetricsStore((s) => s.filteredMetricsData);
+
   const {
     svgWidth: width,
     svgHeight: height,
@@ -63,7 +65,7 @@ const Barchart = ({
     });
 
     return counts;
-  }, [metricsData, filteredData, dataKey]);
+  }, [metricsData, filteredData]);
 
   const maxCount = Math.max(...Array.from(categoryCounts.values()));
 

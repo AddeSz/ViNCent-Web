@@ -107,8 +107,7 @@ const updateNodes = (
   nodes
     .exit()
     .transition()
-    .delay(10)
-    .duration(300)
+    .duration(250)
     .attr("r", 0)
     .style("opacity", 0)
     .remove();
@@ -126,8 +125,7 @@ const updateNodes = (
 
   nodesEnter
     .transition()
-    .delay(10)
-    .duration(300)
+    .duration(250)
     .attr("r", (d) => nodeSizes.get(d.id)!)
     .style("opacity", 1);
 
@@ -136,12 +134,16 @@ const updateNodes = (
   nodesUpdate.each(function (d) {
     const style = getNodeStyle(d, selectedNodes, lastChanges, hoveredNode);
     const size = nodeSizes.get(d.id)!;
+
     d3.select(this)
-      .attr("r", size)
+      .on("click", (event) => handleNodeClick(event, d))
       .attr("fill", style.fill)
-      .style("stroke", style.stroke)
       .attr("stroke-width", style.strokeWidth)
-      .on("click", (event) => handleNodeClick(event, d));
+      .style("stroke", style.stroke)
+      .transition()
+      .duration(150)
+      .attr("r", size)
+      .style("opacity", 1);
   });
   nodesUpdate.call(createDrag(simulation));
 
@@ -203,13 +205,7 @@ const updateLinks = (
       (d) => `${(d.source as Node).id}-${(d.target as Node).id}`,
     );
 
-  links
-    .exit()
-    .transition()
-    .delay(10)
-    .duration(300)
-    .style("opacity", 0)
-    .remove();
+  links.exit().transition().duration(250).style("opacity", 0).remove();
 
   const linksEnter = links
     .enter()
@@ -217,31 +213,37 @@ const updateLinks = (
     .attr("class", "link")
     .attr("x1", (d) => (d.source as Node).x ?? 0)
     .attr("y1", (d) => (d.source as Node).y ?? 0)
-    .attr("x2", (d) => (d.target as Node).x ?? 0)
-    .attr("y2", (d) => (d.target as Node).y ?? 0)
+    .attr("x2", (d) => (d.source as Node).x ?? 0)
+    .attr("y2", (d) => (d.source as Node).y ?? 0)
     .style("stroke-opacity", 0);
 
-  linksEnter
-    .transition()
-    .delay(10)
-    .duration(300)
-    .style("stroke-opacity", OPACITY_VALUE);
-
   const linksUpdate = linksEnter.merge(links);
-  linksUpdate.each(function (d) {
-    const style = getLinkStyleForNode(d, dataMap, selectedNodes, hoveredNode);
-    const sourceId = getNodeId(d.source);
-    const targetId = getNodeId(d.target);
-    const linkId = `${sourceId}-${targetId}`;
-    const thickness = linkWeights.get(linkId) || 1.5;
-    const isSelected =
-      selectedNodes.has(sourceId) || selectedNodes.has(targetId);
 
-    d3.select(this)
-      .style("stroke", style.stroke)
-      .style("stroke-opacity", style.strokeOpacity)
-      .attr("stroke-width", isSelected ? thickness * 1.5 : thickness);
-  });
+  linksUpdate
+    .transition()
+    .duration(300)
+    .ease(d3.easeCubicOut)
+    .attr("x1", (d) => (d.source as Node).x ?? 0)
+    .attr("y1", (d) => (d.source as Node).y ?? 0)
+    .attr("x2", (d) => (d.target as Node).x ?? 0)
+    .attr("y2", (d) => (d.target as Node).y ?? 0)
+    .style("stroke-opacity", (d) => {
+      const style = getLinkStyleForNode(d, dataMap, selectedNodes, hoveredNode);
+      return style.strokeOpacity;
+    })
+    .style("stroke", (d) => {
+      const style = getLinkStyleForNode(d, dataMap, selectedNodes, hoveredNode);
+      return style.stroke;
+    })
+    .attr("stroke-width", (d) => {
+      const sourceId = getNodeId(d.source);
+      const targetId = getNodeId(d.target);
+      const linkId = `${sourceId}-${targetId}`;
+      const thickness = linkWeights.get(linkId) || 1.5;
+      const isSelected =
+        selectedNodes.has(sourceId) || selectedNodes.has(targetId);
+      return isSelected ? thickness * 1.5 : thickness;
+    });
 
   return linksUpdate;
 };

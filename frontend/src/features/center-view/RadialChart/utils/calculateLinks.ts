@@ -109,7 +109,12 @@ export const createFdebPathsWorker = async (
   x: d3.ScaleBand<string>,
   innerRadius: number,
   fdebSettings: ForceEdgeBundlingOptions,
+  signal?: AbortSignal,
 ): Promise<(string | null)[]> => {
+  if (signal?.aborted) {
+    return Promise.reject(new DOMException("Aborted", "AbortError"));
+  }
+
   const nodes: ForceNode[] = x.domain().map((id) => {
     const angle = (x(id) ?? 0) + x.bandwidth() / 2;
     return {
@@ -143,8 +148,22 @@ export const createFdebPathsWorker = async (
   );
 
   return new Promise((resolve, reject) => {
+    const abortHandler = () => {
+      worker.terminate();
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+
+    if (signal) {
+      signal.addEventListener("abort", abortHandler);
+    }
+
     worker.onmessage = (e) => {
       const { type, result, error } = e.data;
+
+      if (signal) {
+        signal.removeEventListener("abort", abortHandler);
+      }
+
       if (type === "result") {
         const line = d3
           .line<{ x: number; y: number }>()
@@ -162,10 +181,14 @@ export const createFdebPathsWorker = async (
       } else if (type === "error") {
         reject(new Error(error));
       }
+
       worker.terminate();
     };
 
     worker.onerror = (err) => {
+      if (signal) {
+        signal.removeEventListener("abort", abortHandler);
+      }
       worker.terminate();
       reject(err);
     };

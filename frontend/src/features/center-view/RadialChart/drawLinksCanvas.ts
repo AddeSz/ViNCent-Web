@@ -56,7 +56,10 @@ const drawLinksCanvas = async (
   hoveredNode: FullData | null,
   outerRadius: number,
   initialZoomFactor: number = 1,
+  signal?: AbortSignal,
 ) => {
+  if (signal?.aborted) return;
+
   const requiredRadius = outerRadius + 50;
   const canvasSize = Math.ceil(requiredRadius * 2);
   const center = canvasSize / 2;
@@ -69,14 +72,27 @@ const drawLinksCanvas = async (
       .style("will-change", "opacity, stroke");
   }
 
-  // const fdebPaths =
-  //   mode === "fdeB" ? createFdebPaths(links, x, outerRadius, fdebSettings) : [];
+  let fdebPaths: (string | null)[] = [];
+  if (mode === "fdeB") {
+    try {
+      fdebPaths = await createFdebPathsWorker(
+        links,
+        x,
+        outerRadius,
+        fdebSettings,
+        signal,
+      );
+      if (signal?.aborted) return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+      console.error("Error in FDEB calulation: ", error);
+      throw error;
+    }
+  }
 
-  const fdebPaths =
-    mode === "fdeB"
-      ? await createFdebPathsWorker(links, x, outerRadius, fdebSettings)
-      : [];
-
+  if (signal?.aborted) return;
   const processedLinks: ProcessedLink[] = [];
   for (let i = 0; i < links.length; i++) {
     const link = links[i];

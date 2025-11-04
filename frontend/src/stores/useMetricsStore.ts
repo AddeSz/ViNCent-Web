@@ -22,7 +22,6 @@ interface MetricsStore {
   timestepMetricsInfo: Map<number, Map<string, AttributeInfo>>;
 
   metricsData: Map<string, NodeMetrics>;
-  filteredMetricsData: Map<string, NodeMetrics>;
   metricsKeys: string[];
   enabledMetricsKeys: string[];
   metricsInfo: Map<string, AttributeInfo>;
@@ -55,54 +54,7 @@ interface MetricsStore {
   setSelectedCategories: (key: string, categories: string[]) => void;
 
   clearData: () => void;
-
-  _updateFilteredMetricsData: () => void;
-  updateFilters: () => void;
 }
-
-const filterAndMapMetricsData = (
-  metricsData: Map<string, NodeMetrics>,
-  enabledMetricsKeys: string[],
-  brushRanges: Record<string, BrushRange | null>,
-  selectedCategories: Record<string, string[]>,
-) => {
-  const filtered = new Map<string, NodeMetrics>();
-
-  metricsData.forEach((metrics, id) => {
-    const matches = enabledMetricsKeys.every((key) => {
-      const value = metrics[key];
-
-      const rangeObj = brushRanges[key];
-      if (rangeObj && typeof value === "number") {
-        const {
-          range: [min, max],
-          inclusive,
-        } = rangeObj;
-        const upperBoundCheck = inclusive ? value > max : value >= max;
-        if (value < min || upperBoundCheck) return false;
-      }
-
-      const selected = selectedCategories[key];
-      if (selected && selected.length > 0) {
-        if (!selected.includes(String(value))) return false;
-      }
-
-      return true;
-    });
-
-    if (matches) {
-      const result: NodeMetrics = {};
-      for (const key of enabledMetricsKeys) {
-        if (key in metrics) {
-          result[key] = metrics[key];
-        }
-      }
-      filtered.set(id, result);
-    }
-  });
-
-  return filtered;
-};
 
 const computeMetricsInfo = (
   metricsData: Map<string, NodeMetrics>,
@@ -231,7 +183,6 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   brushRanges: {},
   binnedDataByKey: new Map(),
   selectedCategories: {},
-  filteredMetricsData: new Map<string, NodeMetrics>(),
   currentTimestep: null,
 
   setMetricData: (nodes, centralities) => {
@@ -259,14 +210,18 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     const { keys, info } = computeMetricsInfo(metricsData, centralityKeys);
     const metricsKeysArray = Array.from(keys);
 
+    const brushRanges: Record<string, BrushRange | null> = {};
+    metricsKeysArray.forEach((key) => {
+      brushRanges[key] = null;
+    });
+
     set({
       metricsData,
       metricsKeys: metricsKeysArray,
       metricsInfo: info,
       enabledMetricsKeys: metricsKeysArray,
+      brushRanges,
     });
-
-    get()._updateFilteredMetricsData();
   },
 
   precomputeAllTimesteps: (
@@ -344,20 +299,23 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
     const metricsKeysArray = Array.from(metricsInfo.keys());
 
+    const brushRanges: Record<string, BrushRange | null> = {};
+    metricsKeysArray.forEach((key) => {
+      brushRanges[key] = null;
+    });
+
     set({
       currentTimestep: timestep,
       metricsData,
       metricsInfo,
       metricsKeys: metricsKeysArray,
       enabledMetricsKeys: metricsKeysArray,
+      brushRanges,
     });
-
-    get()._updateFilteredMetricsData();
   },
 
   setEnabledMetricsKeys: (keys) => {
     set({ enabledMetricsKeys: keys });
-    get()._updateFilteredMetricsData();
   },
 
   toggleMetricsKey: (key) => {
@@ -377,7 +335,6 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
         };
       }
     });
-    get()._updateFilteredMetricsData();
     return removed;
   },
 
@@ -388,59 +345,21 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
         [key]: categories,
       },
     }));
-    get()._updateFilteredMetricsData();
-  },
-
-  _updateFilteredMetricsData: () => {
-    const state = get();
-    const filtered = filterAndMapMetricsData(
-      state.metricsData,
-      state.enabledMetricsKeys,
-      state.brushRanges,
-      state.selectedCategories,
-    );
-    set({ filteredMetricsData: filtered });
-  },
-
-  updateFilters: () => {
-    get()._updateFilteredMetricsData();
   },
 
   setBrushRange: (key, brushRange) => {
-    set((s) => {
-      const newBrushRanges = {
+    set((s) => ({
+      brushRanges: {
         ...s.brushRanges,
         [key]: brushRange,
-      };
-
-      const filtered = filterAndMapMetricsData(
-        s.metricsData,
-        s.enabledMetricsKeys,
-        newBrushRanges,
-        s.selectedCategories,
-      );
-
-      return {
-        brushRanges: newBrushRanges,
-        filteredMetricsData: filtered,
-      };
-    });
+      },
+    }));
   },
 
   clearBrushRange: (key) => {
-    set((s) => {
-      const newBrushRanges = { ...s.brushRanges, [key]: null };
-      const filtered = filterAndMapMetricsData(
-        s.metricsData,
-        s.enabledMetricsKeys,
-        newBrushRanges,
-        s.selectedCategories,
-      );
-      return {
-        brushRanges: newBrushRanges,
-        filteredMetricsData: filtered,
-      };
-    });
+    set((s) => ({
+      brushRanges: { ...s.brushRanges, [key]: null },
+    }));
   },
 
   setBinnedData: (key, binnedData) => {
@@ -466,7 +385,6 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       brushRanges: {},
       binnedDataByKey: new Map(),
       selectedCategories: {},
-      filteredMetricsData: new Map(),
       currentTimestep: null,
     }),
 }));

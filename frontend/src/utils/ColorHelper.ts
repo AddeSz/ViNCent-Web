@@ -70,7 +70,7 @@ export const getLinkStyle = (
   if (isRemoved && isSelected) {
     opacity = 0.6;
   } else if (isRemoved && isHovered) {
-    opacity = defaultOpacity;
+    opacity = 0.6;
   } else if (isRemoved) {
     opacity = keepPreviewNodes ? 0.2 : 0;
   } else if (isSelected) {

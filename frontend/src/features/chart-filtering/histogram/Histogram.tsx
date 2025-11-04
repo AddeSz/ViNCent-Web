@@ -11,23 +11,23 @@ import { useHistogramInteraction } from "./components/useHistogramInteraction";
 import { useHistogramScales } from "./components/useHistogramScales";
 
 interface HistogramProps {
-  data: BinnedData;
+  binnedData: BinnedData;
+  filteredData: Set<string>;
   dimensions: ChartDimensions;
   dataKey: string;
   getColorForKey: (key: string) => string;
   brushRange: BrushRange | null;
   onBrushChange: (range: BrushRange | null) => void;
-  filteredNodeIds?: Set<string>;
 }
 
 const Histogram = ({
-  data,
+  binnedData,
+  filteredData,
   dimensions,
   dataKey,
   getColorForKey,
   brushRange,
   onBrushChange,
-  filteredNodeIds,
 }: HistogramProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,19 +40,18 @@ const Histogram = ({
   } = dimensions;
   const metricsData = useMetricsStore((s) => s.metricsData);
   const [disabledBins, setDisabledBins] = useState<Set<number>>(new Set());
-
   const color = getColorForKey(dataKey);
 
   const filteredBinCounts = useMemo(() => {
-    if (!filteredNodeIds) return null;
+    if (!filteredData) return null;
 
-    const counts = new Array(data.bins.length).fill(0);
+    const counts = new Array<number>(binnedData.bins.length).fill(0);
 
     Array.from(metricsData.keys()).forEach((nodeId) => {
-      if (!filteredNodeIds.has(nodeId)) return;
+      if (!filteredData.has(nodeId)) return;
       const value = metricsData.get(nodeId)?.[dataKey];
       if (typeof value === "number") {
-        const binIndex = data.valueToBinIndex.get(value);
+        const binIndex = binnedData.valueToBinIndex.get(value);
         if (binIndex !== undefined && !disabledBins.has(binIndex)) {
           counts[binIndex]++;
         }
@@ -60,18 +59,18 @@ const Histogram = ({
     });
 
     return counts;
-  }, [data, filteredNodeIds, metricsData, dataKey, disabledBins]);
+  }, [binnedData, filteredData, metricsData, disabledBins]);
 
   const { yScale, yTicks, xTicks, getBinPosition } = useHistogramScales(
-    data,
+    binnedData,
     chartWidth,
     chartHeight,
   );
 
   const binIndexToValue = (binIndex: number) => {
     return {
-      start: data.bins[binIndex].x0,
-      end: data.bins[binIndex].x1,
+      start: binnedData.bins[binIndex].x0,
+      end: binnedData.bins[binIndex].x1,
     };
   };
 
@@ -88,7 +87,7 @@ const Histogram = ({
     onBrushChange,
     brushRange,
     binIndexToValue,
-    binnedData: data,
+    binnedData: binnedData,
   });
 
   const activeRange = isDragging ? tempBrushRange : brushRange;
@@ -97,8 +96,8 @@ const Histogram = ({
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const binIndex = Math.min(
-      Math.floor((x / chartWidth) * data.bins.length),
-      data.bins.length - 1,
+      Math.floor((x / chartWidth) * binnedData.bins.length),
+      binnedData.bins.length - 1,
     );
     return binIndex;
   };
@@ -116,17 +115,19 @@ const Histogram = ({
           <HistogramBrushOverlay
             brushRange={activeRange}
             chartHeight={chartHeight}
-            bins={data.bins}
+            bins={binnedData.bins}
             getBinPosition={getBinPosition}
           />
 
           <HistogramBars
-            data={data}
+            binnedData={binnedData}
             chartHeight={chartHeight}
             color={color}
             yScale={yScale}
             getBinPosition={getBinPosition}
-            isBinSelected={(binIndex) => isBinSelected(binIndex, data.bins)}
+            isBinSelected={(binIndex) =>
+              isBinSelected(binIndex, binnedData.bins)
+            }
             hoverBin={hoverBin}
             filteredBinCounts={filteredBinCounts}
             dataKey={dataKey}
@@ -181,18 +182,19 @@ const Histogram = ({
           targetWidth={getBinPosition(hoverBin).width}
         >
           <div className="font-medium">
-            {formatValue(data.bins[hoverBin].x0)} –{" "}
-            {formatValue(data.bins[hoverBin].x1)}
+            {formatValue(binnedData.bins[hoverBin].x0)} –{" "}
+            {formatValue(binnedData.bins[hoverBin].x1)}
           </div>
           <div className="text-muted-foreground">
             {filteredBinCounts &&
-            filteredBinCounts[hoverBin] < data.bins[hoverBin].values.length ? (
+            filteredBinCounts[hoverBin] <
+              binnedData.bins[hoverBin].values.length ? (
               <>
                 Count: {filteredBinCounts[hoverBin]} /{" "}
-                {data.bins[hoverBin].values.length}
+                {binnedData.bins[hoverBin].values.length}
               </>
             ) : (
-              <>Count: {data.bins[hoverBin].values.length}</>
+              <>Count: {binnedData.bins[hoverBin].values.length}</>
             )}
           </div>
         </Tooltip>

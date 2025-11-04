@@ -20,7 +20,7 @@ import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ViewSettings from "./features/view-settings/ViewSettings";
-import { useFullData } from "./hooks/useFullData";
+import { useFilteredData } from "./hooks/useFilteredData";
 import { useProcessedData } from "./hooks/useProcessedData";
 
 const datasets = {
@@ -47,8 +47,7 @@ const App = () => {
     setDraggingBars((prev) => ({ ...prev, [id]: isDragging }));
   };
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
-  const { fullData, changes } = useFullData();
-
+  const { fullData, changes } = useFilteredData();
   const { data, dataMap, filteredNetwork, handlePreview, canPreview } =
     useProcessedData(fullData, changes);
 
@@ -164,7 +163,7 @@ const App = () => {
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
               <div className="h-full w-full">
-                <ChartFiltering />
+                <ChartFiltering dataMap={dataMap} />
               </div>
             </Panel>
             <PanelResizeHandle

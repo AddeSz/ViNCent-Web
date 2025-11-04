@@ -55,31 +55,43 @@ const createSimulation = (
 
 export function updateSimulationForces(
   simulation: Simulation<Node, Link>,
-  settings: SimulationSettings,
+  linkDistance: number,
+  chargeStrength: number,
 ): void {
   const linkForce = simulation.force("link") as d3.ForceLink<Node, Link>;
   if (linkForce) {
-    linkForce.distance(settings.linkDistance);
+    linkForce.distance(linkDistance);
   }
 
   const chargeForce = simulation.force("charge") as d3.ForceManyBody<Node>;
   if (chargeForce) {
-    chargeForce.strength(settings.chargeStrength);
+    chargeForce.strength(chargeStrength);
   }
 
-  if (settings.collisionEnabled) {
+  simulation.alpha(0.1).restart();
+}
+
+export function updateCollisionRadiuses(
+  simulation: Simulation<Node, Link>,
+  collisionRadiuses: Map<string, number>,
+  collisionEnabled: boolean,
+): void {
+  if (collisionEnabled) {
     simulation.force(
       "collision",
-      d3.forceCollide<Node>().radius((d) => {
-        const r = settings.collisionRadiuses?.get(d.id) ?? 1;
-        return r + 1;
-      }),
+      d3
+        .forceCollide<Node>()
+        .radius((d) => {
+          const r = collisionRadiuses?.get(d.id) ?? 1;
+          return r + 1;
+        })
+        .iterations(1),
     );
   } else {
     simulation.force("collision", null);
   }
 
-  simulation.alpha(0.1).restart();
+  if (collisionEnabled) simulation.alpha(0.01).alphaTarget(0.001).restart();
 }
 
 export function createDrag(

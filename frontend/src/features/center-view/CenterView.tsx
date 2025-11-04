@@ -51,6 +51,7 @@ const CenterView = ({
   isViewLoaded,
 }: CenterViewProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+
   const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
     useSortingLogic(data);
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
@@ -84,7 +85,7 @@ const CenterView = ({
       >
         <div
           ref={containerRef}
-          className="relative h-full w-full grow overflow-hidden bg-card"
+          className="relative h-full w-full overflow-hidden bg-card"
         >
           <div
             className={`absolute inset-0 ${

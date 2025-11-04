@@ -54,7 +54,8 @@ export const useHistogramInteraction = ({
   };
   const handleMouseUp = () => {
     if (isDragging && tempBrushRange) {
-      onBrushChange(tempBrushRange);
+      if (!areBrushRangesEqual(brushRange, tempBrushRange))
+        onBrushChange(tempBrushRange);
     }
     setIsDragging(false);
     setDragStart(null);
@@ -65,7 +66,8 @@ export const useHistogramInteraction = ({
     setHoverBin(null);
     if (isDragging) {
       if (tempBrushRange) {
-        onBrushChange(tempBrushRange);
+        if (!areBrushRangesEqual(brushRange, tempBrushRange))
+          onBrushChange(tempBrushRange);
       }
       setIsDragging(false);
       setDragStart(null);
@@ -96,4 +98,19 @@ export const useHistogramInteraction = ({
     handleMouseLeave,
     isBinSelected,
   };
+};
+
+const areBrushRangesEqual = (
+  a: BrushRange | null,
+  b: BrushRange | null,
+): boolean => {
+  if (a === null && b === null) return true;
+  if (a === null || b === null) return false;
+
+  const [a0, a1] = a.range;
+  const [b0, b1] = b.range;
+
+  const isClose = (x: number, y: number) => Math.abs(x - y) < EPSILON;
+
+  return isClose(a0, b0) && isClose(a1, b1) && a.inclusive === b.inclusive;
 };

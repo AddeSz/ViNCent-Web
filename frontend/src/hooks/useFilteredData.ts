@@ -7,12 +7,16 @@ import { useMemo, useRef } from "react";
 
 const emptyChanges: NodeChange = { added: {}, removed: {}, updated: {} };
 
-export const useFullData = (): {
+export const useFilteredData = (): {
   fullData: FullData[];
   changes: NodeChange;
 } => {
   const nodeData = useNetworkStore((s) => s.nodeMap);
-  const metricsData = useMetricsStore((s) => s.filteredMetricsData);
+  const metricsData = useMetricsStore((s) => s.metricsData);
+  const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
+  const brushRanges = useMetricsStore((s) => s.brushRanges);
+  const selectedCategories = useMetricsStore((s) => s.selectedCategories);
+
   const keepPreviewNodes = useSettingsStore(
     (s) => s.displaySettings.keepPreviewNodes,
   );
@@ -26,13 +30,43 @@ export const useFullData = (): {
 
     nodeData.forEach((baseNode, id) => {
       const metrics = metricsData.get(id);
-      const { vx, vy, x, y, attributes, index, ...filteredBaseNode } = baseNode;
-
       if (!metrics) return;
+
+      const matchesFilters = enabledMetricsKeys.every((key) => {
+        const value = metrics[key];
+
+        const rangeObj = brushRanges[key];
+        if (rangeObj && typeof value === "number") {
+          const {
+            range: [min, max],
+            inclusive,
+          } = rangeObj;
+          const upperBoundCheck = inclusive ? value > max : value >= max;
+          if (value < min || upperBoundCheck) return false;
+        }
+
+        const selected = selectedCategories[key];
+        if (selected && selected.length > 0) {
+          if (!selected.includes(String(value))) return false;
+        }
+
+        return true;
+      });
+
+      if (!matchesFilters) return;
+
+      const filteredMetrics: Record<string, any> = {};
+      for (const key of enabledMetricsKeys) {
+        if (key in metrics) {
+          filteredMetrics[key] = metrics[key];
+        }
+      }
+
+      const { vx, vy, x, y, attributes, index, ...filteredBaseNode } = baseNode;
 
       currentMap.set(id, {
         ...filteredBaseNode,
-        ...metrics,
+        ...filteredMetrics,
         removed: false,
         stable: false,
       });
@@ -95,5 +129,13 @@ export const useFullData = (): {
       fullData: ordered,
       changes: activeChanges,
     };
-  }, [nodeData, metricsData, keepPreviewNodes, keepStable]);
+  }, [
+    nodeData,
+    metricsData,
+    enabledMetricsKeys,
+    brushRanges,
+    selectedCategories,
+    keepPreviewNodes,
+    keepStable,
+  ]);
 };

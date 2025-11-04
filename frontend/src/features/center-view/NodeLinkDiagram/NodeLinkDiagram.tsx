@@ -25,7 +25,10 @@ import {
   calculateNodeSizes,
   setupNodeEvents,
 } from "./nodeLinkUtils";
-import createSimulation, { updateSimulationForces } from "./setupSimulation";
+import createSimulation, {
+  updateCollisionRadiuses,
+  updateSimulationForces,
+} from "./setupSimulation";
 import updateGraph, { updateStyle } from "./updateGraph";
 
 interface NodeLinkDiagramProps {
@@ -49,6 +52,7 @@ const NodeLinkDiagram = ({
   const simulationRef = useRef<Simulation<Node, Link> | null>(null);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const [isSimulationStable, setIsSimulationStable] = useState(false);
+
   const isInitializedRef = useRef(false);
 
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.1, 6]);
@@ -110,6 +114,7 @@ const NodeLinkDiagram = ({
     );
   }, [
     networkData.nodes,
+    dataMap,
     nodeSizeMode,
     nodeSizeMetric,
     fixedNodeSize,
@@ -152,7 +157,6 @@ const NodeLinkDiagram = ({
 
   useEffect(() => {
     if (!svgRef.current || isInitializedRef.current) return;
-    console.log("init");
 
     const svg = d3.select(svgRef.current);
     const svgGroup = svg.append("g").attr("class", "zoom-group");
@@ -180,7 +184,6 @@ const NodeLinkDiagram = ({
 
     const checkStability = () => {
       if (simulationRef.current && simulationRef.current.alpha() < 0.01) {
-        console.log("Simulation stable!");
         setIsSimulationStable(true);
         requestAnimationFrame(() => setIsCanvasReady(true));
       } else {
@@ -215,9 +218,7 @@ const NodeLinkDiagram = ({
   }, []);
 
   useEffect(() => {
-    if (!simulationRef.current || !isSimulationStable) return;
-    console.log("active network update");
-
+    if (!simulationRef.current || !isSimulationStable || !dimensions) return;
     const existingPositions = new Map<
       string,
       { x: number; y: number; vx?: number; vy?: number }
@@ -259,45 +260,61 @@ const NodeLinkDiagram = ({
   }, [activeNetwork]);
 
   useEffect(() => {
-    if (!simulationRef.current || !isSimulationStable) return;
-    console.log("SimForces");
+    if (!simulationRef.current || !isSimulationStable || !dimensions) return;
 
-    updateSimulationForces(simulationRef.current, {
-      linkDistance: linkDistance,
-      chargeStrength: chargeStrength,
-      collisionEnabled: collisionEnabled,
-      collisionRadiuses: nodeSizes,
-    });
-  }, [linkDistance, chargeStrength, collisionEnabled, nodeSizes]);
+    updateSimulationForces(simulationRef.current, linkDistance, chargeStrength);
+  }, [linkDistance, chargeStrength]);
 
   useEffect(() => {
-    if (!svgRef.current || !simulationRef.current || !isSimulationStable)
+    if (!simulationRef.current || !isSimulationStable || !dimensions) return;
+
+    updateCollisionRadiuses(simulationRef.current, nodeSizes, collisionEnabled);
+  }, [collisionEnabled, nodeSizes]);
+
+  useEffect(() => {
+    if (!svgRef.current || !simulationRef.current || !isSimulationStable) {
       return;
-    console.log("updateGraph");
+    }
+
+    let frameId: number;
 
     const svg = d3.select(svgRef.current);
     const hoveredNode = useNetworkStore.getState().hoveredNode;
     const selectedNodes = useNetworkStore.getState().selectedNodes;
 
-    updateGraph(
-      svg,
-      simulationRef.current,
-      filteredNetwork,
-      dataMap,
-      selectedNodes,
-      changes,
-      nodeSizes,
-      linkWeights,
-      hoveredNode,
-      showLabels,
-    );
+    const runUpdate = () => {
+      updateGraph(
+        svg,
+        simulationRef.current!,
+        filteredNetwork,
+        dataMap,
+        selectedNodes,
+        changes,
+        nodeSizes,
+        linkWeights,
+        hoveredNode,
+        showLabels,
+      );
 
-    setupNodeEvents(svg, interactionProps);
-  }, [changes, nodeSizes, linkWeights, showLabels]);
+      setupNodeEvents(svg, interactionProps);
+    };
+
+    frameId = requestAnimationFrame(runUpdate);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, [changes, linkWeights, nodeSizes, showLabels]);
 
   useEffect(() => {
-    if (!svgRef.current || !simulationRef.current || !isSimulationStable)
+    if (
+      !svgRef.current ||
+      !simulationRef.current ||
+      !isSimulationStable ||
+      !dimensions
+    ) {
       return;
+    }
 
     const svgGroup = d3
       .select(svgRef.current)
@@ -307,7 +324,7 @@ const NodeLinkDiagram = ({
   }, [isViewActive]);
 
   useEffect(() => {
-    if (!isInitializedRef.current) return;
+    if (!isInitializedRef.current || !dimensions) return;
 
     let previousHoveredNode = useNetworkStore.getState().hoveredNode;
     let previousSelectedNodes = useNetworkStore.getState().selectedNodes;

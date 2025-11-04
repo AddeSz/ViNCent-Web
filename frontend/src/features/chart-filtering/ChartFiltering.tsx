@@ -8,6 +8,7 @@ import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
+import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Barchart from "./barchart/Barchart";
@@ -22,7 +23,11 @@ export interface ChartDimensions {
   chartHeight: number;
 }
 
-const ChartFiltering = () => {
+interface ChartFilteringProps {
+  dataMap: Map<string, FullData>;
+}
+
+const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const dimensions = useResizeObserver(containerRef);
@@ -69,11 +74,16 @@ const ChartFiltering = () => {
   const clearBrushRange = useMetricsStore((s) => s.clearBrushRange);
   const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
   const setBinnedData = useMetricsStore((s) => s.setBinnedData);
-  const filteredMetricsData = useMetricsStore((s) => s.filteredMetricsData);
-
   const data = useMemo(() => {
     return Array.from(metricsData.values());
   }, [metricsData]);
+
+  const filteredData = new Set<string>();
+  for (const [key, value] of dataMap.entries()) {
+    if (value && !value.removed && !value.stable) {
+      filteredData.add(key);
+    }
+  }
 
   useEffect(() => {
     allKeys.forEach((key) => {
@@ -144,6 +154,7 @@ const ChartFiltering = () => {
 
         <Barchart
           categoricalValues={values.map(String)}
+          filteredData={filteredData}
           dimensions={chartDimensions}
           dataKey={key}
           getColorForKey={getColorForKey}
@@ -153,7 +164,6 @@ const ChartFiltering = () => {
       </div>
     );
   };
-
   const renderHistogram = (key: string) => {
     const info = metricsInfo.get(key);
 
@@ -186,13 +196,13 @@ const ChartFiltering = () => {
         </div>
 
         <Histogram
-          data={binnedData}
+          binnedData={binnedData}
+          filteredData={filteredData}
           dimensions={chartDimensions}
           dataKey={key}
           getColorForKey={getColorForKey}
           brushRange={brushRanges[key]}
           onBrushChange={(range) => setBrushRange(key, range)}
-          filteredNodeIds={new Set(filteredMetricsData.keys())}
         />
         {brushRanges[key] && (
           <p className="min-w-[30px] flex-1 truncate pl-2 text-xs text-muted-foreground">

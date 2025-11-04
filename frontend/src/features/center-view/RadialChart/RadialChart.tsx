@@ -51,6 +51,7 @@ const RadialChart = ({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const lastZoomLevel = useRef(1);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const attributeInfo = useMetricsStore((s) => s.metricsInfo);
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
@@ -141,10 +142,11 @@ const RadialChart = ({
 
   useEffect(() => {
     let cancelled = false;
+    let abortController = new AbortController();
 
     (async () => {
-      if (!svgRef.current || !chartData) return;
-
+      if (!svgRef.current || !chartData || !dimensions) return;
+      setIsUpdating(true);
       const svg = d3.select(svgRef.current);
       let svgGroup = svg.select<SVGGElement>("g.zoom-group");
 
@@ -152,7 +154,6 @@ const RadialChart = ({
         svgGroup = svg.append("g").attr("class", "zoom-group");
         setupZoom(svg, svgGroup, getCurrentTransform(), (k) => redrawCanvas(k));
       }
-
       const { series } = chartData;
       const bounds = calculateBounds(series, xScale, yScale, getKeyIndex);
       const hoveredNode = useNetworkStore.getState().hoveredNode;
@@ -171,6 +172,7 @@ const RadialChart = ({
         hoveredNode,
         innerRadius,
         zoomLevel,
+        abortController.signal,
       );
 
       if (cancelled) return;
@@ -212,11 +214,16 @@ const RadialChart = ({
         hoveredNode,
         radius,
       );
-      requestAnimationFrame(() => setIsCanvasReady(true));
+      requestAnimationFrame(() => {
+        setIsCanvasReady(true);
+        setIsUpdating(false);
+      });
     })();
 
     return () => {
       cancelled = true;
+      abortController.abort();
+      setIsUpdating(false);
     };
   }, [
     dimensions,
@@ -258,18 +265,21 @@ const RadialChart = ({
   }, []);
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !chartData || !dimensions) return;
     const svg = d3.select(svgRef.current);
     updateLabels(svg, fontSize, totalLabelWidth, truncateLabels, radius);
   }, [fontSize, totalLabelWidth, truncateLabels]);
 
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB") return;
-
+    let cancelled = false;
+    let abortController = new AbortController();
     (async () => {
       const svgGroup = d3
         .select(svgRef.current)
         .select<SVGGElement>("g.zoom-group");
+
+      setIsUpdating(true);
 
       const hoveredNode = useNetworkStore.getState().hoveredNode;
       const selectedNodes = useNetworkStore.getState().selectedNodes;
@@ -287,8 +297,16 @@ const RadialChart = ({
         hoveredNode,
         innerRadius,
         zoomLevel,
+        abortController.signal,
       );
+      if (cancelled) return;
     })();
+
+    return () => {
+      cancelled = true;
+      abortController.abort();
+      setIsUpdating(false);
+    };
   }, [fdebSettings]);
 
   useEffect(() => {
@@ -318,6 +336,7 @@ const RadialChart = ({
 
   const showSpinner =
     !dimensions?.width || !dimensions?.height || !chartData || !isCanvasReady;
+
   return (
     <>
       {showSpinner && (
@@ -339,6 +358,11 @@ const RadialChart = ({
           handleContextMenu("radial");
         }}
       >
+        <div
+          className={`pointer-events-none absolute top-2 left-2 z-10 rounded bg-background/80 px-3 py-1.5 text-sm text-muted-foreground transition-opacity duration-300 ${isUpdating && !showSpinner ? "opacity-100" : "opacity-0"} `}
+        >
+          Updating data...
+        </div>
         <svg
           ref={svgRef}
           viewBox="-800 -800 1600 1600"

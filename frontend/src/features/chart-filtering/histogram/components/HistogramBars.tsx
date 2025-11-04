@@ -3,7 +3,7 @@ import { type ScaleLinear } from "d3";
 import type { BinnedData } from "../../components/createBinnedData";
 
 interface HistogramBarsProps {
-  data: BinnedData;
+  binnedData: BinnedData;
   chartHeight: number;
   color: string;
   yScale: ScaleLinear<number, number>;
@@ -16,7 +16,7 @@ interface HistogramBarsProps {
 }
 
 export const HistogramBars = ({
-  data,
+  binnedData,
   chartHeight,
   color,
   yScale,
@@ -31,11 +31,11 @@ export const HistogramBars = ({
   const hoveredValue = hoveredNode?.[dataKey];
   const hoveredBinIndex =
     hoveredValue != null && !hoveredNode?.removed && !hoveredNode?.stable
-      ? (data.valueToBinIndex.get(hoveredValue) ?? null)
+      ? (binnedData.valueToBinIndex.get(hoveredValue) ?? null)
       : null;
   return (
     <>
-      {data.bins.map((bin, i) => {
+      {binnedData.bins.map((bin, i) => {
         const { x, width } = getBinPosition(i);
         const barHeight = chartHeight - yScale(bin.values.length);
         const isSelected = isBinSelected(i);
