@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import type { RefObject } from "react";
 import { useCallback, useRef } from "react";
 
-export const ZOOM_LEVELS = [0.4, 1, 2.5] as const;
+export const ZOOM_LEVELS = [0.5, 1, 2.5] as const;
 export type ZoomLevel = (typeof ZOOM_LEVELS)[number];
 
 export function getClosestZoomLevel(zoomFactor: number): ZoomLevel {

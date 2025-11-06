@@ -1,16 +1,11 @@
-import type {
-  Network,
-  Node,
-  NodeAttributes,
-  TimelineEntry,
-} from "@/types/network";
+import type { Attributes, Network, Node, TimelineEntry } from "@/types/network";
 
 type PreprocessedNetwork = {
   network: Network;
   nodes: Omit<Node, "history">[];
   timesteps: number[];
   timelines: Map<string, TimelineEntry[]>;
-  attributes: Map<string, NodeAttributes>;
+  attributes: Map<string, Attributes>;
 };
 
 export const networkPreprocessing = (network: Network): PreprocessedNetwork => {
@@ -18,12 +13,12 @@ export const networkPreprocessing = (network: Network): PreprocessedNetwork => {
 
   const timestepSet = new Set<number>();
   const timelines = new Map<string, TimelineEntry[]>();
-  const attributeMap = new Map<string, NodeAttributes>();
+  const attributeMap = new Map<string, Attributes>();
 
   const nodeData = networkClone.nodes.map((node) => {
     const { attributes, history, ...rest } = node;
 
-    const processedAttributes: NodeAttributes = attributes || {};
+    const processedAttributes: Attributes = attributes || {};
     const processedHistory = Array.isArray(history) ? history : [];
 
     timelines.set(node.id, processedHistory);

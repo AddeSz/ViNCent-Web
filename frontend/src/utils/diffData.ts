@@ -1,9 +1,14 @@
-import type { FullData, NodeChange } from "@/types/network";
+import type { DataChanges, FullData } from "@/types/network";
 
-export const diffNodes = (
+const normalizeEdgeId = (id: string) => {
+  const parts = id.split("|");
+  return parts.length === 2 ? parts.sort().join("|") : id;
+};
+
+export const diffData = (
   prevMap: Map<string, FullData>,
   currMap: Map<string, FullData>,
-): NodeChange => {
+): DataChanges => {
   const added: Record<string, FullData> = {};
   const removed: Record<string, FullData> = {};
   const updated: Record<
@@ -11,8 +16,18 @@ export const diffNodes = (
     Record<string, { before: FullData; after: FullData }>
   > = {};
 
-  for (const [id, currNode] of currMap.entries()) {
-    const prevNode = prevMap.get(id);
+  const normalizedPrev = new Map<string, FullData>();
+  const normalizedCurr = new Map<string, FullData>();
+
+  for (const [id, val] of prevMap.entries()) {
+    normalizedPrev.set(normalizeEdgeId(id), val);
+  }
+  for (const [id, val] of currMap.entries()) {
+    normalizedCurr.set(normalizeEdgeId(id), val);
+  }
+
+  for (const [id, currNode] of normalizedCurr.entries()) {
+    const prevNode = normalizedPrev.get(id);
 
     if (!prevNode) {
       added[id] = currNode;
@@ -35,8 +50,8 @@ export const diffNodes = (
     }
   }
 
-  for (const [id, prevNode] of prevMap.entries()) {
-    if (!currMap.has(id)) {
+  for (const [id, prevNode] of normalizedPrev.entries()) {
+    if (!normalizedCurr.has(id)) {
       removed[id] = prevNode;
     }
   }

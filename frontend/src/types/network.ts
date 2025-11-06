@@ -1,21 +1,15 @@
 import type { SimulationLinkDatum, SimulationNodeDatum } from "d3-force";
 
-export type NodeAttributeValue =
-  | string
-  | number
-  | boolean
-  | Record<string, any>;
-
-export type NodeAttributes = Record<string, NodeAttributeValue>;
-export type TimelineEntry = {
-  timestep: number;
-  attributes?: NodeAttributes;
+export type AttributeValue = string | number | boolean;
+export type Attributes = Record<string, AttributeValue>;
+export type AttributeRecord = {
+  id: string;
+  attributes: Attributes;
 };
-
 export type AttributeInfo = {
   key: string;
   type: "string" | "number" | "boolean";
-  values: Set<NodeAttributeValue>;
+  values: Set<AttributeValue>;
   isNominal: boolean;
   isOrdinal: boolean;
   isNumeric: boolean;
@@ -24,10 +18,15 @@ export type AttributeInfo = {
   range?: { min: number; max: number };
 };
 
+export type TimelineEntry = {
+  timestep: number;
+  attributes?: Attributes;
+};
+
 export type Node = SimulationNodeDatum & {
   id: string;
   label?: string;
-  attributes?: NodeAttributes;
+  attributes?: Attributes;
   history?: TimelineEntry[];
   linkCount?: number;
   removed?: boolean;
@@ -38,7 +37,7 @@ export type Link = SimulationLinkDatum<Node> & {
   target: string | Node;
   weight?: number;
   directed?: boolean;
-  attributes?: NodeAttributes;
+  attributes?: Attributes;
 };
 
 export type Centrality = {
@@ -59,7 +58,7 @@ export type Network = {
   links: Link[];
 };
 
-export type NodeChange = {
+export type DataChanges = {
   added: Record<string, FullData>;
   removed: Record<string, FullData>;
   updated: Record<

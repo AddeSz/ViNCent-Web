@@ -11,6 +11,7 @@ type RadialSettings = {
   innerRadius: number;
   outerRadius: number;
   fontSize: number;
+  showLabels: boolean;
   truncateLabels: boolean;
   labelWidth: number;
   maxLabelWidth: number;
@@ -70,6 +71,7 @@ export const defaultRadialSettings: RadialSettings = {
   outerRadius: 600,
   fontSize: 24,
   truncateLabels: false,
+  showLabels: true,
   labelWidth: 200,
   maxLabelWidth: 200,
   separateMetrics: false,

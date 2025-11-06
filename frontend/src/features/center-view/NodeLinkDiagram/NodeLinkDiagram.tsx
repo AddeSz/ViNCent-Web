@@ -9,11 +9,11 @@ import { useZoom } from "@/features/center-view/hooks/useZoom";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
+  DataChanges,
   FullData,
   Link,
   Network,
   Node,
-  NodeChange,
 } from "@/types/network";
 import type { Simulation } from "d3";
 import * as d3 from "d3";
@@ -36,8 +36,10 @@ interface NodeLinkDiagramProps {
   filteredNetwork: Network;
   dataMap: Map<string, FullData>;
   handleContextMenu: (target: ContextType, data?: any) => void;
-  changes: NodeChange;
+  nodeChanges: DataChanges;
+  edgeChanges: DataChanges;
   isViewActive: boolean;
+  onUpdateStateChange: (isUpdating: boolean) => void;
 }
 
 const NodeLinkDiagram = ({
@@ -45,8 +47,10 @@ const NodeLinkDiagram = ({
   filteredNetwork,
   dataMap,
   handleContextMenu,
-  changes,
+  nodeChanges,
+  edgeChanges,
   isViewActive,
+  onUpdateStateChange,
 }: NodeLinkDiagramProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const simulationRef = useRef<Simulation<Node, Link> | null>(null);
@@ -85,11 +89,6 @@ const NodeLinkDiagram = ({
     collisionEnabled,
     showLabels,
   } = nodeLinkSettings;
-  const keepStableView = useSettingsStore(
-    (s) => s.displaySettings.keepStableView,
-  );
-
-  const activeNetwork = keepStableView ? networkData : filteredNetwork;
 
   const interactionProps: InteractionProps = useMemo(
     () => ({
@@ -125,7 +124,7 @@ const NodeLinkDiagram = ({
 
   const linkWeights = useMemo(() => {
     return calculateLinkWeights(
-      activeNetwork.links,
+      networkData.links,
       linkThicknessMode,
       fixedLinkThickness,
       minLinkThickness,
@@ -133,7 +132,7 @@ const NodeLinkDiagram = ({
       linkScaleType,
     );
   }, [
-    activeNetwork.links,
+    networkData.links,
     linkThicknessMode,
     fixedLinkThickness,
     minLinkThickness,
@@ -202,15 +201,15 @@ const NodeLinkDiagram = ({
         svg,
         simulationRef.current,
         filteredNetwork,
-        dataMap,
         selectedNodes,
-        changes,
+        nodeChanges,
+        edgeChanges,
         nodeSizes,
         linkWeights,
         hoveredNode,
         showLabels,
       );
-      drawSelectionBrush(svgGroup, networkData.nodes, isViewActive);
+      drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
       setupNodeEvents(svg, interactionProps);
     }
 
@@ -219,13 +218,11 @@ const NodeLinkDiagram = ({
 
   useEffect(() => {
     if (!simulationRef.current || !isSimulationStable || !dimensions) return;
-
     updateSimulationForces(simulationRef.current, linkDistance, chargeStrength);
   }, [linkDistance, chargeStrength]);
 
   useEffect(() => {
     if (!simulationRef.current || !isSimulationStable || !dimensions) return;
-
     updateCollisionRadiuses(simulationRef.current, nodeSizes, collisionEnabled);
   }, [collisionEnabled, nodeSizes]);
 
@@ -233,7 +230,7 @@ const NodeLinkDiagram = ({
     if (!svgRef.current || !simulationRef.current || !isSimulationStable) {
       return;
     }
-
+    onUpdateStateChange(true);
     let frameId: number;
 
     const svg = d3.select(svgRef.current);
@@ -245,9 +242,9 @@ const NodeLinkDiagram = ({
         svg,
         simulationRef.current!,
         filteredNetwork,
-        dataMap,
         selectedNodes,
-        changes,
+        nodeChanges,
+        edgeChanges,
         nodeSizes,
         linkWeights,
         hoveredNode,
@@ -259,10 +256,14 @@ const NodeLinkDiagram = ({
 
     frameId = requestAnimationFrame(runUpdate);
 
+    requestAnimationFrame(() => {
+      onUpdateStateChange(false);
+    });
+
     return () => {
       cancelAnimationFrame(frameId);
     };
-  }, [changes, linkWeights, nodeSizes, showLabels]);
+  }, [nodeChanges, edgeChanges, linkWeights, nodeSizes, showLabels]);
 
   useEffect(() => {
     if (
@@ -278,15 +279,14 @@ const NodeLinkDiagram = ({
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
 
-    drawSelectionBrush(svgGroup, activeNetwork.nodes, isViewActive);
+    drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
   }, [isViewActive]);
 
   useEffect(() => {
-    if (!isInitializedRef.current || !dimensions) return;
+    if (!isInitializedRef.current) return;
 
     let previousHoveredNode = useNetworkStore.getState().hoveredNode;
     let previousSelectedNodes = useNetworkStore.getState().selectedNodes;
-
     const unsubscribe = useNetworkStore.subscribe((state) => {
       if (
         state.hoveredNode === previousHoveredNode &&
@@ -302,16 +302,16 @@ const NodeLinkDiagram = ({
       updateStyle(
         svg,
         state.selectedNodes,
-        dataMap,
         nodeSizes,
         linkWeights,
-        changes,
+        nodeChanges,
+        edgeChanges,
         state.hoveredNode,
       );
     });
 
     return unsubscribe;
-  }, [changes, nodeSizes, linkWeights]);
+  }, [nodeChanges, edgeChanges, nodeSizes, linkWeights]);
 
   const showSpinner =
     !dimensions?.width || !dimensions?.height || !isCanvasReady;

@@ -40,23 +40,23 @@ export type ViewType = "radial" | "node-link" | "data-table";
 const App = () => {
   const { view, setView, isViewLoaded } = useViewPersistence(VIEW_KEY);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoadedData, setHasLoadedData] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { loadNetwork, clearAllData } = useDataStores();
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
-  const handleDragging = (id: string) => (isDragging: boolean) => {
-    setDraggingBars((prev) => ({ ...prev, [id]: isDragging }));
-  };
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
-  const { fullData, changes } = useFilteredData();
-  const { data, dataMap, filteredNetwork, handlePreview, canPreview } =
-    useProcessedData(fullData, changes);
 
-  const handleLoadData = async (data: any) => {
+  const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
+  const { nodeData, edgeData, filteredNetwork, handlePreview, canPreview } =
+    useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
+
+  const handleLoadData = async (data: any, datasetID?: string) => {
     try {
       setIsLoading(true);
       setError(null);
       clearAllData();
-      await loadNetwork(data);
+      await loadNetwork(data, datasetID);
+      setHasLoadedData(true);
     } catch (err) {
       let errorMessage = "Unknown error occurred";
 
@@ -66,7 +66,7 @@ const App = () => {
           err.message.includes("fetch")
         ) {
           errorMessage =
-            "Failed to connect to the server. Please check your connection.";
+            "Failed to connect to the server. Please try again later.";
         } else if (err.message.includes("422")) {
           errorMessage =
             "Invalid dataset format. Please ensure your JSON has valid nodes and links.";
@@ -90,6 +90,11 @@ const App = () => {
       setIsLoading(false);
     }
   };
+
+  const handleDragging = (id: string) => (isDragging: boolean) => {
+    setDraggingBars((prev) => ({ ...prev, [id]: isDragging }));
+  };
+
   return (
     <div className="flex h-full">
       <PanelGroup direction="horizontal" className="flex">
@@ -101,6 +106,7 @@ const App = () => {
                   datasets={datasets}
                   onLoadData={handleLoadData}
                   view={view}
+                  hasLoadedData={hasLoadedData}
                 />
               </div>
             </Panel>
@@ -128,25 +134,32 @@ const App = () => {
               </p>
             </div>
           ) : error ? (
-            <div className="flex h-full flex-col items-center justify-center gap-4">
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-center text-red-500">{error}</p>
-              </div>
-              <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+            <div className="flex h-full flex-col items-center justify-center gap-2">
+              <p className="text-center text-red-500">{error}</p>
+              <FileUploader
+                datasets={datasets}
+                onLoadData={handleLoadData}
+                hasError={!!error}
+              />
             </div>
           ) : isEmpty ? (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p className="text-center text-muted-foreground">
                 No data loaded. Select or import a dataset to begin.
               </p>
-              <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+              <FileUploader
+                datasets={datasets}
+                onLoadData={handleLoadData}
+                hasError={!!error}
+              />
             </div>
           ) : (
             <CenterView
-              data={data}
-              dataMap={dataMap}
+              dataMap={nodeData}
+              edgeData={edgeData}
               filteredNetwork={filteredNetwork}
-              changes={changes}
+              nodeChanges={nodeChanges}
+              edgeChanges={edgeChanges}
               canPreview={canPreview}
               onPreview={handlePreview}
               view={view}
@@ -163,7 +176,7 @@ const App = () => {
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
               <div className="h-full w-full">
-                <ChartFiltering dataMap={dataMap} />
+                <ChartFiltering nodeData={nodeData} edgeData={edgeData} />
               </div>
             </Panel>
             <PanelResizeHandle
@@ -172,7 +185,7 @@ const App = () => {
             />
             <Panel defaultSize={30} minSize={10}>
               <div className="scrollbar-thin h-full w-full overflow-y-auto p-2">
-                <Legend dataMap={dataMap} />
+                <Legend nodeData={nodeData} />
               </div>
             </Panel>
           </PanelGroup>

@@ -4,27 +4,44 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 
-# These are the ones found in NetWorkX ...
+# These are the ones found in NetWorkX (those that are relevant)
 class CentralityType(str, Enum):
     DEGREE = "degree"
-    IN_DEGREE = "in_degree"
-    OUT_DEGREE = "out_degree"
     BETWEENNESS = "betweenness"
     CLOSENESS = "closeness"
     EIGENVECTOR = "eigenvector"
     PAGERANK = "pagerank"
     KATZ = "katz"
     HARMONIC = "harmonic"
-    LOAD = "load"
-    SUBGRAPH = "subgraph"
-    CURRENT_FLOW_CLOSENESS = "current_flow_closeness"
-    CURRENT_FLOW_BETWEENNESS = "current_flow_betweenness"
-    COMMUNICABILITY_BETWEENNESS = "communicability_betweenness"
-    PERCOLATION = "percolation"
-    SECOND_ORDER = "second_order"
-    LOCAL_REACHING = "local_reaching"
-    TROPHIC_LEVEL = "trophic_level"
 
+    LOAD = "load"
+    EDGE_BETWEENNESS = "edge_betweenness"
+    EDGE_LOAD = "edge_load"
+    CURRENT_FLOW_BETWEENNESS = "current_flow_betweenness"
+    EDGE_CURRENT_FLOW_BETWEENNESS = "edge_current_flow_betweenness"
+    INFORMATION_CENTRALITY = "information_centrality"
+    COMMUNICABILITY_BETWEENNESS = "communicability_betweenness"
+
+    SUBGRAPH = "subgraph"
+    SUBGRAPH_CENTRALITY_EXP = "subgraph_centrality_exp"
+    LAPLACIAN = "laplacian"
+    SECOND_ORDER = "second_order"
+
+    PERCOLATION = "percolation"
+
+    VOTERANK = "voterank"
+    DISPERSION = "dispersion"
+
+    IN_DEGREE = "in_degree"
+    OUT_DEGREE = "out_degree"
+    LOCAL_REACHING = "local_reaching"
+    GLOBAL_REACHING = "global_reaching"
+
+    TROPHIC_LEVEL = "trophic_level"
+    TROPHIC_DIFFERENCES = "trophic_differences"
+    TROPHIC_INCOHERENCE = "trophic_incoherence"
+    
+    
 class Node(BaseModel):
     id: str
     label: Optional[str] = None
@@ -43,18 +60,9 @@ class NetworkData(BaseModel):
 
 class CentralityRequest(BaseModel):
     network: NetworkData
-    centralities: Optional[List[CentralityType]] = None
-    
-class TimedNetworkData(BaseModel):
-    timesteps: List[int]
-    networks: Dict[str, NetworkData]
-
-class CentralityTimelineRequest(BaseModel):
-    timesteps: List[int]
-    networks: Dict[int, NetworkData] 
-    centralities: Optional[List[CentralityType]] = None
+    dataset_id: Optional[str] = None
     
 class CentralityTimestepRequest(BaseModel):
     timestep: int
     network: NetworkData
-    centralities: Optional[List[CentralityType]] = None
+    dataset_id: Optional[str] = None

@@ -1,9 +1,13 @@
 import { getProjectEnvVariables } from "@/shared/projectEnvVariables";
-import type { Centrality, Network, TimelineEntry } from "@/types/network";
+import type {
+  AttributeRecord,
+  Attributes,
+  Network,
+  TimelineEntry,
+} from "@/types/network";
 import { getNodeId } from "@/utils/utils";
 
 const env = getProjectEnvVariables();
-
 const API_BASE_URL = env.envVariables.VITE_BACKEND_URL;
 
 interface BackendNetworkData {
@@ -30,87 +34,59 @@ export const prepareNetworkForBackend = (
 
 export const calculateCentralityValues = async (
   networkData: Network,
-  centralities?: string[],
-): Promise<Centrality[]> => {
-  const backendData = {
-    network: prepareNetworkForBackend(networkData),
-    ...(centralities ? { centralities } : {}),
-  };
+  datasetID?: string,
+): Promise<{
+  nodes: AttributeRecord[];
+  edges: AttributeRecord[];
+  nodeCentralityKeys: string[];
+  edgeCentralityKeys: string[];
+}> => {
+  const backendData = prepareNetworkForBackend(networkData);
 
   const response = await fetch(`${API_BASE_URL}/calculate-centrality-all`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(backendData),
+    body: JSON.stringify({
+      network: backendData,
+      ...(datasetID && { dataset_id: datasetID }),
+    }),
   });
 
   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-  const backendCentralityData = await response.json();
 
-  return Object.entries(
-    backendCentralityData as Record<string, Record<string, string | number>>,
-  ).map(([nodeId, centralities]) => ({ id: nodeId, ...centralities }));
+  const data = await response.json();
+
+  const nodes: AttributeRecord[] = Object.entries(data.nodes).map(
+    ([id, attributes]) => ({ id, attributes: attributes as Attributes }),
+  );
+
+  const edges: AttributeRecord[] = Object.entries(data.edges).map(
+    ([id, attributes]) => ({ id, attributes: attributes as Attributes }),
+  );
+
+  return {
+    nodes,
+    edges,
+    nodeCentralityKeys: data.metadata?.calculated_node_centralities || [],
+    edgeCentralityKeys: data.metadata?.calculated_edge_centralities || [],
+  };
 };
-
-// export const calculateCentralityValuesTimeline = async (
-//   networkData: Network,
-//   timesteps: number[],
-//   timelines: Map<string, TimelineEntry[]>,
-//   centralities?: string[],
-// ): Promise<Map<number, Centrality[]>> => {
-//   const networks: Record<number, BackendNetworkData> = {};
-
-//   timesteps.forEach((t) => {
-//     const filteredNodes = networkData.nodes.filter((node) => {
-//       const nodeTimeline = timelines.get(node.id);
-//       return nodeTimeline?.some((entry) => entry.timestep === t) ?? false;
-//     });
-
-//     const filteredEdges = networkData.links.filter(
-//       (edge) =>
-//         filteredNodes.some((n) => n.id === edge.source) &&
-//         filteredNodes.some((n) => n.id === edge.target),
-//     );
-
-//     if (filteredNodes.length > 0) {
-//       networks[t] = prepareNetworkForBackend({
-//         nodes: filteredNodes,
-//         links: filteredEdges,
-//       });
-//     }
-//   });
-
-//   const backendData = {
-//     timesteps,
-//     networks,
-//     ...(centralities ? { centralities } : {}),
-//   };
-
-//   const response = await fetch(
-//     `${API_BASE_URL}/calculate-centrality-timeline`,
-//     {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(backendData),
-//     },
-//   );
-
-//   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-//   const backendCentralityTimeline = await response.json();
-
-//   const result = new Map<number, Centrality[]>();
-//   Object.entries(backendCentralityTimeline).forEach(([timestep, items]) => {
-//     result.set(Number(timestep), items as Centrality[]);
-//   });
-//   return result;
-// };
 
 export const calculateCentralityValuesTimeline = async (
   networkData: Network,
   timesteps: number[],
   timelines: Map<string, TimelineEntry[]>,
-  centralities?: string[],
-): Promise<Map<number, Centrality[]>> => {
-  const result = new Map<number, Centrality[]>();
+  datasetID?: string,
+): Promise<{
+  nodes: Map<number, AttributeRecord[]>;
+  edges: Map<number, AttributeRecord[]>;
+  nodeCentralityKeys: Set<string>;
+  edgeCentralityKeys: Set<string>;
+}> => {
+  const nodeResult = new Map<number, AttributeRecord[]>();
+  const edgeResult = new Map<number, AttributeRecord[]>();
+  const nodeCentralityKeys = new Set<string>();
+  const edgeCentralityKeys = new Set<string>();
 
   for (const t of timesteps) {
     const filteredNodes = networkData.nodes.filter((node) => {
@@ -118,26 +94,27 @@ export const calculateCentralityValuesTimeline = async (
       return nodeTimeline?.some((entry) => entry.timestep === t) ?? false;
     });
 
-    const filteredEdges = networkData.links.filter(
-      (edge) =>
-        filteredNodes.some((n) => n.id === edge.source) &&
-        filteredNodes.some((n) => n.id === edge.target),
-    );
-
     if (filteredNodes.length === 0) continue;
 
+    const filteredEdges = networkData.links.filter(
+      (link) =>
+        filteredNodes.some((n) => n.id === getNodeId(link.source)) &&
+        filteredNodes.some((n) => n.id === getNodeId(link.target)),
+    );
+
     const backendData = {
-      timestep: t,
-      network: {
-        nodes: filteredNodes.map((node) => ({ id: node.id })),
-        links: filteredEdges.map((link) => ({
-          source: getNodeId(link.source),
-          target: getNodeId(link.target),
-          ...(link.weight && { weight: link.weight }),
-          ...(link.directed !== undefined && { directed: link.directed }),
-        })),
-      },
-      ...(centralities ? { centralities } : {}),
+      nodes: filteredNodes.map((node) => ({
+        id: node.id,
+        ...(node.label && { label: node.label }),
+        ...(node.attributes && { attributes: node.attributes }),
+      })),
+      links: filteredEdges.map((link) => ({
+        source: getNodeId(link.source),
+        target: getNodeId(link.target),
+        ...(link.weight && { weight: link.weight }),
+        ...(link.directed !== undefined && { directed: link.directed }),
+        ...(link.attributes && { attributes: link.attributes }),
+      })),
     };
 
     const response = await fetch(
@@ -145,15 +122,46 @@ export const calculateCentralityValuesTimeline = async (
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(backendData),
+        body: JSON.stringify({
+          timestep: t,
+          network: backendData,
+          ...(datasetID && { dataset_id: datasetID }),
+        }),
       },
     );
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    const backendCentralityData: Centrality[] = await response.json();
-    result.set(t, backendCentralityData);
+    const data = await response.json();
+
+    if (data.metadata?.calculated_node_centralities) {
+      data.metadata.calculated_node_centralities.forEach((key: string) =>
+        nodeCentralityKeys.add(key),
+      );
+    }
+    if (data.metadata?.calculated_edge_centralities) {
+      data.metadata.calculated_edge_centralities.forEach((key: string) =>
+        edgeCentralityKeys.add(key),
+      );
+    }
+
+    const nodes: AttributeRecord[] = data.nodes.map((nodeData: any) => {
+      const { id, ...attributes } = nodeData;
+      return { id, attributes };
+    });
+
+    const edges: AttributeRecord[] = Object.entries(data.edges).map(
+      ([id, attributes]) => ({ id, attributes: attributes as Attributes }),
+    );
+
+    nodeResult.set(t, nodes);
+    edgeResult.set(t, edges);
   }
 
-  return result;
+  return {
+    nodes: nodeResult,
+    edges: edgeResult,
+    nodeCentralityKeys,
+    edgeCentralityKeys,
+  };
 };

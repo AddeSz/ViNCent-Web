@@ -132,18 +132,22 @@ const drawLabels = (
           }
         });
 
-        return update.call((update) =>
-          update
-            .transition()
-            .duration(150)
-            .attr("transform", getTransform)
-            .select("text")
-            .attr("transform", getTextTransform)
-            .attr("text-anchor", getTextAnchor)
-            .attr("fill", getFillColor)
-            .attr("font-weight", getFontWeight)
-            .attr("font-size", `${getFontSize()}px`),
-        );
+        update.attr("transform", getTransform);
+
+        update
+          .select("text")
+          .attr("transform", getTextTransform)
+          .attr("text-anchor", getTextAnchor);
+
+        update
+          .select("text")
+          .transition()
+          .duration(150)
+          .attr("fill", getFillColor)
+          .attr("font-weight", getFontWeight)
+          .attr("font-size", `${getFontSize()}px`);
+
+        return update;
       },
       (exit) =>
         exit.call((exit) =>

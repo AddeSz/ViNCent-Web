@@ -1,5 +1,5 @@
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type { AttributeInfo, FullData, NodeChange } from "@/types/network";
+import type { AttributeInfo, DataChanges, FullData } from "@/types/network";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 import {
@@ -65,7 +65,7 @@ const drawArcsCanvas = (
   innerRadius: number,
   outerRadius: number,
   bounds: BoundsResult,
-  lastChange: NodeChange,
+  nodeChanges: DataChanges,
   changeCircleRadius: number,
   initialZoomFactor: number = 1,
 ): void => {
@@ -197,11 +197,11 @@ const drawArcsCanvas = (
   const getChangeType = (
     id: string,
   ): "added" | "removed" | "updated" | null => {
-    if (lastChange?.added && id in lastChange.added) return "added";
-    if (lastChange?.removed && id in lastChange.removed) return "removed";
+    if (nodeChanges?.added && id in nodeChanges.added) return "added";
+    if (nodeChanges?.removed && id in nodeChanges.removed) return "removed";
     if (
-      lastChange?.updated &&
-      Object.prototype.hasOwnProperty.call(lastChange.updated, id)
+      nodeChanges?.updated &&
+      Object.prototype.hasOwnProperty.call(nodeChanges.updated, id)
     )
       return "updated";
     return null;
@@ -291,7 +291,7 @@ const drawArcsCanvas = (
       center,
       canvasSize,
       changeCircleRadius,
-      lastChange,
+      nodeChanges,
     );
   }
 };
@@ -546,7 +546,7 @@ function setupCanvasInteractions(
   center: number,
   canvasSize: number,
   changeCircleRadius: number,
-  lastChange: NodeChange,
+  nodeChanges: DataChanges,
 ): void {
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
@@ -630,7 +630,7 @@ function setupCanvasInteractions(
           nodeId: circle.id,
           x: event.clientX,
           y: event.clientY,
-          lastChange,
+          lastChange: nodeChanges,
         });
       } else if (arc) {
         onTooltipShow({

@@ -11,10 +11,15 @@ import { useRef } from "react";
 
 interface FileUploaderProps {
   datasets: Record<string, any>;
-  onLoadData: (data: any) => void;
+  onLoadData: (data: any, datasetID?: string) => void;
+  hasError: boolean;
 }
 
-const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
+const FileUploader = ({
+  datasets,
+  onLoadData,
+  hasError = false,
+}: FileUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentDataset = useNetworkStore((s) => s.currentDataset);
   const setCurrentDataset = useNetworkStore((s) => s.setCurrentDataset);
@@ -41,7 +46,7 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
 
   const handleDatasetSelect = (key: string) => {
     setCurrentDataset(key);
-    onLoadData(datasets[key]);
+    onLoadData(datasets[key], key);
   };
 
   return (
@@ -89,7 +94,7 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
           />
         </div>
       </div>
-      {currentDataset && (
+      {currentDataset && !hasError && (
         <p
           title={currentDataset}
           className="truncate pt-1 text-xs text-muted-foreground"

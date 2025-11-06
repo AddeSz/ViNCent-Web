@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 *.bat
+cache/
 
 # Python
 __pycache__/

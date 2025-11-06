@@ -1,4 +1,4 @@
-import type { Link } from "@/types/network";
+import type { FullData, Link } from "@/types/network";
 import {
   ForceEdgeBundling,
   type ForceEdgeBundlingOptions,
@@ -53,6 +53,7 @@ export const createHierarchyPath = (
   );
 };
 
+//OUTDATED. Need to update for edgeData instead of Links...
 export const createFdebPaths = (
   links: Link[],
   x: d3.ScaleBand<string>,
@@ -105,7 +106,7 @@ export const createFdebPaths = (
 };
 
 export const createFdebPathsWorker = async (
-  links: Link[],
+  edgeData: Map<string, FullData>,
   x: d3.ScaleBand<string>,
   innerRadius: number,
   fdebSettings: ForceEdgeBundlingOptions,
@@ -125,12 +126,19 @@ export const createFdebPathsWorker = async (
   });
 
   const nodeIds = new Set(nodes.map((n) => n.id));
-  const validEdges = links
-    .map((l, i) => ({
-      index: i,
-      source: getNodeId(l.source),
-      target: getNodeId(l.target),
-    }))
+
+  const edgeArray = Array.from(edgeData.entries());
+
+  const validEdges = edgeArray
+    .map(([edgeId], index) => {
+      const [source, target] = edgeId.split("|");
+      return {
+        index,
+        edgeId,
+        source,
+        target,
+      };
+    })
     .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target));
 
   const edgesForBundling = validEdges.map((e) => ({
@@ -138,7 +146,9 @@ export const createFdebPathsWorker = async (
     target: e.target,
   }));
 
-  if (!edgesForBundling.length) return new Array(links.length).fill(null);
+  if (!edgesForBundling.length) {
+    return new Array(edgeData.size).fill(null);
+  }
 
   const worker = new Worker(
     new URL("@/workers/fdebWorker.ts", import.meta.url),
@@ -171,7 +181,8 @@ export const createFdebPathsWorker = async (
           .y((d) => d.y)
           .curve(d3.curveBundle.beta(0.85));
 
-        const fdebPaths = new Array(links.length).fill(null);
+        const fdebPaths = new Array(edgeData.size).fill(null);
+
         result.forEach((b: { x: number; y: number }[], j: number) => {
           const originalIndex = validEdges[j].index;
           fdebPaths[originalIndex] = line(b) ?? null;

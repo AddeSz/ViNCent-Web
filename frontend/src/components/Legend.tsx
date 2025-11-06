@@ -7,10 +7,10 @@ import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo } from "react";
 
 interface LegendProps {
-  dataMap: Map<string, FullData>;
+  nodeData: Map<string, FullData>;
 }
 
-const Legend = ({ dataMap }: LegendProps) => {
+const Legend = ({ nodeData }: LegendProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
@@ -19,11 +19,11 @@ const Legend = ({ dataMap }: LegendProps) => {
   const nodeMetrics = useMemo(() => {
     if (!hoveredNode) return [];
 
-    const nodeData = dataMap.get(hoveredNode.id);
-    const isStable = nodeData?.stable ?? false;
+    const data = nodeData.get(hoveredNode.id);
+    const isStable = data?.stable ?? false;
     return allKeys.map((key) => {
       const info = metricsInfo.get(key);
-      const value = nodeData?.[key];
+      const value = data?.[key];
 
       let proportion = 0;
       let percentage = "";
@@ -48,7 +48,7 @@ const Legend = ({ dataMap }: LegendProps) => {
         formattedValue: isStable ? "N/A" : formattedValue,
       };
     });
-  }, [hoveredNode, allKeys, dataMap, metricsInfo]);
+  }, [hoveredNode, allKeys, nodeData, metricsInfo]);
 
   if (!hoveredNode) {
     return (
@@ -69,12 +69,12 @@ const Legend = ({ dataMap }: LegendProps) => {
             {" "}
             {hoveredNode.label || hoveredNode.id}
           </span>{" "}
-          {dataMap.get(hoveredNode.id)?.stable && (
+          {nodeData.get(hoveredNode.id)?.stable && (
             <span className="text-xs text-muted-foreground italic">
               (Stable Node)
             </span>
           )}
-          {dataMap.get(hoveredNode.id)?.removed && (
+          {nodeData.get(hoveredNode.id)?.removed && (
             <span className="text-xs text-muted-foreground italic">
               (Removed Node)
             </span>

@@ -1,4 +1,4 @@
-import type { NodeChange } from "@/types/network";
+import type { DataChanges } from "@/types/network";
 import { create } from "zustand";
 
 export interface TooltipState {
@@ -8,7 +8,7 @@ export interface TooltipState {
   y: number;
   visible: boolean;
   arcKey?: string;
-  lastChange?: NodeChange;
+  lastChange?: DataChanges;
 }
 
 interface TooltipStore {

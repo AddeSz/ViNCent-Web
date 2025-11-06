@@ -24,10 +24,11 @@ export interface ChartDimensions {
 }
 
 interface ChartFilteringProps {
-  dataMap: Map<string, FullData>;
+  nodeData: Map<string, FullData>;
+  edgeData: Map<string, FullData>;
 }
 
-const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
+const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
   const dimensions = useResizeObserver(containerRef);
@@ -48,6 +49,8 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
 
   const { allKeys } = useKeys();
 
+  const edgeKeys = useMetricsStore((s) => s.enabledEdgeMetricsKeys);
+
   const [globalBinCount, setGlobalBinCount] = useState(16);
   const [useIndividualBinCounts, setUseIndividualBinCounts] = useState(false);
   const [binCountsByKey, setBinCountsByKey] = useState<Record<string, number>>(
@@ -66,6 +69,7 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
   };
 
   const metricsData = useMetricsStore((s) => s.metricsData);
+  const edgeMetricsData = useMetricsStore((s) => s.edgeMetricsData);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
   const selectedCategories = useMetricsStore((s) => s.selectedCategories);
   const setSelectedCategories = useMetricsStore((s) => s.setSelectedCategories);
@@ -75,14 +79,24 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
   const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
   const setBinnedData = useMetricsStore((s) => s.setBinnedData);
 
-  const data = useMemo(() => {
+  const fullNodeData = useMemo(() => {
     return Array.from(metricsData.values());
   }, [metricsData]);
 
-  const filteredData = new Set<string>();
-  for (const [key, value] of dataMap.entries()) {
+  const fullEdgeData = useMemo(() => {
+    return Array.from(edgeMetricsData.values());
+  }, [edgeMetricsData]);
+
+  const filteredNodeData = new Set<string>();
+  for (const [key, value] of nodeData.entries()) {
     if (value && !value.removed && !value.stable) {
-      filteredData.add(key);
+      filteredNodeData.add(key);
+    }
+  }
+  const filteredEdgeData = new Set<string>();
+  for (const [key, value] of edgeData.entries()) {
+    if (value && !value.removed && !value.stable) {
+      filteredEdgeData.add(key);
     }
   }
 
@@ -92,7 +106,24 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
 
       if (!info || !info.isNumeric || info.isNominal) return;
 
-      const values = data
+      const values = fullNodeData
+        .map((d) => d[key])
+        .filter((v): v is number => typeof v === "number");
+
+      if (values.length > 0) {
+        const binCount = getBinCount(key);
+        const binnedData = createBinnedData(values, binCount);
+
+        setBinnedData(key, binnedData);
+      }
+    });
+
+    edgeKeys.forEach((key) => {
+      const info = metricsInfo.get(key);
+
+      if (!info || !info.isNumeric || info.isNominal) return;
+
+      const values = fullEdgeData
         .map((d) => d[key])
         .filter((v): v is number => typeof v === "number");
 
@@ -104,8 +135,10 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
       }
     });
   }, [
-    data,
+    fullNodeData,
+    fullEdgeData,
     allKeys,
+    edgeKeys,
     globalBinCount,
     binCountsByKey,
     useIndividualBinCounts,
@@ -120,12 +153,13 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
     setSelectedCategories(key, newSelected);
   };
 
-  const renderBarChart = (key: string) => {
+  const renderBarChart = (key: string, isEdgeMetric: boolean = false) => {
     const info = metricsInfo.get(key);
     if (!info || (!info.isNominal && !info.isOrdinal && !info.isBoolean))
       return null;
 
-    const values = data
+    const sourceData = isEdgeMetric ? fullEdgeData : fullNodeData;
+    const values = sourceData
       .map((d) => d[key])
       .filter((v) => typeof v === "string" || typeof v === "boolean");
 
@@ -155,19 +189,20 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
 
         <Barchart
           categoricalValues={values.map(String)}
-          filteredData={filteredData}
+          filteredData={isEdgeMetric ? filteredEdgeData : filteredNodeData}
           dimensions={chartDimensions}
           dataKey={key}
           getColorForKey={getColorForKey}
           selectedCategories={selectedCategories[key] || null}
           onBarClick={(category) => handleCategoryClick(key, category)}
+          metricsData={isEdgeMetric ? edgeMetricsData : metricsData}
         />
       </div>
     );
   };
-  const renderHistogram = (key: string) => {
-    const info = metricsInfo.get(key);
 
+  const renderHistogram = (key: string, isEdgeMetric: boolean = false) => {
+    const info = metricsInfo.get(key);
     if (!info || !info.isNumeric || info.isNominal) return null;
 
     const binnedData = binnedDataByKey.get(key);
@@ -198,12 +233,13 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
 
         <Histogram
           binnedData={binnedData}
-          filteredData={filteredData}
+          filteredData={isEdgeMetric ? filteredEdgeData : filteredNodeData}
           dimensions={chartDimensions}
           dataKey={key}
           getColorForKey={getColorForKey}
           brushRange={brushRanges[key]}
           onBrushChange={(range) => setBrushRange(key, range)}
+          metricsData={isEdgeMetric ? edgeMetricsData : metricsData}
         />
         {brushRanges[key] && (
           <p className="min-w-[30px] flex-1 truncate pl-2 text-xs text-muted-foreground">
@@ -302,9 +338,10 @@ const ChartFiltering = ({ dataMap }: ChartFilteringProps) => {
         className="scrollbar-thin h-full w-full overflow-y-auto px-2 pt-1 pb-2"
       >
         <div className="space-y-4">
-          {allKeys.map(renderHistogram)}
-
-          {allKeys.map(renderBarChart)}
+          {allKeys.map((key) => renderHistogram(key, false))}
+          {allKeys.map((key) => renderBarChart(key, false))}
+          {edgeKeys.map((key) => renderHistogram(key, true))}
+          {edgeKeys.map((key) => renderBarChart(key, true))}
         </div>
       </div>
     </div>

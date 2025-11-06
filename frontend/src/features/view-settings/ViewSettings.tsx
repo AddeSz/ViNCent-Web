@@ -1,7 +1,6 @@
 import type { ViewType } from "@/App";
 import FileUploader from "@/components/FileUploader";
 import { TimestepSlider } from "@/components/TimeStepSlider";
-import { useNetworkStore } from "@/stores/useNetworkStore";
 import DisplaySettings from "./components/DisplaySettings";
 import NodeLinkDiagramSettings from "./components/NodeLinkDiagramSettings";
 import RadialChartSettings from "./components/RadialChartSettings";
@@ -10,18 +9,27 @@ interface ViewSettingsProps {
   datasets: Record<string, any>;
   onLoadData: (data: any) => void;
   view: ViewType;
+  hasLoadedData: boolean;
 }
 
-const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
-  const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
+const ViewSettings = ({
+  datasets,
+  onLoadData,
+  view,
+  hasLoadedData,
+}: ViewSettingsProps) => {
   return (
     <div className="flex flex-col gap-2">
-      {!isEmpty && (
+      {hasLoadedData && (
         <div>
           <p className="mb-0 w-full cursor-default truncate" title="Load Data">
             Load Data
           </p>
-          <FileUploader datasets={datasets} onLoadData={onLoadData} />
+          <FileUploader
+            datasets={datasets}
+            onLoadData={onLoadData}
+            hasError={false}
+          />
         </div>
       )}
 

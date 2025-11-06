@@ -1,34 +1,49 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { FullData, Network, NodeChange } from "@/types/network";
+import type { DataChanges, FullData, Network } from "@/types/network";
 import { getNodeId } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 
-export const useProcessedData = (fullData: FullData[], changes: NodeChange) => {
+export const useProcessedData = (
+  nodeMap: Map<string, FullData>,
+  edgeMap: Map<string, FullData>,
+  changes: DataChanges,
+  edgeChanges: DataChanges,
+) => {
   const keepStable = useSettingsStore((s) => s.displaySettings.keepStableView);
   const keepDeletedNodes = useSettingsStore(
     (s) => s.displaySettings.keepPreviewNodes,
   );
-
   const networkData = useNetworkStore((s) => s.network);
   const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
 
   const [acceptedRemovals, setAcceptedRemovals] = useState<Set<string>>(
     new Set(),
   );
+  const [acceptedEdgeRemovals, setAcceptedEdgeRemovals] = useState<Set<string>>(
+    new Set(),
+  );
+
   const lastChangesRef = useRef(changes);
+  const lastEdgeChangesRef = useRef(edgeChanges);
 
   if (changes !== lastChangesRef.current) {
     lastChangesRef.current = changes;
     if (acceptedRemovals.size > 0) setAcceptedRemovals(new Set());
   }
 
-  const result = useMemo(() => {
-    const processedData: FullData[] = [];
-    const dataMap = new Map<string, FullData>();
-    const validNodeIds = new Set<string>();
+  if (edgeChanges !== lastEdgeChangesRef.current) {
+    lastEdgeChangesRef.current = edgeChanges;
+    if (acceptedEdgeRemovals.size > 0) setAcceptedEdgeRemovals(new Set());
+  }
 
-    for (const node of fullData) {
+  const result = useMemo(() => {
+    const dataMap = new Map<string, FullData>();
+    const processedEdgeMap = new Map<string, FullData>();
+    const validNodeIds = new Set<string>();
+    const removedNodeIds = new Set<string>();
+
+    for (const [id, node] of nodeMap) {
       let processedNode: FullData | null = node;
 
       if (node.removed && acceptedRemovals.has(node.id!)) {
@@ -52,25 +67,56 @@ export const useProcessedData = (fullData: FullData[], changes: NodeChange) => {
           hidden: isHidden,
           linkCount: 0,
         };
-        processedData.push(nodeWithHidden);
-        dataMap.set(nodeWithHidden.id!, nodeWithHidden);
+        dataMap.set(id, nodeWithHidden);
 
-        if (!nodeWithHidden.stable) validNodeIds.add(nodeWithHidden.id!);
+        if (!nodeWithHidden.stable) {
+          validNodeIds.add(nodeWithHidden.id!);
+        }
+
+        if (nodeWithHidden.removed || isHidden) {
+          removedNodeIds.add(nodeWithHidden.id!);
+        }
       }
     }
 
     const filteredNodes = networkData.nodes.filter(
       (node) => validNodeIds.has(node.id) && !hiddenNodes.has(node.id),
     );
+    for (const [linkId, edge] of edgeMap) {
+      const [s, t] = linkId.split("|");
+
+      let processedEdge = edge;
+
+      const shouldRemove =
+        !validNodeIds.has(s) ||
+        !validNodeIds.has(t) ||
+        hiddenNodes.has(s) ||
+        hiddenNodes.has(t);
+
+      if (shouldRemove) {
+        processedEdge = {
+          ...edge,
+          removed: true,
+        };
+      }
+
+      if (processedEdge.removed && acceptedEdgeRemovals.has(linkId)) {
+        continue;
+      }
+
+      processedEdgeMap.set(linkId, processedEdge);
+    }
 
     const filteredLinks = networkData.links.filter((link) => {
       const s = getNodeId(link.source);
       const t = getNodeId(link.target);
+      const linkId = link.directed ? `${s}|${t}` : [s, t].sort().join("|");
+      const edge = processedEdgeMap.get(linkId);
       return (
-        validNodeIds.has(s) &&
-        validNodeIds.has(t) &&
         !hiddenNodes.has(s) &&
-        !hiddenNodes.has(t)
+        !hiddenNodes.has(t) &&
+        edge &&
+        !acceptedEdgeRemovals.has(linkId)
       );
     });
 
@@ -78,8 +124,13 @@ export const useProcessedData = (fullData: FullData[], changes: NodeChange) => {
     for (const link of filteredLinks) {
       const s = getNodeId(link.source);
       const t = getNodeId(link.target);
-      linkCountMap.set(s, (linkCountMap.get(s) || 0) + 1);
-      linkCountMap.set(t, (linkCountMap.get(t) || 0) + 1);
+      const linkId = link.directed ? `${s}|${t}` : [s, t].sort().join("|");
+
+      const edge = processedEdgeMap.get(linkId);
+      if (edge && (!edge.removed || acceptedEdgeRemovals.has(linkId))) {
+        linkCountMap.set(s, (linkCountMap.get(s) || 0) + 1);
+        linkCountMap.set(t, (linkCountMap.get(t) || 0) + 1);
+      }
     }
 
     for (const [id, count] of linkCountMap) {
@@ -87,43 +138,65 @@ export const useProcessedData = (fullData: FullData[], changes: NodeChange) => {
       if (node) dataMap.set(id, { ...node, linkCount: count });
     }
 
-    const finalData = processedData.map((n) => {
-      const updated = dataMap.get(n.id!);
-      return updated ?? n;
-    });
-
     const filteredNetwork: Network = {
       nodes: filteredNodes,
       links: filteredLinks,
     };
 
-    return { data: finalData, dataMap, filteredNetwork, linkCountMap };
+    return {
+      nodeData: dataMap,
+      edgeData: processedEdgeMap,
+      filteredNetwork,
+      linkCountMap,
+    };
   }, [
-    fullData,
+    nodeMap,
+    edgeMap,
     acceptedRemovals,
+    acceptedEdgeRemovals,
     keepStable,
-    networkData.nodes,
-    networkData.links,
     hiddenNodes,
+    networkData,
   ]);
 
   const handlePreview = () => {
-    if (!changes) return;
-    const removedIds = Object.keys(changes.removed ?? {});
-    if (removedIds.length > 0) {
-      setAcceptedRemovals((prev) => {
-        const next = new Set(prev);
-        removedIds.forEach((id) => next.add(id));
-        return next;
-      });
+    if (changes) {
+      const removedIds = Object.keys(changes.removed ?? {});
+      if (removedIds.length > 0) {
+        setAcceptedRemovals((prev) => {
+          const next = new Set(prev);
+          removedIds.forEach((id) => next.add(id));
+          return next;
+        });
+      }
+    }
+
+    if (edgeChanges) {
+      const removedEdgeIds = Object.keys(edgeChanges.removed ?? {});
+      if (removedEdgeIds.length > 0) {
+        setAcceptedEdgeRemovals((prev) => {
+          const next = new Set(prev);
+          removedEdgeIds.forEach((id) => next.add(id));
+          return next;
+        });
+      }
     }
   };
 
   const removedIds = changes ? Object.keys(changes.removed ?? {}) : [];
+  const removedEdgeIds = edgeChanges
+    ? Object.keys(edgeChanges.removed ?? {})
+    : [];
+
   const unacceptedRemovals = removedIds.filter(
     (id) => !acceptedRemovals.has(id),
   );
-  const canPreview = unacceptedRemovals.length > 0 && keepDeletedNodes;
+  const unacceptedEdgeRemovals = removedEdgeIds.filter(
+    (id) => !acceptedEdgeRemovals.has(id),
+  );
+  const canPreview =
+    (unacceptedRemovals.length > 0 || unacceptedEdgeRemovals.length > 0) &&
+    keepDeletedNodes;
 
   return { ...result, handlePreview, canPreview };
 };

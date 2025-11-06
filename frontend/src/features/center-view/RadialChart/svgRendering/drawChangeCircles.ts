@@ -1,4 +1,4 @@
-import type { NodeChange } from "@/types/network";
+import type { DataChanges } from "@/types/network";
 import * as d3 from "d3";
 import type { InteractionProps } from "../../Tooltips/useTooltip";
 
@@ -6,7 +6,7 @@ export const drawChangeCircles = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   x: d3.ScaleBand<string>,
   outerRadius: number,
-  lastChange: NodeChange,
+  nodeChanges: DataChanges,
   interactionProps: InteractionProps,
   radius: number,
 ) => {
@@ -17,11 +17,11 @@ export const drawChangeCircles = (
   }
 
   const getFillColor = (d: string) => {
-    const isAdded = lastChange?.added && d in lastChange.added;
-    const isRemoved = lastChange?.removed && d in lastChange.removed;
+    const isAdded = nodeChanges?.added && d in nodeChanges.added;
+    const isRemoved = nodeChanges?.removed && d in nodeChanges.removed;
     const isUpdated =
-      lastChange?.updated &&
-      Object.prototype.hasOwnProperty.call(lastChange.updated, d);
+      nodeChanges?.updated &&
+      Object.prototype.hasOwnProperty.call(nodeChanges.updated, d);
     if (isAdded) return "green";
     if (isRemoved) return "red";
     if (isUpdated) return "yellow";
@@ -65,7 +65,7 @@ export const drawChangeCircles = (
         nodeId: d,
         x: mouseX,
         y: mouseY,
-        lastChange,
+        lastChange: nodeChanges,
       });
     })
     .on("mousemove", function (event, d) {
@@ -75,7 +75,7 @@ export const drawChangeCircles = (
         nodeId: d,
         x: mouseX,
         y: mouseY,
-        lastChange,
+        lastChange: nodeChanges,
       });
     })
     .on("mouseout", onTooltipHide);

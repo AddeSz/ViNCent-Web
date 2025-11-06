@@ -1,4 +1,4 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import type { Attributes } from "@/types/network";
 import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
 import { Tooltip } from "../components/Tooltip";
@@ -13,6 +13,7 @@ interface BarchartProps {
   getColorForKey: (key: string, value?: string | number) => string;
   selectedCategories: string[] | null;
   onBarClick: (category: string) => void;
+  metricsData: Map<string, Attributes>;
 }
 
 const Barchart = ({
@@ -23,11 +24,10 @@ const Barchart = ({
   getColorForKey,
   selectedCategories,
   onBarClick,
+  metricsData,
 }: BarchartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverCategory, setHoverCategory] = useState<string | null>(null);
-
-  const metricsData = useMetricsStore((s) => s.metricsData);
 
   const {
     svgWidth: width,

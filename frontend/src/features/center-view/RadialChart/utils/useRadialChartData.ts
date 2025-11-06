@@ -1,12 +1,11 @@
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { FullData, NodeChange } from "@/types/network";
+import type { FullData } from "@/types/network";
 import * as d3 from "d3";
 import { useMemo } from "react";
 import { createAngleMap } from "./calculateLinks";
 
 interface UseRadialChartDataProps {
   data: FullData[];
-  changes: NodeChange;
   allKeys: string[];
   enabledCentralityKeys: string[];
   enabledAttributeKeys: string[];
@@ -14,7 +13,6 @@ interface UseRadialChartDataProps {
 
 export const useRadialChartData = ({
   data,
-  changes,
   allKeys,
   enabledCentralityKeys,
   enabledAttributeKeys,
@@ -59,11 +57,6 @@ export const useRadialChartData = ({
     return createAngleMap(xScale);
   }, [xScale]);
 
-  const removedIds = useMemo(
-    () => new Set(Object.keys(changes.removed)),
-    [changes.removed],
-  );
-
   const { yScale, getKeyIndex } = useMemo(() => {
     return createRadialScale({
       innerRadius,
@@ -97,7 +90,6 @@ export const useRadialChartData = ({
     chartData,
     xScale,
     angleMap,
-    removedIds,
     yScale,
     getKeyIndex,
     totalLabelWidth,

@@ -6,7 +6,7 @@ import {
 } from "@/stores/useSettingsStore";
 import { useTimelineStore } from "@/stores/useTimelineStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type { AttributeInfo, Centrality, Network } from "@/types/network";
+import type { AttributeInfo, AttributeRecord, Network } from "@/types/network";
 import {
   calculateCentralityValues,
   calculateCentralityValuesTimeline,
@@ -28,32 +28,52 @@ export const useDataStores = () => {
   );
   const clearMetricsData = useMetricsStore((s) => s.clearData);
 
-  const loadNetwork = async (data: Network) => {
+  const loadNetwork = async (data: Network, datasetID?: string) => {
     const { network, nodes, timesteps, timelines, attributes } =
       networkPreprocessing(data);
 
-    let centralityData: Centrality[] | null = null;
-    let timelineCentralities: Map<number, Centrality[]> | null = null;
+    let nodeCentralityData: AttributeRecord[] | null = null;
+    let edgeCentralityData: AttributeRecord[] | null = null;
+    let nodeCentralityKeys: Set<string> = new Set();
+    let edgeCentralityKeys: Set<string> = new Set();
+    let timelineNodeCentralities: Map<number, AttributeRecord[]> | null = null;
+    let timelineEdgeCentralities: Map<number, AttributeRecord[]> | null = null;
 
     if (timesteps.length > 0) {
-      timelineCentralities = await calculateCentralityValuesTimeline(
+      const timelineResults = await calculateCentralityValuesTimeline(
         data,
         timesteps,
         timelines,
+        datasetID,
       );
+      timelineNodeCentralities = timelineResults.nodes;
+      timelineEdgeCentralities = timelineResults.edges;
+      nodeCentralityKeys = timelineResults.nodeCentralityKeys;
+      edgeCentralityKeys = timelineResults.edgeCentralityKeys;
     } else {
-      centralityData = await calculateCentralityValues(data);
+      const results = await calculateCentralityValues(data, datasetID);
+      nodeCentralityData = results.nodes;
+      edgeCentralityData = results.edges;
+      nodeCentralityKeys = new Set(results.nodeCentralityKeys);
+      edgeCentralityKeys = new Set(results.edgeCentralityKeys);
     }
 
     setNetwork(network);
     setTimesteps(timesteps);
 
-    if (timesteps.length > 0 && timelineCentralities) {
+    if (
+      timesteps.length > 0 &&
+      timelineNodeCentralities &&
+      timelineEdgeCentralities
+    ) {
       precomputeAllTimesteps(
         timesteps,
         timelines,
         attributes,
-        timelineCentralities,
+        timelineNodeCentralities,
+        timelineEdgeCentralities,
+        nodeCentralityKeys,
+        edgeCentralityKeys,
       );
 
       const allMetricInfosMap = new Map<string, AttributeInfo>();
@@ -80,8 +100,14 @@ export const useDataStores = () => {
       useVisualizationStore
         .getState()
         .initializeColorScales(Array.from(allMetricInfosMap.values()));
-    } else if (centralityData) {
-      setMetricData(nodes, centralityData);
+    } else if (nodeCentralityData && edgeCentralityData) {
+      setMetricData(
+        nodes,
+        nodeCentralityData,
+        edgeCentralityData,
+        nodeCentralityKeys,
+        edgeCentralityKeys,
+      );
 
       const metricInfos = Array.from(
         useMetricsStore.getState().metricsInfo.values(),

@@ -17,21 +17,21 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
       >
         <ToggleGroupItem
           value="radial"
-          className="w-30"
+          className="w-30 cursor-pointer"
           aria-label="Toggle radial view"
         >
           Radial View
         </ToggleGroupItem>
         <ToggleGroupItem
           value="node-link"
-          className="w-30"
+          className="w-30 cursor-pointer"
           aria-label="Toggle node-link view"
         >
           Node-Link View
         </ToggleGroupItem>
         <ToggleGroupItem
           value="data-table"
-          className="w-30"
+          className="w-30 cursor-pointer"
           aria-label="Toggle data-table view"
         >
           Data Table View

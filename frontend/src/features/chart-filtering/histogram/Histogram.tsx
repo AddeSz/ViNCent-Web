@@ -1,4 +1,5 @@
-import { useMetricsStore, type BrushRange } from "@/stores/useMetricsStore";
+import { type BrushRange } from "@/stores/useMetricsStore";
+import type { Attributes } from "@/types/network";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
@@ -18,6 +19,7 @@ interface HistogramProps {
   getColorForKey: (key: string) => string;
   brushRange: BrushRange | null;
   onBrushChange: (range: BrushRange | null) => void;
+  metricsData: Map<string, Attributes>;
 }
 
 const Histogram = ({
@@ -28,6 +30,7 @@ const Histogram = ({
   getColorForKey,
   brushRange,
   onBrushChange,
+  metricsData,
 }: HistogramProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +41,6 @@ const Histogram = ({
     chartWidth,
     chartHeight,
   } = dimensions;
-  const metricsData = useMetricsStore((s) => s.metricsData);
   const [disabledBins, setDisabledBins] = useState<Set<number>>(new Set());
   const color = getColorForKey(dataKey);
 
@@ -46,7 +48,6 @@ const Histogram = ({
     if (!filteredData) return null;
 
     const counts = new Array<number>(binnedData.bins.length).fill(0);
-
     Array.from(metricsData.keys()).forEach((nodeId) => {
       if (!filteredData.has(nodeId)) return;
       const value = metricsData.get(nodeId)?.[dataKey];
@@ -57,7 +58,6 @@ const Histogram = ({
         }
       }
     });
-
     return counts;
   }, [binnedData, filteredData, metricsData, disabledBins]);
 

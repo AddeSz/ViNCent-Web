@@ -6,7 +6,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
 import { useTimelineStore } from "@/stores/useTimelineStore";
-import type { FullData, Network, NodeChange } from "@/types/network";
+import type { DataChanges, FullData, Network } from "@/types/network";
 import { useRef, useState } from "react";
 import DataTable from "./DataTable/DataTable";
 import NodeLinkDiagram from "./NodeLinkDiagram/NodeLinkDiagram";
@@ -28,10 +28,11 @@ export type ContextMenuTarget = {
 };
 
 interface CenterViewProps {
-  data: FullData[];
   dataMap: Map<string, FullData>;
+  edgeData: Map<string, FullData>;
   filteredNetwork: Network;
-  changes: NodeChange;
+  nodeChanges: DataChanges;
+  edgeChanges: DataChanges;
   canPreview?: boolean | null;
   onPreview?: () => void;
   view: ViewType;
@@ -40,10 +41,11 @@ interface CenterViewProps {
 }
 
 const CenterView = ({
-  data,
   dataMap,
+  edgeData,
   filteredNetwork,
-  changes,
+  nodeChanges,
+  edgeChanges,
   canPreview = false,
   onPreview,
   view,
@@ -53,11 +55,16 @@ const CenterView = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
-    useSortingLogic(data);
+    useSortingLogic(dataMap);
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
     { type: "radial" },
   );
 
+  const [isRadialUpdating, setIsRadialUpdating] = useState(false);
+  const [isNodeLinkUpdating, setIsNodeLinkUpdating] = useState(false);
+  const isUpdating = isRadialUpdating || isNodeLinkUpdating;
+  const nodeLinkUpdating =
+    view === "node-link" ? isNodeLinkUpdating : isUpdating;
   const timesteps = useTimelineStore((s) => s.timesteps);
   const timelines = timesteps.length > 0;
 
@@ -88,6 +95,12 @@ const CenterView = ({
           className="relative h-full w-full overflow-hidden bg-card"
         >
           <div
+            className={`pointer-events-none absolute top-2 left-2 z-10 rounded bg-background/80 px-3 py-1.5 text-sm text-muted-foreground transition-opacity duration-300 ${isUpdating ? "opacity-100" : "opacity-0"}`}
+          >
+            Updating visualization...
+          </div>
+
+          <div
             className={`absolute inset-0 ${
               view === "radial"
                 ? "pointer-events-auto block"
@@ -95,14 +108,15 @@ const CenterView = ({
             }`}
           >
             <RadialChart
-              key="radial-chart"
               dimensions={dimensions}
               data={sortedData}
               dataMap={dataMap}
-              changes={changes}
-              links={filteredNetwork.links}
+              nodeChanges={nodeChanges}
+              edgeMap={edgeData}
+              edgeChanges={edgeChanges}
               isViewActive={view === "radial"}
               handleContextMenu={handleContextMenu}
+              onUpdateStateChange={setIsRadialUpdating}
             />
           </div>
           <div
@@ -113,13 +127,14 @@ const CenterView = ({
             }`}
           >
             <NodeLinkDiagram
-              key="nodeLink-chart"
               dimensions={dimensions}
               filteredNetwork={filteredNetwork}
               dataMap={dataMap}
               handleContextMenu={handleContextMenu}
-              changes={changes}
+              nodeChanges={nodeChanges}
+              edgeChanges={edgeChanges}
               isViewActive={view === "node-link"}
+              onUpdateStateChange={setIsNodeLinkUpdating}
             />
           </div>
 
@@ -143,7 +158,7 @@ const CenterView = ({
                 />
               </div>
 
-              {canPreview && onPreview && (
+              {canPreview && onPreview && !nodeLinkUpdating && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
                   <Button
                     onClick={onPreview}

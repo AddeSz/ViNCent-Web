@@ -1,8 +1,7 @@
 import { type LinkRenderingMode } from "@/stores/useSettingsStore";
-import type { FullData, Link } from "@/types/network";
+import type { DataChanges, FullData } from "@/types/network";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import { type ForceEdgeBundlingOptions } from "@/utils/ForceEdgeBundling";
-import { getNodeId } from "@/utils/utils";
 import * as d3 from "d3";
 import {
   getClosestZoomLevel,
@@ -46,11 +45,11 @@ const calculateStyles = (
 
 const drawLinksCanvas = async (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  links: Link[],
+  edgeData: Map<string, FullData>,
   x: d3.ScaleBand<string>,
   selectedNodes: Set<string>,
   mode: LinkRenderingMode,
-  removedNodeIds: Set<string>,
+  edgeChanges: DataChanges,
   fdebSettings: ForceEdgeBundlingOptions,
   angleMap: Map<string, number>,
   hoveredNode: FullData | null,
@@ -76,7 +75,7 @@ const drawLinksCanvas = async (
   if (mode === "fdeB") {
     try {
       fdebPaths = await createFdebPathsWorker(
-        links,
+        edgeData,
         x,
         outerRadius,
         fdebSettings,
@@ -93,19 +92,18 @@ const drawLinksCanvas = async (
   }
 
   if (signal?.aborted) return;
-  const processedLinks: ProcessedLink[] = [];
-  for (let i = 0; i < links.length; i++) {
-    const link = links[i];
-    const sourceId = getNodeId(link.source);
-    const targetId = getNodeId(link.target);
 
-    const sourceRemoved = removedNodeIds.has(sourceId);
-    const targetRemoved = removedNodeIds.has(targetId);
-    const isRemoved = sourceRemoved || targetRemoved;
+  const processedLinks: ProcessedLink[] = [];
+  const edgeEntries = Array.from(edgeData.entries());
+
+  for (let i = 0; i < edgeEntries.length; i++) {
+    const [edgeId] = edgeEntries[i];
+    const [sourceId, targetId] = edgeId.split("|");
+
+    const isRemoved = edgeChanges.removed[edgeId] ? true : false;
     const isSelected =
       selectedNodes.has(sourceId) || selectedNodes.has(targetId);
     let pathData: string | null = null;
-
     if (mode === "bezier") {
       const sourceAngle = angleMap.get(sourceId);
       const targetAngle = angleMap.get(targetId);
@@ -121,11 +119,8 @@ const drawLinksCanvas = async (
     } else if (mode === "fdeB") {
       pathData = fdebPaths[i] ?? null;
     }
-
     if (!pathData) continue;
-
     const path2d = new Path2D(pathData);
-
     processedLinks.push({
       id: `${sourceId}-${targetId}`,
       sourceId,

@@ -8,21 +8,25 @@ function getValueById(obj: any, id: string) {
   return id.split(".").reduce((acc, key) => acc?.[key], obj);
 }
 
-function applySorting<T extends object>(data: T[], sorting: SortingState): T[] {
-  if (!sorting.length) return data;
+function applySorting<T extends object>(
+  data: Map<string, T>,
+  sorting: SortingState,
+): T[] {
+  const values = Array.from(data.values());
+  if (!sorting.length) return values;
+
   const sortEntries = [...sorting].reverse();
-  return [...data].sort((a, b) => {
+
+  return values.sort((a, b) => {
     for (const { id, desc } of sortEntries) {
       const va = getValueById(a, id);
       const vb = getValueById(b, id);
-
       const aUndef = va === undefined || va === null;
       const bUndef = vb === undefined || vb === null;
 
       if (aUndef && bUndef) continue;
       if (aUndef) return 1;
       if (bUndef) return -1;
-
       if (va === vb) continue;
 
       if (typeof va === "number" && typeof vb === "number") {
@@ -46,13 +50,12 @@ interface SortingOptions {
 }
 
 export const useSortingLogic = (
-  data?: FullData[],
+  data?: Map<string, FullData>,
   options?: SortingOptions,
 ) => {
   const setSortKey = useNetworkStore((s) => s.setSortKey);
   const sorting = useNetworkStore((s) => s.sortingState);
   const setSorting = useNetworkStore((s) => s.setSortingState);
-
   const defaultDirection = options?.defaultDirection ?? true;
 
   const handleSortingChange = (
@@ -65,7 +68,6 @@ export const useSortingLogic = (
       setSortKey("none");
     } else {
       const { id, desc } = newSorting[0];
-
       setSorting([{ id, desc }]);
       setSortKey(id);
     }
@@ -105,7 +107,7 @@ export const useSortingLogic = (
   };
 
   const sortedData = useMemo(
-    () => applySorting(data ?? [], sorting),
+    () => applySorting(data ?? new Map(), sorting),
     [data, sorting],
   );
 

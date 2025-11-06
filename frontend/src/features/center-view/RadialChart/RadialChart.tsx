@@ -9,7 +9,7 @@ import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { FullData, Link, NodeChange } from "@/types/network";
+import type { DataChanges, FullData } from "@/types/network";
 import * as d3 from "d3";
 import throttle from "lodash.throttle";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -33,26 +33,28 @@ interface RadialChartProps {
   dimensions: DOMRectReadOnly | null;
   data: FullData[];
   dataMap: Map<string, FullData>;
-  changes: NodeChange;
-  links: Link[];
+  nodeChanges: DataChanges;
+  edgeMap: Map<string, FullData>;
+  edgeChanges: DataChanges;
   isViewActive: boolean;
   handleContextMenu: (target: ContextType, data?: any) => void;
+  onUpdateStateChange: (isUpdating: boolean) => void;
 }
 
 const RadialChart = ({
   dimensions,
   data,
   dataMap,
-  changes,
-  links,
+  nodeChanges,
+  edgeMap,
+  edgeChanges,
   isViewActive,
   handleContextMenu,
+  onUpdateStateChange,
 }: RadialChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const lastZoomLevel = useRef(1);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-
   const attributeInfo = useMetricsStore((s) => s.metricsInfo);
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
 
@@ -77,7 +79,6 @@ const RadialChart = ({
     chartData,
     xScale,
     angleMap,
-    removedIds,
     yScale,
     getKeyIndex,
     totalLabelWidth,
@@ -88,7 +89,6 @@ const RadialChart = ({
     truncateLabels,
   } = useRadialChartData({
     data,
-    changes,
     allKeys,
     enabledCentralityKeys,
     enabledAttributeKeys,
@@ -146,7 +146,8 @@ const RadialChart = ({
 
     (async () => {
       if (!svgRef.current || !chartData || !dimensions) return;
-      setIsUpdating(true);
+      onUpdateStateChange(true);
+
       const svg = d3.select(svgRef.current);
       let svgGroup = svg.select<SVGGElement>("g.zoom-group");
 
@@ -162,11 +163,11 @@ const RadialChart = ({
 
       await drawLinksCanvas(
         svgGroup,
-        links,
+        edgeMap,
         xScale,
         selectedNodes,
         linkRenderingMode,
-        removedIds,
+        edgeChanges,
         fdebSettings,
         angleMap,
         hoveredNode,
@@ -188,7 +189,7 @@ const RadialChart = ({
         innerRadius,
         outerRadius,
         bounds,
-        changes,
+        nodeChanges,
         radius,
         zoomLevel,
       );
@@ -214,16 +215,16 @@ const RadialChart = ({
         hoveredNode,
         radius,
       );
+
       requestAnimationFrame(() => {
         setIsCanvasReady(true);
-        setIsUpdating(false);
+        onUpdateStateChange(false);
       });
     })();
 
     return () => {
       cancelled = true;
       abortController.abort();
-      setIsUpdating(false);
     };
   }, [
     dimensions,
@@ -272,6 +273,7 @@ const RadialChart = ({
 
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB") return;
+    onUpdateStateChange(true);
     let cancelled = false;
     let abortController = new AbortController();
     (async () => {
@@ -279,19 +281,17 @@ const RadialChart = ({
         .select(svgRef.current)
         .select<SVGGElement>("g.zoom-group");
 
-      setIsUpdating(true);
-
       const hoveredNode = useNetworkStore.getState().hoveredNode;
       const selectedNodes = useNetworkStore.getState().selectedNodes;
       const zoomLevel = getClosestZoomLevel(getCurrentTransform().k);
 
       await drawLinksCanvas(
         svgGroup,
-        links,
+        edgeMap,
         xScale,
         selectedNodes,
         linkRenderingMode,
-        removedIds,
+        edgeChanges,
         fdebSettings,
         angleMap,
         hoveredNode,
@@ -300,12 +300,14 @@ const RadialChart = ({
         abortController.signal,
       );
       if (cancelled) return;
+      requestAnimationFrame(() => {
+        onUpdateStateChange(false);
+      });
     })();
 
     return () => {
       cancelled = true;
       abortController.abort();
-      setIsUpdating(false);
     };
   }, [fdebSettings]);
 
@@ -321,7 +323,7 @@ const RadialChart = ({
       xScale,
       isViewActive,
     );
-  }, [totalLabelWidth, isViewActive]);
+  }, [totalLabelWidth, isViewActive, xScale]);
 
   useEffect(() => {
     const hoveredNode = useNetworkStore.getState().hoveredNode;
@@ -358,17 +360,11 @@ const RadialChart = ({
           handleContextMenu("radial");
         }}
       >
-        <div
-          className={`pointer-events-none absolute top-2 left-2 z-10 rounded bg-background/80 px-3 py-1.5 text-sm text-muted-foreground transition-opacity duration-300 ${isUpdating && !showSpinner ? "opacity-100" : "opacity-0"} `}
-        >
-          Updating data...
-        </div>
         <svg
           ref={svgRef}
           viewBox="-800 -800 1600 1600"
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full"
-          style={{ shapeRendering: "geometricPrecision" }}
         />
         <ChartTooltip dataMap={dataMap} />
       </div>

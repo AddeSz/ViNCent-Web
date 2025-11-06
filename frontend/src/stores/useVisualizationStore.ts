@@ -1,4 +1,4 @@
-import type { AttributeInfo, NodeAttributeValue } from "@/types/network";
+import type { AttributeInfo, AttributeValue } from "@/types/network";
 import * as d3 from "d3";
 import { create } from "zustand";
 
@@ -9,7 +9,7 @@ interface VisualizationStore {
   centralityKeyIndexMap: Map<string, number>;
   attributeKeyIndexMap: Map<string, number>;
   initializeColorScales: (metricInfos: AttributeInfo[]) => void;
-  getColorForKey: (key: string, value?: NodeAttributeValue) => string;
+  getColorForKey: (key: string, value?: AttributeValue) => string;
   clearData: () => void;
 }
 
@@ -84,7 +84,7 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     });
   },
 
-  getColorForKey: (key: string, value?: NodeAttributeValue) => {
+  getColorForKey: (key: string, value?: AttributeValue) => {
     const {
       centralityColorScale,
       attributeColorScale,
