@@ -1,4 +1,4 @@
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { AttributeInfo, DataChanges, FullData } from "@/types/network";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
@@ -69,11 +69,10 @@ const drawArcsCanvas = (
   changeCircleRadius: number,
   initialZoomFactor: number = 1,
 ): void => {
-  const { getColorForKey } = useVisualizationStore.getState();
-  const requiredRadius = outerRadius + +50 + changeCircleRadius;
+  const { getColorForMetric } = useMetricsStore.getState();
+  const requiredRadius = outerRadius + 50 + changeCircleRadius;
   const canvasSize = Math.ceil(requiredRadius * 2);
   const center = canvasSize / 2;
-
   const g = svg
     .selectAll<SVGGElement, unknown>("g.arcs-group")
     .data([null])
@@ -82,13 +81,11 @@ const drawArcsCanvas = (
 
   const processedArcs: ProcessedArc[] = [];
   const arcsByColor: ArcsByColor = {};
-
   for (const layer of series) {
     const key = layer.key;
     const layerInnerRadius = y(getKeyIndex(key));
     const layerFullOuterRadius = y(getKeyIndex(key) + 1);
     const attribute = attributeInfo.get(key);
-
     let min = 0;
     let max = 1;
     let range = 1;
@@ -109,14 +106,14 @@ const drawArcsCanvas = (
 
       let foregroundOuterRadius = layerFullOuterRadius;
       if (typeof value === "number" && attribute?.isNumeric) {
-        const proportion = (value - min) / range;
+        const proportion = Math.max(0, Math.min(1, (value - min) / range));
         foregroundOuterRadius =
           layerInnerRadius +
           (layerFullOuterRadius - layerInnerRadius) * proportion;
       }
 
-      const fillColor = removed ? "red" : getColorForKey(key, value);
-      const arcOpacity = removed ? 0.4 : 1;
+      const fillColor = removed ? "red" : getColorForMetric(key, value);
+      const arcOpacity = removed ? 0.6 : 1;
 
       const foregroundPath = new Path2D();
       foregroundPath.arc(
@@ -417,7 +414,7 @@ function drawCanvasArcs(
   ctx.rotate(-Math.PI / 2);
 
   ctx.fillStyle = backgroundColor;
-  ctx.globalAlpha = 0.5;
+  ctx.globalAlpha = 0.7;
 
   for (const colorKey in arcsByColor) {
     const arcs = arcsByColor[colorKey];

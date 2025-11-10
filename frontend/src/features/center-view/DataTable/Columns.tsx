@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff } from "lucide-react";
@@ -64,7 +64,7 @@ export const createLabelColumn = <
         title="Label"
       >
         <div className="truncate text-sm font-medium">Label</div>
-        <SortIcon className="h-4 w-4 flex-shrink-0" />
+        <SortIcon className="h-4 w-4 shrink-0" />
       </Button>
     );
   },
@@ -147,7 +147,7 @@ export const createDataColumns = <T extends Record<string, any>>(
       return stringValue.includes(stringFilter);
     },
     header: ({ column }) => {
-      const color = useVisualizationStore.getState().getColorForKey(key);
+      const color = useMetricsStore.getState().getColorForMetric(key);
       let SortIcon = ArrowUpDown;
       if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
       if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
@@ -163,18 +163,18 @@ export const createDataColumns = <T extends Record<string, any>>(
           <div className="truncate text-sm font-medium capitalize">
             {formatKeyLabel(key)}
           </div>
-          <SortIcon className="h-4 w-4 flex-shrink-0" />
+          <SortIcon className="h-4 w-4 shrink-0" />
         </Button>
       );
     },
     cell: ({ row }) => {
       const value = row.getValue(key);
-      const headerColor = useVisualizationStore.getState().getColorForKey(key);
+      const headerColor = useMetricsStore.getState().getColorForMetric(key);
       const color =
         !headerColor || headerColor === "var(--muted-foreground)"
-          ? useVisualizationStore
+          ? useMetricsStore
               .getState()
-              .getColorForKey(key, value as string | number)
+              .getColorForMetric(key, value as string | number)
           : undefined;
       return (
         <div

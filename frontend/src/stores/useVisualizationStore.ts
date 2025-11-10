@@ -3,120 +3,139 @@ import * as d3 from "d3";
 import { create } from "zustand";
 
 interface VisualizationStore {
-  centralityColorScale: d3.ScaleSequential<string> | null;
-  attributeColorScale: d3.ScaleOrdinal<string, string> | null;
-  fixedAttributeColors: Map<string, string>;
-  centralityKeyIndexMap: Map<string, number>;
-  attributeKeyIndexMap: Map<string, number>;
-  initializeColorScales: (metricInfos: AttributeInfo[]) => void;
-  getColorForKey: (key: string, value?: AttributeValue) => string;
+  centralityColors: Map<string, string>;
+  attributeColors: Map<string, string>;
+  categoryColors: Map<string, string>;
+
+  categoryCounter: number;
+
+  combinedCategoryPalette: string[];
+
+  initializeColors: (metricsInfo: Map<string, AttributeInfo>) => void;
+  getOrAssignCentralityColor: (key: string) => string;
+  getOrAssignAttributeColor: (key: string) => string;
+  getOrAssignCategoryColor: (key: string, value: AttributeValue) => string;
+
   clearData: () => void;
 }
 
-const categoryPalette = d3.schemePaired;
+const createCombinedPalette = (): string[] => {
+  const paired = d3.schemePaired;
+  const set3 = d3.schemeSet3;
+  const combined: string[] = [];
+  const maxLength = Math.max(paired.length, set3.length);
+
+  for (let i = 0; i < maxLength; i++) {
+    if (i < paired.length) combined.push(paired[i]);
+    if (i < set3.length) combined.push(set3[i]);
+  }
+
+  return combined;
+};
 
 export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
-  centralityColorScale: null,
-  attributeColorScale: null,
-  centralityKeyIndexMap: new Map(),
-  attributeKeyIndexMap: new Map(),
-  fixedAttributeColors: new Map(),
+  centralityColors: new Map(),
+  attributeColors: new Map(),
+  categoryColors: new Map(),
+  categoryCounter: 0,
+  combinedCategoryPalette: createCombinedPalette(),
 
-  initializeColorScales: (metricInfos) => {
-    const centralityInfos = metricInfos.filter((info) => info.isCentrality);
-    const attributeInfos = metricInfos.filter((info) => !info.isCentrality);
+  initializeColors: (metricsInfo: Map<string, AttributeInfo>) => {
+    const centralityColors = new Map<string, string>();
+    const attributeColors = new Map<string, string>();
 
-    let centralityColorScale: d3.ScaleSequential<string> | null = null;
-    let centralityKeyIndexMap = new Map<string, number>();
+    const centralityKeys: string[] = [];
+    const attributeKeys: string[] = [];
 
-    if (centralityInfos.length > 0) {
-      const centralityKeys = centralityInfos.map((info) => info.key);
-      centralityKeyIndexMap = new Map(centralityKeys.map((key, i) => [key, i]));
-      centralityColorScale = d3
-        .scaleSequential<string>()
-        .domain([0, Math.max(0, centralityKeys.length - 1)])
-        .interpolator(d3.interpolateSpectral);
-    }
-
-    let attributeColorScale: d3.ScaleOrdinal<string, string> | null = null;
-    let attributeKeyIndexMap = new Map<string, number>();
-    let fixedAttributeColors = new Map<string, string>();
-
-    if (attributeInfos.length > 0) {
-      const categories: string[] = [];
-
-      const numericKeys = attributeInfos.filter(
-        (info) => !(info.isNominal || info.isBoolean),
-      );
-
-      numericKeys.forEach((info, idx) => {
-        const t = idx / Math.max(1, numericKeys.length - 1);
-        const color = d3.interpolateCool(t);
-        fixedAttributeColors.set(info.key, color);
-        attributeKeyIndexMap.set(info.key, idx);
-      });
-
-      let catIndex = 0;
-      attributeInfos.forEach((info) => {
-        if (info.isNominal || info.isBoolean) {
-          Array.from(info.values).forEach((val) => {
-            const categoryKey = `${info.key}:${val}`;
-            categories.push(categoryKey);
-            attributeKeyIndexMap.set(categoryKey, catIndex++);
-          });
-        }
-      });
-
-      if (categories.length > 0) {
-        attributeColorScale = d3
-          .scaleOrdinal<string, string>()
-          .domain(categories)
-          .range(categoryPalette);
+    metricsInfo.forEach((info, key) => {
+      if (info.isCentrality) {
+        centralityKeys.push(key);
+      } else if (!info.isNominal && !info.isBoolean) {
+        attributeKeys.push(key);
       }
-    }
+    });
+
+    const numCentrality = centralityKeys.length;
+    centralityKeys.forEach((key, index) => {
+      const t = numCentrality > 1 ? index / (numCentrality - 1) : 0.5;
+      const color = d3.interpolateSpectral(t);
+      centralityColors.set(key, color);
+    });
+
+    const numAttributes = attributeKeys.length;
+    attributeKeys.forEach((key, index) => {
+      const t = numAttributes > 1 ? index / (numAttributes - 1) : 0.5;
+      const color = d3.interpolateCool(t);
+      attributeColors.set(key, color);
+    });
 
     set({
-      centralityColorScale,
-      attributeColorScale,
-      centralityKeyIndexMap,
-      attributeKeyIndexMap,
-      fixedAttributeColors,
+      centralityColors,
+      attributeColors,
+      categoryCounter: 0,
     });
   },
 
-  getColorForKey: (key: string, value?: AttributeValue) => {
-    const {
-      centralityColorScale,
-      attributeColorScale,
-      fixedAttributeColors,
-      centralityKeyIndexMap,
-      attributeKeyIndexMap,
-    } = get();
+  getOrAssignCentralityColor: (key: string) => {
+    const { centralityColors } = get();
 
-    if (centralityColorScale && centralityKeyIndexMap.has(key)) {
-      return centralityColorScale(centralityKeyIndexMap.get(key)!);
+    if (centralityColors.has(key)) {
+      return centralityColors.get(key)!;
     }
 
-    if (attributeColorScale && value !== undefined) {
-      const colorKey = `${key}:${value}`;
-      if (attributeKeyIndexMap.has(colorKey)) {
-        return attributeColorScale(colorKey);
-      }
+    const numExisting = centralityColors.size;
+    const t = (numExisting % 100) / 99;
+    const color = d3.interpolateSpectral(t);
+
+    set((state) => ({
+      centralityColors: new Map(state.centralityColors).set(key, color),
+    }));
+
+    return color;
+  },
+
+  getOrAssignAttributeColor: (key: string) => {
+    const { attributeColors } = get();
+
+    if (attributeColors.has(key)) {
+      return attributeColors.get(key)!;
     }
 
-    if (fixedAttributeColors.has(key)) {
-      return fixedAttributeColors.get(key)!;
+    const numExisting = attributeColors.size;
+    const t = (numExisting % 100) / 99;
+    const color = d3.interpolateCool(t);
+
+    set((state) => ({
+      attributeColors: new Map(state.attributeColors).set(key, color),
+    }));
+
+    return color;
+  },
+
+  getOrAssignCategoryColor: (key: string, value: AttributeValue) => {
+    const { categoryColors, categoryCounter, combinedCategoryPalette } = get();
+    const categoryKey = `${key}:${value}`;
+
+    if (categoryColors.has(categoryKey)) {
+      return categoryColors.get(categoryKey)!;
     }
 
-    return "var(--muted-foreground)";
+    const color =
+      combinedCategoryPalette[categoryCounter % combinedCategoryPalette.length];
+
+    set((state) => ({
+      categoryColors: new Map(state.categoryColors).set(categoryKey, color),
+      categoryCounter: state.categoryCounter + 1,
+    }));
+
+    return color;
   },
 
   clearData: () =>
     set({
-      centralityColorScale: null,
-      attributeColorScale: null,
-      fixedAttributeColors: new Map(),
-      centralityKeyIndexMap: new Map(),
-      attributeKeyIndexMap: new Map(),
+      centralityColors: new Map(),
+      attributeColors: new Map(),
+      categoryColors: new Map(),
+      categoryCounter: 0,
     }),
 }));

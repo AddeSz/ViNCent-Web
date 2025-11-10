@@ -15,7 +15,6 @@ import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { handleHighlight } from "@/utils/ColorHelper";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
@@ -45,7 +44,7 @@ const ViewContextMenu = ({
   const resetNodeLinkZoom = useNetworkStore((s) => s.resetNodeLinkZoom);
   const { centralityKeys, attributeKeys } = useKeys();
   const sortKey = useNetworkStore((s) => s.sortKey);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const hideNode = useNetworkStore((s) => s.hideNode);
@@ -105,7 +104,7 @@ const ViewContextMenu = ({
                   Sort by{" "}
                   <span
                     style={{
-                      color: getColorForKey(
+                      color: getColorForMetric(
                         contextMenuTarget.data.key,
                         contextMenuTarget.data.value,
                       ),
@@ -150,7 +149,7 @@ const ViewContextMenu = ({
                 <span className="text-red-500">Hide</span>
                 <span
                   style={{
-                    color: getColorForKey(
+                    color: getColorForMetric(
                       contextMenuTarget.data.key,
                       contextMenuTarget.data.value,
                     ),
@@ -217,7 +216,7 @@ const ViewContextMenu = ({
                               className="cursor-pointer"
                             >
                               <div className="flex w-full items-center justify-between gap-1">
-                                <span style={{ color: getColorForKey(key) }}>
+                                <span style={{ color: getColorForMetric(key) }}>
                                   {formatKeyLabel(key)}
                                 </span>
                                 {isSorted &&
@@ -245,7 +244,7 @@ const ViewContextMenu = ({
                               className="cursor-pointer"
                             >
                               <div className="flex w-full items-center justify-between gap-1">
-                                <span style={{ color: getColorForKey(key) }}>
+                                <span style={{ color: getColorForMetric(key) }}>
                                   {formatKeyLabel(key)}
                                 </span>
                                 {isSorted &&
@@ -273,7 +272,7 @@ const ViewContextMenu = ({
                           className="cursor-pointer"
                         >
                           <div className="flex w-full items-center justify-between gap-1">
-                            <span style={{ color: getColorForKey(key) }}>
+                            <span style={{ color: getColorForMetric(key) }}>
                               {formatKeyLabel(key)}
                             </span>
                             {isSorted &&
@@ -292,7 +291,7 @@ const ViewContextMenu = ({
                         className="cursor-pointer"
                       >
                         <div className="flex w-full items-center justify-between gap-1">
-                          <span style={{ color: getColorForKey(sortKey) }}>
+                          <span style={{ color: getColorForMetric(sortKey) }}>
                             {formatKeyLabel(sortKey)}
                           </span>
                           {sorting[0]?.id === sortKey &&
@@ -317,7 +316,7 @@ const ViewContextMenu = ({
                           className="cursor-pointer"
                         >
                           <div className="flex w-full items-center justify-between gap-1">
-                            <span style={{ color: getColorForKey(key) }}>
+                            <span style={{ color: getColorForMetric(key) }}>
                               {formatKeyLabel(key)}
                             </span>
                             {isSorted &&
@@ -336,7 +335,7 @@ const ViewContextMenu = ({
                         className="cursor-pointer"
                       >
                         <div className="flex w-full items-center justify-between gap-1">
-                          <span style={{ color: getColorForKey(sortKey) }}>
+                          <span style={{ color: getColorForMetric(sortKey) }}>
                             {formatKeyLabel(sortKey)}
                           </span>
                           {sorting[0]?.id === sortKey &&

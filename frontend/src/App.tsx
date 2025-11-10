@@ -2,10 +2,12 @@ import FileUploader from "@/components/FileUploader";
 import Legend from "@/components/Legend";
 import { Spinner } from "@/components/ui/spinner";
 import {
+  coauthorData,
   miserablesData,
   starwarsData,
   testDataCluster,
   testDataInteraction,
+  testDataLarge,
   testDataMassive,
   testDataSmall,
   testDataTime,
@@ -26,12 +28,14 @@ import { useProcessedData } from "./hooks/useProcessedData";
 const datasets = {
   "Starwars Dataset": starwarsData,
   "Les Miserables Dataset": miserablesData,
+  "Co Author Dataset": coauthorData,
   "Test Dataset Small": testDataSmall,
   "Test Dataset Time": testDataTime,
   "Test Dataset Clusters": testDataCluster,
   "Test Dataset Interactions": testDataInteraction,
-  "Test Dataset Massive": testDataMassive,
+  "Test Dataset Large": testDataLarge,
   "Test Dataset Hierarchical": testHierarchical,
+  "Test Dataset Massive": testDataMassive,
 };
 
 const VIEW_KEY = "center-view-mode";

@@ -3,16 +3,17 @@ import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useMemo } from "react";
 
 export const useKeys = () => {
-  const metricsKeys = useMetricsStore((s) => s.metricsKeys);
+  const nodeKeys = useMetricsStore((s) => s.metricsKeys);
   const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
   const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
-
+  const enabledEdgeKeys = useMetricsStore((s) => s.enabledEdgeMetricsKeys);
+  const edgeKeys = useMetricsStore((s) => s.edgeMetricsKeys);
   const { attributeKeys, centralityKeys } = useMemo(() => {
     const attrs: string[] = [];
     const cents: string[] = [];
 
-    metricsKeys.forEach((key) => {
+    nodeKeys.forEach((key) => {
       const info = metricsInfo.get(key);
       if (info?.isCentrality) {
         cents.push(key);
@@ -22,7 +23,7 @@ export const useKeys = () => {
     });
 
     return { attributeKeys: attrs, centralityKeys: cents };
-  }, [metricsKeys, metricsInfo]);
+  }, [nodeKeys, metricsInfo]);
 
   const { enabledAttributeKeys, enabledCentralityKeys } = useMemo(() => {
     const attrs: string[] = [];
@@ -40,18 +41,20 @@ export const useKeys = () => {
     return { enabledAttributeKeys: attrs, enabledCentralityKeys: cents };
   }, [enabledMetricsKeys, metricsInfo]);
 
-  const allKeys = useMemo(() => {
+  const enabledNodeKeys = useMemo(() => {
     if (displayMode === "attributes") return [...enabledAttributeKeys];
     if (displayMode === "centrality") return [...enabledCentralityKeys];
     return [...enabledCentralityKeys, ...enabledAttributeKeys];
   }, [enabledAttributeKeys, enabledCentralityKeys, displayMode]);
 
   return {
-    allKeys,
+    enabledNodeKeys,
     attributeKeys,
     centralityKeys,
     enabledAttributeKeys,
     enabledCentralityKeys,
-    metricsKeys,
+    nodeKeys,
+    enabledEdgeKeys,
+    edgeKeys,
   };
 };

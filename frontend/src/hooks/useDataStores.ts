@@ -6,7 +6,7 @@ import {
 } from "@/stores/useSettingsStore";
 import { useTimelineStore } from "@/stores/useTimelineStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type { AttributeInfo, AttributeRecord, Network } from "@/types/network";
+import type { AttributeRecord, Network } from "@/types/network";
 import {
   calculateCentralityValues,
   calculateCentralityValuesTimeline,
@@ -75,31 +75,6 @@ export const useDataStores = () => {
         nodeCentralityKeys,
         edgeCentralityKeys,
       );
-
-      const allMetricInfosMap = new Map<string, AttributeInfo>();
-      const timestepInfos = useMetricsStore.getState().timestepMetricsInfo;
-
-      timestepInfos.forEach((infoMap) => {
-        infoMap.forEach((info, key) => {
-          if (!allMetricInfosMap.has(key)) {
-            allMetricInfosMap.set(key, {
-              ...info,
-              values: new Set(info.values),
-            });
-          } else {
-            const existing = allMetricInfosMap.get(key)!;
-            info.values.forEach((v) => existing.values.add(v));
-            if (info.range && existing.range) {
-              existing.range.min = Math.min(existing.range.min, info.range.min);
-              existing.range.max = Math.max(existing.range.max, info.range.max);
-            }
-          }
-        });
-      });
-
-      useVisualizationStore
-        .getState()
-        .initializeColorScales(Array.from(allMetricInfosMap.values()));
     } else if (nodeCentralityData && edgeCentralityData) {
       setMetricData(
         nodes,
@@ -108,12 +83,6 @@ export const useDataStores = () => {
         nodeCentralityKeys,
         edgeCentralityKeys,
       );
-
-      const metricInfos = Array.from(
-        useMetricsStore.getState().metricsInfo.values(),
-      );
-
-      useVisualizationStore.getState().initializeColorScales(metricInfos);
     }
 
     const calculatedRadial = calculateRadialSettings(nodes.length);

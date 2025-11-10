@@ -12,8 +12,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
 import { Check, ChevronDown } from "lucide-react";
@@ -37,7 +37,7 @@ const KeySelector = ({
   setSorting,
 }: KeySelectorProps) => {
   const [open, setOpen] = useState(false);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
 
   const handleToggle = (key: string) => {
@@ -73,7 +73,7 @@ const KeySelector = ({
                   onSelect={() => handleToggle(key)}
                   className="flex cursor-pointer items-center justify-between gap-2"
                   style={{
-                    color: getColorForKey(key),
+                    color: getColorForMetric(key),
                   }}
                 >
                   <span className="truncate">{formatKeyLabel(key)}</span>

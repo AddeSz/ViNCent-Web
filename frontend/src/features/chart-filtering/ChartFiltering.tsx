@@ -7,7 +7,6 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -30,7 +29,7 @@ interface ChartFilteringProps {
 
 const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const dimensions = useResizeObserver(containerRef);
   const width = useDebouncedValue(dimensions?.width ?? 0, 10);
 
@@ -47,7 +46,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
     chartHeight,
   };
 
-  const { allKeys } = useKeys();
+  const { enabledNodeKeys } = useKeys();
 
   const edgeKeys = useMetricsStore((s) => s.enabledEdgeMetricsKeys);
 
@@ -101,7 +100,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   }
 
   useEffect(() => {
-    allKeys.forEach((key) => {
+    enabledNodeKeys.forEach((key) => {
       const info = metricsInfo.get(key);
 
       if (!info || !info.isNumeric || info.isNominal) return;
@@ -137,7 +136,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   }, [
     fullNodeData,
     fullEdgeData,
-    allKeys,
+    enabledNodeKeys,
     edgeKeys,
     globalBinCount,
     binCountsByKey,
@@ -192,7 +191,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           filteredData={isEdgeMetric ? filteredEdgeData : filteredNodeData}
           dimensions={chartDimensions}
           dataKey={key}
-          getColorForKey={getColorForKey}
+          getColorForMetric={getColorForMetric}
           selectedCategories={selectedCategories[key] || null}
           onBarClick={(category) => handleCategoryClick(key, category)}
           metricsData={isEdgeMetric ? edgeMetricsData : metricsData}
@@ -236,7 +235,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           filteredData={isEdgeMetric ? filteredEdgeData : filteredNodeData}
           dimensions={chartDimensions}
           dataKey={key}
-          getColorForKey={getColorForKey}
+          getColorForMetric={getColorForMetric}
           brushRange={brushRanges[key]}
           onBrushChange={(range) => setBrushRange(key, range)}
           metricsData={isEdgeMetric ? edgeMetricsData : metricsData}
@@ -338,8 +337,8 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
         className="scrollbar-thin h-full w-full overflow-y-auto px-2 pt-1 pb-2"
       >
         <div className="space-y-4">
-          {allKeys.map((key) => renderHistogram(key, false))}
-          {allKeys.map((key) => renderBarChart(key, false))}
+          {enabledNodeKeys.map((key) => renderHistogram(key, false))}
+          {enabledNodeKeys.map((key) => renderBarChart(key, false))}
           {edgeKeys.map((key) => renderHistogram(key, true))}
           {edgeKeys.map((key) => renderBarChart(key, true))}
         </div>

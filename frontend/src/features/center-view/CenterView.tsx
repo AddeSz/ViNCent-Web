@@ -129,7 +129,8 @@ const CenterView = ({
             <NodeLinkDiagram
               dimensions={dimensions}
               filteredNetwork={filteredNetwork}
-              dataMap={dataMap}
+              nodeData={dataMap}
+              edgeData={edgeData}
               handleContextMenu={handleContextMenu}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}

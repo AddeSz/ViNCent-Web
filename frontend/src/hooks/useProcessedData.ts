@@ -1,7 +1,7 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { DataChanges, FullData, Network } from "@/types/network";
-import { getNodeId } from "@/utils/utils";
+import { getEdgeId, getNodeId } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 
 export const useProcessedData = (
@@ -82,8 +82,8 @@ export const useProcessedData = (
     const filteredNodes = networkData.nodes.filter(
       (node) => validNodeIds.has(node.id) && !hiddenNodes.has(node.id),
     );
-    for (const [linkId, edge] of edgeMap) {
-      const [s, t] = linkId.split("|");
+    for (const [edgeId, edge] of edgeMap) {
+      const [s, t] = edgeId.split("|");
 
       let processedEdge = edge;
 
@@ -100,23 +100,23 @@ export const useProcessedData = (
         };
       }
 
-      if (processedEdge.removed && acceptedEdgeRemovals.has(linkId)) {
+      if (processedEdge.removed && acceptedEdgeRemovals.has(edgeId)) {
         continue;
       }
 
-      processedEdgeMap.set(linkId, processedEdge);
+      processedEdgeMap.set(edgeId, processedEdge);
     }
 
     const filteredLinks = networkData.links.filter((link) => {
       const s = getNodeId(link.source);
       const t = getNodeId(link.target);
-      const linkId = link.directed ? `${s}|${t}` : [s, t].sort().join("|");
-      const edge = processedEdgeMap.get(linkId);
+      const edgeId = getEdgeId(link);
+      const edge = processedEdgeMap.get(edgeId);
       return (
         !hiddenNodes.has(s) &&
         !hiddenNodes.has(t) &&
         edge &&
-        !acceptedEdgeRemovals.has(linkId)
+        !acceptedEdgeRemovals.has(edgeId)
       );
     });
 
@@ -124,10 +124,9 @@ export const useProcessedData = (
     for (const link of filteredLinks) {
       const s = getNodeId(link.source);
       const t = getNodeId(link.target);
-      const linkId = link.directed ? `${s}|${t}` : [s, t].sort().join("|");
-
-      const edge = processedEdgeMap.get(linkId);
-      if (edge && (!edge.removed || acceptedEdgeRemovals.has(linkId))) {
+      const edgeId = getEdgeId(link);
+      const edge = processedEdgeMap.get(edgeId);
+      if (edge && (!edge.removed || acceptedEdgeRemovals.has(edgeId))) {
         linkCountMap.set(s, (linkCountMap.get(s) || 0) + 1);
         linkCountMap.set(t, (linkCountMap.get(t) || 0) + 1);
       }

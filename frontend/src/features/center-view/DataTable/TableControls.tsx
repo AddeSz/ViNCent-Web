@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { type Table } from "@tanstack/react-table";
 import { useState } from "react";
@@ -30,7 +30,7 @@ const TableControls = <T,>({
     ? "label"
     : (filterableColumns[0]?.id ?? "");
 
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const [selectedColumn, setSelectedColumn] = useState(defaultColumn);
   const [visibilityFilter, setLocalVisibilityFilter] = useState<
     "all" | "hidden" | "visible" | "selected"
@@ -52,10 +52,10 @@ const TableControls = <T,>({
   return (
     <div className="flex flex-wrap items-center gap-4 py-4">
       <Select value={validSelectedColumn} onValueChange={setSelectedColumn}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-40">
           <div
             className="truncate"
-            style={{ color: getColorForKey(validSelectedColumn) }}
+            style={{ color: getColorForMetric(validSelectedColumn) }}
           >
             <SelectValue placeholder="Select column" />
           </div>
@@ -65,7 +65,7 @@ const TableControls = <T,>({
             <SelectItem
               key={column.id}
               value={column.id}
-              style={{ color: getColorForKey(column.id) }}
+              style={{ color: getColorForMetric(column.id) }}
             >
               {column.id === "label" ? "Label" : formatKeyLabel(column.id)}
             </SelectItem>
@@ -88,7 +88,7 @@ const TableControls = <T,>({
       />
 
       <Select value={visibilityFilter} onValueChange={handleVisibilityChange}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-40">
           <SelectValue placeholder="Visibility" />
         </SelectTrigger>
         <SelectContent>

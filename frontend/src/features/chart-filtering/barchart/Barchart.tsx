@@ -10,7 +10,7 @@ interface BarchartProps {
   filteredData: Set<string>;
   dimensions: ChartDimensions;
   dataKey: string;
-  getColorForKey: (key: string, value?: string | number) => string;
+  getColorForMetric: (key: string, value?: string | number) => string;
   selectedCategories: string[] | null;
   onBarClick: (category: string) => void;
   metricsData: Map<string, Attributes>;
@@ -21,7 +21,7 @@ const Barchart = ({
   filteredData,
   dimensions,
   dataKey,
-  getColorForKey,
+  getColorForMetric,
   selectedCategories,
   onBarClick,
   metricsData,
@@ -81,7 +81,8 @@ const Barchart = ({
     return selectedCategories.includes(category);
   };
 
-  const getBarColor = (category: string) => getColorForKey(dataKey, category);
+  const getBarColor = (category: string) =>
+    getColorForMetric(dataKey, category);
 
   return (
     <div ref={containerRef} className="relative">

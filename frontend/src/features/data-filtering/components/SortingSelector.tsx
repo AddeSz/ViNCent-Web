@@ -13,8 +13,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useKeys } from "@/hooks/useKeys";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, Check, ChevronDown } from "lucide-react";
@@ -32,11 +32,11 @@ const SortingSelector = ({
   setSorting,
 }: SortingSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const { allKeys } = useKeys();
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const { enabledNodeKeys } = useKeys();
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
 
   const sortKey = sorting[0]?.id || "none";
-  const keys = ["none", "label", ...allKeys];
+  const keys = ["none", "label", ...enabledNodeKeys];
   const isDisabled = sorting.length === 0;
   const currentDirection = sorting[0]?.desc ? "desc" : "asc";
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
@@ -60,7 +60,7 @@ const SortingSelector = ({
             >
               <span
                 className="truncate"
-                style={{ color: getColorForKey(sortKey) }}
+                style={{ color: getColorForMetric(sortKey) }}
               >
                 {formatKeyLabel(sortKey)}
               </span>
@@ -82,7 +82,7 @@ const SortingSelector = ({
                         setOpen(false);
                       }}
                       className="flex cursor-pointer items-center justify-between gap-2"
-                      style={{ color: getColorForKey(key) }}
+                      style={{ color: getColorForMetric(key) }}
                     >
                       <span className="truncate">{formatKeyLabel(key)}</span>
                       {sortKey === key && (

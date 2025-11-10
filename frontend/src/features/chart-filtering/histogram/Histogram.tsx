@@ -16,7 +16,7 @@ interface HistogramProps {
   filteredData: Set<string>;
   dimensions: ChartDimensions;
   dataKey: string;
-  getColorForKey: (key: string) => string;
+  getColorForMetric: (key: string) => string;
   brushRange: BrushRange | null;
   onBrushChange: (range: BrushRange | null) => void;
   metricsData: Map<string, Attributes>;
@@ -27,7 +27,7 @@ const Histogram = ({
   filteredData,
   dimensions,
   dataKey,
-  getColorForKey,
+  getColorForMetric,
   brushRange,
   onBrushChange,
   metricsData,
@@ -42,7 +42,7 @@ const Histogram = ({
     chartHeight,
   } = dimensions;
   const [disabledBins, setDisabledBins] = useState<Set<number>>(new Set());
-  const color = getColorForKey(dataKey);
+  const color = getColorForMetric(dataKey);
 
   const filteredBinCounts = useMemo(() => {
     if (!filteredData) return null;

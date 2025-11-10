@@ -1,6 +1,6 @@
 import type { SimulationLinkDatum, SimulationNodeDatum } from "d3-force";
 
-export type AttributeValue = string | number | boolean;
+export type AttributeValue = string | number | boolean | Record<string, any>;
 export type Attributes = Record<string, AttributeValue>;
 export type AttributeRecord = {
   id: string;
@@ -38,11 +38,6 @@ export type Link = SimulationLinkDatum<Node> & {
   weight?: number;
   directed?: boolean;
   attributes?: Attributes;
-};
-
-export type Centrality = {
-  id: string;
-  [key: string]: string | number;
 };
 
 //This is more general than centrality, it includes pretty much anything

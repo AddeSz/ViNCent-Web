@@ -1,7 +1,6 @@
 import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo } from "react";
@@ -12,16 +11,16 @@ interface LegendProps {
 
 const Legend = ({ nodeData }: LegendProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
-  const { allKeys } = useKeys();
+  const { enabledNodeKeys } = useKeys();
 
   const nodeMetrics = useMemo(() => {
     if (!hoveredNode) return [];
 
     const data = nodeData.get(hoveredNode.id);
     const isStable = data?.stable ?? false;
-    return allKeys.map((key) => {
+    return enabledNodeKeys.map((key) => {
       const info = metricsInfo.get(key);
       const value = data?.[key];
 
@@ -37,7 +36,7 @@ const Legend = ({ nodeData }: LegendProps) => {
         if (+percentage === 0) percentage = "0.0";
       }
 
-      const color = getColorForKey(key, value);
+      const color = getColorForMetric(key, value);
 
       return {
         key,
@@ -48,7 +47,7 @@ const Legend = ({ nodeData }: LegendProps) => {
         formattedValue: isStable ? "N/A" : formattedValue,
       };
     });
-  }, [hoveredNode, allKeys, nodeData, metricsInfo]);
+  }, [hoveredNode, enabledNodeKeys, nodeData, metricsInfo]);
 
   if (!hoveredNode) {
     return (

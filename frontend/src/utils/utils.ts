@@ -1,5 +1,14 @@
+import type { Link } from "@/types/network";
+
 export function getNodeId(value: string | { id: string }): string {
   return typeof value === "string" ? value : value.id;
+}
+
+export function getEdgeId(link: Link): string {
+  const s = getNodeId(link.source);
+  const t = getNodeId(link.target);
+  const edgeId = link.directed ? `${s}|${t}` : [s, t].sort().join("|");
+  return edgeId;
 }
 
 export function formatKeyLabel(key: string): string {

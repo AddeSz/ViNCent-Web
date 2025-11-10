@@ -34,7 +34,8 @@ import updateGraph, { updateStyle } from "./updateGraph";
 interface NodeLinkDiagramProps {
   dimensions: DOMRectReadOnly | null;
   filteredNetwork: Network;
-  dataMap: Map<string, FullData>;
+  nodeData: Map<string, FullData>;
+  edgeData: Map<string, FullData>;
   handleContextMenu: (target: ContextType, data?: any) => void;
   nodeChanges: DataChanges;
   edgeChanges: DataChanges;
@@ -45,7 +46,8 @@ interface NodeLinkDiagramProps {
 const NodeLinkDiagram = ({
   dimensions,
   filteredNetwork,
-  dataMap,
+  nodeData,
+  edgeData,
   handleContextMenu,
   nodeChanges,
   edgeChanges,
@@ -56,15 +58,12 @@ const NodeLinkDiagram = ({
   const simulationRef = useRef<Simulation<Node, Link> | null>(null);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const [isSimulationStable, setIsSimulationStable] = useState(false);
-
   const isInitializedRef = useRef(false);
-
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.1, 6]);
-
   const networkData = useNetworkStore.getState().network;
   const resetZoomFlag = useNetworkStore((s) => s.resetNodeLinkZoomFlag);
 
-  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(dataMap);
+  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(nodeData);
   const restartSimulationFlag = useNetworkStore((s) => s.restartSimulationFlag);
   const setRestartSimulationFlag = useNetworkStore(
     (s) => s.setRestartSimulationFlag,
@@ -87,6 +86,7 @@ const NodeLinkDiagram = ({
     fixedLinkThickness,
     chargeStrength,
     collisionEnabled,
+    linkThicknessMetric,
     showLabels,
   } = nodeLinkSettings;
 
@@ -103,7 +103,7 @@ const NodeLinkDiagram = ({
   const nodeSizes = useMemo(() => {
     return calculateNodeSizes(
       networkData.nodes,
-      dataMap,
+      nodeData,
       nodeSizeMode,
       nodeSizeMetric,
       fixedNodeSize,
@@ -113,7 +113,7 @@ const NodeLinkDiagram = ({
     );
   }, [
     networkData.nodes,
-    dataMap,
+    nodeData,
     nodeSizeMode,
     nodeSizeMetric,
     fixedNodeSize,
@@ -125,7 +125,9 @@ const NodeLinkDiagram = ({
   const linkWeights = useMemo(() => {
     return calculateLinkWeights(
       networkData.links,
+      edgeData,
       linkThicknessMode,
+      linkThicknessMetric,
       fixedLinkThickness,
       minLinkThickness,
       maxLinkThickness,
@@ -135,6 +137,7 @@ const NodeLinkDiagram = ({
     networkData.links,
     linkThicknessMode,
     fixedLinkThickness,
+    linkThicknessMetric,
     minLinkThickness,
     maxLinkThickness,
     linkScaleType,
@@ -195,7 +198,7 @@ const NodeLinkDiagram = ({
       networkData &&
       networkData.nodes?.length &&
       networkData.links?.length &&
-      dataMap
+      nodeData
     ) {
       updateGraph(
         svg,
@@ -227,10 +230,15 @@ const NodeLinkDiagram = ({
   }, [collisionEnabled, nodeSizes]);
 
   useEffect(() => {
-    if (!svgRef.current || !simulationRef.current || !isSimulationStable) {
+    if (
+      !simulationRef.current ||
+      !svgRef.current ||
+      !simulationRef.current ||
+      !isSimulationStable
+    ) {
       return;
     }
-    onUpdateStateChange(true);
+    if (isCanvasReady && isInitializedRef.current) onUpdateStateChange(true);
     let frameId: number;
 
     const svg = d3.select(svgRef.current);
@@ -296,7 +304,7 @@ const NodeLinkDiagram = ({
       previousHoveredNode = state.hoveredNode;
       previousSelectedNodes = state.selectedNodes;
 
-      if (!svgRef.current || !dataMap) return;
+      if (!svgRef.current || !nodeData) return;
       const svg = d3.select(svgRef.current);
 
       updateStyle(
@@ -346,7 +354,7 @@ const NodeLinkDiagram = ({
             shapeRendering: "geometricPrecision",
           }}
         />
-        <ChartTooltip dataMap={dataMap} />
+        <ChartTooltip dataMap={nodeData} />
       </div>
     </>
   );

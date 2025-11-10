@@ -1,16 +1,12 @@
-import type {
-  LinkThicknessMode,
-  NodeSizeMode,
-  ScaleType,
-} from "@/stores/useSettingsStore";
+import type { ScaleType, SizeMode } from "@/stores/useSettingsStore";
 import type { FullData, Link, Node } from "@/types/network";
-import { getNodeId } from "@/utils/utils";
+import { getEdgeId, getNodeId } from "@/utils/utils";
 import type { InteractionProps } from "../Tooltips/useTooltip";
 
 export const calculateNodeSizes = (
   nodes: Node[],
   dataMap: Map<string, FullData>,
-  mode: NodeSizeMode,
+  mode: SizeMode,
   metricKey: string,
   fixedSize: number,
   minSize: number,
@@ -78,7 +74,9 @@ export const calculateNodeSizes = (
 
 export const calculateLinkWeights = (
   links: Link[],
-  mode: LinkThicknessMode,
+  edgeDataMap: Map<string, FullData>,
+  mode: SizeMode,
+  metricKey: string,
   fixedThickness: number,
   minThickness: number,
   maxThickness: number,
@@ -86,7 +84,7 @@ export const calculateLinkWeights = (
 ): Map<string, number> => {
   const weights = new Map<string, number>();
 
-  if (mode === "fixed") {
+  if (mode === "fixed" || !metricKey) {
     links.forEach((link) => {
       const sourceId = getNodeId(link.source);
       const targetId = getNodeId(link.target);
@@ -97,13 +95,14 @@ export const calculateLinkWeights = (
   }
 
   const values: number[] = [];
+
   links.forEach((link) => {
-    if (
-      link.weight !== undefined &&
-      link.weight !== null &&
-      !isNaN(link.weight)
-    ) {
-      values.push(link.weight);
+    const edgeData = edgeDataMap.get(getEdgeId(link));
+    if (!edgeData) return;
+
+    const value = edgeData[metricKey];
+    if (typeof value === "number" && !isNaN(value)) {
+      values.push(value);
     }
   });
 
@@ -126,12 +125,15 @@ export const calculateLinkWeights = (
     const targetId = getNodeId(link.target);
     const linkId = `${sourceId}-${targetId}`;
 
-    if (
-      link.weight === undefined ||
-      link.weight === null ||
-      isNaN(link.weight) ||
-      range === 0
-    ) {
+    const edgeData = edgeDataMap.get(getEdgeId(link));
+
+    if (!edgeData) {
+      weights.set(linkId, fixedThickness);
+      return;
+    }
+
+    const value = edgeData[metricKey];
+    if (typeof value !== "number" || isNaN(value) || range === 0) {
       weights.set(linkId, fixedThickness);
       return;
     }
@@ -140,11 +142,11 @@ export const calculateLinkWeights = (
     if (scaleType === "log") {
       const logMin = Math.log(Math.max(minValue, 0.0001));
       const logMax = Math.log(Math.max(maxValue, 0.0001));
-      const logValue = Math.log(Math.max(link.weight, 0.0001));
+      const logValue = Math.log(Math.max(value, 0.0001));
       const logRange = logMax - logMin;
       normalized = logRange === 0 ? 0 : (logValue - logMin) / logRange;
     } else {
-      normalized = (link.weight - minValue) / range;
+      normalized = (value - minValue) / range;
     }
 
     const thickness = minThickness + normalized * (maxThickness - minThickness);

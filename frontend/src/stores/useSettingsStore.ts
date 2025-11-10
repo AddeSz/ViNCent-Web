@@ -3,8 +3,7 @@ import { create } from "zustand";
 
 export type DisplayMode = "attributes" | "centrality" | "both";
 export type LinkRenderingMode = "bezier" | "hierarchy" | "fdeB";
-export type NodeSizeMode = "fixed" | "metric";
-export type LinkThicknessMode = "fixed" | "weight";
+export type SizeMode = "fixed" | "metric";
 export type ScaleType = "linear" | "log";
 
 type RadialSettings = {
@@ -24,12 +23,13 @@ type NodeLinkSettings = {
   linkDistance: number;
   chargeStrength: number;
   showLabels: boolean;
-  nodeSizeMode: NodeSizeMode;
+  nodeSizeMode: SizeMode;
   nodeSizeMetric: string;
   fixedNodeSize: number;
   minNodeSize: number;
   maxNodeSize: number;
-  linkThicknessMode: LinkThicknessMode;
+  linkThicknessMode: SizeMode;
+  linkThicknessMetric: string;
   fixedLinkThickness: number;
   minLinkThickness: number;
   maxLinkThickness: number;
@@ -89,6 +89,7 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   minNodeSize: 5,
   maxNodeSize: 20,
   linkThicknessMode: "fixed",
+  linkThicknessMetric: "",
   fixedLinkThickness: 1.5,
   minLinkThickness: 1,
   maxLinkThickness: 5,

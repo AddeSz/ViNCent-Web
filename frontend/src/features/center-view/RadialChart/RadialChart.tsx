@@ -61,7 +61,8 @@ const RadialChart = ({
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
   const radialSettings = useSettingsStore(useShallow((s) => s.radialSettings));
   const { separateMetrics, linkRenderingMode, fdebSettings } = radialSettings;
-  const { allKeys, enabledAttributeKeys, enabledCentralityKeys } = useKeys();
+  const { enabledNodeKeys, enabledAttributeKeys, enabledCentralityKeys } =
+    useKeys();
 
   const { onNodeHover, showTooltip, hideTooltip } = useTooltip(dataMap);
 
@@ -89,7 +90,7 @@ const RadialChart = ({
     truncateLabels,
   } = useRadialChartData({
     data,
-    allKeys,
+    allKeys: enabledNodeKeys,
     enabledCentralityKeys,
     enabledAttributeKeys,
   });
@@ -146,7 +147,7 @@ const RadialChart = ({
 
     (async () => {
       if (!svgRef.current || !chartData || !dimensions) return;
-      onUpdateStateChange(true);
+      if (isCanvasReady) onUpdateStateChange(true);
 
       const svg = d3.select(svgRef.current);
       let svgGroup = svg.select<SVGGElement>("g.zoom-group");
@@ -272,7 +273,9 @@ const RadialChart = ({
   }, [fontSize, totalLabelWidth, truncateLabels]);
 
   useEffect(() => {
-    if (!svgRef.current || linkRenderingMode !== "fdeB") return;
+    if (!svgRef.current || linkRenderingMode !== "fdeB" || !dimensions) {
+      return;
+    }
     onUpdateStateChange(true);
     let cancelled = false;
     let abortController = new AbortController();
@@ -304,7 +307,6 @@ const RadialChart = ({
         onUpdateStateChange(false);
       });
     })();
-
     return () => {
       cancelled = true;
       abortController.abort();

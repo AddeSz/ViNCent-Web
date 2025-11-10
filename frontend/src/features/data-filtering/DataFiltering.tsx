@@ -7,7 +7,7 @@ import SortingSelector from "./components/SortingSelector";
 
 const DataFiltering = () => {
   const { sorting, setSorting, handleSortKeyChange } = useSortingLogic();
-  const { allKeys, metricsKeys } = useKeys();
+  const { enabledNodeKeys, nodeKeys } = useKeys();
   const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
 
   return (
@@ -19,8 +19,8 @@ const DataFiltering = () => {
         <div className="w-full">
           <KeySelector
             label="Available Keys"
-            options={metricsKeys}
-            enabledKeys={allKeys}
+            options={nodeKeys}
+            enabledKeys={enabledNodeKeys}
             toggleKey={toggleMetricsKey}
             sorting={sorting}
             setSorting={setSorting}

@@ -29,7 +29,7 @@ const calculateBounds = (
   const groupBounds = series[0].map((d) => {
     const id = d.data.id;
     const startAngle = x(id) ?? 0;
-    const endAngle = (x(id) ?? 0) + x.bandwidth();
+    const endAngle = startAngle + x.bandwidth();
     return { id, startAngle, endAngle };
   });
 

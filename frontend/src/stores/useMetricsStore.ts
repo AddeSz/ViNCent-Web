@@ -1,4 +1,5 @@
 import { type BinnedData } from "@/features/chart-filtering/components/createBinnedData";
+import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type {
   AttributeInfo,
   AttributeRecord,
@@ -68,6 +69,8 @@ interface MetricsStore {
   clearBinnedData: () => void;
 
   setSelectedCategories: (key: string, categories: string[]) => void;
+
+  getColorForMetric: (key: string, value?: AttributeValue) => string;
 
   clearData: () => void;
 }
@@ -288,6 +291,8 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       brushRanges[key] = null;
     });
 
+    useVisualizationStore.getState().initializeColors(unifiedInfo);
+
     set({
       metricsData: nodeMetricsData,
       metricsKeys: nodeMetricsKeysArray,
@@ -371,6 +376,8 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
         }
       });
     });
+
+    useVisualizationStore.getState().initializeColors(unifiedClassification);
 
     set({
       timestepMetricsData,
@@ -522,6 +529,27 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
   clearBinnedData: () => {
     set({ binnedDataByKey: new Map() });
+  },
+
+  getColorForMetric: (key: string, value?: AttributeValue) => {
+    const { metricsInfo } = get();
+    const info = metricsInfo.get(key);
+
+    if (!info) {
+      return "var(--muted-foreground)";
+    }
+
+    const vizStore = useVisualizationStore.getState();
+
+    if (info.isCentrality) {
+      return vizStore.getOrAssignCentralityColor(key);
+    }
+
+    if ((info.isNominal || info.isBoolean) && value !== undefined) {
+      return vizStore.getOrAssignCategoryColor(key, value);
+    }
+
+    return vizStore.getOrAssignAttributeColor(key);
   },
 
   clearData: () =>

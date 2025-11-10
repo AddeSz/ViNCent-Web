@@ -1,6 +1,6 @@
 import { useKeys } from "@/hooks/useKeys";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useTooltipStore } from "@/stores/useTooltipStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import type { JSX } from "react";
@@ -12,7 +12,7 @@ interface ChartTooltipProps {
 const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
   const tooltip = useTooltipStore((s) => s.tooltip);
   const { attributeKeys, centralityKeys } = useKeys();
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
 
   const { type, nodeId, x, y, visible, arcKey, lastChange } = tooltip;
 
@@ -45,7 +45,7 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
       const centralityChanges: JSX.Element[] = [];
 
       Object.entries(changes).forEach(([key, { before, after }]) => {
-        const color = getColorForKey(key);
+        const color = getColorForMetric(key);
         const changeSpan = (
           <span key={key}>
             <span style={{ color }}>{formatKeyLabel(key)}</span>:{" "}
@@ -110,7 +110,7 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         <>
           <div
             className="text-sm"
-            style={{ color: getColorForKey(arcKey!, nodeData[arcKey!]) }}
+            style={{ color: getColorForMetric(arcKey!, nodeData[arcKey!]) }}
           >
             {formatKeyLabel(arcKey!)}
           </div>

@@ -1,4 +1,4 @@
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { AttributeInfo } from "@/types/network";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
@@ -14,7 +14,7 @@ const drawArcs = (
   interactionProps: InteractionProps,
   getKeyIndex: (key: string) => number,
 ): void => {
-  const { getColorForKey } = useVisualizationStore.getState();
+  const { getColorForMetric } = useMetricsStore.getState();
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
   const g = svg
@@ -60,7 +60,7 @@ const drawArcs = (
       .startAngle(startAngle)
       .endAngle(endAngle);
 
-    const fillColor = isRemoved ? "red" : getColorForKey(d.key, d.value);
+    const fillColor = isRemoved ? "red" : getColorForMetric(d.key, d.value);
     const arcOpacity = isRemoved ? 0.4 : 1;
 
     return {

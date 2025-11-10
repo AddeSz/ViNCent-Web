@@ -143,11 +143,11 @@ function calculateGapProportion(dataLength: number): number {
 
   if (dataLength <= 500) {
     const t = (dataLength - 100) / (500 - 100);
-    return 0.5 - t * 0.1;
+    return 0.5 - t * 0.3;
   }
 
   const t = (dataLength - 500) / (1000 - 500);
-  return 0.4 - t * 0.4;
+  return 0.3 - t * 0.3;
 }
 
 function createRadialScale({

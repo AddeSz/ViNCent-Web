@@ -48,15 +48,16 @@ const DataTable = ({
     "all" | "hidden" | "visible" | "selected"
   >("all");
 
-  const { allKeys } = useKeys();
+  const { enabledNodeKeys } = useKeys();
 
   const columns = useMemo(() => {
     const selectColumn = createSelectColumn<(typeof data)[number]>();
     const labelColumn = createLabelColumn<(typeof data)[number]>();
     const hiddenColumn = createHiddenColumn<(typeof data)[number]>();
-    const dataColumns = createDataColumns<(typeof data)[number]>(allKeys);
+    const dataColumns =
+      createDataColumns<(typeof data)[number]>(enabledNodeKeys);
     return [selectColumn, hiddenColumn, labelColumn, ...dataColumns];
-  }, [allKeys]);
+  }, [enabledNodeKeys]);
 
   const rowSelection = useMemo(() => {
     const selection: Record<string, true> = {};

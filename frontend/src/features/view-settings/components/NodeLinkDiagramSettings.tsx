@@ -26,9 +26,8 @@ import { Switch } from "@/components/ui/switch";
 import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { LinkThicknessMode, ScaleType } from "@/stores/useSettingsStore";
+import type { ScaleType } from "@/stores/useSettingsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -38,32 +37,47 @@ const NodeLinkDiagramSettings = () => {
   const setSettings = useSettingsStore((s) => s.setNodeLinkSettings);
   const resetSettings = useSettingsStore((s) => s.resetNodeLinkSettings);
   const setRestartFlag = useNetworkStore((s) => s.setRestartSimulationFlag);
-  const network = useNetworkStore((s) => s.network);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
-  const getColorForKey = useVisualizationStore((s) => s.getColorForKey);
-  const { allKeys } = useKeys();
+  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const { enabledNodeKeys, enabledEdgeKeys } = useKeys();
   const [open, setOpen] = useState(false);
-
-  const hasWeight = Boolean(
-    network?.links?.some((l) => l.weight !== undefined && l.weight !== null),
-  );
+  const [linkOpen, setLinkOpen] = useState(false);
 
   useEffect(() => {
     if (
       !settings.nodeSizeMetric ||
-      !allKeys.includes(settings.nodeSizeMetric)
+      !enabledNodeKeys.includes(settings.nodeSizeMetric)
     ) {
       setSettings({ nodeSizeMetric: "fixed" });
     }
-  }, [allKeys, settings.nodeSizeMetric]);
+  }, [enabledNodeKeys, settings.nodeSizeMetric]);
 
-  const numericKeys = allKeys.filter((key) => metricsInfo.get(key)?.isNumeric);
+  useEffect(() => {
+    if (
+      settings.linkThicknessMode === "metric" &&
+      (!settings.linkThicknessMetric ||
+        !enabledEdgeKeys.includes(settings.linkThicknessMetric))
+    ) {
+      setSettings({ linkThicknessMetric: "fixed" });
+    }
+  }, [
+    enabledEdgeKeys,
+    settings.linkThicknessMode,
+    settings.linkThicknessMetric,
+  ]);
+
+  const numericKeys = enabledNodeKeys.filter(
+    (key) => metricsInfo.get(key)?.isNumeric,
+  );
+  const numericEdgeKeys = enabledEdgeKeys.filter(
+    (key) => metricsInfo.get(key)?.isNumeric,
+  );
 
   const handleRestart = () => {
     setRestartFlag(true);
   };
 
-  const getCurrentValue = () => {
+  const getNodeCurrentValue = () => {
     if (settings.nodeSizeMode === "fixed") {
       return "fixed";
     }
@@ -84,6 +98,29 @@ const NodeLinkDiagramSettings = () => {
       return "Fixed Size";
     }
     return formatKeyLabel(settings.nodeSizeMetric || "");
+  };
+
+  const getLinkCurrentValue = () => {
+    if (settings.linkThicknessMode === "fixed") {
+      return "fixed";
+    }
+    return settings.linkThicknessMetric;
+  };
+
+  const handleLinkThicknessChange = (value: string) => {
+    if (value === "fixed") {
+      setSettings({ linkThicknessMode: "fixed" });
+    } else {
+      setSettings({ linkThicknessMode: "metric", linkThicknessMetric: value });
+    }
+    setLinkOpen(false);
+  };
+
+  const getLinkDisplayLabel = () => {
+    if (settings.linkThicknessMode === "fixed") {
+      return "Fixed";
+    }
+    return formatKeyLabel(settings.linkThicknessMetric);
   };
 
   return (
@@ -162,7 +199,7 @@ const NodeLinkDiagramSettings = () => {
                     color:
                       settings.nodeSizeMode === "fixed"
                         ? "var(--popover-foreground)"
-                        : getColorForKey(settings.nodeSizeMetric),
+                        : getColorForMetric(settings.nodeSizeMetric),
                   }}
                 >
                   {getDisplayLabel()}
@@ -182,10 +219,10 @@ const NodeLinkDiagramSettings = () => {
                       className="flex cursor-pointer items-center justify-between gap-2"
                     >
                       Fixed Size
-                      {getCurrentValue() === "fixed" && (
+                      {getNodeCurrentValue() === "fixed" && (
                         <Check className="h-4 w-4" />
                       )}
-                      {getCurrentValue() !== "fixed" && (
+                      {getNodeCurrentValue() !== "fixed" && (
                         <span className="h-4 w-4" />
                       )}
                     </CommandItem>
@@ -198,14 +235,14 @@ const NodeLinkDiagramSettings = () => {
                             onSelect={() => handleNodeSizeChange(key)}
                             className="flex cursor-pointer items-center justify-between gap-2"
                             style={{
-                              color: getColorForKey(key),
+                              color: getColorForMetric(key),
                             }}
                           >
                             {formatKeyLabel(key)}
-                            {getCurrentValue() === key && (
+                            {getNodeCurrentValue() === key && (
                               <Check className="h-4 w-4" />
                             )}
-                            {getCurrentValue() !== key && (
+                            {getNodeCurrentValue() !== key && (
                               <span className="h-4 w-4" />
                             )}
                           </CommandItem>
@@ -324,29 +361,77 @@ const NodeLinkDiagramSettings = () => {
 
         <div className="space-y-1">
           <Label htmlFor="link-thickness-mode">Link Thickness Mode</Label>
-          <Select
-            value={settings.linkThicknessMode}
-            onValueChange={(value) =>
-              setSettings({ linkThicknessMode: value as LinkThicknessMode })
-            }
-          >
-            <SelectTrigger
-              id="link-thickness-mode"
-              className="w-full text-sm"
-              size="sm"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fixed">Fixed</SelectItem>
-              <SelectItem value="weight" disabled={!hasWeight}>
-                By Weight {!hasWeight ? "(No Weights)" : ""}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover open={linkOpen} onOpenChange={setLinkOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={`flex h-8 w-full cursor-pointer items-center justify-between px-2 text-sm`}
+                id="link-thickness-mode"
+              >
+                <span
+                  className="truncate"
+                  style={{
+                    color:
+                      settings.linkThicknessMode === "fixed"
+                        ? "var(--popover-foreground)"
+                        : getColorForMetric(settings.linkThicknessMetric),
+                  }}
+                >
+                  {getLinkDisplayLabel()}
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search..." className="h-9" />
+                <CommandEmpty>No option found.</CommandEmpty>
+                <CommandList>
+                  <CommandGroup>
+                    <CommandItem
+                      value="fixed"
+                      onSelect={() => handleLinkThicknessChange("fixed")}
+                      className="flex cursor-pointer items-center justify-between gap-2"
+                    >
+                      Fixed
+                      {getLinkCurrentValue() === "fixed" && (
+                        <Check className="h-4 w-4" />
+                      )}
+                      {getLinkCurrentValue() !== "fixed" && (
+                        <span className="h-4 w-4" />
+                      )}
+                    </CommandItem>
+                    {numericEdgeKeys.length > 0 && (
+                      <>
+                        {numericEdgeKeys.map((key) => (
+                          <CommandItem
+                            key={key}
+                            value={key}
+                            onSelect={() => handleLinkThicknessChange(key)}
+                            className="flex cursor-pointer items-center justify-between gap-2"
+                            style={{
+                              color: getColorForMetric(key),
+                            }}
+                          >
+                            {formatKeyLabel(key)}
+                            {getLinkCurrentValue() === key && (
+                              <Check className="h-4 w-4" />
+                            )}
+                            {getLinkCurrentValue() !== key && (
+                              <span className="h-4 w-4" />
+                            )}
+                          </CommandItem>
+                        ))}
+                      </>
+                    )}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
-        {settings.linkThicknessMode === "weight" && (
+        {settings.linkThicknessMode === "metric" && (
           <div className="space-y-1">
             <Label htmlFor="link-scale-type">Scale Type</Label>
             <Select
