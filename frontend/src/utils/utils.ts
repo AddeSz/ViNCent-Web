@@ -59,15 +59,27 @@ export function formatValue(x: any): string {
   return String(x);
 }
 
-export function scalePadding(
-  value: number,
-  maxItems: number,
-  maxPadding: number,
-): number {
-  if (value <= 1) return 0;
-  if (value <= 2) return 0.01;
-  return Math.min(value / maxItems, 1) * maxPadding;
-}
+export const calculateBandwidth = (numNodes: number): number => {
+  if (numNodes === 0) return 0;
+  if (numNodes === 1) return 2 * Math.PI;
+
+  const gapProportion = calculateGapProportion(numNodes);
+  const arcProportion = 1 - gapProportion;
+  const arcSize = (2 * Math.PI * arcProportion) / numNodes;
+
+  return arcSize;
+};
+
+export const calculateGapProportion = (dataLength: number): number => {
+  if (dataLength <= 100) return 0.5;
+  if (dataLength >= 1000) return 0;
+  if (dataLength <= 500) {
+    const t = (dataLength - 100) / (500 - 100);
+    return 0.5 - t * 0.3;
+  }
+  const t = (dataLength - 500) / (1000 - 500);
+  return 0.3 - t * 0.3;
+};
 
 export function truncateText(
   textEl: SVGTextElement,

@@ -6,10 +6,10 @@ import { useMemo } from "react";
 
 interface DataSummaryProps {
   filteredNetwork: Network;
-  dataMap: Map<string, FullData>;
+  nodeMap: Map<string, FullData>;
 }
 
-const DataSummary = ({ filteredNetwork, dataMap }: DataSummaryProps) => {
+const DataSummary = ({ filteredNetwork, nodeMap }: DataSummaryProps) => {
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const network = useNetworkStore((s) => s.network);
 
@@ -21,7 +21,7 @@ const DataSummary = ({ filteredNetwork, dataMap }: DataSummaryProps) => {
     let nodesCount = 0;
     const uniqueLinks = new Set<string>();
 
-    for (const [nodeId, data] of dataMap) {
+    for (const [nodeId, data] of nodeMap) {
       if (!data.hidden) {
         if (selectedNodes.has(nodeId)) {
           nodesCount++;
@@ -46,9 +46,9 @@ const DataSummary = ({ filteredNetwork, dataMap }: DataSummaryProps) => {
       selectedNodesCount: nodesCount,
       selectedLinksCount: uniqueLinks.size,
     };
-  }, [selectedNodes, dataMap, filteredNetwork.links]);
+  }, [selectedNodes, nodeMap, filteredNetwork.links]);
 
-  if (dataMap.size === 0 || network.nodes.length === 0) return null;
+  if (nodeMap.size === 0 || network.nodes.length === 0) return null;
   return (
     <div className="pointer-events-none mt-2 cursor-default text-sm text-gray-300">
       <p>

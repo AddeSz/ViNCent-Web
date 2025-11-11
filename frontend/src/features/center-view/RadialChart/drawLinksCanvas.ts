@@ -52,7 +52,7 @@ const drawLinksCanvas = async (
   edgeChanges: DataChanges,
   fdebSettings: ForceEdgeBundlingOptions,
   angleMap: Map<string, number>,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
   outerRadius: number,
   initialZoomFactor: number = 1,
   signal?: AbortSignal,
@@ -77,7 +77,7 @@ const drawLinksCanvas = async (
       fdebPaths = await createFdebPathsWorker(
         edgeData,
         x,
-        outerRadius,
+        outerRadius - 0.5,
         fdebSettings,
         signal,
       );
@@ -274,14 +274,14 @@ function drawCanvasLinks(
 function updateHighlightPaths(
   highlightGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
 ): void {
   const highlightLinks = cachedProcessedLinks.filter((link) => {
     const isSelected =
       selectedNodes.has(link.sourceId) || selectedNodes.has(link.targetId);
     const isHovered = !!(
       hoveredNode &&
-      (link.sourceId === hoveredNode.id || link.targetId === hoveredNode.id)
+      (link.sourceId === hoveredNode || link.targetId === hoveredNode)
     );
     return isSelected || isHovered;
   });
@@ -291,7 +291,7 @@ function updateHighlightPaths(
       selectedNodes.has(link.sourceId) || selectedNodes.has(link.targetId);
     const isHovered = !!(
       hoveredNode &&
-      (link.sourceId === hoveredNode.id || link.targetId === hoveredNode.id)
+      (link.sourceId === hoveredNode || link.targetId === hoveredNode)
     );
     const style = calculateStyles(link.isRemoved, isSelected, isHovered);
 
@@ -331,7 +331,7 @@ export default drawLinksCanvas;
 export const updateLinkHighlightCanvas = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   selectedNodes: Set<string>,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
 ) => {
   const linkGroup = svg.select<SVGGElement>("g.links-group");
   if (linkGroup.empty()) return;

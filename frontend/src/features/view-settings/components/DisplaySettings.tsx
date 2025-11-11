@@ -6,7 +6,8 @@ import { useSettingsStore, type DisplayMode } from "@/stores/useSettingsStore";
 
 const DisplaySettings = () => {
   const { displaySettings, setDisplaySettings } = useSettingsStore();
-  const { keepPreviewNodes, keepStableView, displayMode } = displaySettings;
+  const { keepPreviewNodes, keepStableView, displayMode, stickyHover } =
+    displaySettings;
   const { attributeKeys } = useKeys();
 
   return (
@@ -83,6 +84,23 @@ const DisplaySettings = () => {
             className="cursor-pointer text-sm"
           >
             Enable Stable View
+          </Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="sticky-hover"
+            checked={stickyHover}
+            onCheckedChange={(checked) =>
+              setDisplaySettings({ stickyHover: !!checked })
+            }
+            className="cursor-pointer"
+          />
+          <Label
+            title="Enable Sticky Hover"
+            htmlFor="sticky-hover"
+            className="cursor-pointer text-sm"
+          >
+            Enable Sticky Hover
           </Label>
         </div>
       </div>

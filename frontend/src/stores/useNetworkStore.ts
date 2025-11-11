@@ -1,4 +1,4 @@
-import type { FullData, Network, Node } from "@/types/network";
+import type { Network, Node } from "@/types/network";
 import type { SortingState } from "@tanstack/react-table";
 import { create } from "zustand";
 
@@ -6,7 +6,7 @@ interface NetworkStore {
   network: Network;
   nodeMap: Map<string, Node>;
   selectedNodes: Set<string>;
-  hoveredNode: null | FullData;
+  hoveredNode: null | string;
   sortKey: string;
   sortingState: SortingState;
 
@@ -22,7 +22,7 @@ interface NetworkStore {
   selectNode: (id: string, multi?: boolean) => void;
   deselectNode: (id: string) => void;
   toggleNodeSelection: (id: string) => void;
-  setHoveredNode: (node: FullData | null) => void;
+  setHoveredNode: (node: string | null) => void;
 
   setSortKey: (key: string) => void;
   setSortingState: (sorting: SortingState) => void;

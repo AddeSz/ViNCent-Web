@@ -1,4 +1,5 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import type { FullData } from "@/types/network";
 
 interface BarchartBarsProps {
   categories: string[];
@@ -14,6 +15,7 @@ interface BarchartBarsProps {
   setHoverCategory: (category: string | null) => void;
   onBarClick: (category: string) => void;
   dataKey: string;
+  filteredData: Map<string, FullData>;
 }
 
 const BarchartBars = ({
@@ -30,9 +32,11 @@ const BarchartBars = ({
   setHoverCategory,
   onBarClick,
   dataKey,
+  filteredData,
 }: BarchartBarsProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const hoveredValue = hoveredNode?.[dataKey];
+  const node = hoveredNode ? filteredData.get(hoveredNode) : null;
+  const hoveredValue = node?.[dataKey];
 
   return (
     <>
@@ -48,7 +52,7 @@ const BarchartBars = ({
         const startPos = i === 0 ? x + 3 : x + 2;
         const width = i === 0 ? barWidth - 5 : barWidth - 4;
         const nodeHoveredCategory =
-          hoveredValue != null && !hoveredNode?.removed && !hoveredNode?.stable
+          hoveredValue != null && !node?.removed && !node?.stable
             ? hoveredValue === category
             : null;
         return (

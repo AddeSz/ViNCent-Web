@@ -12,8 +12,6 @@ export const drawBoundsHighlight = (
   bounds: BoundsResult,
   innerRadius: number,
   outerRadius: number,
-  selectedNodes: Set<string>,
-  hoveredNode: FullData | null,
 ): void => {
   const { groupBounds } = bounds;
 
@@ -42,10 +40,10 @@ export const drawBoundsHighlight = (
     groupBounds.forEach((group) => {
       ["start", "end"].forEach((side) => {
         const angle = side === "start" ? group.startAngle : group.endAngle;
-        const x1 = Math.cos(angle - Math.PI / 2) * (innerRadius - 0.5);
-        const y1 = Math.sin(angle - Math.PI / 2) * (innerRadius - 0.5);
-        const x2 = Math.cos(angle - Math.PI / 2) * (outerRadius + 0.5);
-        const y2 = Math.sin(angle - Math.PI / 2) * (outerRadius + 0.5);
+        const x1 = Math.cos(angle - Math.PI / 2) * (innerRadius - 0.5) + 0.3;
+        const y1 = Math.sin(angle - Math.PI / 2) * (innerRadius - 0.5) + 0.3;
+        const x2 = Math.cos(angle - Math.PI / 2) * (outerRadius + 0.5) + 0.3;
+        const y2 = Math.sin(angle - Math.PI / 2) * (outerRadius + 0.5) + 0.3;
 
         boundPaths.push({
           id: group.id,
@@ -85,26 +83,55 @@ export const drawBoundsHighlight = (
       .attr("class", "bounds-highlight")
       .style("pointer-events", "none");
   }
-
-  updateBoundsHighlight(svg, selectedNodes, hoveredNode);
 };
 
 export const updateBoundsHighlight = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  nodeData: Map<string, FullData>,
   selectedNodes: Set<string>,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
 ) => {
-  const highlightBounds = cachedBoundsData.groupBounds.filter((bound) => {
-    return selectedNodes.has(bound.id) || hoveredNode?.id === bound.id;
+  const linkedToHoveredIds = hoveredNode
+    ? nodeData.get(hoveredNode)?.linked
+    : null;
+  const linkedToSelectedIds = new Set<string>();
+  selectedNodes.forEach((nodeId) => {
+    const node = nodeData.get(nodeId);
+    if (node?.linked && !node?.stable) {
+      node.linked.forEach((id) => linkedToSelectedIds.add(id));
+    }
   });
 
-  const highlightData = highlightBounds.map((bound) => ({
-    ...bound,
-    stroke: selectedNodes.has(bound.id)
-      ? highlightBoundsColor.selected
-      : highlightBoundsColor.hover,
-    strokeWidth: 1.5,
-  }));
+  const highlightBounds = cachedBoundsData.groupBounds.filter((bound) => {
+    return (
+      selectedNodes.has(bound.id) ||
+      hoveredNode === bound.id ||
+      linkedToHoveredIds?.has(bound.id) ||
+      linkedToSelectedIds.has(bound.id)
+    );
+  });
+
+  const highlightData = highlightBounds.map((bound) => {
+    let stroke: string;
+
+    if (selectedNodes.has(bound.id)) {
+      stroke = highlightBoundsColor.selected;
+    } else if (hoveredNode === bound.id) {
+      stroke = highlightBoundsColor.hover;
+    } else if (linkedToSelectedIds.has(bound.id)) {
+      stroke = highlightBoundsColor.linkedToSelected;
+    } else if (linkedToHoveredIds?.has(bound.id)) {
+      stroke = highlightBoundsColor.linkedToHovered;
+    } else {
+      stroke = highlightBoundsColor.hover;
+    }
+
+    return {
+      ...bound,
+      stroke,
+      strokeWidth: 1.5,
+    };
+  });
 
   svg
     .select("g.bounds-highlight")

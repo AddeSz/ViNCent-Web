@@ -42,6 +42,8 @@ const ViewContextMenu = ({
   const clearSelection = useNetworkStore((s) => s.clearSelection);
   const resetRadialZoom = useNetworkStore((s) => s.resetRadialZoom);
   const resetNodeLinkZoom = useNetworkStore((s) => s.resetNodeLinkZoom);
+  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const { centralityKeys, attributeKeys } = useKeys();
   const sortKey = useNetworkStore((s) => s.sortKey);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
@@ -64,12 +66,22 @@ const ViewContextMenu = ({
       <ContextMenuContent>
         {(contextMenuTarget.type === "radial" ||
           contextMenuTarget.type === "node-link") && (
-          <ContextMenuItem
-            onSelect={handleResetZoom}
-            className="cursor-pointer"
-          >
-            Reset Zoom
-          </ContextMenuItem>
+          <>
+            <ContextMenuItem
+              onSelect={handleResetZoom}
+              className="cursor-pointer"
+            >
+              Reset Zoom
+            </ContextMenuItem>
+            {hoveredNode && (
+              <ContextMenuItem
+                onSelect={() => setHoveredNode(null)}
+                className="cursor-pointer"
+              >
+                Clear Hover
+              </ContextMenuItem>
+            )}
+          </>
         )}
 
         {(contextMenuTarget.type === "radial" ||
@@ -99,7 +111,7 @@ const ViewContextMenu = ({
             <ContextMenuItem
               onSelect={() => onContextMenuSort(contextMenuTarget.data.key)}
             >
-              <div className="flex w-full items-center justify-between gap-1">
+              <div className="flex w-full cursor-pointer items-center justify-between gap-1">
                 <span>
                   Sort by{" "}
                   <span

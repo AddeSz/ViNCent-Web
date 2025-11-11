@@ -83,7 +83,7 @@ const drawArcsCanvas = (
   const arcsByColor: ArcsByColor = {};
   for (const layer of series) {
     const key = layer.key;
-    const layerInnerRadius = y(getKeyIndex(key));
+    const layerInnerRadius = y(getKeyIndex(key)) + 0.5;
     const layerFullOuterRadius = y(getKeyIndex(key) + 1);
     const attribute = attributeInfo.get(key);
     let min = 0;
@@ -104,9 +104,11 @@ const drawArcsCanvas = (
       const startAngle = x(id) ?? 0;
       const endAngle = startAngle + x.bandwidth();
 
-      let foregroundOuterRadius = layerFullOuterRadius;
+      let foregroundOuterRadius = layerFullOuterRadius - 0.5;
       if (typeof value === "number" && attribute?.isNumeric) {
-        const proportion = Math.max(0, Math.min(1, (value - min) / range));
+        const proportion =
+          Math.ceil(Math.max(0, Math.min(1, (value - min) / range)) * 100) /
+          100;
         foregroundOuterRadius =
           layerInnerRadius +
           (layerFullOuterRadius - layerInnerRadius) * proportion;
@@ -220,7 +222,7 @@ const drawArcsCanvas = (
 
     const angle = x(id)! + x.bandwidth() / 2;
     const color = getFillColor(changeType);
-    const circleRadius = outerRadius + changeCircleRadius * 2;
+    const circleRadius = outerRadius + changeCircleRadius * 1.5 + 1;
 
     changeCircles.push({
       id,
@@ -618,6 +620,7 @@ function setupCanvasInteractions(
           }
         } else {
           (this as HTMLCanvasElement).style.cursor = "default";
+          onNodeHover(null);
         }
       }
 

@@ -20,13 +20,17 @@ export const handleBrushSelection = (selectedIds: string[]) => {
 export const highlightBoundsColor = {
   default: "black",
   selected: "orange",
+  linkedToSelected: "OrangeRed",
   hover: "var(--accent-foreground)",
+  linkedToHovered: "var(--primary)",
 };
 
 export const highlightLabelColor = {
   default: "var(--foreground)",
   selected: "orange",
+  linkedToSelected: "OrangeRed",
   hover: "var(--accent-foreground)",
+  linkedToHovered: "var(--primary)",
 };
 
 export const highlightLinksColor = {
@@ -38,9 +42,11 @@ export const highlightLinksColor = {
 export const highlightNodeColor = {
   removed: "#9c0202",
   added: "green",
-  default: "steelblue",
-  selectedOutline: "orange",
-  hoveredOutline: "var(--accent-foreground)",
+  default: "#fdcdac",
+  selected: "orange",
+  linkedToSelected: "OrangeRed",
+  hovered: "var(--accent-foreground)",
+  linkedToHovered: "var(--primary)",
 };
 
 export const getLinkStyle = (

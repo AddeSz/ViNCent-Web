@@ -467,7 +467,7 @@ const NodeLinkDiagramSettings = () => {
             </div>
             <Slider
               id="link-thickness"
-              min={0.5}
+              min={0}
               max={10}
               step={0.5}
               value={[settings.fixedLinkThickness]}
@@ -489,8 +489,8 @@ const NodeLinkDiagramSettings = () => {
               </div>
               <Slider
                 id="min-link-thickness"
-                min={0.5}
-                max={5}
+                min={0}
+                max={10}
                 step={0.5}
                 value={[settings.minLinkThickness]}
                 onValueChange={([value]) =>

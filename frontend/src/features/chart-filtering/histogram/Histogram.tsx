@@ -1,5 +1,5 @@
 import { type BrushRange } from "@/stores/useMetricsStore";
-import type { Attributes } from "@/types/network";
+import type { FullData } from "@/types/network";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
@@ -13,13 +13,12 @@ import { useHistogramScales } from "./components/useHistogramScales";
 
 interface HistogramProps {
   binnedData: BinnedData;
-  filteredData: Set<string>;
+  filteredData: Map<string, FullData>;
   dimensions: ChartDimensions;
   dataKey: string;
   getColorForMetric: (key: string) => string;
   brushRange: BrushRange | null;
   onBrushChange: (range: BrushRange | null) => void;
-  metricsData: Map<string, Attributes>;
 }
 
 const Histogram = ({
@@ -30,7 +29,6 @@ const Histogram = ({
   getColorForMetric,
   brushRange,
   onBrushChange,
-  metricsData,
 }: HistogramProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,18 +46,19 @@ const Histogram = ({
     if (!filteredData) return null;
 
     const counts = new Array<number>(binnedData.bins.length).fill(0);
-    Array.from(metricsData.keys()).forEach((nodeId) => {
-      if (!filteredData.has(nodeId)) return;
-      const value = metricsData.get(nodeId)?.[dataKey];
+
+    for (const [_, data] of filteredData.entries()) {
+      const value = data[dataKey];
       if (typeof value === "number") {
         const binIndex = binnedData.valueToBinIndex.get(value);
         if (binIndex !== undefined && !disabledBins.has(binIndex)) {
           counts[binIndex]++;
         }
       }
-    });
+    }
+
     return counts;
-  }, [binnedData, filteredData, metricsData, disabledBins]);
+  }, [binnedData, filteredData, disabledBins]);
 
   const { yScale, yTicks, xTicks, getBinPosition } = useHistogramScales(
     binnedData,
@@ -132,6 +131,7 @@ const Histogram = ({
             filteredBinCounts={filteredBinCounts}
             dataKey={dataKey}
             disabledBins={disabledBins}
+            filteredData={filteredData}
           />
 
           {/* interaction layer, didnt need to be its own component... */}

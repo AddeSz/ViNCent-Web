@@ -211,6 +211,7 @@ const NodeLinkDiagram = ({
         linkWeights,
         hoveredNode,
         showLabels,
+        nodeData,
       );
       drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
       setupNodeEvents(svg, interactionProps);
@@ -257,6 +258,7 @@ const NodeLinkDiagram = ({
         linkWeights,
         hoveredNode,
         showLabels,
+        nodeData,
       );
 
       setupNodeEvents(svg, interactionProps);
@@ -315,6 +317,7 @@ const NodeLinkDiagram = ({
         nodeChanges,
         edgeChanges,
         state.hoveredNode,
+        nodeData,
       );
     });
 

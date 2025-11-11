@@ -1,4 +1,4 @@
-import type { Attributes } from "@/types/network";
+import type { FullData } from "@/types/network";
 import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
 import { Tooltip } from "../components/Tooltip";
@@ -7,13 +7,12 @@ import BarchartBars from "./components/BarchartBars";
 
 interface BarchartProps {
   categoricalValues: string[];
-  filteredData: Set<string>;
+  filteredData: Map<string, FullData>;
   dimensions: ChartDimensions;
   dataKey: string;
   getColorForMetric: (key: string, value?: string | number) => string;
   selectedCategories: string[] | null;
   onBarClick: (category: string) => void;
-  metricsData: Map<string, Attributes>;
 }
 
 const Barchart = ({
@@ -24,7 +23,6 @@ const Barchart = ({
   getColorForMetric,
   selectedCategories,
   onBarClick,
-  metricsData,
 }: BarchartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverCategory, setHoverCategory] = useState<string | null>(null);
@@ -54,18 +52,16 @@ const Barchart = ({
   const filteredCategoryCounts = useMemo(() => {
     const counts = new Map<string, number>();
 
-    Array.from(metricsData.keys()).forEach((nodeId) => {
-      if (!filteredData.has(nodeId)) return;
-
-      const value = metricsData.get(nodeId)?.[dataKey];
+    for (const [_, data] of filteredData.entries()) {
+      const value = data[dataKey];
       if (value != null) {
         const strValue = String(value);
         counts.set(strValue, (counts.get(strValue) || 0) + 1);
       }
-    });
+    }
 
     return counts;
-  }, [metricsData, filteredData]);
+  }, [filteredData]);
 
   const maxCount = Math.max(...Array.from(categoryCounts.values()));
 
@@ -102,6 +98,7 @@ const Barchart = ({
             setHoverCategory={setHoverCategory}
             onBarClick={onBarClick}
             dataKey={dataKey}
+            filteredData={filteredData}
           />
 
           <BarchartAxes

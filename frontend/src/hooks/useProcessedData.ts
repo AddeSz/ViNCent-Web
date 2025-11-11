@@ -66,6 +66,7 @@ export const useProcessedData = (
           ...processedNode,
           hidden: isHidden,
           linkCount: 0,
+          linked: new Set<string>(),
         };
         dataMap.set(id, nodeWithHidden);
 
@@ -126,17 +127,31 @@ export const useProcessedData = (
       const t = getNodeId(link.target);
       const edgeId = getEdgeId(link);
       const edge = processedEdgeMap.get(edgeId);
-      if (edge && (!edge.removed || acceptedEdgeRemovals.has(edgeId))) {
+      if (edge) {
         linkCountMap.set(s, (linkCountMap.get(s) || 0) + 1);
         linkCountMap.set(t, (linkCountMap.get(t) || 0) + 1);
+        const sourceNode = dataMap.get(s);
+        const targetNode = dataMap.get(t);
+        if (
+          sourceNode?.linked &&
+          targetNode?.linked &&
+          (!sourceNode?.stable || !targetNode?.stable)
+        ) {
+          sourceNode.linked.add(t);
+          targetNode.linked.add(s);
+        }
       }
     }
 
     for (const [id, count] of linkCountMap) {
       const node = dataMap.get(id);
-      if (node) dataMap.set(id, { ...node, linkCount: count });
+      if (node)
+        dataMap.set(id, {
+          ...node,
+          linkCount: count,
+          linked: new Set(node.linked),
+        });
     }
-
     const filteredNetwork: Network = {
       nodes: filteredNodes,
       links: filteredLinks,

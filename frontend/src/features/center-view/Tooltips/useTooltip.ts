@@ -1,4 +1,5 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useTooltipStore, type TooltipState } from "@/stores/useTooltipStore";
 import type { FullData } from "@/types/network";
 import throttle from "lodash.throttle";
@@ -16,8 +17,13 @@ export const useTooltip = (dataMap?: Map<string, FullData>) => {
   const showTooltip = useTooltipStore((s) => s.showTooltip);
   const hideTooltip = useTooltipStore((s) => s.hideTooltip);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
-
+  const stickyHover = useSettingsStore((s) => s.displaySettings.stickyHover);
   const currentHoveredKey = useRef<string | null>(null);
+  const stickyHoverRef = useRef(stickyHover);
+
+  useEffect(() => {
+    stickyHoverRef.current = stickyHover;
+  }, [stickyHover]);
 
   const throttledShowTooltip = useRef(
     throttle((data: Partial<TooltipState>, key: string) => {
@@ -31,12 +37,10 @@ export const useTooltip = (dataMap?: Map<string, FullData>) => {
       const key = `${data.type ?? "unknown"}-${data.nodeId ?? "unknown"}-${
         data.arcKey ?? ""
       }`;
-
       if (currentHoveredKey.current === key) {
         showTooltip(data);
         return;
       }
-
       throttledShowTooltip(data, key);
     },
     [showTooltip, throttledShowTooltip],
@@ -52,17 +56,19 @@ export const useTooltip = (dataMap?: Map<string, FullData>) => {
     throttle(
       (nodeId: string | null) => {
         if (!dataMap) return;
+
         if (nodeId === null) {
-          setHoveredNode(null);
+          if (!stickyHoverRef.current) {
+            setHoveredNode(null);
+          }
           return;
         }
-        const data = dataMap.get(nodeId);
-        if (data) setHoveredNode(data);
+        setHoveredNode(nodeId);
       },
       20,
       { trailing: true },
     ),
-    [dataMap, setHoveredNode],
+    [dataMap],
   );
 
   useEffect(() => {

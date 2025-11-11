@@ -174,7 +174,10 @@ export const setupNodeEvents = (
       onNodeHover(d.id);
       onTooltipShow({ type: "node", nodeId: d.id, x, y });
     })
-    .on("mouseleave", () => onTooltipHide())
+    .on("mouseleave", () => {
+      onTooltipHide();
+      onNodeHover(null);
+    })
     .on("contextmenu", (event, d) => {
       event._handledByChild = true;
       onContextMenu("node", d.id);

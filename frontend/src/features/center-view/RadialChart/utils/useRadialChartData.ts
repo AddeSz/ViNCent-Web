@@ -1,5 +1,6 @@
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData } from "@/types/network";
+import { calculateBandwidth, calculateGapProportion } from "@/utils/utils";
 import * as d3 from "d3";
 import { useMemo } from "react";
 import { createAngleMap } from "./calculateLinks";
@@ -49,7 +50,31 @@ export const useRadialChartData = ({
   }, [visibleData, allKeys]);
 
   const xScale = useMemo(() => {
-    return createAngularScale(visibleData, visibleData.length);
+    const n = visibleData.length;
+    if (n === 0) return d3.scaleBand<string>();
+    const bandWidth = calculateBandwidth(n);
+    if (n === 1) {
+      const scale = (id: string) => {
+        const index = visibleData.findIndex((d) => d.id === id);
+        return index === -1 ? undefined : 0;
+      };
+      scale.bandwidth = () => bandWidth;
+      scale.domain = () => visibleData.map((d) => d.id);
+      return scale as d3.ScaleBand<string>;
+    }
+
+    const gapProportion = calculateGapProportion(n);
+    const gapSize = (2 * Math.PI * gapProportion) / n;
+
+    const scale = (id: string) => {
+      const index = visibleData.findIndex((d) => d.id === id);
+      if (index === -1) return undefined;
+      return gapSize / 2 + index * (bandWidth + gapSize);
+    };
+    scale.bandwidth = () => bandWidth;
+    scale.domain = () => visibleData.map((d) => d.id);
+
+    return scale as d3.ScaleBand<string>;
   }, [visibleData]);
 
   const angleMap = useMemo(() => {
@@ -77,14 +102,14 @@ export const useRadialChartData = ({
 
   const totalLabelWidth = truncateLabels ? maxLabelWidth : labelWidth;
 
-  const radiusScale = d3
-    .scalePow()
-    .exponent(0.05)
-    .domain([100, 1200])
-    .range([10, 2])
-    .clamp(true);
-
-  const radius = Math.max(radiusScale(visibleData.length), 1);
+  const radius = useMemo(() => {
+    return (
+      Math.min(
+        (outerRadius * calculateBandwidth(visibleData.length)) / 2,
+        15.5,
+      ) - 0.5
+    );
+  }, [visibleData.length, outerRadius]);
 
   return {
     chartData,
@@ -100,55 +125,6 @@ export const useRadialChartData = ({
     truncateLabels,
   };
 };
-
-function createAngularScale(
-  visibleData: FullData[],
-  totalDataLength: number,
-): d3.ScaleBand<string> {
-  const n = visibleData.length;
-
-  if (n === 0) return d3.scaleBand<string>();
-
-  if (n === 1) {
-    const scale = (id: string) => {
-      const index = visibleData.findIndex((d) => d.id === id);
-      return index === -1 ? undefined : 0;
-    };
-    scale.bandwidth = () => 2 * Math.PI;
-    scale.domain = () => visibleData.map((d) => d.id);
-    return scale as d3.ScaleBand<string>;
-  }
-
-  const gapProportion = calculateGapProportion(totalDataLength);
-  const arcProportion = 1 - gapProportion;
-
-  const arcSize = (2 * Math.PI * arcProportion) / n;
-  const gapSize = (2 * Math.PI * gapProportion) / n;
-
-  const scale = (id: string) => {
-    const index = visibleData.findIndex((d) => d.id === id);
-    if (index === -1) return undefined;
-    return gapSize / 2 + index * (arcSize + gapSize);
-  };
-
-  scale.bandwidth = () => arcSize;
-  scale.domain = () => visibleData.map((d) => d.id);
-
-  return scale as d3.ScaleBand<string>;
-}
-
-function calculateGapProportion(dataLength: number): number {
-  if (dataLength <= 100) return 0.5;
-  if (dataLength >= 1000) return 0;
-
-  if (dataLength <= 500) {
-    const t = (dataLength - 100) / (500 - 100);
-    return 0.5 - t * 0.3;
-  }
-
-  const t = (dataLength - 500) / (1000 - 500);
-  return 0.3 - t * 0.3;
-}
 
 function createRadialScale({
   innerRadius,

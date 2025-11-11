@@ -28,7 +28,7 @@ export type ContextMenuTarget = {
 };
 
 interface CenterViewProps {
-  dataMap: Map<string, FullData>;
+  nodeMap: Map<string, FullData>;
   edgeData: Map<string, FullData>;
   filteredNetwork: Network;
   nodeChanges: DataChanges;
@@ -41,7 +41,7 @@ interface CenterViewProps {
 }
 
 const CenterView = ({
-  dataMap,
+  nodeMap,
   edgeData,
   filteredNetwork,
   nodeChanges,
@@ -55,7 +55,7 @@ const CenterView = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
-    useSortingLogic(dataMap);
+    useSortingLogic(nodeMap);
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
     { type: "radial" },
   );
@@ -110,7 +110,7 @@ const CenterView = ({
             <RadialChart
               dimensions={dimensions}
               data={sortedData}
-              dataMap={dataMap}
+              nodeMap={nodeMap}
               nodeChanges={nodeChanges}
               edgeMap={edgeData}
               edgeChanges={edgeChanges}
@@ -129,7 +129,7 @@ const CenterView = ({
             <NodeLinkDiagram
               dimensions={dimensions}
               filteredNetwork={filteredNetwork}
-              nodeData={dataMap}
+              nodeData={nodeMap}
               edgeData={edgeData}
               handleContextMenu={handleContextMenu}
               nodeChanges={nodeChanges}
@@ -155,7 +155,7 @@ const CenterView = ({
               <div className="pointer-events-none absolute bottom-2 left-2">
                 <DataSummary
                   filteredNetwork={filteredNetwork}
-                  dataMap={dataMap}
+                  nodeMap={nodeMap}
                 />
               </div>
 

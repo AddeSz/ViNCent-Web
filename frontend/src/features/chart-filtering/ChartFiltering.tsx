@@ -86,16 +86,17 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
     return Array.from(edgeMetricsData.values());
   }, [edgeMetricsData]);
 
-  const filteredNodeData = new Set<string>();
+  const filteredNodeData = new Map<string, FullData>();
   for (const [key, value] of nodeData.entries()) {
     if (value && !value.removed && !value.stable) {
-      filteredNodeData.add(key);
+      filteredNodeData.set(key, value);
     }
   }
-  const filteredEdgeData = new Set<string>();
+
+  const filteredEdgeData = new Map<string, FullData>();
   for (const [key, value] of edgeData.entries()) {
     if (value && !value.removed && !value.stable) {
-      filteredEdgeData.add(key);
+      filteredEdgeData.set(key, value);
     }
   }
 
@@ -194,7 +195,6 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           getColorForMetric={getColorForMetric}
           selectedCategories={selectedCategories[key] || null}
           onBarClick={(category) => handleCategoryClick(key, category)}
-          metricsData={isEdgeMetric ? edgeMetricsData : metricsData}
         />
       </div>
     );
@@ -238,7 +238,6 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           getColorForMetric={getColorForMetric}
           brushRange={brushRanges[key]}
           onBrushChange={(range) => setBrushRange(key, range)}
-          metricsData={isEdgeMetric ? edgeMetricsData : metricsData}
         />
         {brushRanges[key] && (
           <p className="min-w-[30px] flex-1 truncate pl-2 text-xs text-muted-foreground">

@@ -22,29 +22,54 @@ const getNodeStyle = (
   node: Node,
   selectedNodes: Set<string>,
   nodeChanges: DataChanges,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
+  nodeData: Map<string, FullData>,
 ) => {
   const { displaySettings } = useSettingsStore.getState();
   const removed = nodeChanges.removed[node.id] ? true : false;
   const added = nodeChanges.added[node.id] ? true : false;
 
-  let fill = "steelblue";
-  if (added) fill = "green";
-  else if (removed && displaySettings.keepPreviewNodes)
+  let fill = highlightNodeColor.default;
+  if (removed && !displaySettings.keepPreviewNodes) {
     fill = highlightNodeColor.removed;
+  }
 
   const isSelected = selectedNodes.has(node.id);
-  const isHovered = hoveredNode?.id === node.id;
+  const isHovered = hoveredNode === node.id;
+
+  const isSecondarySelected = Array.from(selectedNodes).some((selectedId) => {
+    const selectedNodeData = nodeData.get(selectedId);
+    return selectedNodeData?.linked?.has(node.id);
+  });
+
+  const isSecondaryHovered =
+    hoveredNode && nodeData.get(hoveredNode)?.linked?.has(node.id);
 
   let stroke = "none";
-  let strokeWidth = 2;
+  let strokeWidth = 0;
+
+  if (added) {
+    stroke = highlightNodeColor.added;
+    strokeWidth = 3;
+  } else if (removed && displaySettings.keepPreviewNodes) {
+    stroke = highlightNodeColor.removed;
+    strokeWidth = 3;
+  }
+
+  if (isSecondarySelected) {
+    fill = highlightNodeColor.linkedToSelected;
+    strokeWidth = 3;
+  } else if (isSecondaryHovered) {
+    fill = highlightNodeColor.linkedToHovered;
+    strokeWidth = 3;
+  }
 
   if (isSelected) {
-    stroke = highlightNodeColor.selectedOutline;
-    strokeWidth;
+    fill = highlightNodeColor.selected;
+    strokeWidth = 3;
   } else if (isHovered) {
-    stroke = highlightNodeColor.hoveredOutline;
-    strokeWidth;
+    fill = highlightNodeColor.hovered;
+    strokeWidth = 3;
   }
 
   return {
@@ -57,7 +82,7 @@ const getNodeStyle = (
 const getLinkStyleForNode = (
   link: Link,
   selectedNodes: Set<string>,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
   edgeChanges: DataChanges,
 ) => {
   const sourceId = getNodeId(link.source);
@@ -69,7 +94,7 @@ const getLinkStyleForNode = (
     hoveredNode &&
     sourceId &&
     targetId &&
-    (sourceId === hoveredNode.id || targetId === hoveredNode.id)
+    (sourceId === hoveredNode || targetId === hoveredNode)
   );
   const style = getLinkStyle(
     isRemoved,
@@ -97,7 +122,8 @@ const updateNodes = (
   selectedNodes: Set<string>,
   nodeSizes: Map<string, number>,
   nodeChanges: DataChanges,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
+  nodeData: Map<string, FullData>,
 ) => {
   const nodes = nodeGroup
     .selectAll<SVGCircleElement, Node>("circle.node")
@@ -130,7 +156,13 @@ const updateNodes = (
   const nodesUpdate = nodesEnter.merge(nodes);
 
   nodesUpdate.each(function (d) {
-    const style = getNodeStyle(d, selectedNodes, nodeChanges, hoveredNode);
+    const style = getNodeStyle(
+      d,
+      selectedNodes,
+      nodeChanges,
+      hoveredNode,
+      nodeData,
+    );
     const size = nodeSizes.get(d.id)!;
     d3.select(this)
       .on("click", (event) => handleNodeClick(event, d))
@@ -192,7 +224,7 @@ const updateLinks = (
   renderLinks: Link[],
   selectedNodes: Set<string>,
   linkWeights: Map<string, number>,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
   edgeChanges: DataChanges,
 ) => {
   const links = linkGroup
@@ -264,10 +296,17 @@ export const updateStyle = (
   linkWeights: Map<string, number>,
   nodeChanges: DataChanges,
   edgeChanges: DataChanges,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
+  nodeData: Map<string, FullData>,
 ) => {
   svg.selectAll<SVGCircleElement, Node>("circle.node").each(function (d) {
-    const style = getNodeStyle(d, selectedNodes, nodeChanges, hoveredNode);
+    const style = getNodeStyle(
+      d,
+      selectedNodes,
+      nodeChanges,
+      hoveredNode,
+      nodeData,
+    );
     const size = nodeSizes.get(d.id)!;
     d3.select(this)
       .attr("r", size)
@@ -306,8 +345,9 @@ const updateGraph = (
   edgeChanges: DataChanges,
   nodeSizes: Map<string, number>,
   linkWeights: Map<string, number>,
-  hoveredNode: FullData | null,
+  hoveredNode: string | null,
   showLabels: boolean,
+  nodeData: Map<string, FullData>,
 ) => {
   const svgGroup = svg.select("g.zoom-group");
   const linkGroup = svgGroup.select("g.links-group");
@@ -328,6 +368,7 @@ const updateGraph = (
     nodeSizes,
     nodeChanges,
     hoveredNode,
+    nodeData,
   );
   const allLabels = updateLabels(
     nodeGroup,

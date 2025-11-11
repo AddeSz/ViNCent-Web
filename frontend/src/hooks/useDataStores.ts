@@ -85,7 +85,10 @@ export const useDataStores = () => {
       );
     }
 
-    const calculatedRadial = calculateRadialSettings(nodes.length);
+    const calculatedRadial = calculateRadialSettings(
+      nodes.length,
+      useMetricsStore.getState().metricsInfo.size,
+    );
     useSettingsStore.getState().setInitialRadialSettings({
       ...defaultRadialSettings,
       ...calculatedRadial,

@@ -21,7 +21,11 @@ import {
   drawBoundsHighlight,
   updateBoundsHighlight,
 } from "./drawBoundsHighlight ";
-import drawLabels, { updateLabelHighlight, updateLabels } from "./drawLabels";
+import drawLabels, {
+  updateLabelHighlight,
+  updateLabels,
+  updateLabelVisibility,
+} from "./drawLabels";
 import drawLinksCanvas, {
   redrawLinksCanvasOnZoom,
   updateLinkHighlightCanvas,
@@ -32,7 +36,7 @@ import calculateBounds from "./utils/calculateBounds";
 interface RadialChartProps {
   dimensions: DOMRectReadOnly | null;
   data: FullData[];
-  dataMap: Map<string, FullData>;
+  nodeMap: Map<string, FullData>;
   nodeChanges: DataChanges;
   edgeMap: Map<string, FullData>;
   edgeChanges: DataChanges;
@@ -44,7 +48,7 @@ interface RadialChartProps {
 const RadialChart = ({
   dimensions,
   data,
-  dataMap,
+  nodeMap,
   nodeChanges,
   edgeMap,
   edgeChanges,
@@ -55,16 +59,18 @@ const RadialChart = ({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const lastZoomLevel = useRef(1);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
+  const [isDrawReady, setIsDrawReady] = useState(false);
   const attributeInfo = useMetricsStore((s) => s.metricsInfo);
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
-
+  const hoveredNode = useNetworkStore((state) => state.hoveredNode);
+  const selectedNodes = useNetworkStore((state) => state.selectedNodes);
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
   const radialSettings = useSettingsStore(useShallow((s) => s.radialSettings));
   const { separateMetrics, linkRenderingMode, fdebSettings } = radialSettings;
   const { enabledNodeKeys, enabledAttributeKeys, enabledCentralityKeys } =
     useKeys();
 
-  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(dataMap);
+  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(nodeMap);
 
   const interactionProps: InteractionProps = useMemo(
     () => ({
@@ -113,7 +119,8 @@ const RadialChart = ({
 
   const redrawCanvas = useRef(
     throttle((currentK: number) => {
-      const { chartData, innerRadius, outerRadius } = latestValuesRef.current;
+      const { chartData, innerRadius, outerRadius, radius } =
+        latestValuesRef.current;
 
       if (!svgRef.current || !chartData) return;
 
@@ -121,15 +128,24 @@ const RadialChart = ({
 
       if (zoomLevel === lastZoomLevel.current) return;
       lastZoomLevel.current = zoomLevel;
+      const hoveredNode = useNetworkStore.getState().hoveredNode;
+      const selectedNodes = useNetworkStore.getState().selectedNodes;
       requestAnimationFrame(() => {
         if (!svgRef.current || !chartData) return;
 
         const svg = d3.select(svgRef.current);
         const svgGroup = svg.select<SVGGElement>("g.zoom-group");
         if (svgGroup.empty()) return;
-
         redrawArcsCanvasOnZoom(svgGroup, outerRadius, radius, currentK);
         redrawLinksCanvasOnZoom(svgGroup, innerRadius, currentK);
+        updateLabelVisibility(
+          svgGroup,
+          nodeMap,
+          selectedNodes,
+          hoveredNode,
+          zoomLevel,
+          radius,
+        );
       });
     }, 150),
   ).current;
@@ -144,7 +160,7 @@ const RadialChart = ({
   useEffect(() => {
     let cancelled = false;
     let abortController = new AbortController();
-
+    setIsDrawReady(false);
     (async () => {
       if (!svgRef.current || !chartData || !dimensions) return;
       if (isCanvasReady) onUpdateStateChange(true);
@@ -156,10 +172,9 @@ const RadialChart = ({
         svgGroup = svg.append("g").attr("class", "zoom-group");
         setupZoom(svg, svgGroup, getCurrentTransform(), (k) => redrawCanvas(k));
       }
+
       const { series } = chartData;
       const bounds = calculateBounds(series, xScale, yScale, getKeyIndex);
-      const hoveredNode = useNetworkStore.getState().hoveredNode;
-      const selectedNodes = useNetworkStore.getState().selectedNodes;
       const zoomLevel = getClosestZoomLevel(getCurrentTransform().k);
 
       await drawLinksCanvas(
@@ -195,31 +210,34 @@ const RadialChart = ({
         zoomLevel,
       );
 
-      drawBoundsHighlight(
-        svgGroup,
-        bounds,
-        innerRadius,
-        outerRadius,
-        selectedNodes,
-        hoveredNode,
-      );
+      drawBoundsHighlight(svgGroup, bounds, innerRadius, outerRadius);
 
       drawLabels(
         svgGroup,
         xScale,
         outerRadius,
-        selectedNodes,
         fontSize,
         totalLabelWidth,
         truncateLabels,
         interactionProps,
-        hoveredNode,
         radius,
       );
 
       requestAnimationFrame(() => {
+        updateLabelHighlight(
+          svgGroup,
+          nodeMap,
+          selectedNodes,
+          hoveredNode,
+          zoomLevel,
+          radius,
+        );
+        updateBoundsHighlight(svgGroup, nodeMap, selectedNodes, hoveredNode);
+        updateLinkHighlightCanvas(svgGroup, selectedNodes, hoveredNode);
+
         setIsCanvasReady(true);
         onUpdateStateChange(false);
+        setIsDrawReady(true);
       });
     })();
 
@@ -237,6 +255,7 @@ const RadialChart = ({
   ]);
 
   useEffect(() => {
+    if (!isDrawReady) return;
     let previousHoveredNode = useNetworkStore.getState().hoveredNode;
     let previousSelectedNodes = useNetworkStore.getState().selectedNodes;
 
@@ -250,21 +269,35 @@ const RadialChart = ({
       previousSelectedNodes = state.selectedNodes;
 
       if (!svgRef.current) return;
+
       const svgGroup = d3
         .select(svgRef.current)
         .select<SVGGElement>("g.zoom-group");
-
-      updateLabelHighlight(svgGroup, state.selectedNodes, state.hoveredNode);
-      updateBoundsHighlight(svgGroup, state.selectedNodes, state.hoveredNode);
-      updateLinkHighlightCanvas(
-        svgGroup,
-        state.selectedNodes,
-        state.hoveredNode,
-      );
+      requestAnimationFrame(() => {
+        updateLabelHighlight(
+          svgGroup,
+          nodeMap,
+          state.selectedNodes,
+          state.hoveredNode,
+          getClosestZoomLevel(getCurrentTransform().k),
+          radius,
+        );
+        updateBoundsHighlight(
+          svgGroup,
+          nodeMap,
+          state.selectedNodes,
+          state.hoveredNode,
+        );
+        updateLinkHighlightCanvas(
+          svgGroup,
+          state.selectedNodes,
+          state.hoveredNode,
+        );
+      });
     });
 
     return unsubscribe;
-  }, []);
+  }, [isDrawReady]);
 
   useEffect(() => {
     if (!svgRef.current || !chartData || !dimensions) return;
@@ -318,25 +351,8 @@ const RadialChart = ({
     const svgGroup = d3
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
-    drawSelectionBrush(
-      svgGroup,
-      outerRadius,
-      totalLabelWidth,
-      xScale,
-      isViewActive,
-    );
+    drawSelectionBrush(svgGroup, outerRadius, xScale, isViewActive);
   }, [totalLabelWidth, isViewActive, xScale]);
-
-  useEffect(() => {
-    const hoveredNode = useNetworkStore.getState().hoveredNode;
-    if (!hoveredNode) return;
-    const freshData = dataMap.get(hoveredNode.id);
-    if (freshData) {
-      onNodeHover(hoveredNode.id);
-    } else {
-      onNodeHover(null);
-    }
-  }, [dataMap]);
 
   const showSpinner =
     !dimensions?.width || !dimensions?.height || !chartData || !isCanvasReady;
@@ -368,7 +384,7 @@ const RadialChart = ({
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full"
         />
-        <ChartTooltip dataMap={dataMap} />
+        <ChartTooltip dataMap={nodeMap} />
       </div>
     </>
   );

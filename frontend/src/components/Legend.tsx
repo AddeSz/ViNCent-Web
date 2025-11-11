@@ -3,7 +3,7 @@ import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface LegendProps {
   nodeData: Map<string, FullData>;
@@ -15,10 +15,20 @@ const Legend = ({ nodeData }: LegendProps) => {
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
   const { enabledNodeKeys } = useKeys();
 
-  const nodeMetrics = useMemo(() => {
-    if (!hoveredNode) return [];
+  const [lastHoveredNode, setLastHoveredNode] = useState<string | null>(null);
 
-    const data = nodeData.get(hoveredNode.id);
+  useEffect(() => {
+    if (hoveredNode) {
+      setLastHoveredNode(hoveredNode);
+    }
+  }, [hoveredNode]);
+
+  const displayNode = hoveredNode || lastHoveredNode;
+  const data = displayNode ? nodeData.get(displayNode) : null;
+
+  const nodeMetrics = useMemo(() => {
+    if (!displayNode) return [];
+
     const isStable = data?.stable ?? false;
     return enabledNodeKeys.map((key) => {
       const info = metricsInfo.get(key);
@@ -47,9 +57,9 @@ const Legend = ({ nodeData }: LegendProps) => {
         formattedValue: isStable ? "N/A" : formattedValue,
       };
     });
-  }, [hoveredNode, enabledNodeKeys, nodeData, metricsInfo]);
+  }, [displayNode, enabledNodeKeys, nodeData, metricsInfo]);
 
-  if (!hoveredNode) {
+  if (!displayNode) {
     return (
       <div className="h-[calc(100%-4px)]">
         <p className="p-2 text-center text-muted-foreground">
@@ -66,14 +76,14 @@ const Legend = ({ nodeData }: LegendProps) => {
           Node Details:
           <span className="mt-1 text-sm text-muted-foreground">
             {" "}
-            {hoveredNode.label || hoveredNode.id}
+            {data?.label || data?.id}
           </span>{" "}
-          {nodeData.get(hoveredNode.id)?.stable && (
+          {data?.stable && (
             <span className="text-xs text-muted-foreground italic">
               (Stable Node)
             </span>
           )}
-          {nodeData.get(hoveredNode.id)?.removed && (
+          {data?.removed && (
             <span className="text-xs text-muted-foreground italic">
               (Removed Node)
             </span>

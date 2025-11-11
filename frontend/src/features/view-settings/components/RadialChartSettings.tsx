@@ -73,7 +73,7 @@ const RadialChartSettings = () => {
           </div>
           <Slider
             id="inner-radius"
-            min={50}
+            min={100}
             max={outerRadius - 200}
             step={10}
             value={[innerRadius]}

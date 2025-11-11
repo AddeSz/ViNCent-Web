@@ -1,4 +1,5 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import type { FullData } from "@/types/network";
 import { type ScaleLinear } from "d3";
 import type { BinnedData } from "../../components/createBinnedData";
 
@@ -13,6 +14,7 @@ interface HistogramBarsProps {
   filteredBinCounts: number[] | null;
   dataKey: string;
   disabledBins: Set<number>;
+  filteredData: Map<string, FullData>;
 }
 
 export const HistogramBars = ({
@@ -25,12 +27,13 @@ export const HistogramBars = ({
   hoverBin,
   filteredBinCounts,
   dataKey,
+  filteredData,
 }: HistogramBarsProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-
-  const hoveredValue = hoveredNode?.[dataKey];
+  const node = hoveredNode ? filteredData.get(hoveredNode) : null;
+  const hoveredValue = node?.[dataKey];
   const hoveredBinIndex =
-    hoveredValue != null && !hoveredNode?.removed && !hoveredNode?.stable
+    hoveredValue != null && !node?.removed && !node?.stable
       ? (binnedData.valueToBinIndex.get(hoveredValue) ?? null)
       : null;
   return (

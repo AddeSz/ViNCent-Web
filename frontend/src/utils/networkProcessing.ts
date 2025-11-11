@@ -1,4 +1,5 @@
 import type { Attributes, Network, Node, TimelineEntry } from "@/types/network";
+import { calculateBandwidth } from "./utils";
 
 type PreprocessedNetwork = {
   network: Network;
@@ -53,35 +54,45 @@ export const networkPreprocessing = (network: Network): PreprocessedNetwork => {
   };
 };
 
-export const calculateRadialSettings = (numNodes: number) => {
-  let innerRadius: number;
-  let outerRadius: number;
-
-  if (numNodes <= 50) {
-    innerRadius = 150;
-    outerRadius = 600;
-  } else if (numNodes <= 150) {
-    const t = (numNodes - 50) / (150 - 50);
-    innerRadius = 150 + t * (250 - 150);
-    outerRadius = 600 + t * (850 - 600);
+export const calculateRadialSettings = (
+  numNodes: number,
+  numMetrics: number,
+) => {
+  const bandwidth = calculateBandwidth(numNodes);
+  let targetWidth: number;
+  if (numNodes <= 100) {
+    targetWidth = 7;
+  } else if (numNodes <= 500) {
+    const t = (numNodes - 100) / (500 - 100);
+    targetWidth = 7 - t * 2;
   } else if (numNodes <= 1000) {
-    const t = (numNodes - 150) / (1000 - 150);
-    innerRadius = 250 + t * (400 - 250);
-    outerRadius = 850 + t * (1000 - 850);
-  } else if (numNodes <= 2000) {
-    const t = (numNodes - 1000) / (2000 - 1000);
-    innerRadius = 400 + t * (1000 - 400);
-    outerRadius = 1000 + t * (1600 - 1000);
+    const t = (numNodes - 500) / (1000 - 500);
+    targetWidth = 5 - t * 2.5;
   } else {
-    const maxNodes = 5000;
-    const t = Math.min((numNodes - 2000) / (maxNodes - 2000), 1);
-    const eased = Math.sqrt(t);
-    innerRadius = 800 + eased * (3400 - 800);
-    outerRadius = 1600 + eased * (4000 - 1600);
+    targetWidth = 2.5;
   }
 
-  const snapTo10 = (value: number) => Math.round(value / 10) * 10;
+  let targetHeight: number;
+  if (numMetrics > 30) {
+    targetHeight = 20;
+  } else if (numMetrics > 20) {
+    targetHeight = 25;
+  } else {
+    targetHeight = 30;
+  }
 
+  const calculatedInnerRadius = bandwidth > 0 ? targetWidth / bandwidth : 150;
+  const innerRadius = Math.max(150, calculatedInnerRadius);
+
+  const calculatedOuterRadius =
+    numMetrics > 0
+      ? innerRadius + targetHeight * numMetrics
+      : innerRadius + targetHeight;
+  const clampedOuterRadius = Math.min(4000, calculatedOuterRadius);
+
+  const outerRadius = Math.max(clampedOuterRadius, innerRadius + 200);
+
+  const snapTo10 = (value: number) => Math.round(value / 10) * 10;
   return {
     innerRadius: snapTo10(innerRadius),
     outerRadius: snapTo10(outerRadius),

@@ -4,12 +4,11 @@ import * as d3 from "d3";
 const drawSelectionBrush = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   outerRadius: number,
-  maxLabelWidth: number,
   x: d3.ScaleBand<string>,
   isViewActive: boolean,
 ) => {
   const innerRadius = outerRadius;
-  const outerRadiusBrush = outerRadius + maxLabelWidth + 40;
+  const outerRadiusBrush = outerRadius + 200;
 
   const mouseToAngle = (x: number, y: number): number => {
     return Math.atan2(x, -y);

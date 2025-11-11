@@ -37,7 +37,6 @@ interface EdgeCache {
   sourcePoint: Point;
   targetPoint: Point;
 }
-
 export class ForceEdgeBundling {
   private dataNodes: Map<string, Point> = new Map();
   private dataEdges: Edge[] = [];
@@ -45,7 +44,6 @@ export class ForceEdgeBundling {
   private subdivisionPointsForEdge: Point[][] = [];
 
   private edgeCache: EdgeCache[] = [];
-
   // Algorithm parameters
   private K: number; // global bundling constant controlling edge stiffness
   private S_initial: number; // initial distance to move points
@@ -113,14 +111,43 @@ export class ForceEdgeBundling {
 
   private initializeEdgeSubdivisions(): void {
     this.subdivisionPointsForEdge = new Array(this.dataEdges.length);
+    const centerPullFactor = 0.02;
 
     for (let i = 0; i < this.dataEdges.length; i++) {
+      const cache = this.edgeCache[i];
+
+      const toCenter = {
+        x: 0 - cache.sourcePoint.x,
+        y: 0 - cache.sourcePoint.y,
+      };
+
+      const firstControl = {
+        x: cache.sourcePoint.x + toCenter.x * centerPullFactor,
+        y: cache.sourcePoint.y + toCenter.y * centerPullFactor,
+      };
+
+      const toCenterFromTarget = {
+        x: 0 - cache.targetPoint.x,
+        y: 0 - cache.targetPoint.y,
+      };
+
+      const lastControl = {
+        x: cache.targetPoint.x + toCenterFromTarget.x * centerPullFactor,
+        y: cache.targetPoint.y + toCenterFromTarget.y * centerPullFactor,
+      };
+
       if (this.P_initial === 1) {
-        this.subdivisionPointsForEdge[i] = [];
-      } else {
-        const cache = this.edgeCache[i];
         this.subdivisionPointsForEdge[i] = [
           cache.sourcePoint,
+          firstControl,
+          lastControl,
+          cache.targetPoint,
+        ];
+      } else {
+        this.subdivisionPointsForEdge[i] = [
+          cache.sourcePoint,
+          firstControl,
+          lastControl,
           cache.targetPoint,
         ];
       }
@@ -352,7 +379,7 @@ export class ForceEdgeBundling {
 
     this.initializeEdgeSubdivisions();
     this.initializeCompatibilityLists();
-    this.updateEdgeDivisions(P);
+    // this.updateEdgeDivisions(P);
     this.computeCompatibilityLists();
 
     for (let cycle = 0; cycle < this.C; cycle++) {

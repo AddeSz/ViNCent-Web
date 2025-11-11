@@ -46,6 +46,7 @@ export type FullData = Record<string, any> & {
   id: string;
   removed?: boolean;
   stable?: boolean;
+  linked?: Set<string>;
 };
 
 export type Network = {

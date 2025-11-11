@@ -42,6 +42,7 @@ type DisplaySettings = {
   keepPreviewNodes: boolean;
   keepStableView: boolean;
   displayMode: DisplayMode;
+  stickyHover: boolean;
 };
 
 type SettingsStore = {
@@ -85,12 +86,12 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   showLabels: false,
   nodeSizeMode: "fixed",
   nodeSizeMetric: "",
-  fixedNodeSize: 10,
+  fixedNodeSize: 15,
   minNodeSize: 5,
   maxNodeSize: 20,
   linkThicknessMode: "fixed",
   linkThicknessMetric: "",
-  fixedLinkThickness: 1.5,
+  fixedLinkThickness: 2,
   minLinkThickness: 1,
   maxLinkThickness: 5,
   collisionEnabled: true,
@@ -102,6 +103,7 @@ export const defaultDisplaySettings: DisplaySettings = {
   keepPreviewNodes: true,
   keepStableView: true,
   displayMode: "both",
+  stickyHover: true,
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => {

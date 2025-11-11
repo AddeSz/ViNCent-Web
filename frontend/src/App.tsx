@@ -5,6 +5,7 @@ import {
   coauthorData,
   miserablesData,
   starwarsData,
+  test,
   testDataCluster,
   testDataInteraction,
   testDataLarge,
@@ -36,6 +37,7 @@ const datasets = {
   "Test Dataset Large": testDataLarge,
   "Test Dataset Hierarchical": testHierarchical,
   "Test Dataset Massive": testDataMassive,
+  Test: test,
 };
 
 const VIEW_KEY = "center-view-mode";
@@ -159,7 +161,7 @@ const App = () => {
             </div>
           ) : (
             <CenterView
-              dataMap={nodeData}
+              nodeMap={nodeData}
               edgeData={edgeData}
               filteredNetwork={filteredNetwork}
               nodeChanges={nodeChanges}

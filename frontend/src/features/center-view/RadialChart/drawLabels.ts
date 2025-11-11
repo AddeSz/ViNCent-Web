@@ -8,16 +8,20 @@ import type { InteractionProps } from "../Tooltips/useTooltip";
 
 let LONGESTLABEL = 0;
 
+const shouldShowAllLabels = (zoomLevel: number, radius: number): boolean => {
+  if (zoomLevel <= 0.5 && radius <= 8) return false;
+  if (zoomLevel <= 1 && radius <= 4) return false;
+  return true;
+};
+
 const drawLabels = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   x: d3.ScaleBand<string>,
   outerRadius: number,
-  selectedNodes: Set<string>,
   fontSize: number,
   labelWidth: number,
   truncateLabels: boolean,
   interactionProps: InteractionProps,
-  hoveredNode: FullData | null,
   radius: number,
 ): void => {
   const { nodeMap } = useNetworkStore.getState();
@@ -31,35 +35,28 @@ const drawLabels = (
 
   LONGESTLABEL = 0;
 
-  const getTransform = (d: string) => `
-    rotate(${((x(d)! + x.bandwidth() / 2) * 180) / Math.PI - 90})
-    translate(${outerRadius + radius * 4},0)
+  const getTransform = (d: string) => {
+    const angle = ((x(d)! + x.bandwidth() / 2) * 180) / Math.PI - 90;
+    const angleRad = (angle * Math.PI) / 180;
+    const distance = outerRadius + radius * 3 + 2;
+
+    const yOffset = Math.cos(angleRad);
+    return `
+    rotate(${angle})
+    translate(${distance}, ${yOffset})
   `;
+  };
 
   const getTextTransform = (d: string) =>
     (x(d)! + x.bandwidth() / 2) % (2 * Math.PI) < Math.PI
-      ? "rotate(0)translate(0,0)"
-      : "rotate(180)translate(0,0)";
+      ? "rotate(0)"
+      : `rotate(180)`;
 
   const getTextAnchor = (d: string) =>
     (x(d)! + x.bandwidth() / 2) % (2 * Math.PI) < Math.PI ? "start" : "end";
 
   const getFontSize = () => {
     return (fontSize / 11) * radius;
-  };
-  const getFillColor = (d: string) => {
-    if (selectedNodes.has(d)) {
-      return highlightLabelColor.selected;
-    } else if (hoveredNode && hoveredNode.id === d) {
-      return highlightLabelColor.hover;
-    } else {
-      return highlightLabelColor.default;
-    }
-  };
-
-  const getFontWeight = (d: string) => {
-    if (hoveredNode && hoveredNode.id === d) return "600";
-    return "normal";
   };
 
   labelGroup
@@ -73,6 +70,7 @@ const drawLabels = (
           .attr("transform", getTransform)
           .style("cursor", "pointer")
           .style("user-select", "none")
+          .attr("dominant-baseline", "middle")
           .attr("opacity", 0);
 
         g.each(function (d) {
@@ -87,8 +85,6 @@ const drawLabels = (
             .attr("transform", getTextTransform(d))
             .attr("text-anchor", getTextAnchor(d))
             .attr("font-size", `${getFontSize()}px`)
-            .attr("fill", getFillColor(d))
-            .attr("font-weight", getFontWeight(d))
             .text(label);
 
           const textNode = text.node();
@@ -143,8 +139,6 @@ const drawLabels = (
           .select("text")
           .transition()
           .duration(150)
-          .attr("fill", getFillColor)
-          .attr("font-weight", getFontWeight)
           .attr("font-size", `${getFontSize()}px`);
 
         return update;
@@ -173,6 +167,7 @@ const drawLabels = (
     })
     .on("mouseout", () => {
       onTooltipHide();
+      onNodeHover(null);
     });
 
   useSettingsStore.getState().setRadialSettings({
@@ -181,28 +176,6 @@ const drawLabels = (
 };
 
 export default drawLabels;
-
-export const updateLabelHighlight = (
-  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  selectedNodes: Set<string>,
-  hoveredNode: FullData | null,
-) => {
-  svg
-    .selectAll<SVGGElement, string>("g.labels-group g.label text")
-    .attr("fill", (d) => {
-      if (selectedNodes.has(d)) {
-        return highlightLabelColor.selected;
-      } else if (hoveredNode && hoveredNode.id === d) {
-        return highlightLabelColor.hover;
-      } else {
-        return highlightLabelColor.default;
-      }
-    })
-    .attr("font-weight", (d) => {
-      if (hoveredNode && hoveredNode.id === d) return "600";
-      return "normal";
-    });
-};
 
 export const updateLabels = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
@@ -243,4 +216,116 @@ export const updateLabels = (
   useSettingsStore.getState().setRadialSettings({
     labelWidth: truncateLabels ? labelWidth : Math.ceil(LONGESTLABEL / 10) * 10,
   });
+};
+
+export const updateLabelVisibility = (
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  nodeData: Map<string, FullData>,
+  selectedNodes: Set<string>,
+  hoveredNode: string | null,
+  zoomLevel: number,
+  radius: number,
+) => {
+  const showAll = shouldShowAllLabels(zoomLevel, radius);
+  const linkedNodeIds = new Set<string>();
+
+  const node = hoveredNode ? nodeData.get(hoveredNode) : null;
+  if (node?.linked) {
+    node.linked.forEach((id) => linkedNodeIds.add(id));
+  }
+
+  selectedNodes.forEach((nodeId) => {
+    const node = nodeData.get(nodeId);
+    if (node?.linked) {
+      node.linked.forEach((id) => linkedNodeIds.add(id));
+    }
+  });
+
+  svg
+    .selectAll<SVGGElement, string>("g.labels-group g.label")
+    .each(function (d) {
+      const label = d3.select(this);
+      const shouldShow =
+        selectedNodes.has(d) ||
+        hoveredNode === d ||
+        linkedNodeIds.has(d) ||
+        showAll;
+
+      if (shouldShow) {
+        label.style("display", "block");
+        label.transition().duration(300).attr("opacity", 1);
+      } else {
+        label
+          .transition()
+          .duration(300)
+          .attr("opacity", 0)
+          .on("end", function () {
+            d3.select(this).style("display", "none");
+          });
+      }
+    });
+};
+
+export const updateLabelHighlight = (
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  nodeData: Map<string, FullData>,
+  selectedNodes: Set<string>,
+  hoveredNode: string | null,
+  zoomLevel: number,
+  radius: number,
+) => {
+  const showAll = shouldShowAllLabels(zoomLevel, radius);
+  const linkedToHoveredIds = hoveredNode
+    ? nodeData.get(hoveredNode)?.linked
+    : null;
+
+  const linkedToSelectedIds = new Set<string>();
+  selectedNodes.forEach((nodeId) => {
+    const node = nodeData.get(nodeId);
+    if (node?.linked && !node?.stable) {
+      node.linked.forEach((id) => linkedToSelectedIds.add(id));
+    }
+  });
+
+  svg
+    .selectAll<SVGGElement, string>("g.labels-group g.label")
+    .each(function (d) {
+      const label = d3.select(this);
+
+      const isLinked = linkedToHoveredIds?.has(d) || linkedToSelectedIds.has(d);
+      const shouldShow =
+        showAll || selectedNodes.has(d) || hoveredNode === d || isLinked;
+
+      if (shouldShow) {
+        label.style("display", "block");
+        label.attr("opacity", 1);
+      } else {
+        label.attr("opacity", 0).style("display", "none");
+      }
+
+      const text = label.select("text");
+
+      let fillColor: string;
+      let fontWeight: string;
+
+      if (selectedNodes.has(d)) {
+        fillColor = highlightLabelColor.selected;
+        fontWeight = "700";
+      } else if (hoveredNode === d) {
+        fillColor = highlightLabelColor.hover;
+        fontWeight = "700";
+      } else if (linkedToSelectedIds.has(d)) {
+        fillColor = highlightLabelColor.linkedToSelected;
+        fontWeight = "normal";
+      } else if (linkedToHoveredIds?.has(d)) {
+        fillColor = highlightLabelColor.linkedToHovered;
+        fontWeight = "normal";
+      } else {
+        fillColor = highlightLabelColor.default;
+        fontWeight = "normal";
+      }
+
+      text.attr("fill", fillColor);
+      text.attr("font-weight", fontWeight);
+    });
 };
