@@ -9,6 +9,7 @@ import largeData from "./synthetic/network_n1000_l2500.json";
 import n150 from "./synthetic/network_n150.json";
 import n150T from "./synthetic/network_n150_time.json";
 import clustered from "./synthetic/network_n500_l1500.json";
+import testData from "./synthetic/test.json";
 
 export const starwarsData: Network = starwars;
 export const miserablesData: Network = les_miserables;
@@ -20,3 +21,4 @@ export const testDataInteraction: Network = interaction;
 export const testDataLarge: Network = largeData;
 export const testHierarchical: Network = hierarchical;
 export const testDataMassive: Network = massiveCluster;
+export const test: Network = testData;

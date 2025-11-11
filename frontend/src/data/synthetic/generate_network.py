@@ -3,10 +3,10 @@ import random
 
 random.seed(42)
 
-NUM_NODES = 4000
-NUM_LINKS = 8000
+NUM_NODES = 300
+NUM_LINKS = 800
 MODE = "clustered"  # "clustered" or "interactions" or "hierarchical"
-OUTPUT_FILE = f"network_{MODE}_n{NUM_NODES}_l{NUM_LINKS}.json"
+OUTPUT_FILE = f"test.json"
 
 names = [
     "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace",
