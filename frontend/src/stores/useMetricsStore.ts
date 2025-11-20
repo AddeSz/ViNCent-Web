@@ -31,8 +31,10 @@ interface MetricsStore {
   metricsInfo: Map<string, AttributeInfo>;
 
   brushRanges: Record<string, BrushRange | null>;
-  binnedDataByKey: Map<string, BinnedData>;
   selectedCategories: Record<string, string[]>;
+  binnedDataByKey: Map<string, BinnedData>;
+
+  disabledValues: Record<string, Set<number | string>>;
 
   currentTimestep: number | null;
 
@@ -57,18 +59,18 @@ interface MetricsStore {
   setCurrentTimestep: (timestep: number) => void;
 
   setEnabledMetricsKeys: (keys: string[]) => void;
+  setEnabledEdgeMetricsKeys: (keys: string[]) => void;
   toggleMetricsKey: (key: string) => boolean;
 
-  setEnabledEdgeMetricsKeys: (keys: string[]) => void;
-  toggleEdgeMetricsKey: (key: string) => boolean;
-
   setBrushRange: (key: string, brushRange: BrushRange | null) => void;
+  setSelectedCategories: (key: string, categories: string[]) => void;
   clearBrushRange: (key: string) => void;
 
   setBinnedData: (key: string, binnedData: BinnedData) => void;
   clearBinnedData: () => void;
 
-  setSelectedCategories: (key: string, categories: string[]) => void;
+  setDisabledValues: (key: string, values: Set<number | string>) => void;
+  clearDisabledValues: (key: string) => void;
 
   getColorForMetric: (key: string, value?: AttributeValue) => string;
 
@@ -80,11 +82,16 @@ const computeMetricsInfo = (
   centralityKeys: Set<string>,
 ): { keys: Set<string>; info: Map<string, AttributeInfo> } => {
   const metricsKeys = new Set<string>();
+  const nonCentralityKeys = new Set<string>();
   const metricsInfo = new Map<string, AttributeInfo>();
 
   metricsData.forEach((metrics) => {
     Object.entries(metrics).forEach(([key, value]) => {
-      metricsKeys.add(key);
+      if (centralityKeys.has(key)) {
+        metricsKeys.add(key);
+      } else {
+        nonCentralityKeys.add(key);
+      }
 
       if (!metricsInfo.has(key)) {
         metricsInfo.set(key, {
@@ -98,10 +105,8 @@ const computeMetricsInfo = (
           isCentrality: centralityKeys.has(key),
         });
       }
-
       const info = metricsInfo.get(key)!;
       info.values.add(value);
-
       if (typeof value === "number") {
         info.type = "number";
         info.isNumeric = true;
@@ -121,6 +126,8 @@ const computeMetricsInfo = (
       }
     });
   });
+
+  nonCentralityKeys.forEach((key) => metricsKeys.add(key));
 
   metricsInfo.forEach((info) => {
     const uniqueCount = info.values.size;
@@ -233,8 +240,11 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   metricsInfo: new Map(),
 
   brushRanges: {},
-  binnedDataByKey: new Map(),
   selectedCategories: {},
+  binnedDataByKey: new Map(),
+
+  disabledValues: {},
+
   currentTimestep: null,
 
   setMetricData: (
@@ -452,47 +462,48 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   toggleMetricsKey: (key) => {
     let removed = false;
     set((s) => {
-      const isEnabled = s.enabledMetricsKeys.includes(key);
-      if (isEnabled) {
-        removed = true;
-        return {
-          enabledMetricsKeys: s.enabledMetricsKeys.filter((k) => k !== key),
-        };
-      } else {
-        return {
-          enabledMetricsKeys: s.metricsKeys.filter(
-            (k) => k === key || s.enabledMetricsKeys.includes(k),
-          ),
-        };
+      const isEdgeKey = s.edgeMetricsKeys.includes(key);
+      const isNodeKey = s.metricsKeys.includes(key);
+
+      if (isEdgeKey) {
+        const isEnabled = s.enabledEdgeMetricsKeys.includes(key);
+        if (isEnabled) {
+          removed = true;
+          return {
+            enabledEdgeMetricsKeys: s.enabledEdgeMetricsKeys.filter(
+              (k) => k !== key,
+            ),
+          };
+        } else {
+          return {
+            enabledEdgeMetricsKeys: s.edgeMetricsKeys.filter(
+              (k) => k === key || s.enabledEdgeMetricsKeys.includes(k),
+            ),
+          };
+        }
+      } else if (isNodeKey) {
+        const isEnabled = s.enabledMetricsKeys.includes(key);
+        if (isEnabled) {
+          removed = true;
+          return {
+            enabledMetricsKeys: s.enabledMetricsKeys.filter((k) => k !== key),
+          };
+        } else {
+          return {
+            enabledMetricsKeys: s.metricsKeys.filter(
+              (k) => k === key || s.enabledMetricsKeys.includes(k),
+            ),
+          };
+        }
       }
+
+      return {};
     });
     return removed;
   },
 
   setEnabledEdgeMetricsKeys: (keys) => {
     set({ enabledEdgeMetricsKeys: keys });
-  },
-
-  toggleEdgeMetricsKey: (key) => {
-    let removed = false;
-    set((s) => {
-      const isEnabled = s.enabledEdgeMetricsKeys.includes(key);
-      if (isEnabled) {
-        removed = true;
-        return {
-          enabledEdgeMetricsKeys: s.enabledEdgeMetricsKeys.filter(
-            (k) => k !== key,
-          ),
-        };
-      } else {
-        return {
-          enabledEdgeMetricsKeys: s.edgeMetricsKeys.filter(
-            (k) => k === key || s.enabledEdgeMetricsKeys.includes(k),
-          ),
-        };
-      }
-    });
-    return removed;
   },
 
   setSelectedCategories: (key, categories) => {
@@ -531,6 +542,21 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     set({ binnedDataByKey: new Map() });
   },
 
+  setDisabledValues: (key, values) => {
+    set((s) => ({
+      disabledValues: {
+        ...s.disabledValues,
+        [key]: values,
+      },
+    }));
+  },
+
+  clearDisabledValues: (key) => {
+    set((s) => ({
+      disabledValues: { ...s.disabledValues, [key]: new Set() },
+    }));
+  },
+
   getColorForMetric: (key: string, value?: AttributeValue) => {
     const { metricsInfo } = get();
     const info = metricsInfo.get(key);
@@ -547,6 +573,10 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
     if ((info.isNominal || info.isBoolean) && value !== undefined) {
       return vizStore.getOrAssignCategoryColor(key, value);
+    }
+
+    if (info.isNominal || info.isBoolean) {
+      return "var(--muted-foreground)";
     }
 
     return vizStore.getOrAssignAttributeColor(key);
@@ -567,6 +597,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       brushRanges: {},
       binnedDataByKey: new Map(),
       selectedCategories: {},
+      disabledValues: {},
       currentTimestep: null,
     }),
 }));

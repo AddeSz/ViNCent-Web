@@ -64,9 +64,10 @@ const RadialChart = ({
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
   const hoveredNode = useNetworkStore((state) => state.hoveredNode);
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
-  const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
+  const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 10]);
   const radialSettings = useSettingsStore(useShallow((s) => s.radialSettings));
-  const { separateMetrics, linkRenderingMode, fdebSettings } = radialSettings;
+  const { separateMetrics, linkRenderingMode, fdebSettings, showLabels } =
+    radialSettings;
   const { enabledNodeKeys, enabledAttributeKeys, enabledCentralityKeys } =
     useKeys();
 
@@ -106,6 +107,7 @@ const RadialChart = ({
     innerRadius,
     outerRadius,
     radius,
+    showLabels,
   });
 
   useEffect(() => {
@@ -114,12 +116,13 @@ const RadialChart = ({
       innerRadius,
       outerRadius,
       radius,
+      showLabels,
     };
-  }, [chartData, innerRadius, outerRadius, radius]);
+  }, [chartData, innerRadius, outerRadius, radius, showLabels]);
 
   const redrawCanvas = useRef(
     throttle((currentK: number) => {
-      const { chartData, innerRadius, outerRadius, radius } =
+      const { chartData, innerRadius, outerRadius, radius, showLabels } =
         latestValuesRef.current;
 
       if (!svgRef.current || !chartData) return;
@@ -145,6 +148,7 @@ const RadialChart = ({
           hoveredNode,
           zoomLevel,
           radius,
+          showLabels,
         );
       });
     }, 150),
@@ -155,7 +159,7 @@ const RadialChart = ({
       resetZoom(svgRef);
       useNetworkStore.setState({ resetRadialZoomFlag: false });
     }
-  }, [resetZoomFlag, resetZoom]);
+  }, [resetZoomFlag]);
 
   useEffect(() => {
     let cancelled = false;
@@ -221,6 +225,7 @@ const RadialChart = ({
         truncateLabels,
         interactionProps,
         radius,
+        showLabels,
       );
 
       requestAnimationFrame(() => {
@@ -231,6 +236,7 @@ const RadialChart = ({
           hoveredNode,
           zoomLevel,
           radius,
+          showLabels,
         );
         updateBoundsHighlight(svgGroup, nodeMap, selectedNodes, hoveredNode);
         updateLinkHighlightCanvas(svgGroup, selectedNodes, hoveredNode);
@@ -281,6 +287,7 @@ const RadialChart = ({
           state.hoveredNode,
           getClosestZoomLevel(getCurrentTransform().k),
           radius,
+          showLabels,
         );
         updateBoundsHighlight(
           svgGroup,
@@ -297,13 +304,22 @@ const RadialChart = ({
     });
 
     return unsubscribe;
-  }, [isDrawReady]);
+  }, [isDrawReady, showLabels]);
 
   useEffect(() => {
     if (!svgRef.current || !chartData || !dimensions) return;
     const svg = d3.select(svgRef.current);
     updateLabels(svg, fontSize, totalLabelWidth, truncateLabels, radius);
-  }, [fontSize, totalLabelWidth, truncateLabels]);
+    updateLabelHighlight(
+      svg.select<SVGGElement>("g.zoom-group"),
+      nodeMap,
+      selectedNodes,
+      hoveredNode,
+      getClosestZoomLevel(getCurrentTransform().k),
+      radius,
+      showLabels,
+    );
+  }, [fontSize, totalLabelWidth, truncateLabels, showLabels]);
 
   useEffect(() => {
     if (!svgRef.current || linkRenderingMode !== "fdeB" || !dimensions) {

@@ -13,6 +13,8 @@ interface BarchartProps {
   getColorForMetric: (key: string, value?: string | number) => string;
   selectedCategories: string[] | null;
   onBarClick: (category: string) => void;
+  disabledValues: Set<number | string>;
+  onDisabledValuesChange: (values: Set<number | string>) => void;
 }
 
 const Barchart = ({
@@ -23,6 +25,8 @@ const Barchart = ({
   getColorForMetric,
   selectedCategories,
   onBarClick,
+  disabledValues,
+  onDisabledValuesChange,
 }: BarchartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverCategory, setHoverCategory] = useState<string | null>(null);
@@ -56,12 +60,14 @@ const Barchart = ({
       const value = data[dataKey];
       if (value != null) {
         const strValue = String(value);
-        counts.set(strValue, (counts.get(strValue) || 0) + 1);
+        if (!disabledValues.has(strValue)) {
+          counts.set(strValue, (counts.get(strValue) || 0) + 1);
+        }
       }
     }
 
     return counts;
-  }, [filteredData]);
+  }, [filteredData, disabledValues]);
 
   const maxCount = Math.max(...Array.from(categoryCounts.values()));
 
@@ -99,6 +105,8 @@ const Barchart = ({
             onBarClick={onBarClick}
             dataKey={dataKey}
             filteredData={filteredData}
+            disabledValues={disabledValues}
+            onDisabledValuesChange={onDisabledValuesChange}
           />
 
           <BarchartAxes

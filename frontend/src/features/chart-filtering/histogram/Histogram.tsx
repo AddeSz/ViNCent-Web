@@ -1,7 +1,7 @@
 import { type BrushRange } from "@/stores/useMetricsStore";
 import type { FullData } from "@/types/network";
 import { formatValue } from "@/utils/utils";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
 import type { BinnedData } from "../components/createBinnedData";
 import { Tooltip } from "../components/Tooltip";
@@ -19,6 +19,8 @@ interface HistogramProps {
   getColorForMetric: (key: string) => string;
   brushRange: BrushRange | null;
   onBrushChange: (range: BrushRange | null) => void;
+  disabledValues: Set<number | string>;
+  onDisabledValuesChange: (values: Set<number | string>) => void;
 }
 
 const Histogram = ({
@@ -29,6 +31,8 @@ const Histogram = ({
   getColorForMetric,
   brushRange,
   onBrushChange,
+  disabledValues,
+  onDisabledValuesChange,
 }: HistogramProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +43,7 @@ const Histogram = ({
     chartWidth,
     chartHeight,
   } = dimensions;
-  const [disabledBins, setDisabledBins] = useState<Set<number>>(new Set());
+
   const color = getColorForMetric(dataKey);
 
   const filteredBinCounts = useMemo(() => {
@@ -51,14 +55,14 @@ const Histogram = ({
       const value = data[dataKey];
       if (typeof value === "number") {
         const binIndex = binnedData.valueToBinIndex.get(value);
-        if (binIndex !== undefined && !disabledBins.has(binIndex)) {
+        if (binIndex !== undefined && !disabledValues.has(binIndex)) {
           counts[binIndex]++;
         }
       }
     }
 
     return counts;
-  }, [binnedData, filteredData, disabledBins]);
+  }, [binnedData, filteredData, disabledValues]);
 
   const { yScale, yTicks, xTicks, getBinPosition } = useHistogramScales(
     binnedData,
@@ -130,7 +134,7 @@ const Histogram = ({
             hoverBin={hoverBin}
             filteredBinCounts={filteredBinCounts}
             dataKey={dataKey}
-            disabledBins={disabledBins}
+            disabledValues={disabledValues}
             filteredData={filteredData}
           />
 
@@ -146,12 +150,11 @@ const Histogram = ({
               if (e.button === 2) {
                 e.preventDefault();
 
-                setDisabledBins((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(binIndex)) next.delete(binIndex);
-                  else next.add(binIndex);
-                  return next;
-                });
+                const current = disabledValues;
+                const next = new Set(current);
+                if (next.has(binIndex)) next.delete(binIndex);
+                else next.add(binIndex);
+                onDisabledValuesChange(next);
                 return;
               }
               if (e.button !== 0) return;

@@ -104,27 +104,25 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
   return (
     <div
       style={tooltipStyle}
-      className="animate-in rounded-md border bg-popover px-2 py-1 text-sm shadow-md fade-in-0 zoom-in-95"
+      className="animate-in rounded-md border bg-background px-2 py-1 text-sm shadow-md fade-in-0 zoom-in-95"
     >
       {type === "arc" && (
         <>
           <div
-            className="text-sm"
+            className="text-xs font-medium"
             style={{ color: getColorForMetric(arcKey!, nodeData[arcKey!]) }}
           >
             {formatKeyLabel(arcKey!)}
           </div>
-          <div className="font-mono text-sm">
-            {formatValue(nodeData[arcKey!])}
-          </div>
+          <div className="text-xs">{formatValue(nodeData[arcKey!])}</div>
           <div className="text-xs text-muted-foreground">
-            Node: {nodeData.label ? nodeData.label : nodeId}
+            {nodeData.label ? nodeData.label : nodeId}
           </div>
         </>
       )}
 
       {type === "label" && (
-        <div className="text-sm font-medium">
+        <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
           <div className="text-xs text-muted-foreground">
             Links: {nodeData.linkCount}
@@ -133,8 +131,8 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
       )}
 
       {type === "node" && (
-        <div className="font-medium">
-          <div>{nodeData.label || nodeId}</div>
+        <div className="text-xs font-medium">
+          {nodeData.label ? nodeData.label : nodeId}
           <div className="text-xs text-muted-foreground">
             Links: {nodeData.linkCount}
           </div>
@@ -142,8 +140,8 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
       )}
 
       {type === "change" && (
-        <div className="font-medium">
-          <div>{nodeData.label || nodeId}</div>
+        <div className="text-xs font-medium">
+          {nodeData.label ? nodeData.label : nodeId}
           <div className="text-xs text-muted-foreground">{changeMessage}</div>
         </div>
       )}

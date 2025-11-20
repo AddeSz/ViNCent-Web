@@ -13,7 +13,7 @@ interface HistogramBarsProps {
   hoverBin: number | null;
   filteredBinCounts: number[] | null;
   dataKey: string;
-  disabledBins: Set<number>;
+  disabledValues: Set<number | string>;
   filteredData: Map<string, FullData>;
 }
 
@@ -27,15 +27,17 @@ export const HistogramBars = ({
   hoverBin,
   filteredBinCounts,
   dataKey,
+  disabledValues,
   filteredData,
 }: HistogramBarsProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
   const hoveredValue = node?.[dataKey];
   const hoveredBinIndex =
-    hoveredValue != null && !node?.removed && !node?.stable
+    hoveredValue != null && !node?.stable
       ? (binnedData.valueToBinIndex.get(hoveredValue) ?? null)
       : null;
+
   return (
     <>
       {binnedData.bins.map((bin, i) => {
@@ -43,12 +45,12 @@ export const HistogramBars = ({
         const barHeight = chartHeight - yScale(bin.values.length);
         const isSelected = isBinSelected(i);
         const isHovered = hoverBin === i;
+        const isDisabled = disabledValues.has(i);
         const filteredCount = filteredBinCounts?.[i] ?? bin.values.length;
         const filteredHeight = chartHeight - yScale(filteredCount);
-        const startPos = i === 0 ? x + 2 : x + 1;
-        let binWidth = width - 2;
-        if (i === 0) binWidth = binWidth - 1;
 
+        const startPos = x + 1;
+        const binWidth = Math.max(1, width - 2);
         return (
           <g key={i}>
             <rect
@@ -57,7 +59,7 @@ export const HistogramBars = ({
               width={binWidth}
               height={barHeight}
               fill={color}
-              opacity={isSelected ? 0.3 : 0.2}
+              opacity={isDisabled ? 0.3 : isSelected ? 0.3 : 0.2}
             />
 
             {filteredBinCounts && (
@@ -68,6 +70,49 @@ export const HistogramBars = ({
                 height={filteredHeight}
                 fill={color}
               />
+            )}
+
+            {isDisabled && (
+              <>
+                <defs>
+                  <pattern
+                    id={`disabled-pattern-${i}`}
+                    patternUnits="userSpaceOnUse"
+                    width="8"
+                    height="8"
+                    patternTransform="rotate(45)"
+                  >
+                    <line
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="8"
+                      stroke="var(--muted-foreground)"
+                      strokeWidth="3"
+                      opacity="0.5"
+                    />
+                  </pattern>
+                </defs>
+                <rect
+                  x={startPos}
+                  y={0}
+                  width={binWidth}
+                  height={chartHeight}
+                  fill={`url(#disabled-pattern-${i})`}
+                  pointerEvents="none"
+                />
+                <rect
+                  x={startPos + 1}
+                  y={0}
+                  width={binWidth - 1}
+                  height={chartHeight}
+                  fill="none"
+                  stroke="var(--destructive)"
+                  strokeWidth="2"
+                  opacity="1"
+                  pointerEvents="none"
+                />
+              </>
             )}
 
             {isHovered && (
@@ -82,7 +127,7 @@ export const HistogramBars = ({
               />
             )}
 
-            {hoveredBinIndex === i && (
+            {hoveredBinIndex === i && !isDisabled && (
               <rect
                 x={startPos + 1}
                 y={yScale(bin.values.length)}

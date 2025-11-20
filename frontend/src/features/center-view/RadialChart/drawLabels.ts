@@ -23,6 +23,7 @@ const drawLabels = (
   truncateLabels: boolean,
   interactionProps: InteractionProps,
   radius: number,
+  showLabels: boolean,
 ): void => {
   const { nodeMap } = useNetworkStore.getState();
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
@@ -59,6 +60,9 @@ const drawLabels = (
     return (fontSize / 11) * radius;
   };
 
+  const getInitialOpacity = () => (showLabels ? 1 : 0);
+  const getInitialDisplay = () => (showLabels ? "block" : "none");
+
   labelGroup
     .selectAll<SVGGElement, string>("g.label")
     .data(x.domain(), (d) => d)
@@ -71,8 +75,8 @@ const drawLabels = (
           .style("cursor", "pointer")
           .style("user-select", "none")
           .attr("dominant-baseline", "middle")
-          .attr("opacity", 0);
-
+          .attr("opacity", 0)
+          .style("display", getInitialDisplay());
         g.each(function (d) {
           const group = d3.select(this);
           const node = nodeMap.get(d);
@@ -103,7 +107,7 @@ const drawLabels = (
         });
 
         return g.call((enter) =>
-          enter.transition().duration(150).attr("opacity", 1),
+          enter.transition().duration(150).attr("opacity", getInitialOpacity()),
         );
       },
       (update) => {
@@ -225,10 +229,11 @@ export const updateLabelVisibility = (
   hoveredNode: string | null,
   zoomLevel: number,
   radius: number,
+  showLabels: boolean,
 ) => {
-  const showAll = shouldShowAllLabels(zoomLevel, radius);
-  const linkedNodeIds = new Set<string>();
+  const showAll = showLabels && shouldShowAllLabels(zoomLevel, radius);
 
+  const linkedNodeIds = new Set<string>();
   const node = hoveredNode ? nodeData.get(hoveredNode) : null;
   if (node?.linked) {
     node.linked.forEach((id) => linkedNodeIds.add(id));
@@ -273,8 +278,9 @@ export const updateLabelHighlight = (
   hoveredNode: string | null,
   zoomLevel: number,
   radius: number,
+  showLabels: boolean,
 ) => {
-  const showAll = shouldShowAllLabels(zoomLevel, radius);
+  const showAll = showLabels && shouldShowAllLabels(zoomLevel, radius);
   const linkedToHoveredIds = hoveredNode
     ? nodeData.get(hoveredNode)?.linked
     : null;

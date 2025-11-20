@@ -18,6 +18,9 @@ export const useFilteredData = (): {
   const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
   const brushRanges = useMetricsStore((s) => s.brushRanges);
   const selectedCategories = useMetricsStore((s) => s.selectedCategories);
+  const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
+  const disabledValues = useMetricsStore((s) => s.disabledValues);
+  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
 
   const edgeMetricsData = useMetricsStore((s) => s.edgeMetricsData);
   const enabledEdgeMetricsKeys = useMetricsStore(
@@ -45,6 +48,7 @@ export const useFilteredData = (): {
 
       const matchesFilters = enabledMetricsKeys.every((key) => {
         const value = metrics[key];
+        const info = metricsInfo.get(key);
 
         const rangeObj = brushRanges[key];
         if (rangeObj && typeof value === "number") {
@@ -54,6 +58,29 @@ export const useFilteredData = (): {
           } = rangeObj;
           const upperBoundCheck = inclusive ? value > max : value >= max;
           if (value < min || upperBoundCheck) return false;
+        }
+
+        const disabledValuesForKey = disabledValues[key];
+        if (disabledValuesForKey && disabledValuesForKey.size > 0) {
+          if (
+            info &&
+            info.isNumeric &&
+            !info.isNominal &&
+            typeof value === "number"
+          ) {
+            const binnedData = binnedDataByKey.get(key);
+            if (binnedData) {
+              const binIndex = binnedData.valueToBinIndex.get(value);
+              if (
+                binIndex !== undefined &&
+                disabledValuesForKey.has(binIndex)
+              ) {
+                return false;
+              }
+            }
+          } else if (disabledValuesForKey.has(String(value))) {
+            return false;
+          }
         }
 
         const selected = selectedCategories[key];
@@ -92,6 +119,7 @@ export const useFilteredData = (): {
       i++;
       const matchesFilters = enabledEdgeMetricsKeys.every((key) => {
         const value = metrics[key];
+        const info = metricsInfo.get(key);
 
         const rangeObj = brushRanges[key];
         if (rangeObj && typeof value === "number") {
@@ -101,6 +129,27 @@ export const useFilteredData = (): {
           } = rangeObj;
           const upperBoundCheck = inclusive ? value > max : value >= max;
           if (value < min || upperBoundCheck) return false;
+        }
+
+        const disabledValuesForKey = disabledValues[key];
+        if (disabledValuesForKey && disabledValuesForKey.size > 0) {
+          if (
+            info &&
+            info.isNumeric &&
+            !info.isNominal &&
+            typeof value === "number"
+          ) {
+            const binnedData = binnedDataByKey.get(key);
+            if (binnedData) {
+              const binIndex = binnedData.valueToBinIndex.get(value);
+              if (
+                binIndex !== undefined &&
+                disabledValuesForKey.has(binIndex)
+              ) {
+                return false;
+              }
+            }
+          }
         }
 
         const selected = selectedCategories[key];
@@ -238,6 +287,8 @@ export const useFilteredData = (): {
     metricsData,
     enabledMetricsKeys,
     brushRanges,
+    disabledValues,
+    binnedDataByKey,
     selectedCategories,
     keepPreviewNodes,
     keepStable,

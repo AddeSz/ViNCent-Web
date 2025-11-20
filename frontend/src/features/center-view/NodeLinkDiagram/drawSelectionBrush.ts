@@ -105,7 +105,9 @@ const drawSelectionBrush = (
     if (event.key === "Shift" && !isShiftPressed && isViewActive) {
       isShiftPressed = true;
 
-      svg.selectAll(".links-group").style("pointer-events", "none");
+      svg
+        .selectAll(".links-group, .nodes-group")
+        .style("pointer-events", "none");
 
       backgroundOverlay
         .style("cursor", "crosshair")
@@ -122,7 +124,7 @@ const drawSelectionBrush = (
       isDragging = false;
       lassoPoints = [];
 
-      svg.selectAll(".links-group").style("pointer-events", null);
+      svg.selectAll(".links-group, .nodes-group").style("pointer-events", null);
 
       backgroundOverlay
         .style("cursor", "default")
@@ -147,7 +149,7 @@ const drawSelectionBrush = (
     isDragging = false;
     lassoPoints = [];
 
-    svg.selectAll(".links-group").style("pointer-events", null);
+    svg.selectAll(".links-group, .nodes-group").style("pointer-events", null);
 
     backgroundOverlay
       .style("pointer-events", "none")

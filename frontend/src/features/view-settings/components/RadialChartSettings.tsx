@@ -28,6 +28,7 @@ const RadialChartSettings = () => {
     outerRadius,
     fontSize,
     truncateLabels,
+    showLabels,
     maxLabelWidth,
     separateMetrics,
     linkRenderingMode,
@@ -111,37 +112,54 @@ const RadialChartSettings = () => {
           />
         </div>
 
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="font-size" className="text-sm">
-              Label Size
-            </Label>
-            <span className="text-xs text-muted-foreground">{fontSize}px</span>
-          </div>
-          <Slider
-            id="font-size"
-            min={0}
-            max={100}
-            step={1}
-            value={[fontSize]}
-            onValueChange={([val]) => {
-              setRadialSettings({ fontSize: val });
-            }}
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label htmlFor="truncate-label" className="text-sm">
-            Truncate Labels
+        <div className="flex items-center justify-between space-y-0 p-0">
+          <Label htmlFor="show-label" className="text-sm">
+            Show All Labels
           </Label>
           <Switch
-            id="truncate-label"
-            checked={truncateLabels}
+            id="show-label"
+            checked={showLabels}
             onCheckedChange={(checked) =>
-              setRadialSettings({ truncateLabels: checked })
+              setRadialSettings({ showLabels: checked })
             }
           />
         </div>
+        {showLabels && (
+          <>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="font-size" className="text-sm">
+                  Label Size
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  {fontSize}px
+                </span>
+              </div>
+              <Slider
+                id="font-size"
+                min={0}
+                max={100}
+                step={1}
+                value={[fontSize]}
+                onValueChange={([val]) => {
+                  setRadialSettings({ fontSize: val });
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="truncate-label" className="text-sm">
+                Truncate Labels
+              </Label>
+              <Switch
+                id="truncate-label"
+                checked={truncateLabels}
+                onCheckedChange={(checked) =>
+                  setRadialSettings({ truncateLabels: checked })
+                }
+              />
+            </div>
+          </>
+        )}
         {truncateLabels && (
           <div className="space-y-1">
             <div className="flex items-center justify-between">

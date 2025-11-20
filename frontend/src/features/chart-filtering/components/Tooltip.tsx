@@ -71,7 +71,7 @@ export const Tooltip = ({
     >
       <div
         ref={tooltipRef}
-        className="relative rounded bg-popover px-2 py-1 text-xs whitespace-nowrap shadow-md"
+        className="relative rounded bg-background px-2 py-1 text-xs whitespace-nowrap shadow-md"
         style={{
           maxWidth: 200,
           border: "1px solid var(--border)",
@@ -100,7 +100,7 @@ export const Tooltip = ({
                 height: 0,
                 borderLeft: "6px solid transparent",
                 borderRight: "6px solid transparent",
-                borderTop: "6px solid var(--popover)",
+                borderTop: "6px solid var(--background)",
               }}
             />
           </div>
@@ -126,7 +126,7 @@ export const Tooltip = ({
                 height: 0,
                 borderLeft: "6px solid transparent",
                 borderRight: "6px solid transparent",
-                borderBottom: "6px solid var(--popover)",
+                borderBottom: "6px solid var(--background)",
               }}
             />
           </div>

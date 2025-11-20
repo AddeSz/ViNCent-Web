@@ -16,6 +16,8 @@ interface BarchartBarsProps {
   onBarClick: (category: string) => void;
   dataKey: string;
   filteredData: Map<string, FullData>;
+  disabledValues: Set<number | string>;
+  onDisabledValuesChange: (values: Set<number | string>) => void;
 }
 
 const BarchartBars = ({
@@ -33,6 +35,8 @@ const BarchartBars = ({
   onBarClick,
   dataKey,
   filteredData,
+  disabledValues,
+  onDisabledValuesChange,
 }: BarchartBarsProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
@@ -48,6 +52,7 @@ const BarchartBars = ({
         const filteredBarHeight = chartHeight - yScale(filteredCount);
         const isSelected = isCategorySelected(category);
         const isHovered = hoverCategory === category;
+        const isDisabled = disabledValues.has(category);
         const color = getBarColor(category);
         const startPos = i === 0 ? x + 3 : x + 2;
         const width = i === 0 ? barWidth - 5 : barWidth - 4;
@@ -63,15 +68,62 @@ const BarchartBars = ({
               width={width}
               height={barHeight}
               fill={color}
-              opacity={isSelected ? 0.3 : 0.2}
+              opacity={isDisabled ? 0.3 : isSelected ? 0.3 : 0.2}
             />
-            <rect
-              x={startPos}
-              y={yScale(filteredCount)}
-              width={width}
-              height={filteredBarHeight}
-              fill={color}
-            />
+
+            {!isDisabled && (
+              <rect
+                x={startPos}
+                y={yScale(filteredCount)}
+                width={width}
+                height={filteredBarHeight}
+                fill={color}
+              />
+            )}
+
+            {isDisabled && (
+              <>
+                <defs>
+                  <pattern
+                    id={`disabled-category-${category.replace(/[^a-zA-Z0-9]/g, "_")}`}
+                    patternUnits="userSpaceOnUse"
+                    width="8"
+                    height="8"
+                    patternTransform="rotate(45)"
+                  >
+                    <line
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="8"
+                      stroke="var(--muted-foreground)"
+                      strokeWidth="3"
+                      opacity="0.5"
+                    />
+                  </pattern>
+                </defs>
+                <rect
+                  x={startPos}
+                  y={0}
+                  width={width}
+                  height={chartHeight}
+                  fill={`url(#disabled-category-${category.replace(/[^a-zA-Z0-9]/g, "_")})`}
+                  pointerEvents="none"
+                />
+                <rect
+                  x={startPos + 1}
+                  y={0}
+                  width={width - 1}
+                  height={chartHeight}
+                  fill="none"
+                  stroke="var(--destructive)"
+                  strokeWidth="2"
+                  opacity="1"
+                  pointerEvents="none"
+                />
+              </>
+            )}
+
             <rect
               x={x}
               y={0}
@@ -79,10 +131,25 @@ const BarchartBars = ({
               height={chartHeight}
               fill="transparent"
               onClick={() => onBarClick(category)}
+              onMouseDown={(e) => {
+                if (e.button === 2) {
+                  e.preventDefault();
+                  const current = disabledValues;
+                  const next = new Set(current);
+                  if (next.has(category)) {
+                    next.delete(category);
+                  } else {
+                    next.add(category);
+                  }
+                  onDisabledValuesChange(next);
+                }
+              }}
+              onContextMenu={(e) => e.preventDefault()}
               onMouseEnter={() => setHoverCategory(category)}
               onMouseLeave={() => setHoverCategory(null)}
               className="cursor-pointer"
             />
+
             {isHovered && (
               <rect
                 x={startPos}
@@ -94,6 +161,7 @@ const BarchartBars = ({
                 pointerEvents="none"
               />
             )}
+
             {isSelected && (
               <rect
                 x={startPos}
@@ -105,7 +173,8 @@ const BarchartBars = ({
                 ry={1.5}
               />
             )}
-            {nodeHoveredCategory && (
+
+            {nodeHoveredCategory && !isDisabled && (
               <rect
                 x={startPos + 1}
                 y={yScale(totalCount)}

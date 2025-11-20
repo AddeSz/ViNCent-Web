@@ -1,5 +1,5 @@
 import type { Link, Node } from "@/types/network";
-import type { DragBehavior, Selection, Simulation } from "d3";
+import type { DragBehavior, Simulation } from "d3";
 import * as d3 from "d3";
 
 interface SimulationSettings {
@@ -12,8 +12,6 @@ interface SimulationSettings {
 const createSimulation = (
   nodes: Node[],
   links: Link[],
-  nodeSelection: Selection<SVGCircleElement, Node, SVGGElement, unknown>,
-  linkSelection: Selection<SVGLineElement, Link, SVGGElement, unknown>,
   settings: SimulationSettings,
 ): Simulation<Node, Link> => {
   const simulation = d3
@@ -39,17 +37,6 @@ const createSimulation = (
       }),
     );
   }
-
-  simulation.on("tick", () => {
-    linkSelection
-      .attr("x1", (d) => (d.source as Node).x ?? 0)
-      .attr("y1", (d) => (d.source as Node).y ?? 0)
-      .attr("x2", (d) => (d.target as Node).x ?? 0)
-      .attr("y2", (d) => (d.target as Node).y ?? 0);
-
-    nodeSelection.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
-  });
-
   return simulation;
 };
 

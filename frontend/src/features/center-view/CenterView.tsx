@@ -53,7 +53,7 @@ const CenterView = ({
   isViewLoaded,
 }: CenterViewProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-
+  const [showInfo, setShowInfo] = useState(false);
   const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
     useSortingLogic(nodeMap);
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
@@ -158,7 +158,6 @@ const CenterView = ({
                   nodeMap={nodeMap}
                 />
               </div>
-
               {canPreview && onPreview && !nodeLinkUpdating && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
                   <Button
@@ -171,11 +170,83 @@ const CenterView = ({
                   </Button>
                 </div>
               )}
-
               {timelines && (
                 <div className="pointer-events-none absolute right-2 bottom-2">
                   <div className="pointer-events-auto w-54 rounded-lg border bg-background px-2 py-1 shadow-lg">
                     <TimestepSlider />
+                  </div>
+                </div>
+              )}
+
+              <div className="pointer-events-none absolute top-1 right-1">
+                <Button
+                  onClick={() => setShowInfo(!showInfo)}
+                  size="sm"
+                  variant="outline"
+                  className="pointer-events-auto h-8 w-8 rounded-full p-0 shadow-lg"
+                >
+                  ?
+                </Button>
+              </div>
+
+              {showInfo && (
+                <div className="pointer-events-none absolute top-10 right-2">
+                  <div className="pointer-events-auto w-48 rounded-lg border bg-background p-2 pt-1.5 shadow-lg">
+                    <div
+                      className="absolute"
+                      style={{
+                        right: "7px",
+                        top: "-5px",
+                        width: 0,
+                        height: 0,
+                        borderLeft: "5px solid transparent",
+                        borderRight: "5px solid transparent",
+                        borderBottom: "5px solid var(--border)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "1px",
+                          left: "-5px",
+                          width: 0,
+                          height: 0,
+                          borderLeft: "5px solid transparent",
+                          borderRight: "5px solid transparent",
+                          borderBottom: "5px solid var(--background)",
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-start justify-between">
+                      <h3 className="mb-1 text-sm font-semibold">
+                        Interaction Priority Order
+                      </h3>
+                    </div>
+                    <div className="space-y-2 text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between">
+                        <p>Primary Select:</p>
+                        <div
+                          className="h-4 w-12 rounded"
+                          style={{ backgroundColor: "orange" }}
+                        ></div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p>Primary Hover:</p>
+                        <div className="h-4 w-12 rounded bg-accent-foreground"></div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p>Secondary Select:</p>
+                        <div
+                          className="h-4 w-12 rounded"
+                          style={{ backgroundColor: "orangered" }}
+                        ></div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p>Secondary Hover:</p>
+                        <div className="h-4 w-12 rounded bg-accent"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

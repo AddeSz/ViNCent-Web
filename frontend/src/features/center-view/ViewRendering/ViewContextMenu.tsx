@@ -149,11 +149,7 @@ const ViewContextMenu = ({
             <ContextMenuItem
               onSelect={() => {
                 const key = contextMenuTarget.data.key;
-                if (centralityKeys.includes(key)) {
-                  toggleMetricsKey(key);
-                } else {
-                  toggleMetricsKey(key);
-                }
+                toggleMetricsKey(key);
               }}
               className="cursor-pointer"
             >

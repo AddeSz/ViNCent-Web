@@ -13,7 +13,7 @@ import {
 } from "@/utils/ColorHelper";
 import { getNodeId } from "@/utils/utils";
 import * as d3 from "d3";
-import { getNodeLabel } from "./nodeLinkUtils";
+import { updateLabelPositions } from "./drawLabels";
 import { createDrag } from "./setupSimulation";
 
 const OPACITY_VALUE = 0.6;
@@ -179,46 +179,6 @@ const updateNodes = (
   return nodesUpdate;
 };
 
-const updateLabels = (
-  nodeGroup: d3.Selection<d3.BaseType, unknown, null, undefined>,
-  visibleNodes: Node[],
-  showLabels: boolean,
-  nodeSizes: Map<string, number>,
-) => {
-  if (!showLabels) {
-    nodeGroup.selectAll("text.node-label").remove();
-    return;
-  }
-
-  const labels = nodeGroup
-    .selectAll<SVGTextElement, Node>("text.node-label")
-    .data(visibleNodes, (d) => d.id);
-
-  labels.exit().remove();
-
-  const labelsEnter = labels
-    .enter()
-    .append("text")
-    .attr("class", "node-label")
-    .attr("text-anchor", "middle")
-    .attr("dy", (d) => -(nodeSizes.get(d.id) ?? 15) - 2)
-    .attr("font-size", "10px")
-    .attr("fill", "currentColor")
-    .attr("pointer-events", "none")
-    .style("user-select", "none")
-    .text((d) => getNodeLabel(d));
-
-  const labelsUpdate = labelsEnter.merge(labels);
-
-  labelsUpdate
-    .attr("x", (d) => Math.round(d.x ?? 0))
-    .attr("y", (d) => Math.round(d.y ?? 0))
-    .attr("dy", (d) => -(nodeSizes.get(d.id) ?? 15) - 2)
-    .text((d) => getNodeLabel(d));
-
-  return labelsUpdate;
-};
-
 const updateLinks = (
   linkGroup: d3.Selection<d3.BaseType, unknown, null, undefined>,
   renderLinks: Link[],
@@ -346,7 +306,6 @@ const updateGraph = (
   nodeSizes: Map<string, number>,
   linkWeights: Map<string, number>,
   hoveredNode: string | null,
-  showLabels: boolean,
   nodeData: Map<string, FullData>,
 ) => {
   const svgGroup = svg.select("g.zoom-group");
@@ -370,12 +329,6 @@ const updateGraph = (
     hoveredNode,
     nodeData,
   );
-  const allLabels = updateLabels(
-    nodeGroup,
-    network.nodes,
-    showLabels,
-    nodeSizes,
-  );
 
   simulation.on("tick", () => {
     allLinks
@@ -386,9 +339,7 @@ const updateGraph = (
 
     allNodes.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
 
-    if (showLabels && allLabels) {
-      allLabels.attr("x", (d) => d.x ?? 0).attr("y", (d) => d.y ?? 0);
-    }
+    updateLabelPositions(svg, nodeSizes);
   });
 };
 

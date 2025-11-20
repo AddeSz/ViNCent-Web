@@ -49,7 +49,6 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   const { enabledNodeKeys } = useKeys();
 
   const edgeKeys = useMetricsStore((s) => s.enabledEdgeMetricsKeys);
-
   const [globalBinCount, setGlobalBinCount] = useState(16);
   const [useIndividualBinCounts, setUseIndividualBinCounts] = useState(false);
   const [binCountsByKey, setBinCountsByKey] = useState<Record<string, number>>(
@@ -77,6 +76,9 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   const clearBrushRange = useMetricsStore((s) => s.clearBrushRange);
   const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
   const setBinnedData = useMetricsStore((s) => s.setBinnedData);
+  const disabledValues = useMetricsStore((s) => s.disabledValues);
+  const setDisabledValues = useMetricsStore((s) => s.setDisabledValues);
+  const clearDisabledValues = useMetricsStore((s) => s.clearDisabledValues);
 
   const fullNodeData = useMemo(() => {
     return Array.from(metricsData.values());
@@ -164,6 +166,9 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
       .filter((v) => typeof v === "string" || typeof v === "boolean");
 
     if (values.length === 0) return null;
+    const disabledValuesForKey =
+      disabledValues[key] || new Set<number | string>();
+
     return (
       <div key={key} className="h-full w-full rounded border bg-card pb-1">
         <div className="flex items-center justify-between gap-1 px-2 py-1">
@@ -176,11 +181,16 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
 
           <Button
             variant="outline"
-            onClick={() => setSelectedCategories(key, [])}
+            onClick={() => {
+              setSelectedCategories(key, []);
+              clearDisabledValues(key);
+            }}
             className="flex cursor-pointer px-2 py-0.5 text-xs"
             size="zero"
             disabled={
-              !selectedCategories[key] || !(selectedCategories[key].length > 0)
+              (!selectedCategories[key] ||
+                !(selectedCategories[key].length > 0)) &&
+              disabledValuesForKey.size === 0
             }
           >
             <p className="block truncate text-xs">Clear </p>
@@ -195,6 +205,8 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           getColorForMetric={getColorForMetric}
           selectedCategories={selectedCategories[key] || null}
           onBarClick={(category) => handleCategoryClick(key, category)}
+          disabledValues={disabledValuesForKey}
+          onDisabledValuesChange={(values) => setDisabledValues(key, values)}
         />
       </div>
     );
@@ -208,6 +220,8 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
     if (!binnedData) return null;
 
     const binCount = getBinCount(key);
+    const disabledValuesForKey =
+      disabledValues[key] || new Set<number | string>();
 
     return (
       <div key={key} className="h-full w-full rounded border bg-card pb-1">
@@ -221,10 +235,13 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
 
           <Button
             variant="outline"
-            onClick={() => clearBrushRange(key)}
+            onClick={() => {
+              clearBrushRange(key);
+              clearDisabledValues(key);
+            }}
             className="ml-auto flex cursor-pointer px-2 py-0.5 text-xs"
             size="zero"
-            disabled={!brushRanges[key]}
+            disabled={!(brushRanges[key] || disabledValuesForKey.size > 0)}
           >
             <p className="block truncate text-xs">Clear</p>
           </Button>
@@ -238,6 +255,8 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           getColorForMetric={getColorForMetric}
           brushRange={brushRanges[key]}
           onBrushChange={(range) => setBrushRange(key, range)}
+          disabledValues={disabledValuesForKey}
+          onDisabledValuesChange={(values) => setDisabledValues(key, values)}
         />
         {brushRanges[key] && (
           <p className="min-w-[30px] flex-1 truncate pl-2 text-xs text-muted-foreground">

@@ -8,8 +8,9 @@ interface VisualizationStore {
   categoryColors: Map<string, string>;
 
   categoryCounter: number;
-
-  combinedCategoryPalette: string[];
+  set1Counter: number;
+  pairedCounter: number;
+  category10Counter: number;
 
   initializeColors: (metricsInfo: Map<string, AttributeInfo>) => void;
   getOrAssignCentralityColor: (key: string) => string;
@@ -19,46 +20,97 @@ interface VisualizationStore {
   clearData: () => void;
 }
 
-const createCombinedPalette = (): string[] => {
-  const paired = d3.schemePaired;
-  const set3 = d3.schemeSet3;
-  const combined: string[] = [];
-  const maxLength = Math.max(paired.length, set3.length);
+//Custom with colors from color brewer and kellys. Should be quite distinct
+const distinctColors = [
+  "#e6194b",
+  "#3cb44b",
+  "#ffe119",
+  "#4363d8",
+  "#f58231",
+  "#911eb4",
+  "#6f340d",
+  "#46f0f0",
+  "#f032e6",
+  "#bcf60c",
+  "#fabebe",
+  "#008080",
+  "#e6beff",
+  "#9a6324",
+  "#fffac8",
+  "#aaffc3",
+  "#808000",
+  "#ffd8b1",
+  "#808080",
+  "#ff6b6b",
+  "#4ecdc4",
+  "#fdfdfd",
+  "#f9ca24",
+  "#6c5ce7",
+  "#fd79a8",
+  "#fdcb6e",
+  "#00b894",
+  "#e17055",
+  "#74b9ff",
+];
 
-  for (let i = 0; i < maxLength; i++) {
-    if (i < paired.length) combined.push(paired[i]);
-    if (i < set3.length) combined.push(set3[i]);
-  }
-
-  return combined;
-};
+// https://eleanormaclure.wordpress.com/wp-content/uploads/2011/03/colour-coding.pdf
+// const colorPalette = [
+//   "#fdfdfd",
+//   "#1d1d1d",
+//   "#e6194b",
+//   "#3cb44b",
+//   "#ebce2b",
+//   "#702c8c",
+//   "#db6917",
+//   "#96cde6",
+//   "#ba1c30",
+//   "#c0bd7f",
+//   "#7f7e80",
+//   "#5fa641",
+//   "#d485b2",
+//   "#4277b6",
+//   "#df8461",
+//   "#463397",
+//   "#e1a11a",
+//   "#92ae31",
+//   "#91218c",
+//   "#e8e948",
+//   "#7e1510",
+//   "#6f340d",
+//   "#d32b1e",
+//   "#2b3514",
+// ];
 
 export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
   centralityColors: new Map(),
   attributeColors: new Map(),
   categoryColors: new Map(),
   categoryCounter: 0,
-  combinedCategoryPalette: createCombinedPalette(),
+  set1Counter: 0,
+  pairedCounter: 0,
+  category10Counter: 0,
 
   initializeColors: (metricsInfo: Map<string, AttributeInfo>) => {
     const centralityColors = new Map<string, string>();
     const attributeColors = new Map<string, string>();
+    const categoryColors = new Map<string, string>();
 
     const centralityKeys: string[] = [];
     const attributeKeys: string[] = [];
+    const categoricalKeys: string[] = [];
 
     metricsInfo.forEach((info, key) => {
       if (info.isCentrality) {
         centralityKeys.push(key);
-      } else if (!info.isNominal && !info.isBoolean) {
+      } else if (info.isNominal || info.isBoolean) {
+        categoricalKeys.push(key);
+      } else {
         attributeKeys.push(key);
       }
     });
 
-    const numCentrality = centralityKeys.length;
     centralityKeys.forEach((key, index) => {
-      const t = numCentrality > 1 ? index / (numCentrality - 1) : 0.5;
-      const color = d3.interpolateSpectral(t);
+      const color = distinctColors[index % distinctColors.length];
       centralityColors.set(key, color);
     });
 
@@ -69,10 +121,39 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       attributeColors.set(key, color);
     });
 
+    const palettes = [
+      d3.schemeCategory10,
+      d3.schemePaired,
+      [...d3.schemeSet1, "#8B4513"] as string[],
+    ];
+
+    let paletteCounters = [0, 0, 0];
+
+    categoricalKeys.forEach((key, attributeIndex) => {
+      const info = metricsInfo.get(key);
+      if (info) {
+        const paletteIndex = attributeIndex % 3;
+        const palette = palettes[paletteIndex];
+        const startIndex = paletteCounters[paletteIndex];
+
+        Array.from(info.values).forEach((value, valueIndex) => {
+          const colorIndex = (startIndex + valueIndex) % palette.length;
+          const color = palette[colorIndex];
+          categoryColors.set(`${key}:${value}`, color);
+        });
+
+        paletteCounters[paletteIndex] += info.values.size;
+      }
+    });
+
     set({
       centralityColors,
       attributeColors,
-      categoryCounter: 0,
+      categoryColors,
+      categoryCounter: categoricalKeys.length,
+      category10Counter: paletteCounters[0],
+      pairedCounter: paletteCounters[1],
+      set1Counter: paletteCounters[2],
     });
   },
 
@@ -113,19 +194,61 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
   },
 
   getOrAssignCategoryColor: (key: string, value: AttributeValue) => {
-    const { categoryColors, categoryCounter, combinedCategoryPalette } = get();
+    const {
+      categoryColors,
+      categoryCounter,
+      set1Counter,
+      pairedCounter,
+      category10Counter,
+    } = get();
     const categoryKey = `${key}:${value}`;
 
     if (categoryColors.has(categoryKey)) {
       return categoryColors.get(categoryKey)!;
     }
 
-    const color =
-      combinedCategoryPalette[categoryCounter % combinedCategoryPalette.length];
+    const existingValuesForKey = Array.from(categoryColors.keys()).filter((k) =>
+      k.startsWith(`${key}:`),
+    ).length;
+    const isFirstValueForKey = existingValuesForKey === 0;
+
+    const paletteIndex = categoryCounter % 3;
+    const set1Extended = [...d3.schemeSet1, "#8B4513"] as string[];
+
+    let palette: readonly string[];
+    let currentCounter: number;
+
+    if (paletteIndex === 0) {
+      palette = d3.schemeCategory10;
+      currentCounter = category10Counter;
+    } else if (paletteIndex === 1) {
+      palette = d3.schemePaired;
+      currentCounter = pairedCounter;
+    } else {
+      palette = set1Extended;
+      currentCounter = set1Counter;
+    }
+
+    const colorIndex = (currentCounter + existingValuesForKey) % palette.length;
+    const color = palette[colorIndex];
 
     set((state) => ({
       categoryColors: new Map(state.categoryColors).set(categoryKey, color),
-      categoryCounter: state.categoryCounter + 1,
+      categoryCounter: isFirstValueForKey
+        ? state.categoryCounter + 1
+        : state.categoryCounter,
+      category10Counter:
+        paletteIndex === 0 && isFirstValueForKey
+          ? state.category10Counter + existingValuesForKey + 1
+          : state.category10Counter,
+      pairedCounter:
+        paletteIndex === 1 && isFirstValueForKey
+          ? state.pairedCounter + existingValuesForKey + 1
+          : state.pairedCounter,
+      set1Counter:
+        paletteIndex === 2 && isFirstValueForKey
+          ? state.set1Counter + existingValuesForKey + 1
+          : state.set1Counter,
     }));
 
     return color;
@@ -137,5 +260,8 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       attributeColors: new Map(),
       categoryColors: new Map(),
       categoryCounter: 0,
+      set1Counter: 0,
+      pairedCounter: 0,
+      category10Counter: 0,
     }),
 }));

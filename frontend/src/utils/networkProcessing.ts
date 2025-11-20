@@ -74,11 +74,11 @@ export const calculateRadialSettings = (
 
   let targetHeight: number;
   if (numMetrics > 30) {
-    targetHeight = 20;
+    targetHeight = 10;
   } else if (numMetrics > 20) {
-    targetHeight = 25;
+    targetHeight = 15;
   } else {
-    targetHeight = 30;
+    targetHeight = 20;
   }
 
   const calculatedInnerRadius = bandwidth > 0 ? targetWidth / bandwidth : 150;

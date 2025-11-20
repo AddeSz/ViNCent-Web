@@ -20,6 +20,7 @@ export const useTooltip = (dataMap?: Map<string, FullData>) => {
   const stickyHover = useSettingsStore((s) => s.displaySettings.stickyHover);
   const currentHoveredKey = useRef<string | null>(null);
   const stickyHoverRef = useRef(stickyHover);
+  const nullUpdateTimer = useRef<number | null>(null);
 
   useEffect(() => {
     stickyHoverRef.current = stickyHover;
@@ -53,28 +54,35 @@ export const useTooltip = (dataMap?: Map<string, FullData>) => {
   }, [hideTooltip, throttledShowTooltip]);
 
   const onNodeHover = useCallback(
-    throttle(
-      (nodeId: string | null) => {
-        if (!dataMap) return;
+    (nodeId: string | null) => {
+      if (!dataMap) return;
 
-        if (nodeId === null) {
-          if (!stickyHoverRef.current) {
+      if (nodeId === null) {
+        if (!stickyHoverRef.current) {
+          nullUpdateTimer.current = window.setTimeout(() => {
             setHoveredNode(null);
-          }
-          return;
+            nullUpdateTimer.current = null;
+          }, 300);
         }
-        setHoveredNode(nodeId);
-      },
-      20,
-      { trailing: true },
-    ),
-    [dataMap],
+        return;
+      }
+
+      if (nullUpdateTimer.current !== null) {
+        clearTimeout(nullUpdateTimer.current);
+        nullUpdateTimer.current = null;
+      }
+
+      setHoveredNode(nodeId);
+    },
+    [dataMap, setHoveredNode],
   );
 
   useEffect(() => {
     return () => {
       throttledShowTooltip.cancel?.();
-      onNodeHover.cancel?.();
+      if (nullUpdateTimer.current !== null) {
+        clearTimeout(nullUpdateTimer.current);
+      }
     };
   }, [throttledShowTooltip, onNodeHover]);
 

@@ -344,7 +344,7 @@ const NodeLinkDiagramSettings = () => {
 
         <div className="flex items-center justify-between">
           <Label htmlFor="show-labels" className="text-sm">
-            Show Labels
+            Show All Labels
           </Label>
           <Switch
             id="show-labels"

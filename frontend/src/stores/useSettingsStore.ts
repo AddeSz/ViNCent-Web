@@ -23,6 +23,7 @@ type NodeLinkSettings = {
   linkDistance: number;
   chargeStrength: number;
   showLabels: boolean;
+  fontSize: number;
   nodeSizeMode: SizeMode;
   nodeSizeMetric: string;
   fixedNodeSize: number;
@@ -84,6 +85,7 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   linkDistance: 100,
   chargeStrength: -300,
   showLabels: false,
+  fontSize: 24,
   nodeSizeMode: "fixed",
   nodeSizeMetric: "",
   fixedNodeSize: 15,
