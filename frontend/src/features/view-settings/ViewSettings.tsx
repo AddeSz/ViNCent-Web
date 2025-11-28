@@ -7,7 +7,7 @@ import RadialChartSettings from "./components/RadialChartSettings";
 
 interface ViewSettingsProps {
   datasets: Record<string, any>;
-  onLoadData: (data: any) => void;
+  onLoadData: (formData: FormData, datasetID?: string) => void;
   view: ViewType;
   hasLoadedData: boolean;
 }

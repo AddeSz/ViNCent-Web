@@ -11,8 +11,8 @@ import { useRef } from "react";
 
 interface FileUploaderProps {
   datasets: Record<string, any>;
-  onLoadData: (data: any, datasetID?: string) => void;
-  hasError: boolean;
+  onLoadData: (formData: FormData, datasetID?: string) => void;
+  hasError?: boolean;
 }
 
 const FileUploader = ({
@@ -28,25 +28,28 @@ const FileUploader = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("source", "upload");
+    formData.append("name", file.name);
 
-      if (!parsed.nodes || !parsed.links) {
-        throw new Error("Invalid format: must contain 'nodes' and 'links'");
-      }
-
-      setCurrentDataset(file.name);
-      onLoadData(parsed);
-    } catch (err) {
-      console.error("File load failed:", err);
-      alert("Invalid JSON format. Ensure your file has 'nodes' and 'links'.");
-    }
+    setCurrentDataset(file.name);
+    onLoadData(formData);
   };
 
   const handleDatasetSelect = (key: string) => {
+    const datasetContent = datasets[key];
+    const jsonString = JSON.stringify(datasetContent);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const file = new File([blob], `${key}.json`, { type: "application/json" });
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("source", "predefined");
+    formData.append("name", key);
+
     setCurrentDataset(key);
-    onLoadData(datasets[key], key);
+    onLoadData(formData, key);
   };
 
   return (
@@ -83,14 +86,14 @@ const FileUploader = ({
             onClick={() => fileInputRef.current?.click()}
             className="flex w-full cursor-pointer items-center px-2"
           >
-            <p className="w-fit truncate">Import JSON</p>
+            <p className="w-fit truncate">Import File</p>
           </Button>
           <Input
             type="file"
-            accept=".json"
             ref={fileInputRef}
             onChange={handleFileUpload}
             className="hidden"
+            accept=".json, .graphml, .xml, .mtx, .mm"
           />
         </div>
       </div>

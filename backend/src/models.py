@@ -42,10 +42,15 @@ class CentralityType(str, Enum):
     TROPHIC_INCOHERENCE = "trophic_incoherence"
     
     
+class TimelineEntry(BaseModel):
+    timestep: int
+    attributes: Optional[Dict[str, Any]] = None
+    
 class Node(BaseModel):
     id: str
     label: Optional[str] = None
     attributes: Optional[Dict[str, Any]] = None
+    history: Optional[List[TimelineEntry]] = None
 
 class Link(BaseModel):
     source: str
@@ -64,5 +69,9 @@ class CentralityRequest(BaseModel):
     
 class CentralityTimestepRequest(BaseModel):
     timestep: int
+    network: NetworkData
+    dataset_id: Optional[str] = None
+
+class ProcessNetworkRequest(BaseModel):
     network: NetworkData
     dataset_id: Optional[str] = None

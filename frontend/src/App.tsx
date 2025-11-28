@@ -19,7 +19,6 @@ import { useViewPersistence } from "@/features/center-view/ViewRendering/useView
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
 import DataFiltering from "@/features/data-filtering/DataFiltering";
 import { useDataStores } from "@/hooks/useDataStores";
-import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ViewSettings from "./features/view-settings/ViewSettings";
@@ -43,57 +42,37 @@ const datasets = {
 const VIEW_KEY = "center-view-mode";
 export type ViewType = "radial" | "node-link" | "data-table";
 
+type LoadStatus = "idle" | "loading" | "error" | "ready";
+
 const App = () => {
   const { view, setView, isViewLoaded } = useViewPersistence(VIEW_KEY);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasLoadedData, setHasLoadedData] = useState(false);
+  const [status, setStatus] = useState<LoadStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+
   const { loadNetwork, clearAllData } = useDataStores();
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
-  const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
 
   const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
   const { nodeData, edgeData, filteredNetwork, handlePreview, canPreview } =
     useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
 
-  const handleLoadData = async (data: any, datasetID?: string) => {
+  const handleLoadData = async (formData: FormData, datasetID?: string) => {
     try {
-      setIsLoading(true);
+      setStatus("loading");
       setError(null);
+
       clearAllData();
-      await loadNetwork(data, datasetID);
-      setHasLoadedData(true);
+      await loadNetwork(formData, datasetID);
+
+      setStatus("ready");
     } catch (err) {
-      let errorMessage = "Unknown error occurred";
+      const message =
+        err instanceof Error ? err.message : "An unknown error occurred";
 
-      if (err instanceof Error) {
-        if (
-          err.message.includes("NetworkError") ||
-          err.message.includes("fetch")
-        ) {
-          errorMessage =
-            "Failed to connect to the server. Please try again later.";
-        } else if (err.message.includes("422")) {
-          errorMessage =
-            "Invalid dataset format. Please ensure your JSON has valid nodes and links.";
-        } else if (err.message.includes("400")) {
-          errorMessage = "Bad request. Please check your dataset format.";
-        } else if (err.message.includes("500")) {
-          errorMessage = "Server error. Please try again later.";
-        } else if (err.message.includes("JSON")) {
-          errorMessage = "Invalid data format. Please check your dataset.";
-        } else if (err.message.includes("timeout")) {
-          errorMessage =
-            "Request timed out. The server took too long to respond.";
-        } else {
-          errorMessage = err.message;
-        }
-      }
+      setError(message);
+      setStatus("error");
 
-      setError(errorMessage);
       console.error("Error loading dataset:", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -112,7 +91,7 @@ const App = () => {
                   datasets={datasets}
                   onLoadData={handleLoadData}
                   view={view}
-                  hasLoadedData={hasLoadedData}
+                  hasLoadedData={status === "ready"}
                 />
               </div>
             </Panel>
@@ -127,39 +106,43 @@ const App = () => {
             </Panel>
           </PanelGroup>
         </Panel>
+
         <PanelResizeHandle
           onDragging={handleDragging("middle-left")}
           className={`w-2 transition-colors ${draggingBars["middle-left"] ? "bg-ring" : "bg-border"}`}
         />
+
         <Panel defaultSize={65} minSize={50}>
-          {isLoading ? (
+          {status === "loading" && (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <Spinner className="size-10" />
               <p className="text-center text-sm text-muted-foreground">
                 Processing dataset and calculating centrality values...
               </p>
             </div>
-          ) : error ? (
+          )}
+
+          {status === "error" && (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p className="text-center text-red-500">{error}</p>
               <FileUploader
                 datasets={datasets}
                 onLoadData={handleLoadData}
-                hasError={!!error}
+                hasError
               />
             </div>
-          ) : isEmpty ? (
+          )}
+
+          {status === "idle" && (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p className="text-center text-muted-foreground">
                 No data loaded. Select or import a dataset to begin.
               </p>
-              <FileUploader
-                datasets={datasets}
-                onLoadData={handleLoadData}
-                hasError={!!error}
-              />
+              <FileUploader datasets={datasets} onLoadData={handleLoadData} />
             </div>
-          ) : (
+          )}
+
+          {status === "ready" && (
             <CenterView
               nodeMap={nodeData}
               edgeData={edgeData}
@@ -174,10 +157,12 @@ const App = () => {
             />
           )}
         </Panel>
+
         <PanelResizeHandle
           onDragging={handleDragging("middle-right")}
           className={`w-2 transition-colors ${draggingBars["middle-right"] ? "bg-ring" : "bg-border"}`}
         />
+
         <Panel defaultSize={20} minSize={15} maxSize={55}>
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
@@ -200,4 +185,5 @@ const App = () => {
     </div>
   );
 };
+
 export default App;

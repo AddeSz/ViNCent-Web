@@ -15,6 +15,38 @@ interface BackendNetworkData {
   links: Array<{ source: string; target: string; [key: string]: any }>;
 }
 
+interface PreprocessedNetworkResponse {
+  network: Network;
+  timesteps: number[];
+  timelines: Record<string, TimelineEntry[]>;
+  attributes: Record<string, Attributes>;
+}
+
+export const validateAndPreprocessNetwork = async (
+  formData: FormData,
+): Promise<PreprocessedNetworkResponse> => {
+  const response = await fetch(`${API_BASE_URL}/validate-network`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      error.detail || `Validation failed! status: ${response.status}`,
+    );
+  }
+
+  const data = await response.json();
+
+  return {
+    network: data.network,
+    timesteps: data.timesteps || [],
+    timelines: data.timelines || {},
+    attributes: data.attributes || {},
+  };
+};
+
 export const prepareNetworkForBackend = (
   network: Network,
 ): BackendNetworkData => ({

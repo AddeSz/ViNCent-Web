@@ -1,4 +1,3 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData, Node } from "@/types/network";
 import { highlightLabelColor } from "@/utils/ColorHelper";
 import * as d3 from "d3";
@@ -15,8 +14,6 @@ const drawLabels = (
   nodeSizes: Map<string, number>,
   showLabels: boolean,
 ): void => {
-  const { nodeMap } = useNetworkStore.getState();
-
   const svgGroup = svg.select("g.zoom-group");
   let labelGroup = svgGroup.select<SVGGElement>("g.labels-group");
 
@@ -41,8 +38,7 @@ const drawLabels = (
 
         g.each(function (d) {
           const group = d3.select(this);
-          const node = nodeMap.get(d.id);
-          const label = node?.label ?? getNodeLabel(d);
+          const label = d?.label ?? getNodeLabel(d);
 
           group
             .append("text")
@@ -61,8 +57,7 @@ const drawLabels = (
       (update) => {
         update.each(function (d) {
           const group = d3.select(this);
-          const node = nodeMap.get(d.id);
-          const label = node?.label ?? getNodeLabel(d);
+          const label = d?.label ?? getNodeLabel(d);
 
           const text = group.select<SVGTextElement>("text");
           text.text(label).attr("dy", -(nodeSizes.get(d.id) ?? 15) - 2);

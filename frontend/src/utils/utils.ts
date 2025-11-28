@@ -50,9 +50,15 @@ export function formatValue(x: any): string {
   }
 
   if (typeof x === "string") {
-    return x
-      .split(" ")
-      .map((word) => word[0].toUpperCase() + word.slice(1))
+    const trimmed = x.trim();
+    if (!trimmed) return "N/A";
+
+    return trimmed
+      .split(/\s+/)
+      .map((word) => {
+        if (!word) return "N/A";
+        return word[0].toUpperCase() + word.slice(1);
+      })
       .join(" ");
   }
 

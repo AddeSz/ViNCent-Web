@@ -3,19 +3,23 @@ import math
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .cache_utils import CACHE_DIR, CACHE_ENABLED, get_from_cache, set_in_cache
 from .centrality import calculate_selected_centralities
 from .config import ALL_CENTRALITIES
 from .graph import create_networkx_graph
 from .models import CentralityRequest, CentralityTimestepRequest
+from .preprocessing import (parse_graphml_to_network, parse_json_to_network,
+                            parse_mtx_to_network, preprocess_network)
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="[%(levelname)s] %(name)s: %(message)s"
 )
+logging.getLogger("python_multipart.multipart").setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
@@ -180,4 +184,40 @@ async def calculate_centrality_per_timestep(request: CentralityTimestepRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Centrality calculation failed: {str(e)}"
+        )
+        
+        
+@app.post("/validate-network")
+async def validate_network(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        filename_lower = file.filename.lower()
+        
+        if filename_lower.endswith(".json"):
+            data = parse_json_to_network(content)
+            
+        elif filename_lower.endswith(".graphml") or filename_lower.endswith(".xml"):
+            data = parse_graphml_to_network(content)
+            
+        elif filename_lower.endswith(".mtx") or filename_lower.endswith(".mm"):
+            data = parse_mtx_to_network(content)
+            
+        else:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Unsupported file format: {file.filename}. "
+                       f"Supported formats: .json, .graphml, .xml, .mtx, .mm"
+            )
+        
+        preprocessed = preprocess_network(data)
+        
+        return JSONResponse(content=preprocessed)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in validate_network: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to process network: {str(e)}"
         )

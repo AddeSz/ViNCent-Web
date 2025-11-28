@@ -64,7 +64,7 @@ const RadialChart = ({
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
   const hoveredNode = useNetworkStore((state) => state.hoveredNode);
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
-  const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 10]);
+  const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
   const radialSettings = useSettingsStore(useShallow((s) => s.radialSettings));
   const { separateMetrics, linkRenderingMode, fdebSettings, showLabels } =
     radialSettings;
