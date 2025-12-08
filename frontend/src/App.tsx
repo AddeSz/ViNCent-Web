@@ -17,7 +17,7 @@ import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
 import DataFiltering from "@/features/data-filtering/DataFiltering";
-import { useDataStores } from "@/hooks/useDataStores";
+import { useLoadNetwork } from "@/hooks/useLoadNetwork";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ViewSettings from "./features/view-settings/ViewSettings";
@@ -47,7 +47,7 @@ const App = () => {
   const [status, setStatus] = useState<LoadStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const { loadNetwork, clearAllData } = useDataStores();
+  const { loadNetwork, clearAllData } = useLoadNetwork();
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
 
   const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
