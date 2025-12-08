@@ -1,8 +1,8 @@
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
   DataChanges,
+  Edge,
   FullData,
-  Link,
   Network,
   Node,
 } from "@/types/network";
@@ -18,6 +18,37 @@ import { createDrag } from "./setupSimulation";
 
 const OPACITY_VALUE = 0.6;
 
+const calculateLinkEndpoints = (
+  source: Node,
+  target: Node,
+  sourceRadius: number,
+  targetRadius: number,
+) => {
+  const sx = source.x ?? 0;
+  const sy = source.y ?? 0;
+  const tx = target.x ?? 0;
+  const ty = target.y ?? 0;
+
+  const dx = tx - sx;
+  const dy = ty - sy;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  if (distance === 0) {
+    return { x1: sx, y1: sy, x2: tx, y2: ty };
+  }
+
+  const unitX = dx / distance;
+  const unitY = dy / distance;
+
+  const x1 = sx + unitX * sourceRadius;
+  const y1 = sy + unitY * sourceRadius;
+
+  const x2 = tx - unitX * targetRadius;
+  const y2 = ty - unitY * targetRadius;
+
+  return { x1, y1, x2, y2 };
+};
+
 const getNodeStyle = (
   node: Node,
   selectedNodes: Set<string>,
@@ -30,7 +61,7 @@ const getNodeStyle = (
   const added = nodeChanges.added[node.id] ? true : false;
 
   let fill = highlightNodeColor.default;
-  if (removed && !displaySettings.keepPreviewNodes) {
+  if (removed && !displaySettings.previewChanges) {
     fill = highlightNodeColor.removed;
   }
 
@@ -45,13 +76,18 @@ const getNodeStyle = (
   const isSecondaryHovered =
     hoveredNode && nodeData.get(hoveredNode)?.linked?.has(node.id);
 
+  const isConnected =
+    isSelected || isHovered || isSecondarySelected || isSecondaryHovered;
+  const hasActiveSelection = selectedNodes.size > 0 || hoveredNode !== null;
+  const opacity = !hasActiveSelection || isConnected ? 1 : 0.2;
+
   let stroke = "none";
   let strokeWidth = 0;
 
   if (added) {
     stroke = highlightNodeColor.added;
     strokeWidth = 3;
-  } else if (removed && displaySettings.keepPreviewNodes) {
+  } else if (removed && displaySettings.previewChanges) {
     stroke = highlightNodeColor.removed;
     strokeWidth = 3;
   }
@@ -76,11 +112,12 @@ const getNodeStyle = (
     fill,
     stroke,
     strokeWidth,
+    opacity,
   };
 };
 
 const getLinkStyleForNode = (
-  link: Link,
+  link: Edge,
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   edgeChanges: DataChanges,
@@ -104,9 +141,14 @@ const getLinkStyleForNode = (
     0.8,
   );
 
+  const isConnected = isSelected || isHovered;
+  const hasActiveSelection = selectedNodes.size > 0 || hoveredNode !== null;
+  const dimmedOpacity =
+    !hasActiveSelection || isConnected ? style.opacity : 0.1;
+
   return {
     stroke: style.stroke,
-    strokeOpacity: style.opacity,
+    strokeOpacity: dimmedOpacity,
   };
 };
 
@@ -118,7 +160,7 @@ const handleNodeClick = (event: MouseEvent, d: Node) => {
 const updateNodes = (
   nodeGroup: d3.Selection<d3.BaseType, unknown, null, undefined>,
   visibleNodes: Node[],
-  simulation: d3.Simulation<Node, Link>,
+  simulation: d3.Simulation<Node, Edge>,
   selectedNodes: Set<string>,
   nodeSizes: Map<string, number>,
   nodeChanges: DataChanges,
@@ -150,8 +192,7 @@ const updateNodes = (
   nodesEnter
     .transition()
     .duration(250)
-    .attr("r", (d) => nodeSizes.get(d.id)!)
-    .style("opacity", 1);
+    .attr("r", (d) => nodeSizes.get(d.id)!);
 
   const nodesUpdate = nodesEnter.merge(nodes);
 
@@ -172,7 +213,7 @@ const updateNodes = (
       .transition()
       .duration(150)
       .attr("r", size)
-      .style("opacity", 1);
+      .style("opacity", style.opacity);
   });
   nodesUpdate.call(createDrag(simulation));
 
@@ -181,14 +222,15 @@ const updateNodes = (
 
 const updateLinks = (
   linkGroup: d3.Selection<d3.BaseType, unknown, null, undefined>,
-  renderLinks: Link[],
+  renderLinks: Edge[],
   selectedNodes: Set<string>,
   linkWeights: Map<string, number>,
   hoveredNode: string | null,
   edgeChanges: DataChanges,
+  nodeSizes: Map<string, number>,
 ) => {
   const links = linkGroup
-    .selectAll<SVGLineElement, Link>("line.link")
+    .selectAll<SVGLineElement, Edge>("line.link")
     .data(
       renderLinks,
       (d) => `${(d.source as Node).id}-${(d.target as Node).id}`,
@@ -208,20 +250,31 @@ const updateLinks = (
 
   const linksUpdate = linksEnter.merge(links);
 
-  linksUpdate
-    .attr("x1", (d) => (d.source as Node).x ?? 0)
-    .attr("y1", (d) => (d.source as Node).y ?? 0)
-    .attr("x2", (d) => (d.target as Node).x ?? 0)
-    .attr("y2", (d) => (d.target as Node).y ?? 0)
-    .attr("stroke-width", (d) => {
-      const sourceId = getNodeId(d.source);
-      const targetId = getNodeId(d.target);
-      const linkId = `${sourceId}-${targetId}`;
-      const thickness = linkWeights.get(linkId) || 1.5;
-      const isSelected =
-        selectedNodes.has(sourceId) || selectedNodes.has(targetId);
-      return isSelected ? thickness * 1.5 : thickness;
-    });
+  linksUpdate.each(function (d) {
+    const sourceId = getNodeId(d.source);
+    const targetId = getNodeId(d.target);
+    const sourceRadius = nodeSizes.get(sourceId) ?? 15;
+    const targetRadius = nodeSizes.get(targetId) ?? 15;
+
+    const { x1, y1, x2, y2 } = calculateLinkEndpoints(
+      d.source as Node,
+      d.target as Node,
+      sourceRadius,
+      targetRadius,
+    );
+
+    d3.select(this).attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2);
+  });
+
+  linksUpdate.attr("stroke-width", (d) => {
+    const sourceId = getNodeId(d.source);
+    const targetId = getNodeId(d.target);
+    const linkId = `${sourceId}-${targetId}`;
+    const thickness = linkWeights.get(linkId) || 1.5;
+    const isSelected =
+      selectedNodes.has(sourceId) || selectedNodes.has(targetId);
+    return isSelected ? thickness * 1.5 : thickness;
+  });
 
   linksUpdate
     .transition()
@@ -272,10 +325,11 @@ export const updateStyle = (
       .attr("r", size)
       .attr("fill", style.fill)
       .style("stroke", style.stroke)
-      .attr("stroke-width", style.strokeWidth);
+      .attr("stroke-width", style.strokeWidth)
+      .style("opacity", style.opacity);
   });
 
-  svg.selectAll<SVGLineElement, Link>("line.link").each(function (d) {
+  svg.selectAll<SVGLineElement, Edge>("line.link").each(function (d) {
     const style = getLinkStyleForNode(
       d,
       selectedNodes,
@@ -289,7 +343,20 @@ export const updateStyle = (
     const isSelected =
       selectedNodes.has(sourceId) || selectedNodes.has(targetId);
 
+    const sourceRadius = nodeSizes.get(sourceId) ?? 15;
+    const targetRadius = nodeSizes.get(targetId) ?? 15;
+    const { x1, y1, x2, y2 } = calculateLinkEndpoints(
+      d.source as Node,
+      d.target as Node,
+      sourceRadius,
+      targetRadius,
+    );
+
     d3.select(this)
+      .attr("x1", x1)
+      .attr("y1", y1)
+      .attr("x2", x2)
+      .attr("y2", y2)
       .style("stroke", style.stroke)
       .style("stroke-opacity", style.strokeOpacity)
       .attr("stroke-width", isSelected ? thickness * 1.5 : thickness);
@@ -298,7 +365,7 @@ export const updateStyle = (
 
 const updateGraph = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-  simulation: d3.Simulation<Node, Link>,
+  simulation: d3.Simulation<Node, Edge>,
   network: Network,
   selectedNodes: Set<string>,
   nodeChanges: DataChanges,
@@ -311,13 +378,15 @@ const updateGraph = (
   const svgGroup = svg.select("g.zoom-group");
   const linkGroup = svgGroup.select("g.links-group");
   const nodeGroup = svgGroup.select("g.nodes-group");
+
   const allLinks = updateLinks(
     linkGroup,
-    network.links,
+    network.edges,
     selectedNodes,
     linkWeights,
     hoveredNode,
     edgeChanges,
+    nodeSizes,
   );
   const allNodes = updateNodes(
     nodeGroup,
@@ -331,11 +400,25 @@ const updateGraph = (
   );
 
   simulation.on("tick", () => {
-    allLinks
-      .attr("x1", (d) => (d.source as Node).x ?? 0)
-      .attr("y1", (d) => (d.source as Node).y ?? 0)
-      .attr("x2", (d) => (d.target as Node).x ?? 0)
-      .attr("y2", (d) => (d.target as Node).y ?? 0);
+    allLinks.each(function (d) {
+      const sourceId = getNodeId(d.source);
+      const targetId = getNodeId(d.target);
+      const sourceRadius = nodeSizes.get(sourceId) ?? 15;
+      const targetRadius = nodeSizes.get(targetId) ?? 15;
+
+      const { x1, y1, x2, y2 } = calculateLinkEndpoints(
+        d.source as Node,
+        d.target as Node,
+        sourceRadius,
+        targetRadius,
+      );
+
+      d3.select(this)
+        .attr("x1", x1)
+        .attr("y1", y1)
+        .attr("x2", x2)
+        .attr("y2", y2);
+    });
 
     allNodes.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
 

@@ -1,3 +1,5 @@
+import { formatValue } from "@/utils/utils";
+
 interface BarchartAxesProps {
   chartWidth: number;
   chartHeight: number;
@@ -93,7 +95,7 @@ const BarchartAxes = ({
               fill="currentColor"
               opacity={!hasSelection || isSelected ? 1 : 0.6}
             >
-              {formatLabel(category, maxChars)}
+              {formatLabel(formatValue(category), maxChars)}
             </text>
           </g>
         );

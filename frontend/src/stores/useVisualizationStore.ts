@@ -36,21 +36,18 @@ const distinctColors = [
   "#008080",
   "#e6beff",
   "#9a6324",
-  "#fffac8",
   "#aaffc3",
   "#808000",
   "#ffd8b1",
-  "#808080",
   "#ff6b6b",
-  "#4ecdc4",
-  "#fdfdfd",
-  "#f9ca24",
-  "#6c5ce7",
   "#fd79a8",
+  "#4ecdc4",
   "#fdcb6e",
+  "#6c5ce7",
   "#00b894",
   "#e17055",
   "#74b9ff",
+  "#DCD300",
 ];
 
 // https://eleanormaclure.wordpress.com/wp-content/uploads/2011/03/colour-coding.pdf
@@ -102,7 +99,7 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     metricsInfo.forEach((info, key) => {
       if (info.isCentrality) {
         centralityKeys.push(key);
-      } else if (info.isNominal || info.isBoolean) {
+      } else if (info.isCategory) {
         categoricalKeys.push(key);
       } else {
         attributeKeys.push(key);

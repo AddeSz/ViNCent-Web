@@ -13,8 +13,8 @@ import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
   DataChanges,
+  Edge,
   FullData,
-  Link,
   Network,
   Node,
 } from "@/types/network";
@@ -24,6 +24,7 @@ import throttle from "lodash.throttle";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import drawLabels, {
+  updateLabelFontSize,
   updateLabelHighlight,
   updateLabelVisibility,
 } from "./drawLabels";
@@ -63,7 +64,7 @@ const NodeLinkDiagram = ({
   onUpdateStateChange,
 }: NodeLinkDiagramProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const simulationRef = useRef<Simulation<Node, Link> | null>(null);
+  const simulationRef = useRef<Simulation<Node, Edge> | null>(null);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const [isSimulationStable, setIsSimulationStable] = useState(false);
   const isInitializedRef = useRef(false);
@@ -96,6 +97,7 @@ const NodeLinkDiagram = ({
     collisionEnabled,
     linkThicknessMetric,
     showLabels,
+    fontSize,
   } = nodeLinkSettings;
 
   const interactionProps: InteractionProps = useMemo(
@@ -132,7 +134,7 @@ const NodeLinkDiagram = ({
 
   const linkWeights = useMemo(() => {
     return calculateLinkWeights(
-      networkData.links,
+      networkData.edges,
       edgeData,
       linkThicknessMode,
       linkThicknessMetric,
@@ -142,7 +144,7 @@ const NodeLinkDiagram = ({
       linkScaleType,
     );
   }, [
-    networkData.links,
+    networkData.edges,
     linkThicknessMode,
     fixedLinkThickness,
     linkThicknessMetric,
@@ -208,7 +210,7 @@ const NodeLinkDiagram = ({
 
     simulationRef.current = createSimulation(
       networkData.nodes,
-      networkData.links,
+      networkData.edges,
       {
         linkDistance: linkDistance,
         chargeStrength: chargeStrength,
@@ -230,9 +232,10 @@ const NodeLinkDiagram = ({
     if (
       networkData &&
       networkData.nodes?.length &&
-      networkData.links?.length &&
+      networkData.edges?.length &&
       nodeData
     ) {
+      drawLabels(svg, networkData.nodes, nodeSizes, showLabels, fontSize);
       updateGraph(
         svg,
         simulationRef.current,
@@ -245,7 +248,6 @@ const NodeLinkDiagram = ({
         hoveredNode,
         nodeData,
       );
-      drawLabels(svg, networkData.nodes, nodeSizes, showLabels);
       drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
       setupNodeEvents(svg, interactionProps);
     }
@@ -262,6 +264,15 @@ const NodeLinkDiagram = ({
     if (!simulationRef.current || !isSimulationStable || !dimensions) return;
     updateCollisionRadiuses(simulationRef.current, nodeSizes, collisionEnabled);
   }, [collisionEnabled, nodeSizes]);
+
+  useEffect(() => {
+    if (!svgRef.current || !isInitializedRef.current || !isSimulationStable) {
+      return;
+    }
+
+    const svg = d3.select(svgRef.current);
+    updateLabelFontSize(svg, fontSize);
+  }, [fontSize]);
 
   useEffect(() => {
     if (

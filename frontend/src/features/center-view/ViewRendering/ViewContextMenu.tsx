@@ -44,7 +44,7 @@ const ViewContextMenu = ({
   const resetNodeLinkZoom = useNetworkStore((s) => s.resetNodeLinkZoom);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const { centralityKeys, attributeKeys } = useKeys();
+  const { allNodeCentralityKeys, allNodeAttributeKeys } = useKeys();
   const sortKey = useNetworkStore((s) => s.sortKey);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
@@ -214,7 +214,7 @@ const ViewContextMenu = ({
                         Centralities
                       </ContextMenuSubTrigger>
                       <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
-                        {centralityKeys.map((key) => {
+                        {allNodeCentralityKeys.map((key) => {
                           const isSorted = sorting[0]?.id === key;
                           const desc = sorting[0]?.desc;
                           return (
@@ -242,7 +242,7 @@ const ViewContextMenu = ({
                     <ContextMenuSub>
                       <ContextMenuSubTrigger>Attributes</ContextMenuSubTrigger>
                       <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
-                        {attributeKeys.map((key) => {
+                        {allNodeAttributeKeys.map((key) => {
                           const isSorted = sorting[0]?.id === key;
                           const desc = sorting[0]?.desc;
                           return (
@@ -270,7 +270,7 @@ const ViewContextMenu = ({
                   </>
                 ) : displayMode === "attributes" ? (
                   <>
-                    {attributeKeys.map((key) => {
+                    {allNodeAttributeKeys.map((key) => {
                       const isSorted = sorting[0]?.id === key;
                       const desc = sorting[0]?.desc;
                       return (
@@ -293,7 +293,7 @@ const ViewContextMenu = ({
                         </ContextMenuRadioItem>
                       );
                     })}
-                    {sortKey && centralityKeys.includes(sortKey) && (
+                    {sortKey && allNodeCentralityKeys.includes(sortKey) && (
                       <ContextMenuRadioItem
                         value={sortKey}
                         className="cursor-pointer"
@@ -314,7 +314,7 @@ const ViewContextMenu = ({
                   </>
                 ) : (
                   <>
-                    {centralityKeys.map((key) => {
+                    {allNodeCentralityKeys.map((key) => {
                       const isSorted = sorting[0]?.id === key;
                       const desc = sorting[0]?.desc;
                       return (
@@ -337,7 +337,7 @@ const ViewContextMenu = ({
                         </ContextMenuRadioItem>
                       );
                     })}
-                    {sortKey && attributeKeys.includes(sortKey) && (
+                    {sortKey && allNodeAttributeKeys.includes(sortKey) && (
                       <ContextMenuRadioItem
                         value={sortKey}
                         className="cursor-pointer"

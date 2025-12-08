@@ -7,7 +7,8 @@ import SortingSelector from "./components/SortingSelector";
 
 const DataFiltering = () => {
   const { sorting, setSorting, handleSortKeyChange } = useSortingLogic();
-  const { enabledNodeKeys, nodeKeys, edgeKeys, enabledEdgeKeys } = useKeys();
+  const { enabledNodeKeys, allNodeKeys, allEdgeKeys, enabledEdgeKeys } =
+    useKeys();
   const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
 
   return (
@@ -15,12 +16,22 @@ const DataFiltering = () => {
       <p className="mb-0 w-full cursor-default truncate" title="Key Filtering">
         Key Filtering
       </p>
-      <div className="flex flex-wrap gap-2">
-        <div className="w-full">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="w-full grow sm:flex-1">
           <KeySelector
-            label="Available Keys"
-            options={[...nodeKeys, ...edgeKeys]}
-            enabledKeys={[...enabledNodeKeys, ...enabledEdgeKeys]}
+            label="Node Keys"
+            options={allNodeKeys}
+            enabledKeys={enabledNodeKeys}
+            toggleKey={toggleMetricsKey}
+            sorting={sorting}
+            setSorting={setSorting}
+          />
+        </div>
+        <div className="w-full grow sm:flex-1">
+          <KeySelector
+            label="Edge Keys"
+            options={allEdgeKeys}
+            enabledKeys={enabledEdgeKeys}
             toggleKey={toggleMetricsKey}
             sorting={sorting}
             setSorting={setSorting}

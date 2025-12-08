@@ -1,80 +1,115 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { formatKeyLabel } from "@/utils/utils";
+import throttle from "lodash.throttle";
+import { useEffect, useRef, useState } from "react";
+
+const fdebParamConfig: Record<
+  string,
+  { min: number; max: number; step: number; label: string }
+> = {
+  bundlingStiffness: { min: 0.01, max: 2, step: 0.01, label: "Stiffness" },
+  stepSize: { min: 0.01, max: 0.5, step: 0.01, label: "Step Size" },
+  cycles: { min: 1, max: 10, step: 1, label: "Cycles" },
+  iterations: { min: 10, max: 150, step: 1, label: "Iterations" },
+  iterationsRate: { min: 0.1, max: 1, step: 0.01, label: "Iteration Rate" },
+  compatibilityThreshold: {
+    min: 0,
+    max: 1,
+    step: 0.01,
+    label: "Compatibility",
+  },
+};
+
+const THROTTLE_MS = 100;
 
 const FDEBSettings = () => {
   const { setRadialSettings, resetRadialSettings, radialSettings } =
     useSettingsStore();
   const { fdebSettings } = radialSettings;
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allowedKeys = [
-      "Backspace",
-      "Tab",
-      "ArrowLeft",
-      "ArrowRight",
-      "ArrowUp",
-      "ArrowDown",
-      "Delete",
-    ];
+  const [localValues, setLocalValues] = useState<Record<string, number>>({});
 
-    if (
-      allowedKeys.includes(e.key) ||
-      (e.key === "." && !e.currentTarget.value.includes("."))
-    ) {
-      return;
-    }
+  const throttledUpdate = useRef(
+    throttle(
+      (key: string, value: number, currentSettings: typeof fdebSettings) => {
+        setRadialSettings({
+          fdebSettings: { ...currentSettings, [key]: value },
+        });
+      },
+      THROTTLE_MS,
+    ),
+  ).current;
 
-    if (!/^[0-9]$/.test(e.key)) {
-      e.preventDefault();
-    }
+  useEffect(() => {
+    return () => {
+      throttledUpdate.cancel();
+    };
+  }, [throttledUpdate]);
+
+  const handleSliderChange = (key: string, value: number[]) => {
+    const newValue = value[0];
+
+    setLocalValues((prev) => ({ ...prev, [key]: newValue }));
+
+    throttledUpdate(key, newValue, fdebSettings);
   };
 
-  const handleChange = (
-    key: string,
-    value: string,
-    min: number,
-    max: number,
-  ) => {
-    if (value === "" || isNaN(Number(value))) return;
-    let num = parseFloat(value);
-    if (num < min) num = min;
-    if (num > max) num = max;
+  const handleSliderCommit = (key: string, value: number[]) => {
+    throttledUpdate.flush();
 
     setRadialSettings({
-      fdebSettings: { ...fdebSettings, [key]: num },
+      fdebSettings: { ...fdebSettings, [key]: value[0] },
+    });
+
+    setLocalValues((prev) => {
+      const newLocal = { ...prev };
+      delete newLocal[key];
+      return newLocal;
     });
   };
 
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="cursor-default truncate text-sm">Link Bundler Settings</p>
+  const formatValue = (value: number, step: number): string => {
+    if (step >= 1) return value.toFixed(0);
+    if (step >= 0.1) return value.toFixed(1);
+    return value.toFixed(2);
+  };
 
-      <div className="grid grid-cols-2 gap-2">
-        {Object.entries(fdebSettings).map(([key, value]) => (
-          <div key={key} className="flex flex-col">
-            <Label
-              htmlFor={`fdeb-${key}`}
-              className="text-xs"
-              title={formatKeyLabel(key)}
-            >
-              {formatKeyLabel(key)}
-            </Label>
-            <Input
-              id={`fdeb-${key}`}
-              type="number"
-              step={0.1}
-              min={0}
-              max={1}
-              value={value as number}
-              onKeyDown={handleKeyDown}
-              onChange={(e) => handleChange(key, e.target.value, 0.01, 1)}
-              className="h-7 text-sm"
-            />
-          </div>
-        ))}
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        {Object.entries(fdebSettings).map(([key, value]) => {
+          const config = fdebParamConfig[key];
+          const currentValue = localValues[key] ?? (value as number);
+          const displayValue = formatValue(currentValue, config.step);
+
+          return (
+            <div key={key} className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor={`fdeb-${key}`}
+                  className="text-xs text-muted-foreground"
+                >
+                  {config.label}
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  {displayValue}
+                </span>
+              </div>
+              <Slider
+                id={`fdeb-${key}`}
+                min={config.min}
+                max={config.max}
+                step={config.step}
+                value={[currentValue]}
+                onValueChange={(val) => handleSliderChange(key, val)}
+                onValueCommit={(val) => handleSliderCommit(key, val)}
+                className="cursor-pointer"
+              />
+            </div>
+          );
+        })}
       </div>
 
       <Button
@@ -82,9 +117,9 @@ const FDEBSettings = () => {
         size="sm"
         onClick={resetRadialSettings}
         className="flex w-full cursor-pointer items-center px-2"
-        title="Reset Link Bundler Settings"
+        title="Reset Link Bundler Settings to Default Values"
       >
-        <p className="w-fit truncate">Reset Bundler</p>
+        <p className="w-fit truncate">Reset to Defaults</p>
       </Button>
     </div>
   );

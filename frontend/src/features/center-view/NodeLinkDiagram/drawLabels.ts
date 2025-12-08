@@ -13,6 +13,7 @@ const drawLabels = (
   visibleNodes: Node[],
   nodeSizes: Map<string, number>,
   showLabels: boolean,
+  labelFontSize: number,
 ): void => {
   const svgGroup = svg.select("g.zoom-group");
   let labelGroup = svgGroup.select<SVGGElement>("g.labels-group");
@@ -45,7 +46,7 @@ const drawLabels = (
             .attr("data-type", d.id)
             .attr("text-anchor", "middle")
             .attr("dy", -(nodeSizes.get(d.id) ?? 15) - 2)
-            .attr("font-size", "14px")
+            .attr("font-size", `${labelFontSize}px`)
             .attr("pointer-events", "none")
             .text(label);
         });
@@ -60,7 +61,10 @@ const drawLabels = (
           const label = d?.label ?? getNodeLabel(d);
 
           const text = group.select<SVGTextElement>("text");
-          text.text(label).attr("dy", -(nodeSizes.get(d.id) ?? 15) - 2);
+          text
+            .text(label)
+            .attr("dy", -(nodeSizes.get(d.id) ?? 15) - 2)
+            .attr("font-size", `${labelFontSize}px`);
         });
 
         return update;
@@ -85,8 +89,45 @@ export const updateLabelPositions = (
       const label = d3.select(this);
       const text = label.select("text");
       const nodeSize = nodeSizes.get(d.id) ?? 15;
-      text.attr("dy", -nodeSize - 2);
+      const dy = -nodeSize - 3;
+      text.attr("dy", dy);
+
+      const underline = label.select<SVGLineElement>("line.underline");
+      if (!underline.empty() && parseFloat(underline.style("opacity")) > 0) {
+        const bbox = (text.node() as SVGTextElement)?.getBBox();
+        if (bbox) {
+          underline
+            .attr("x1", -bbox.width / 2)
+            .attr("x2", bbox.width / 2)
+            .attr("y1", dy + 2)
+            .attr("y2", dy + 2);
+        }
+      }
     });
+};
+
+export const updateLabelFontSize = (
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  labelFontSize: number,
+) => {
+  svg.selectAll<SVGGElement, Node>("g.labels-group g.label").each(function () {
+    const label = d3.select(this);
+    const text = label.select("text");
+    text.attr("font-size", `${labelFontSize}px`);
+
+    const underline = label.select<SVGLineElement>("line.underline");
+    if (!underline.empty() && parseFloat(underline.style("opacity")) > 0) {
+      const bbox = (text.node() as SVGTextElement)?.getBBox();
+      const dy = parseFloat(text.attr("dy")) || 0;
+      if (bbox) {
+        underline
+          .attr("x1", -bbox.width / 2)
+          .attr("x2", bbox.width / 2)
+          .attr("y1", dy + 2)
+          .attr("y2", dy + 2);
+      }
+    }
+  });
 };
 
 export const updateLabelVisibility = (
@@ -186,16 +227,50 @@ export const updateLabelHighlight = (
     }
 
     const text = label.select("text");
+    const dy = parseFloat(text.attr("dy")) || 0;
+    const isSelected = selectedNodes.has(d.id);
+    const isHovered = hoveredNode === d.id;
+
+    let underline = label.select<SVGLineElement>("line.underline");
+    if (underline.empty()) {
+      underline = label
+        .append("line")
+        .attr("class", "underline")
+        .attr("stroke", highlightLabelColor.default)
+        .attr("stroke-width", 1.5)
+        .attr("y1", 0)
+        .attr("y2", 0);
+    }
 
     let fontWeight: string;
+    let showUnderline: boolean;
 
-    if (selectedNodes.has(d.id) || hoveredNode === d.id) {
+    if (isSelected && isHovered) {
       fontWeight = "700";
+      showUnderline = true;
+    } else if (isSelected || isHovered) {
+      fontWeight = "normal";
+      showUnderline = true;
     } else {
       fontWeight = "normal";
+      showUnderline = false;
     }
 
     text.attr("fill", highlightLabelColor.default);
     text.attr("font-weight", fontWeight);
+
+    if (showUnderline) {
+      const bbox = (text.node() as SVGTextElement)?.getBBox();
+      if (bbox) {
+        underline
+          .attr("x1", -bbox.width / 2)
+          .attr("x2", bbox.width / 2)
+          .attr("y1", dy + 2)
+          .attr("y2", dy + 2)
+          .style("opacity", 1);
+      }
+    } else {
+      underline.style("opacity", 0);
+    }
   });
 };

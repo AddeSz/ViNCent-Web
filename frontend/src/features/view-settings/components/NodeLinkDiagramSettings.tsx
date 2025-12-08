@@ -342,16 +342,35 @@ const NodeLinkDiagramSettings = () => {
           </>
         )}
 
-        <div className="flex items-center justify-between">
-          <Label htmlFor="show-labels" className="text-sm">
-            Show All Labels
-          </Label>
-          <Switch
-            id="show-labels"
-            checked={settings.showLabels}
-            onCheckedChange={(checked) => setSettings({ showLabels: checked })}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="label-font-size" className="text-sm">
+              Label Font Size
+            </Label>
+            <span className="text-xs text-muted-foreground">
+              {settings.fontSize}px
+            </span>
+          </div>
+          <Slider
+            id="label-font-size"
+            min={0}
+            max={100}
+            step={1}
+            value={[settings.fontSize]}
+            onValueChange={([value]) => setSettings({ fontSize: value })}
           />
         </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Label htmlFor="show-labels" className="text-sm">
+          Show All Labels
+        </Label>
+        <Switch
+          id="show-labels"
+          checked={settings.showLabels}
+          onCheckedChange={(checked) => setSettings({ showLabels: checked })}
+        />
       </div>
 
       <Separator />
@@ -467,7 +486,7 @@ const NodeLinkDiagramSettings = () => {
             </div>
             <Slider
               id="link-thickness"
-              min={0}
+              min={0.5}
               max={10}
               step={0.5}
               value={[settings.fixedLinkThickness]}
@@ -489,7 +508,7 @@ const NodeLinkDiagramSettings = () => {
               </div>
               <Slider
                 id="min-link-thickness"
-                min={0}
+                min={0.5}
                 max={10}
                 step={0.5}
                 value={[settings.minLinkThickness]}

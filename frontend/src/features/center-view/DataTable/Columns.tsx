@@ -180,9 +180,9 @@ export const createDataColumns = <T extends Record<string, any>>(
         <div
           className="truncate px-2 text-left font-medium"
           style={{ color }}
-          title={formatValue(value)}
+          title={value as string}
         >
-          {formatValue(value)}
+          {value as string | number}
         </div>
       );
     },

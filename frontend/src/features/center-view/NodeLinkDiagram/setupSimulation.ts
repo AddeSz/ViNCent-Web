@@ -1,4 +1,4 @@
-import type { Link, Node } from "@/types/network";
+import type { Edge, Node } from "@/types/network";
 import type { DragBehavior, Simulation } from "d3";
 import * as d3 from "d3";
 
@@ -11,15 +11,15 @@ interface SimulationSettings {
 
 const createSimulation = (
   nodes: Node[],
-  links: Link[],
+  links: Edge[],
   settings: SimulationSettings,
-): Simulation<Node, Link> => {
+): Simulation<Node, Edge> => {
   const simulation = d3
-    .forceSimulation<Node, Link>(nodes)
+    .forceSimulation<Node, Edge>(nodes)
     .force(
       "link",
       d3
-        .forceLink<Node, Link>(links)
+        .forceLink<Node, Edge>(links)
         .id((d) => d.id)
         .distance(settings.linkDistance),
     )
@@ -41,11 +41,11 @@ const createSimulation = (
 };
 
 export function updateSimulationForces(
-  simulation: Simulation<Node, Link>,
+  simulation: Simulation<Node, Edge>,
   linkDistance: number,
   chargeStrength: number,
 ): void {
-  const linkForce = simulation.force("link") as d3.ForceLink<Node, Link>;
+  const linkForce = simulation.force("link") as d3.ForceLink<Node, Edge>;
   if (linkForce) {
     linkForce.distance(linkDistance);
   }
@@ -59,7 +59,7 @@ export function updateSimulationForces(
 }
 
 export function updateCollisionRadiuses(
-  simulation: Simulation<Node, Link>,
+  simulation: Simulation<Node, Edge>,
   collisionRadiuses: Map<string, number>,
   collisionEnabled: boolean,
 ): void {
@@ -82,7 +82,7 @@ export function updateCollisionRadiuses(
 }
 
 export function createDrag(
-  simulation: Simulation<Node, Link>,
+  simulation: Simulation<Node, Edge>,
 ): DragBehavior<SVGCircleElement, Node, unknown> {
   return d3
     .drag<SVGCircleElement, Node>()

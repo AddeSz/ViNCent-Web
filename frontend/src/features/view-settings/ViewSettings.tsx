@@ -44,13 +44,7 @@ const ViewSettings = ({
 
       {view === "radial" && (
         <div>
-          <p
-            className="mb-0 w-full cursor-default truncate"
-            title="Radial View Settings"
-          >
-            Radial View Settings
-          </p>
-          <div className="rounded-lg bg-card px-2 py-1">
+          <div className="bg-card">
             <RadialChartSettings />
           </div>
         </div>

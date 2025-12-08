@@ -1,4 +1,9 @@
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -14,6 +19,7 @@ import {
   useSettingsStore,
   type LinkRenderingMode,
 } from "@/stores/useSettingsStore";
+import { ChevronDown } from "lucide-react";
 import FDEBSettings from "./FDEBSettings";
 
 const RadialChartSettings = () => {
@@ -38,11 +44,14 @@ const RadialChartSettings = () => {
   const outerRadiusMin = innerRadius + 200;
 
   return (
-    <div className="flex flex-col gap-2">
-      {displayMode === "both" && (
-        <>
-          <div className="space-y-2">
-            <p className="mb-1 text-sm font-semibold">Display</p>
+    <div className="flex flex-col">
+      <Collapsible defaultOpen className="group/collapsible">
+        <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between px-1 py-1 hover:bg-sidebar-border">
+          <p className="truncate">Display Settings</p>
+          <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 px-2 py-1">
+          {displayMode === "both" && (
             <div className="flex items-center justify-between">
               <Label htmlFor="separate-metrics" className="text-sm">
                 Separate Metrics
@@ -55,164 +64,162 @@ const RadialChartSettings = () => {
                 }
               />
             </div>
-          </div>
-          <Separator />
-        </>
-      )}
+          )}
 
-      <div className="space-y-2">
-        <p className="mb-1 text-sm font-semibold">Display</p>
-
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="inner-radius" className="text-sm">
-              Inner Radius
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {innerRadius}px
-            </span>
-          </div>
-          <Slider
-            id="inner-radius"
-            min={100}
-            max={outerRadius - 200}
-            step={10}
-            value={[innerRadius]}
-            onValueChange={([val]) => {
-              const newInner = val;
-              const newOuter = Math.max(outerRadius, newInner + 200);
-              setRadialSettings({
-                innerRadius: newInner,
-                outerRadius: newOuter,
-              });
-            }}
-          />
-        </div>
-
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="outer-radius" className="text-sm">
-              Outer Radius
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {outerRadius}px
-            </span>
-          </div>
-          <Slider
-            id="outer-radius"
-            min={outerRadiusMin}
-            max={Math.min(Math.max(outerRadius + 400, 1600), 4000)}
-            step={10}
-            value={[outerRadius]}
-            onValueChange={([val]) => {
-              setRadialSettings({
-                outerRadius: val,
-              });
-            }}
-          />
-        </div>
-
-        <div className="flex items-center justify-between space-y-0 p-0">
-          <Label htmlFor="show-label" className="text-sm">
-            Show All Labels
-          </Label>
-          <Switch
-            id="show-label"
-            checked={showLabels}
-            onCheckedChange={(checked) =>
-              setRadialSettings({ showLabels: checked })
-            }
-          />
-        </div>
-        {showLabels && (
-          <>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="font-size" className="text-sm">
-                  Label Size
-                </Label>
-                <span className="text-xs text-muted-foreground">
-                  {fontSize}px
-                </span>
-              </div>
-              <Slider
-                id="font-size"
-                min={0}
-                max={100}
-                step={1}
-                value={[fontSize]}
-                onValueChange={([val]) => {
-                  setRadialSettings({ fontSize: val });
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="truncate-label" className="text-sm">
-                Truncate Labels
-              </Label>
-              <Switch
-                id="truncate-label"
-                checked={truncateLabels}
-                onCheckedChange={(checked) =>
-                  setRadialSettings({ truncateLabels: checked })
-                }
-              />
-            </div>
-          </>
-        )}
-        {truncateLabels && (
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <Label htmlFor="label-width" className="text-sm">
-                Label Width
+              <Label htmlFor="inner-radius" className="text-sm">
+                Inner Radius
               </Label>
               <span className="text-xs text-muted-foreground">
-                {maxLabelWidth}px
+                {innerRadius}px
               </span>
             </div>
             <Slider
-              id="label-width"
-              min={0}
-              max={500}
+              id="inner-radius"
+              min={100}
+              max={outerRadius - 200}
               step={10}
-              value={[maxLabelWidth]}
+              value={[innerRadius]}
               onValueChange={([val]) => {
-                setRadialSettings({ maxLabelWidth: val });
+                const newInner = val;
+                const newOuter = Math.max(outerRadius, newInner + 200);
+                setRadialSettings({
+                  innerRadius: newInner,
+                  outerRadius: newOuter,
+                });
               }}
             />
           </div>
-        )}
-      </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="outer-radius" className="text-sm">
+                Outer Radius
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {outerRadius}px
+              </span>
+            </div>
+            <Slider
+              id="outer-radius"
+              min={outerRadiusMin}
+              max={Math.min(Math.max(outerRadius + 400, 1600), 4000)}
+              step={10}
+              value={[outerRadius]}
+              onValueChange={([val]) => {
+                setRadialSettings({
+                  outerRadius: val,
+                });
+              }}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="font-size" className="text-sm">
+                Label Size
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {fontSize}px
+              </span>
+            </div>
+            <Slider
+              id="font-size"
+              min={0}
+              max={100}
+              step={1}
+              value={[fontSize]}
+              onValueChange={([val]) => {
+                setRadialSettings({ fontSize: val });
+              }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="show-label" className="text-sm">
+              Show All Labels
+            </Label>
+            <Switch
+              id="show-label"
+              checked={showLabels}
+              onCheckedChange={(checked) =>
+                setRadialSettings({ showLabels: checked })
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="truncate-label" className="text-sm">
+              Truncate Labels
+            </Label>
+            <Switch
+              id="truncate-label"
+              checked={truncateLabels}
+              onCheckedChange={(checked) =>
+                setRadialSettings({ truncateLabels: checked })
+              }
+            />
+          </div>
+
+          {truncateLabels && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="label-width" className="text-sm">
+                  Truncate Length
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  {maxLabelWidth}px
+                </span>
+              </div>
+              <Slider
+                id="label-width"
+                min={0}
+                max={500}
+                step={10}
+                value={[maxLabelWidth]}
+                onValueChange={([val]) => {
+                  setRadialSettings({ maxLabelWidth: val });
+                }}
+              />
+            </div>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
 
       <Separator />
 
-      <div className="space-y-2">
-        <p className="mb-1 text-sm font-semibold">Links</p>
-
-        <div className="space-y-1">
-          <Label htmlFor="link-rendering">Link Rendering Mode</Label>
-          <Select
-            value={linkRenderingMode}
-            onValueChange={(val: LinkRenderingMode) =>
-              setRadialSettings({ linkRenderingMode: val })
-            }
-          >
-            <SelectTrigger
-              id="link-rendering"
-              className="w-full text-sm"
-              size="sm"
+      <Collapsible defaultOpen className="group/collapsible">
+        <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between px-1 py-1 hover:bg-sidebar-border">
+          <p className="truncate">Link Settings</p>
+          <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 px-2 py-1">
+          <div className="space-y-1">
+            <Label htmlFor="link-rendering">Link Rendering Mode</Label>
+            <Select
+              value={linkRenderingMode}
+              onValueChange={(val: LinkRenderingMode) =>
+                setRadialSettings({ linkRenderingMode: val })
+              }
             >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fdeB">FDEB</SelectItem>
-              <SelectItem value="bezier">Bézier</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+              <SelectTrigger
+                id="link-rendering"
+                className="w-full text-sm"
+                size="sm"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fdeB">FDEB</SelectItem>
+                <SelectItem value="bezier">Bézier</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        {linkRenderingMode === "fdeB" && <FDEBSettings />}
-      </div>
+          {linkRenderingMode === "fdeB" && <FDEBSettings />}
+        </CollapsibleContent>
+      </Collapsible>
 
       <Separator />
 

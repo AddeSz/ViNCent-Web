@@ -91,7 +91,10 @@ const drawArcsCanvas = (
     let range = 1;
     if (attribute?.isNumeric && attribute.range) {
       ({ min, max } = attribute.range);
-      range = max - min || 1;
+      const diff = max - min;
+      const epsilon = 1e-9;
+
+      range = Math.abs(diff) < epsilon ? 1 : diff;
     }
 
     for (let i = 0; i < layer.length; i++) {
@@ -105,10 +108,19 @@ const drawArcsCanvas = (
       const endAngle = startAngle + x.bandwidth();
 
       let foregroundOuterRadius = layerFullOuterRadius - 0.5;
-      if (typeof value === "number" && attribute?.isNumeric) {
-        const proportion =
-          Math.ceil(Math.max(0, Math.min(1, (value - min) / range)) * 100) /
-          100;
+      let proportion;
+      if (
+        typeof value === "number" &&
+        attribute?.isNumeric &&
+        !attribute.isCategory
+      ) {
+        if (Math.abs(max - min) < 1e-9) {
+          proportion = 1;
+        } else {
+          proportion =
+            Math.ceil(Math.max(0, Math.min(1, (value - min) / range)) * 100) /
+            100;
+        }
         foregroundOuterRadius =
           layerInnerRadius +
           (layerFullOuterRadius - layerInnerRadius) * proportion;
@@ -182,7 +194,7 @@ const drawArcsCanvas = (
 
       processedArcs.push(arc);
 
-      if (!datum.stable) {
+      if (!datum.stable && value !== null) {
         const colorKey = `${fillColor}_${arcOpacity}`;
         if (!arcsByColor[colorKey]) {
           arcsByColor[colorKey] = [];

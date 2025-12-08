@@ -11,7 +11,7 @@ interface ChartTooltipProps {
 
 const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
   const tooltip = useTooltipStore((s) => s.tooltip);
-  const { attributeKeys, centralityKeys } = useKeys();
+  const { allNodeKeys } = useKeys();
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
 
   const { type, nodeId, x, y, visible, arcKey, lastChange } = tooltip;
@@ -30,69 +30,33 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
   };
 
   let changeMessage = null;
-
   if (type === "change" && lastChange) {
     const { added = {}, removed = {}, updated = {} } = lastChange;
-
     if (Object.prototype.hasOwnProperty.call(added, nodeId)) {
       changeMessage = <span>Node was added</span>;
     } else if (Object.prototype.hasOwnProperty.call(removed, nodeId)) {
       changeMessage = <span>Node was removed</span>;
     } else if (Object.prototype.hasOwnProperty.call(updated, nodeId)) {
       const changes = updated[nodeId] || {};
+      const allChanges: JSX.Element[] = [];
 
-      const attributeChanges: JSX.Element[] = [];
-      const centralityChanges: JSX.Element[] = [];
-
-      Object.entries(changes).forEach(([key, { before, after }]) => {
-        const color = getColorForMetric(key);
-        const changeSpan = (
-          <span key={key}>
-            <span style={{ color }}>{formatKeyLabel(key)}</span>:{" "}
-            {formatValue(before)} → {formatValue(after)}
-          </span>
-        );
-
-        if (attributeKeys.includes(key)) {
-          attributeChanges.push(changeSpan);
-        } else if (centralityKeys.includes(key)) {
-          centralityChanges.push(changeSpan);
+      allNodeKeys.forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(changes, key)) {
+          const { before, after } = changes[key];
+          const color = getColorForMetric(key);
+          const changeSpan = (
+            <div key={key}>
+              <span style={{ color }}>{formatKeyLabel(key)}</span>:{" "}
+              {formatValue(before)} → {formatValue(after)}
+            </div>
+          );
+          allChanges.push(changeSpan);
         }
       });
 
-      const sections = [];
-
-      if (centralityChanges.length > 0) {
-        sections.push(
-          <div key="centrality">
-            Centrality:{" "}
-            {centralityChanges.map((el, i) => (
-              <span key={i}>
-                {i > 0 && ", "}
-                {el}
-              </span>
-            ))}
-          </div>,
-        );
-      }
-
-      if (attributeChanges.length > 0) {
-        sections.push(
-          <div key="attributes">
-            Attributes:{" "}
-            {attributeChanges.map((el, i) => (
-              <span key={i}>
-                {i > 0 && ", "}
-                {el}
-              </span>
-            ))}
-          </div>,
-        );
-      }
-
       changeMessage =
-        sections.length > 0 ? (
-          <span>{sections}</span>
+        allChanges.length > 0 ? (
+          <div>{allChanges}</div>
         ) : (
           <span>Node was updated</span>
         );

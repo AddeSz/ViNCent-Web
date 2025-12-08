@@ -1,4 +1,5 @@
 import type { FullData } from "@/types/network";
+import { formatValue } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
 import { Tooltip } from "../components/Tooltip";
@@ -131,7 +132,9 @@ const Barchart = ({
           targetX={xScale(categories.indexOf(hoverCategory))}
           targetWidth={barWidth}
         >
-          <div className="w-full truncate font-medium">{hoverCategory}</div>
+          <div className="w-full truncate font-medium">
+            {formatValue(hoverCategory)}
+          </div>
           <div className="text-muted-foreground">
             {(() => {
               const filteredCount =

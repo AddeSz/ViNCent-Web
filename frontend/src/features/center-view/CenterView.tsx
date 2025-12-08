@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
-import { useTimelineStore } from "@/stores/useTimelineStore";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { DataChanges, FullData, Network } from "@/types/network";
 import { useRef, useState } from "react";
 import DataTable from "./DataTable/DataTable";
@@ -65,8 +65,7 @@ const CenterView = ({
   const isUpdating = isRadialUpdating || isNodeLinkUpdating;
   const nodeLinkUpdating =
     view === "node-link" ? isNodeLinkUpdating : isUpdating;
-  const timesteps = useTimelineStore((s) => s.timesteps);
-  const timelines = timesteps.length > 0;
+  const timesteps = useMetricsStore((s) => s.timesteps);
 
   const handleContextMenu = (target: ContextType, data?: any) => {
     setContextMenuTarget((prev) => {
@@ -153,10 +152,7 @@ const CenterView = ({
           {view !== "data-table" && (
             <>
               <div className="pointer-events-none absolute bottom-2 left-2">
-                <DataSummary
-                  filteredNetwork={filteredNetwork}
-                  nodeMap={nodeMap}
-                />
+                <DataSummary filteredNetwork={filteredNetwork} />
               </div>
               {canPreview && onPreview && !nodeLinkUpdating && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
@@ -170,7 +166,7 @@ const CenterView = ({
                   </Button>
                 </div>
               )}
-              {timelines && (
+              {timesteps.length > 1 && (
                 <div className="pointer-events-none absolute right-2 bottom-2">
                   <div className="pointer-events-auto w-54 rounded-lg border bg-background px-2 py-1 shadow-lg">
                     <TimestepSlider />

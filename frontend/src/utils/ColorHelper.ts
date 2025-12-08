@@ -57,12 +57,12 @@ export const getLinkStyle = (
   selectedOpacity: number,
 ) => {
   const { displaySettings } = useSettingsStore.getState();
-  const { keepPreviewNodes } = displaySettings;
+  const { previewChanges } = displaySettings;
 
   let stroke: string;
 
   if (isRemoved) {
-    stroke = keepPreviewNodes ? "red" : highlightLinksColor.default;
+    stroke = previewChanges ? "red" : highlightLinksColor.default;
   } else if (isSelected) {
     stroke = highlightLinksColor.selected;
   } else if (isHovered) {
@@ -78,7 +78,7 @@ export const getLinkStyle = (
   } else if (isRemoved && isHovered) {
     opacity = 0.6;
   } else if (isRemoved) {
-    opacity = keepPreviewNodes ? 0.2 : 0;
+    opacity = previewChanges ? 0.2 : 0;
   } else if (isSelected) {
     opacity = selectedOpacity;
   } else if (isHovered) {

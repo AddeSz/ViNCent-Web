@@ -10,29 +10,22 @@ export type AttributeInfo = {
   key: string;
   type: "string" | "number" | "boolean";
   values: Set<AttributeValue>;
-  isNominal: boolean;
-  isOrdinal: boolean;
+  isCategory: boolean;
   isNumeric: boolean;
-  isBoolean: boolean;
   isCentrality?: boolean;
   range?: { min: number; max: number };
-};
-
-export type TimelineEntry = {
-  timestep: number;
-  attributes?: Attributes;
 };
 
 export type Node = SimulationNodeDatum & {
   id: string;
   label?: string;
   attributes?: Attributes;
-  history?: TimelineEntry[];
   linkCount?: number;
   removed?: boolean;
 };
 
-export type Link = SimulationLinkDatum<Node> & {
+export type Edge = SimulationLinkDatum<Node> & {
+  id: string;
   source: string | Node;
   target: string | Node;
   weight?: number;
@@ -40,8 +33,6 @@ export type Link = SimulationLinkDatum<Node> & {
   attributes?: Attributes;
 };
 
-//This is more general than centrality, it includes pretty much anything
-//used so I can see both node data and centrality data
 export type FullData = Record<string, any> & {
   id: string;
   removed?: boolean;
@@ -51,7 +42,7 @@ export type FullData = Record<string, any> & {
 
 export type Network = {
   nodes: Node[];
-  links: Link[];
+  edges: Edge[];
 };
 
 export type DataChanges = {
@@ -61,4 +52,18 @@ export type DataChanges = {
     string,
     Record<string, { before: FullData; after: FullData }>
   >;
+};
+
+export interface CentralityData {
+  nodes: Record<string, Record<string, number>>;
+  edges: Record<string, Record<string, number>>;
+}
+
+export type TimestepDelta = {
+  nodes_added: Node[];
+  nodes_removed: string[];
+  nodes_attr_changed: Record<string, Attributes>;
+  edges_added: Edge[];
+  edges_removed: string[];
+  edges_attr_changed: Record<string, Attributes>;
 };

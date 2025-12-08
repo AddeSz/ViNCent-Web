@@ -11,7 +11,6 @@ import {
   testDataLarge,
   testDataMassive,
   testDataSmall,
-  testDataTime,
   testHierarchical,
 } from "@/data/datasets";
 import CenterView from "@/features/center-view/CenterView";
@@ -30,7 +29,6 @@ const datasets = {
   "Les Miserables Dataset": miserablesData,
   "Co Author Dataset": coauthorData,
   "Test Dataset Small": testDataSmall,
-  "Test Dataset Time": testDataTime,
   "Test Dataset Clusters": testDataCluster,
   "Test Dataset Interactions": testDataInteraction,
   "Test Dataset Large": testDataLarge,
@@ -86,7 +84,7 @@ const App = () => {
         <Panel defaultSize={15} minSize={12} maxSize={22}>
           <PanelGroup direction="vertical">
             <Panel defaultSize={60} minSize={15}>
-              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2">
+              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-1">
                 <ViewSettings
                   datasets={datasets}
                   onLoadData={handleLoadData}

@@ -14,7 +14,8 @@ export const useFilteredData = (): {
   edgeChanges: DataChanges;
 } => {
   const nodeData = useNetworkStore((s) => s.nodeMap);
-  const metricsData = useMetricsStore((s) => s.metricsData);
+  const currentNodes = useMetricsStore((s) => s.currentNodes);
+  const currentEdges = useMetricsStore((s) => s.currentEdges);
   const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
   const brushRanges = useMetricsStore((s) => s.brushRanges);
   const selectedCategories = useMetricsStore((s) => s.selectedCategories);
@@ -22,15 +23,16 @@ export const useFilteredData = (): {
   const disabledValues = useMetricsStore((s) => s.disabledValues);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
 
-  const edgeMetricsData = useMetricsStore((s) => s.edgeMetricsData);
   const enabledEdgeMetricsKeys = useMetricsStore(
     (s) => s.enabledEdgeMetricsKeys,
   );
 
-  const keepPreviewNodes = useSettingsStore(
-    (s) => s.displaySettings.keepPreviewNodes,
+  const previewChanges = useSettingsStore(
+    (s) => s.displaySettings.previewChanges,
   );
-  const keepStable = useSettingsStore((s) => s.displaySettings.keepStableView);
+  const showForeshadowing = useSettingsStore(
+    (s) => s.displaySettings.showForeshadowing,
+  );
 
   const prevNodeMapRef = useRef<Map<string, FullData> | null>(null);
   const prevChangesRef = useRef<DataChanges>(emptyChanges);
@@ -41,10 +43,9 @@ export const useFilteredData = (): {
   return useMemo(() => {
     let i = 0;
     const currentMap = new Map<string, FullData>();
-    nodeData.forEach((baseNode, id) => {
+    currentNodes.forEach((node, id) => {
       i++;
-      const metrics = metricsData.get(id);
-      if (!metrics) return;
+      const metrics = node.attributes || {};
 
       const matchesFilters = enabledMetricsKeys.every((key) => {
         const value = metrics[key];
@@ -62,12 +63,7 @@ export const useFilteredData = (): {
 
         const disabledValuesForKey = disabledValues[key];
         if (disabledValuesForKey && disabledValuesForKey.size > 0) {
-          if (
-            info &&
-            info.isNumeric &&
-            !info.isNominal &&
-            typeof value === "number"
-          ) {
+          if (info && info.isNumeric && typeof value === "number") {
             const binnedData = binnedDataByKey.get(key);
             if (binnedData) {
               const binIndex = binnedData.valueToBinIndex.get(value);
@@ -102,10 +98,9 @@ export const useFilteredData = (): {
         }
       }
 
-      const { vx, vy, x, y, attributes, history, index, ...filteredBaseNode } =
-        baseNode;
       currentMap.set(id, {
-        ...filteredBaseNode,
+        id: node.id,
+        label: node.label,
         ...filteredMetrics,
         removed: false,
         stable: false,
@@ -115,8 +110,10 @@ export const useFilteredData = (): {
 
     i = 0;
     const currentEdgeMap = new Map<string, FullData>();
-    edgeMetricsData.forEach((metrics, edgeId) => {
+    currentEdges.forEach((edge, edgeId) => {
       i++;
+      const metrics = edge.attributes || {};
+
       const matchesFilters = enabledEdgeMetricsKeys.every((key) => {
         const value = metrics[key];
         const info = metricsInfo.get(key);
@@ -133,12 +130,7 @@ export const useFilteredData = (): {
 
         const disabledValuesForKey = disabledValues[key];
         if (disabledValuesForKey && disabledValuesForKey.size > 0) {
-          if (
-            info &&
-            info.isNumeric &&
-            !info.isNominal &&
-            typeof value === "number"
-          ) {
+          if (info && info.isNumeric && typeof value === "number") {
             const binnedData = binnedDataByKey.get(key);
             if (binnedData) {
               const binIndex = binnedData.valueToBinIndex.get(value);
@@ -148,6 +140,10 @@ export const useFilteredData = (): {
               ) {
                 return false;
               }
+            }
+          } else {
+            if (disabledValuesForKey.has(String(value))) {
+              return false;
             }
           }
         }
@@ -223,16 +219,16 @@ export const useFilteredData = (): {
       ? edgeChanges
       : prevEdgeChangesRef.current || { added: {}, removed: {}, updated: {} };
 
+    const removedEdgeSet = new Set(
+      Object.keys(activeEdgeChanges.removed ?? {}),
+    );
     const filteredEdges = new Map<string, FullData>(validEdgeMap);
 
-    if (keepPreviewNodes) {
-      const removedEdgeSet = new Set(
-        Object.keys(activeEdgeChanges.removed ?? {}),
-      );
-      for (const removedId of removedEdgeSet) {
-        if (!filteredEdges.has(removedId)) {
-          filteredEdges.set(removedId, {
-            ...activeEdgeChanges.removed[removedId],
+    if (previewChanges) {
+      for (const edgeId of removedEdgeSet) {
+        if (!filteredEdges.has(edgeId)) {
+          filteredEdges.set(edgeId, {
+            ...activeEdgeChanges.removed[edgeId],
             removed: true,
             stable: false,
           });
@@ -242,37 +238,34 @@ export const useFilteredData = (): {
 
     const removedSet = new Set(Object.keys(activeNodeChanges.removed ?? {}));
     const filteredNodes = new Map<string, FullData>();
+    const baseNodeSource = showForeshadowing ? nodeData : currentNodes;
 
     for (const id of nodeData.keys()) {
       if (currentMap.has(id)) {
         filteredNodes.set(id, currentMap.get(id)!);
-      } else if (removedSet.has(id) && keepPreviewNodes) {
+      } else if (baseNodeSource.has(id)) {
+        const baseNode = baseNodeSource.get(id)!;
+
+        if (previewChanges && removedSet.has(id)) {
+          filteredNodes.set(id, {
+            ...activeNodeChanges.removed[id],
+            removed: true,
+            stable: false,
+          });
+        } else {
+          filteredNodes.set(id, {
+            id,
+            label: baseNode.label,
+            removed: false,
+            stable: true,
+          });
+        }
+      } else if (previewChanges && removedSet.has(id)) {
         filteredNodes.set(id, {
           ...activeNodeChanges.removed[id],
           removed: true,
           stable: false,
         });
-      } else if (keepStable) {
-        const baseNode = nodeData.get(id)!;
-        const { vx, vy, x, y, attributes, index, ...filteredBaseNode } =
-          baseNode;
-        filteredNodes.set(id, {
-          ...filteredBaseNode,
-          removed: false,
-          stable: true,
-        });
-      }
-    }
-
-    if (keepPreviewNodes) {
-      for (const removedId of removedSet) {
-        if (!filteredNodes.has(removedId)) {
-          filteredNodes.set(removedId, {
-            ...activeNodeChanges.removed[removedId],
-            removed: true,
-            stable: false,
-          });
-        }
       }
     }
 
@@ -284,15 +277,16 @@ export const useFilteredData = (): {
     };
   }, [
     nodeData,
-    metricsData,
+    currentNodes,
+    currentEdges,
     enabledMetricsKeys,
     brushRanges,
     disabledValues,
     binnedDataByKey,
     selectedCategories,
-    keepPreviewNodes,
-    keepStable,
-    edgeMetricsData,
+    previewChanges,
+    showForeshadowing,
     enabledEdgeMetricsKeys,
+    metricsInfo,
   ]);
 };

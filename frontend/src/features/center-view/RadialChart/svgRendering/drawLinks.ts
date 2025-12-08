@@ -1,5 +1,5 @@
 import { type LinkRenderingMode } from "@/stores/useSettingsStore";
-import type { FullData, Link } from "@/types/network";
+import type { Edge, FullData } from "@/types/network";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import {
   ForceEdgeBundling,
@@ -37,7 +37,7 @@ const calculateStyles = (
 
 const drawLinks = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  links: Link[],
+  links: Edge[],
   x: d3.ScaleBand<string>,
   innerRadius: number,
   selectedNodes: Set<string>,

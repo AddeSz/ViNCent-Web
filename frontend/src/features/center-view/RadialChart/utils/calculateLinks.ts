@@ -1,4 +1,4 @@
-import type { FullData, Link } from "@/types/network";
+import type { Edge, FullData } from "@/types/network";
 import {
   ForceEdgeBundling,
   type ForceEdgeBundlingOptions,
@@ -53,9 +53,9 @@ export const createHierarchyPath = (
   );
 };
 
-//OUTDATED. Need to update for edgeData instead of Links...
+//OUTDATED... Need to update for edgeData instead of Links...
 export const createFdebPaths = (
-  links: Link[],
+  links: Edge[],
   x: d3.ScaleBand<string>,
   innerRadius: number,
   fdebSettings: ForceEdgeBundlingOptions,

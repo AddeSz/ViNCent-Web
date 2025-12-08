@@ -2,13 +2,13 @@ import { type BinnedData } from "@/features/chart-filtering/components/createBin
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
 import type {
   AttributeInfo,
-  AttributeRecord,
   Attributes,
   AttributeValue,
+  Edge,
+  Network,
   Node,
-  TimelineEntry,
+  TimestepDelta,
 } from "@/types/network";
-import { flattenAttributes } from "@/utils/networkProcessing";
 import { create } from "zustand";
 
 export interface BrushRange {
@@ -16,19 +16,26 @@ export interface BrushRange {
   inclusive: boolean;
 }
 
+export interface CentralityData {
+  nodes: Record<string, Record<string, number>>;
+  edges: Record<string, Record<string, number>>;
+}
+
 interface MetricsStore {
-  timestepMetricsData: Map<number, Map<string, Attributes>>;
-  timestepMetricsInfo: Map<number, Map<string, AttributeInfo>>;
-  metricsData: Map<string, Attributes>;
-  metricsKeys: string[];
+  nodeMetricsKeys: string[];
   enabledMetricsKeys: string[];
 
-  timestepEdgeMetricsData: Map<number, Map<string, Attributes>>;
-  edgeMetricsData: Map<string, Attributes>;
   edgeMetricsKeys: string[];
   enabledEdgeMetricsKeys: string[];
 
+  currentNodes: Map<string, Node>;
+  currentEdges: Map<string, Edge>;
+  baseState: Network | null;
+  deltas: Map<number, TimestepDelta>;
+  centralities: Map<number, CentralityData>;
+
   metricsInfo: Map<string, AttributeInfo>;
+  metricsInfoCurrent: Map<string, AttributeInfo>;
 
   brushRanges: Record<string, BrushRange | null>;
   selectedCategories: Record<string, string[]>;
@@ -36,27 +43,20 @@ interface MetricsStore {
 
   disabledValues: Record<string, Set<number | string>>;
 
+  timesteps: number[];
   currentTimestep: number | null;
 
-  setMetricData: (
-    nodes: Node[],
-    nodeCentralities: AttributeRecord[],
-    edgeCentralities: AttributeRecord[],
-    nodeCentralityKeys: Set<string>,
-    edgeCentralityKeys: Set<string>,
+  setTimesteps: (timesteps: number[]) => void;
+  setTimestep: (timestep: number) => void;
+
+  loadDeltaBasedNetwork: (
+    baseState: Network,
+    deltas: Record<number, TimestepDelta>,
+    centralities: Record<number, CentralityData>,
+    metricsInfo: Record<string, AttributeInfo>,
   ) => void;
 
-  precomputeAllTimesteps: (
-    timesteps: number[],
-    timelines: Map<string, TimelineEntry[]>,
-    attributes: Map<string, Attributes>,
-    timelineNodeCentralities: Map<number, AttributeRecord[]>,
-    timelineEdgeCentralities: Map<number, AttributeRecord[]>,
-    nodeCentralityKeys: Set<string>,
-    edgeCentralityKeys: Set<string>,
-  ) => void;
-
-  setCurrentTimestep: (timestep: number) => void;
+  applyDeltaAndSetTimestep: (timestep: number) => void;
 
   setEnabledMetricsKeys: (keys: string[]) => void;
   setEnabledEdgeMetricsKeys: (keys: string[]) => void;
@@ -77,167 +77,102 @@ interface MetricsStore {
   clearData: () => void;
 }
 
-const computeMetricsInfo = (
+const computeCurrentMetricsInfo = (
   metricsData: Map<string, Attributes>,
-  centralityKeys: Set<string>,
-): { keys: Set<string>; info: Map<string, AttributeInfo> } => {
-  const metricsKeys = new Set<string>();
-  const nonCentralityKeys = new Set<string>();
-  const metricsInfo = new Map<string, AttributeInfo>();
+): Map<
+  string,
+  { values: Set<AttributeValue>; range?: { min: number; max: number } }
+> => {
+  const currentInfo = new Map<
+    string,
+    { values: Set<AttributeValue>; range?: { min: number; max: number } }
+  >();
 
   metricsData.forEach((metrics) => {
     Object.entries(metrics).forEach(([key, value]) => {
-      if (centralityKeys.has(key)) {
-        metricsKeys.add(key);
-      } else {
-        nonCentralityKeys.add(key);
-      }
-
-      if (!metricsInfo.has(key)) {
-        metricsInfo.set(key, {
-          key,
-          type: "string",
+      if (!currentInfo.has(key)) {
+        currentInfo.set(key, {
           values: new Set<AttributeValue>(),
-          isNominal: false,
-          isOrdinal: false,
-          isNumeric: false,
-          isBoolean: false,
-          isCentrality: centralityKeys.has(key),
+          range: undefined,
         });
       }
-      const info = metricsInfo.get(key)!;
+
+      const info = currentInfo.get(key)!;
       info.values.add(value);
+
       if (typeof value === "number") {
-        info.type = "number";
-        info.isNumeric = true;
         if (!info.range) {
           info.range = { min: value, max: value };
         } else {
-          info.range = {
-            min: Math.min(info.range.min, value),
-            max: Math.max(info.range.max, value),
-          };
+          info.range.min = Math.min(info.range.min, value);
+          info.range.max = Math.max(info.range.max, value);
         }
-      } else if (typeof value === "boolean") {
-        info.type = "boolean";
-        info.isBoolean = true;
-      } else {
-        info.type = "string";
       }
     });
   });
 
-  nonCentralityKeys.forEach((key) => metricsKeys.add(key));
-
-  metricsInfo.forEach((info) => {
-    const uniqueCount = info.values.size;
-    if (info.type === "string") {
-      info.isNominal = uniqueCount <= 10;
-      info.isOrdinal = false;
-    } else if (info.type === "number") {
-      const allIntegers = Array.from(info.values).every((v) =>
-        Number.isInteger(Number(v)),
-      );
-      info.isNominal = allIntegers && uniqueCount <= 10;
-      info.isOrdinal = allIntegers && uniqueCount > 1;
-    } else if (info.type === "boolean") {
-      info.isNominal = true;
-      info.isOrdinal = false;
-    }
-  });
-
-  return { keys: metricsKeys, info: metricsInfo };
+  return currentInfo;
 };
 
-const computeMetricsDataForTimestep = (
-  timelines: Map<string, TimelineEntry[]>,
-  timestep: number,
-  staticAttributes: Map<string, Attributes>,
-  timelineNodeCentralities: Map<number, AttributeRecord[]>,
-  timelineEdgeCentralities: Map<number, AttributeRecord[]>,
-  nodeCentralityKeys: Set<string>,
-  edgeCentralityKeys: Set<string>,
-): {
-  nodeData: Map<string, Attributes>;
-  edgeData: Map<string, Attributes>;
-  unifiedInfo: Map<string, AttributeInfo>;
-} => {
-  const nodeMetricsData = new Map<string, Attributes>();
-  const edgeMetricsData = new Map<string, Attributes>();
+function applyDelta(
+  currentNodes: Map<string, Node>,
+  currentEdges: Map<string, Edge>,
+  delta: TimestepDelta,
+) {
+  delta.nodes_added.forEach((node) => {
+    currentNodes.set(node.id, { ...node });
+  });
 
-  const activeNodeIds = new Set<string>();
-  timelines.forEach((history, nodeId) => {
-    if (history.some((h) => h.timestep === timestep)) {
-      activeNodeIds.add(nodeId);
+  delta.nodes_removed.forEach((nodeId) => {
+    currentNodes.delete(nodeId);
+  });
+
+  Object.entries(delta.nodes_attr_changed).forEach(([nodeId, attrChanges]) => {
+    const node = currentNodes.get(nodeId);
+    if (node) {
+      node.attributes = { ...node.attributes, ...attrChanges };
+
+      if ("label" in attrChanges) {
+        node.label = attrChanges._label as string;
+      }
     }
   });
 
-  staticAttributes.forEach((attrs, nodeId) => {
-    if (activeNodeIds.has(nodeId)) {
-      nodeMetricsData.set(nodeId, { ...attrs });
-    }
+  delta.edges_added.forEach((edge) => {
+    currentEdges.set(edge.id, { ...edge });
   });
 
-  timelines.forEach((history, nodeId) => {
-    const entry = history.find((h) => h.timestep === timestep);
-    if (entry && entry.attributes) {
-      const flattened = flattenAttributes(entry.attributes);
-      const existing = nodeMetricsData.get(nodeId) || {};
-      nodeMetricsData.set(nodeId, { ...existing, ...flattened });
-    }
+  delta.edges_removed.forEach((edgeId) => {
+    currentEdges.delete(edgeId);
   });
 
-  if (timelineNodeCentralities) {
-    const nodeCentralityData = timelineNodeCentralities.get(timestep) ?? [];
-    nodeCentralityData.forEach((centrality) => {
-      const existing = nodeMetricsData.get(centrality.id) || {};
-      nodeMetricsData.set(centrality.id, {
-        ...centrality.attributes,
-        ...existing,
-      });
-    });
-  }
+  Object.entries(delta.edges_attr_changed).forEach(([edgeId, attrChanges]) => {
+    const edge = currentEdges.get(edgeId);
+    if (edge) {
+      edge.attributes = { ...edge.attributes, ...attrChanges };
 
-  if (timelineEdgeCentralities) {
-    const edgeCentralityData = timelineEdgeCentralities.get(timestep) ?? [];
-    edgeCentralityData.forEach((centrality) => {
-      edgeMetricsData.set(centrality.id, centrality.attributes);
-    });
-  }
-
-  const { info: nodeInfo } = computeMetricsInfo(
-    nodeMetricsData,
-    nodeCentralityKeys,
-  );
-  const { info: edgeInfo } = computeMetricsInfo(
-    edgeMetricsData,
-    edgeCentralityKeys,
-  );
-
-  const unifiedInfo = new Map<string, AttributeInfo>();
-  nodeInfo.forEach((info, key) => unifiedInfo.set(key, info));
-  edgeInfo.forEach((info, key) => unifiedInfo.set(key, info));
-
-  return {
-    nodeData: nodeMetricsData,
-    edgeData: edgeMetricsData,
-    unifiedInfo,
-  };
-};
+      if ("weight" in attrChanges) {
+        edge.weight = attrChanges._weight as number;
+      }
+    }
+  });
+}
 
 export const useMetricsStore = create<MetricsStore>((set, get) => ({
-  timestepMetricsData: new Map(),
-  timestepMetricsInfo: new Map(),
-  metricsData: new Map(),
-  metricsKeys: [],
+  nodeMetricsKeys: [],
   enabledMetricsKeys: [],
 
-  timestepEdgeMetricsData: new Map(),
-  edgeMetricsData: new Map(),
   edgeMetricsKeys: [],
   enabledEdgeMetricsKeys: [],
 
+  currentNodes: new Map(),
+  currentEdges: new Map(),
+  baseState: null,
+  deltas: new Map(),
+  centralities: new Map(),
+
   metricsInfo: new Map(),
+  metricsInfoCurrent: new Map(),
 
   brushRanges: {},
   selectedCategories: {},
@@ -245,198 +180,193 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
   disabledValues: {},
 
+  timesteps: [],
   currentTimestep: null,
 
-  setMetricData: (
-    nodes,
-    nodeCentralities,
-    edgeCentralities,
-    nodeCentralityKeys,
-    edgeCentralityKeys,
-  ) => {
-    const nodeMetricsData = new Map<string, Attributes>();
-    const edgeMetricsData = new Map<string, Attributes>();
+  setTimesteps: (timesteps) => {
+    set({ timesteps });
 
-    nodes.forEach((node) => {
-      if (node.attributes) {
-        const flattenedAttrs = flattenAttributes(node.attributes);
-        nodeMetricsData.set(node.id, flattenedAttrs);
-      }
-    });
-
-    if (nodeCentralities) {
-      nodeCentralities.forEach((centrality) => {
-        const existing = nodeMetricsData.get(centrality.id) || {};
-        nodeMetricsData.set(centrality.id, {
-          ...existing,
-          ...centrality.attributes,
-        });
-      });
+    if (timesteps.length > 0) {
+      const firstTimestep = Math.min(...timesteps);
+      get().setTimestep(firstTimestep);
     }
+  },
 
-    if (edgeCentralities) {
-      edgeCentralities.forEach((centrality) => {
-        edgeMetricsData.set(centrality.id, centrality.attributes);
-      });
+  setTimestep: (timestep) => {
+    const { deltas } = get();
+
+    if (deltas.size > 0) {
+      get().applyDeltaAndSetTimestep(timestep);
+    } else {
+      set({ currentTimestep: timestep });
     }
+  },
 
-    const { keys: nodeKeys, info: nodeInfo } = computeMetricsInfo(
-      nodeMetricsData,
-      nodeCentralityKeys,
+  loadDeltaBasedNetwork: (baseState, deltas, centralities, metricsInfo) => {
+    const deltasMap = new Map(
+      Object.entries(deltas).map(([k, v]) => [Number(k), v]),
     );
-    const { keys: edgeKeys, info: edgeInfo } = computeMetricsInfo(
-      edgeMetricsData,
-      edgeCentralityKeys,
+
+    const centralitiesMap = new Map(
+      Object.entries(centralities).map(([k, v]) => [Number(k), v]),
     );
+
+    const timesteps = Array.from(deltasMap.keys()).sort((a, b) => a - b);
 
     const unifiedInfo = new Map<string, AttributeInfo>();
-    nodeInfo.forEach((info, key) => unifiedInfo.set(key, info));
-    edgeInfo.forEach((info, key) => unifiedInfo.set(key, info));
-
-    const nodeMetricsKeysArray = Array.from(nodeKeys);
-    const edgeMetricsKeysArray = Array.from(edgeKeys);
-
-    const brushRanges: Record<string, BrushRange | null> = {};
-    [...nodeMetricsKeysArray, ...edgeMetricsKeysArray].forEach((key) => {
-      brushRanges[key] = null;
+    Object.entries(metricsInfo).forEach(([key, info]) => {
+      unifiedInfo.set(key, {
+        ...info,
+        values: new Set(info.values),
+      });
     });
 
     useVisualizationStore.getState().initializeColors(unifiedInfo);
+    console.log("Metrics info from backend:", unifiedInfo);
 
     set({
-      metricsData: nodeMetricsData,
-      metricsKeys: nodeMetricsKeysArray,
+      baseState,
+      deltas: deltasMap,
+      centralities: centralitiesMap,
       metricsInfo: unifiedInfo,
-      enabledMetricsKeys: nodeMetricsKeysArray,
-      edgeMetricsData,
-      edgeMetricsKeys: edgeMetricsKeysArray,
-      enabledEdgeMetricsKeys: edgeMetricsKeysArray,
-      brushRanges,
-    });
-  },
-
-  precomputeAllTimesteps: (
-    timesteps,
-    timelines,
-    attributes,
-    timelineNodeCentralities,
-    timelineEdgeCentralities,
-    nodeCentralityKeys,
-    edgeCentralityKeys,
-  ) => {
-    const timestepMetricsData = new Map<number, Map<string, Attributes>>();
-    const timestepMetricsInfo = new Map<number, Map<string, AttributeInfo>>();
-    const timestepEdgeMetricsData = new Map<number, Map<string, Attributes>>();
-
-    const allNodeMetricsData = new Map<string, Attributes>();
-    const allEdgeMetricsData = new Map<string, Attributes>();
-
-    timesteps.forEach((timestep) => {
-      const { nodeData, edgeData, unifiedInfo } = computeMetricsDataForTimestep(
-        timelines,
-        timestep,
-        attributes,
-        timelineNodeCentralities,
-        timelineEdgeCentralities,
-        nodeCentralityKeys,
-        edgeCentralityKeys,
-      );
-
-      timestepMetricsData.set(timestep, nodeData);
-      timestepEdgeMetricsData.set(timestep, edgeData);
-      timestepMetricsInfo.set(timestep, unifiedInfo);
-
-      nodeData.forEach((metrics, nodeId) => {
-        const existing = allNodeMetricsData.get(nodeId) || {};
-        allNodeMetricsData.set(nodeId, { ...existing, ...metrics });
-      });
-
-      edgeData.forEach((metrics, edgeId) => {
-        const existing = allEdgeMetricsData.get(edgeId) || {};
-        allEdgeMetricsData.set(edgeId, { ...existing, ...metrics });
-      });
-    });
-
-    const { info: nodeClassification } = computeMetricsInfo(
-      allNodeMetricsData,
-      nodeCentralityKeys,
-    );
-    const { info: edgeClassification } = computeMetricsInfo(
-      allEdgeMetricsData,
-      edgeCentralityKeys,
-    );
-
-    const unifiedClassification = new Map<string, AttributeInfo>();
-    nodeClassification.forEach((info, key) =>
-      unifiedClassification.set(key, info),
-    );
-    edgeClassification.forEach((info, key) =>
-      unifiedClassification.set(key, info),
-    );
-
-    timestepMetricsInfo.forEach((timestepInfo) => {
-      timestepInfo.forEach((info, key) => {
-        const unified = unifiedClassification.get(key);
-        if (unified) {
-          info.type = unified.type;
-          info.isNominal = unified.isNominal;
-          info.isOrdinal = unified.isOrdinal;
-          info.isNumeric = unified.isNumeric;
-          info.isBoolean = unified.isBoolean;
-        }
-      });
-    });
-
-    useVisualizationStore.getState().initializeColors(unifiedClassification);
-
-    set({
-      timestepMetricsData,
-      timestepMetricsInfo,
-      timestepEdgeMetricsData,
+      timesteps,
     });
 
     if (timesteps.length > 0) {
-      get().setCurrentTimestep(timesteps[0]);
+      get().setTimestep(timesteps[0]);
     }
   },
 
-  setCurrentTimestep: (timestep) => {
-    const {
-      timestepMetricsData,
-      timestepMetricsInfo,
-      timestepEdgeMetricsData,
-      brushRanges: existingBrushRanges,
-    } = get();
-
-    const metricsData = timestepMetricsData.get(timestep);
-    const unifiedInfo = timestepMetricsInfo.get(timestep);
-    const edgeMetricsData = timestepEdgeMetricsData.get(timestep);
-
-    if (!metricsData || !unifiedInfo) {
-      console.warn(`No precomputed data for timestep ${timestep}`);
+  applyDeltaAndSetTimestep: (timestep) => {
+    const { baseState, deltas, centralities, metricsInfo } = get();
+    if (!baseState) {
+      console.warn("No base state available");
       return;
     }
 
-    const nodeMetricsKeys = new Set<string>();
-    const edgeMetricsKeys = new Set<string>();
+    const currentNodes = new Map(
+      baseState.nodes.map((node) => [node.id, { ...node }]),
+    );
+    const currentEdges = new Map(
+      baseState.edges.map((edge) => [edge.id, { ...edge }]),
+    );
 
-    metricsData.forEach((metrics) => {
-      Object.keys(metrics).forEach((key) => nodeMetricsKeys.add(key));
+    const sortedTimesteps = Array.from(deltas.keys())
+      .sort((a, b) => a - b)
+      .filter((t) => t <= timestep);
+
+    for (const t of sortedTimesteps) {
+      const delta = deltas.get(t)!;
+      applyDelta(currentNodes, currentEdges, delta);
+    }
+
+    const allCentralityKeys = Array.from(metricsInfo.values())
+      .filter((info) => info.isCentrality)
+      .map((info) => info.key);
+
+    currentNodes.forEach((node) => {
+      if (node.attributes) {
+        allCentralityKeys.forEach((key) => {
+          delete node.attributes![key];
+        });
+      }
     });
 
-    if (edgeMetricsData) {
-      edgeMetricsData.forEach((metrics) => {
-        Object.keys(metrics).forEach((key) => edgeMetricsKeys.add(key));
+    currentEdges.forEach((edge) => {
+      if (edge.attributes) {
+        allCentralityKeys.forEach((key) => {
+          delete edge.attributes![key];
+        });
+      }
+    });
+
+    const currentCentralities = centralities.get(timestep);
+    if (currentCentralities) {
+      Object.entries(currentCentralities.nodes).forEach(([nodeId, cents]) => {
+        const node = currentNodes.get(nodeId);
+        if (node) {
+          if (!node.attributes) {
+            node.attributes = {};
+          }
+          Object.entries(cents).forEach(([key, value]) => {
+            node.attributes![key] = value;
+          });
+        }
+      });
+
+      Object.entries(currentCentralities.edges).forEach(([edgeId, cents]) => {
+        const edge = currentEdges.get(edgeId);
+        if (edge) {
+          if (!edge.attributes) {
+            edge.attributes = {};
+          }
+          Object.entries(cents).forEach(([key, value]) => {
+            edge.attributes![key] = value;
+          });
+        }
       });
     }
 
-    const metricsKeysArray = Array.from(nodeMetricsKeys);
-    const edgeMetricsKeysArray = Array.from(edgeMetricsKeys);
+    const currentNodeMetrics = new Map<string, Attributes>();
+    const currentEdgeMetrics = new Map<string, Attributes>();
 
-    const brushRanges: Record<string, BrushRange | null> = {
-      ...existingBrushRanges,
-    };
-    [...metricsKeysArray, ...edgeMetricsKeysArray].forEach((key) => {
+    currentNodes.forEach((node) => {
+      if (node.attributes) {
+        currentNodeMetrics.set(node.id, { ...node.attributes });
+      }
+    });
+
+    currentEdges.forEach((edge) => {
+      if (edge.attributes) {
+        currentEdgeMetrics.set(edge.id, { ...edge.attributes });
+      }
+    });
+
+    const currentNodeInfo = computeCurrentMetricsInfo(currentNodeMetrics);
+    const currentEdgeInfo = computeCurrentMetricsInfo(currentEdgeMetrics);
+
+    const metricsInfoCurrent = new Map<string, AttributeInfo>();
+
+    currentNodeInfo.forEach((current, key) => {
+      const global = metricsInfo.get(key);
+      if (global) {
+        metricsInfoCurrent.set(key, {
+          ...global,
+          values: current.values,
+          range: current.range,
+        });
+      }
+    });
+
+    currentEdgeInfo.forEach((current, key) => {
+      const global = metricsInfo.get(key);
+      if (global) {
+        metricsInfoCurrent.set(key, {
+          ...global,
+          values: current.values,
+          range: current.range,
+        });
+      }
+    });
+
+    const nodeMetricsKeys = Array.from(
+      new Set(
+        Array.from(currentNodes.values()).flatMap((node) =>
+          node.attributes ? Object.keys(node.attributes) : [],
+        ),
+      ),
+    );
+
+    const edgeMetricsKeys = Array.from(
+      new Set(
+        Array.from(currentEdges.values()).flatMap((edge) =>
+          edge.attributes ? Object.keys(edge.attributes) : [],
+        ),
+      ),
+    );
+
+    const brushRanges: Record<string, BrushRange | null> = {};
+    [...nodeMetricsKeys, ...edgeMetricsKeys].forEach((key) => {
       if (!(key in brushRanges)) {
         brushRanges[key] = null;
       }
@@ -444,14 +374,14 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
     set({
       currentTimestep: timestep,
-      metricsData,
-      metricsInfo: unifiedInfo,
-      metricsKeys: metricsKeysArray,
-      enabledMetricsKeys: metricsKeysArray,
-      edgeMetricsData: edgeMetricsData || new Map(),
-      edgeMetricsKeys: edgeMetricsKeysArray,
-      enabledEdgeMetricsKeys: edgeMetricsKeysArray,
+      currentNodes,
+      currentEdges,
+      nodeMetricsKeys,
+      enabledMetricsKeys: nodeMetricsKeys,
+      edgeMetricsKeys,
+      enabledEdgeMetricsKeys: edgeMetricsKeys,
       brushRanges,
+      metricsInfoCurrent,
     });
   },
 
@@ -463,7 +393,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     let removed = false;
     set((s) => {
       const isEdgeKey = s.edgeMetricsKeys.includes(key);
-      const isNodeKey = s.metricsKeys.includes(key);
+      const isNodeKey = s.nodeMetricsKeys.includes(key);
 
       if (isEdgeKey) {
         const isEnabled = s.enabledEdgeMetricsKeys.includes(key);
@@ -490,7 +420,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
           };
         } else {
           return {
-            enabledMetricsKeys: s.metricsKeys.filter(
+            enabledMetricsKeys: s.nodeMetricsKeys.filter(
               (k) => k === key || s.enabledMetricsKeys.includes(k),
             ),
           };
@@ -557,7 +487,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     }));
   },
 
-  getColorForMetric: (key: string, value?: AttributeValue) => {
+  getColorForMetric: (key: string, value?: AttributeValue | null) => {
     const { metricsInfo } = get();
     const info = metricsInfo.get(key);
 
@@ -571,11 +501,11 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       return vizStore.getOrAssignCentralityColor(key);
     }
 
-    if ((info.isNominal || info.isBoolean) && value !== undefined) {
+    if (info.isCategory && value !== undefined && value !== null) {
       return vizStore.getOrAssignCategoryColor(key, value);
     }
 
-    if (info.isNominal || info.isBoolean) {
+    if (info.isCategory) {
       return "var(--muted-foreground)";
     }
 
@@ -584,20 +514,22 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
   clearData: () =>
     set({
-      timestepMetricsData: new Map(),
-      timestepMetricsInfo: new Map(),
-      timestepEdgeMetricsData: new Map(),
-      metricsData: new Map(),
-      metricsKeys: [],
+      nodeMetricsKeys: [],
       enabledMetricsKeys: [],
       metricsInfo: new Map(),
-      edgeMetricsData: new Map(),
+      metricsInfoCurrent: new Map(),
       edgeMetricsKeys: [],
       enabledEdgeMetricsKeys: [],
       brushRanges: {},
       binnedDataByKey: new Map(),
       selectedCategories: {},
       disabledValues: {},
+      timesteps: [],
       currentTimestep: null,
+      currentNodes: new Map(),
+      currentEdges: new Map(),
+      baseState: null,
+      deltas: new Map(),
+      centralities: new Map(),
     }),
 }));

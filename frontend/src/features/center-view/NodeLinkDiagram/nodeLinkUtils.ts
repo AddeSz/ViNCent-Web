@@ -1,6 +1,6 @@
 import type { ScaleType, SizeMode } from "@/stores/useSettingsStore";
-import type { FullData, Link, Node } from "@/types/network";
-import { getEdgeId, getNodeId } from "@/utils/utils";
+import type { Edge, FullData, Node } from "@/types/network";
+import { getNodeId } from "@/utils/utils";
 import type { InteractionProps } from "../Tooltips/useTooltip";
 
 export const calculateNodeSizes = (
@@ -73,7 +73,7 @@ export const calculateNodeSizes = (
 };
 
 export const calculateLinkWeights = (
-  links: Link[],
+  links: Edge[],
   edgeDataMap: Map<string, FullData>,
   mode: SizeMode,
   metricKey: string,
@@ -97,7 +97,7 @@ export const calculateLinkWeights = (
   const values: number[] = [];
 
   links.forEach((link) => {
-    const edgeData = edgeDataMap.get(getEdgeId(link));
+    const edgeData = edgeDataMap.get(link.id);
     if (!edgeData) return;
 
     const value = edgeData[metricKey];
@@ -125,7 +125,7 @@ export const calculateLinkWeights = (
     const targetId = getNodeId(link.target);
     const linkId = `${sourceId}-${targetId}`;
 
-    const edgeData = edgeDataMap.get(getEdgeId(link));
+    const edgeData = edgeDataMap.get(link.id);
 
     if (!edgeData) {
       weights.set(linkId, fixedThickness);

@@ -12,7 +12,7 @@ interface LegendProps {
 const Legend = ({ nodeData }: LegendProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
+  const metricsInfo = useMetricsStore((s) => s.metricsInfoCurrent);
   const { enabledNodeKeys } = useKeys();
 
   const [lastHoveredNode, setLastHoveredNode] = useState<string | null>(null);
@@ -40,7 +40,13 @@ const Legend = ({ nodeData }: LegendProps) => {
 
       if (info?.isNumeric && info.range && typeof value === "number") {
         const { min, max } = info.range;
-        proportion = Math.max(0, Math.min((value - min) / (max - min || 1), 1));
+        let diff = max - min;
+
+        if (Math.abs(diff) < 1e-9) {
+          proportion = 1;
+        } else {
+          proportion = Math.max(0, Math.min((value - min) / diff, 1));
+        }
         percentage = (proportion * 100).toFixed(2);
         if (+percentage === 100) percentage = "100";
         if (+percentage === 0) percentage = "0.0";

@@ -2,17 +2,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useKeys } from "@/hooks/useKeys";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore, type DisplayMode } from "@/stores/useSettingsStore";
 
 const DisplaySettings = () => {
   const { displaySettings, setDisplaySettings } = useSettingsStore();
-  const { keepPreviewNodes, keepStableView, displayMode, stickyHover } =
+  const { previewChanges, showForeshadowing, displayMode, stickyHover } =
     displaySettings;
-  const { attributeKeys } = useKeys();
+  const { allNodeAttributeKeys } = useKeys();
+  const timesteps = useMetricsStore((s) => s.timesteps);
 
   return (
     <>
-      {attributeKeys.length > 0 && (
+      {allNodeAttributeKeys.length > 0 && (
         <RadioGroup
           value={displayMode}
           onValueChange={(val: DisplayMode) =>
@@ -55,9 +57,9 @@ const DisplaySettings = () => {
         <div className="flex items-center gap-2">
           <Checkbox
             id="preview-nodes"
-            checked={keepPreviewNodes}
+            checked={previewChanges}
             onCheckedChange={(checked) =>
-              setDisplaySettings({ keepPreviewNodes: !!checked })
+              setDisplaySettings({ previewChanges: !!checked })
             }
             className="cursor-pointer"
           />
@@ -69,23 +71,26 @@ const DisplaySettings = () => {
             Enable Change Preview
           </Label>
         </div>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="stable-view"
-            checked={keepStableView}
-            onCheckedChange={(checked) =>
-              setDisplaySettings({ keepStableView: !!checked })
-            }
-            className="cursor-pointer"
-          />
-          <Label
-            title="Enable Stable View"
-            htmlFor="stable-view"
-            className="cursor-pointer text-sm"
-          >
-            Enable Stable View
-          </Label>
-        </div>
+
+        {timesteps.length > 1 && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="stable-view"
+              checked={showForeshadowing}
+              onCheckedChange={(checked) =>
+                setDisplaySettings({ showForeshadowing: !!checked })
+              }
+              className="cursor-pointer"
+            />
+            <Label
+              title="Enable Stable View"
+              htmlFor="stable-view"
+              className="cursor-pointer text-sm"
+            >
+              Enable Stable View
+            </Label>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <Checkbox
             id="sticky-hover"

@@ -1,14 +1,5 @@
-import type { Link } from "@/types/network";
-
 export function getNodeId(value: string | { id: string }): string {
   return typeof value === "string" ? value : value.id;
-}
-
-export function getEdgeId(link: Link): string {
-  const s = getNodeId(link.source);
-  const t = getNodeId(link.target);
-  const edgeId = link.directed ? `${s}|${t}` : [s, t].sort().join("|");
-  return edgeId;
 }
 
 export function formatKeyLabel(key: string): string {
@@ -53,13 +44,15 @@ export function formatValue(x: any): string {
     const trimmed = x.trim();
     if (!trimmed) return "N/A";
 
-    return trimmed
-      .split(/\s+/)
-      .map((word) => {
-        if (!word) return "N/A";
-        return word[0].toUpperCase() + word.slice(1);
-      })
-      .join(" ");
+    const formatted = trimmed
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .replace(/_/g, " ")
+      .replace(/\./g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .trim();
+
+    return formatted || "N/A";
   }
 
   return String(x);
@@ -107,3 +100,48 @@ export function truncateText(
 
   return label.slice(0, i) + ellipsis;
 }
+
+export const calculateRadialSettings = (
+  numNodes: number,
+  numMetrics: number,
+) => {
+  const bandwidth = calculateBandwidth(numNodes);
+  let targetWidth: number;
+  if (numNodes <= 100) {
+    targetWidth = 7;
+  } else if (numNodes <= 500) {
+    const t = (numNodes - 100) / (500 - 100);
+    targetWidth = 7 - t * 2;
+  } else if (numNodes <= 1000) {
+    const t = (numNodes - 500) / (1000 - 500);
+    targetWidth = 5 - t * 2.5;
+  } else {
+    targetWidth = 2.5;
+  }
+
+  let targetHeight: number;
+  if (numMetrics > 30) {
+    targetHeight = 10;
+  } else if (numMetrics > 20) {
+    targetHeight = 15;
+  } else {
+    targetHeight = 20;
+  }
+
+  const calculatedInnerRadius = bandwidth > 0 ? targetWidth / bandwidth : 150;
+  const innerRadius = Math.max(150, calculatedInnerRadius);
+
+  const calculatedOuterRadius =
+    numMetrics > 0
+      ? innerRadius + targetHeight * numMetrics
+      : innerRadius + targetHeight;
+  const clampedOuterRadius = Math.min(4000, calculatedOuterRadius);
+
+  const outerRadius = Math.max(clampedOuterRadius, innerRadius + 200);
+
+  const snapTo10 = (value: number) => Math.round(value / 10) * 10;
+  return {
+    innerRadius: snapTo10(innerRadius),
+    outerRadius: snapTo10(outerRadius),
+  };
+};

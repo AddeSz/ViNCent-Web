@@ -60,7 +60,7 @@ const RadialChart = ({
   const lastZoomLevel = useRef(1);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const [isDrawReady, setIsDrawReady] = useState(false);
-  const attributeInfo = useMetricsStore((s) => s.metricsInfo);
+  const attributeInfo = useMetricsStore((s) => s.metricsInfoCurrent);
   const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
   const hoveredNode = useNetworkStore((state) => state.hoveredNode);
   const selectedNodes = useNetworkStore((state) => state.selectedNodes);
@@ -68,8 +68,11 @@ const RadialChart = ({
   const radialSettings = useSettingsStore(useShallow((s) => s.radialSettings));
   const { separateMetrics, linkRenderingMode, fdebSettings, showLabels } =
     radialSettings;
-  const { enabledNodeKeys, enabledAttributeKeys, enabledCentralityKeys } =
-    useKeys();
+  const {
+    enabledNodeKeys,
+    enabledNodeAttributeKeys,
+    enabledNodeCentralityKeys,
+  } = useKeys();
 
   const { onNodeHover, showTooltip, hideTooltip } = useTooltip(nodeMap);
 
@@ -98,9 +101,13 @@ const RadialChart = ({
   } = useRadialChartData({
     data,
     allKeys: enabledNodeKeys,
-    enabledCentralityKeys,
-    enabledAttributeKeys,
+    enabledCentralityKeys: enabledNodeCentralityKeys,
+    enabledAttributeKeys: enabledNodeAttributeKeys,
   });
+
+  const requiredRadius = outerRadius + 50 + radius;
+  const canvasSize = Math.ceil(requiredRadius * 2);
+  const center = canvasSize / 2;
 
   const latestValuesRef = useRef({
     chartData,
@@ -396,7 +403,7 @@ const RadialChart = ({
       >
         <svg
           ref={svgRef}
-          viewBox="-800 -800 1600 1600"
+          viewBox={`${-center} ${-center} ${canvasSize} ${canvasSize}`}
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full"
         />

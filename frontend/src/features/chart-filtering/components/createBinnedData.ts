@@ -25,6 +25,35 @@ export function createBinnedData(
   }
 
   const [rawMin, rawMax] = d3.extent(values) as [number, number];
+
+  const EPSILON = 1e-9;
+  if (Math.abs(rawMax - rawMin) < EPSILON) {
+    const padding = Math.abs(rawMin) > 0 ? Math.abs(rawMin) * 0.1 : 1;
+    const min = rawMin - padding;
+    const max = rawMax + padding;
+
+    const bins: BinInfo[] = [
+      {
+        binIndex: 0,
+        x0: min,
+        x1: max,
+        values: [...values],
+      },
+    ];
+
+    const valueToBinIndex = new Map<number, number>();
+    values.forEach((v) => valueToBinIndex.set(v, 0));
+
+    return {
+      bins,
+      valueToBinIndex,
+      min,
+      max,
+      thresholds: [min, max],
+      binCount: 1,
+    };
+  }
+
   const tempScale = d3.scaleLinear().domain([rawMin, rawMax]).nice(binCount);
   const [min, max] = tempScale.domain();
   const binWidth = (max - min) / binCount;

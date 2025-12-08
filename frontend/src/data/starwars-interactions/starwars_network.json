@@ -3,2043 +3,1811 @@
     {
       "id": "n1",
       "label": "R2-D2",
+      "timestep": 1,
       "attributes": {
         "value": 171,
         "colour": "#bde0f6"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        },
-        {
-          "timestep": 7
-        }
-      ]
+      }
+    },
+    {
+      "id": "n1",
+      "label": "R2-D2",
+      "timestep": 2,
+      "attributes": {
+        "value": 171,
+        "colour": "#bde0f6"
+      }
+    },
+    {
+      "id": "n1",
+      "label": "R2-D2",
+      "timestep": 3,
+      "attributes": {
+        "value": 171,
+        "colour": "#bde0f6"
+      }
+    },
+    {
+      "id": "n1",
+      "label": "R2-D2",
+      "timestep": 4,
+      "attributes": {
+        "value": 171,
+        "colour": "#bde0f6"
+      }
+    },
+    {
+      "id": "n1",
+      "label": "R2-D2",
+      "timestep": 5,
+      "attributes": {
+        "value": 171,
+        "colour": "#bde0f6"
+      }
+    },
+    {
+      "id": "n1",
+      "label": "R2-D2",
+      "timestep": 6,
+      "attributes": {
+        "value": 171,
+        "colour": "#bde0f6"
+      }
+    },
+    {
+      "id": "n1",
+      "label": "R2-D2",
+      "timestep": 7,
+      "attributes": {
+        "value": 171,
+        "colour": "#bde0f6"
+      }
     },
     {
       "id": "n2",
       "label": "CHEWBACCA",
+      "timestep": 4,
       "attributes": {
         "value": 145,
         "colour": "#A0522D"
-      },
-      "history": [
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        },
-        {
-          "timestep": 7
-        }
-      ]
+      }
+    },
+    {
+      "id": "n2",
+      "label": "CHEWBACCA",
+      "timestep": 5,
+      "attributes": {
+        "value": 145,
+        "colour": "#A0522D"
+      }
+    },
+    {
+      "id": "n2",
+      "label": "CHEWBACCA",
+      "timestep": 6,
+      "attributes": {
+        "value": 145,
+        "colour": "#A0522D"
+      }
+    },
+    {
+      "id": "n2",
+      "label": "CHEWBACCA",
+      "timestep": 7,
+      "attributes": {
+        "value": 145,
+        "colour": "#A0522D"
+      }
     },
     {
       "id": "n3",
       "label": "BB-8",
+      "timestep": 7,
       "attributes": {
         "value": 40,
         "colour": "#eb5d00"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n4",
       "label": "QUI-GON",
+      "timestep": 1,
       "attributes": {
         "value": 62,
         "colour": "#4f4fb1"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n4",
+      "label": "QUI-GON",
+      "timestep": 3,
+      "attributes": {
+        "value": 62,
+        "colour": "#4f4fb1"
+      }
     },
     {
       "id": "n5",
       "label": "NUTE GUNRAY",
+      "timestep": 1,
       "attributes": {
         "value": 25,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n5",
+      "label": "NUTE GUNRAY",
+      "timestep": 2,
+      "attributes": {
+        "value": 25,
+        "colour": "#808080"
+      }
+    },
+    {
+      "id": "n5",
+      "label": "NUTE GUNRAY",
+      "timestep": 3,
+      "attributes": {
+        "value": 25,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n6",
       "label": "PK-4",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        }
-      ]
+      }
+    },
+    {
+      "id": "n6",
+      "label": "PK-4",
+      "timestep": 2,
+      "attributes": {
+        "value": 4,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n7",
       "label": "TC-14",
+      "timestep": 1,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n8",
       "label": "OBI-WAN",
+      "timestep": 1,
       "attributes": {
         "value": 148,
         "colour": "#48D1CC"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n8",
+      "label": "OBI-WAN",
+      "timestep": 2,
+      "attributes": {
+        "value": 148,
+        "colour": "#48D1CC"
+      }
+    },
+    {
+      "id": "n8",
+      "label": "OBI-WAN",
+      "timestep": 3,
+      "attributes": {
+        "value": 148,
+        "colour": "#48D1CC"
+      }
+    },
+    {
+      "id": "n8",
+      "label": "OBI-WAN",
+      "timestep": 4,
+      "attributes": {
+        "value": 148,
+        "colour": "#48D1CC"
+      }
+    },
+    {
+      "id": "n8",
+      "label": "OBI-WAN",
+      "timestep": 5,
+      "attributes": {
+        "value": 148,
+        "colour": "#48D1CC"
+      }
+    },
+    {
+      "id": "n8",
+      "label": "OBI-WAN",
+      "timestep": 6,
+      "attributes": {
+        "value": 148,
+        "colour": "#48D1CC"
+      }
     },
     {
       "id": "n9",
       "label": "DOFINE",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n10",
       "label": "RUNE",
+      "timestep": 1,
       "attributes": {
         "value": 11,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n11",
       "label": "TEY HOW",
+      "timestep": 1,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n12",
       "label": "EMPEROR",
+      "timestep": 1,
       "attributes": {
         "value": 52,
         "colour": "#191970"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n12",
+      "label": "EMPEROR",
+      "timestep": 2,
+      "attributes": {
+        "value": 52,
+        "colour": "#191970"
+      }
+    },
+    {
+      "id": "n12",
+      "label": "EMPEROR",
+      "timestep": 3,
+      "attributes": {
+        "value": 52,
+        "colour": "#191970"
+      }
+    },
+    {
+      "id": "n12",
+      "label": "EMPEROR",
+      "timestep": 5,
+      "attributes": {
+        "value": 52,
+        "colour": "#191970"
+      }
+    },
+    {
+      "id": "n12",
+      "label": "EMPEROR",
+      "timestep": 6,
+      "attributes": {
+        "value": 52,
+        "colour": "#191970"
+      }
     },
     {
       "id": "n13",
       "label": "CAPTAIN PANAKA",
+      "timestep": 1,
       "attributes": {
         "value": 20,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n14",
       "label": "SIO BIBBLE",
+      "timestep": 1,
       "attributes": {
         "value": 9,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        }
-      ]
+      }
+    },
+    {
+      "id": "n14",
+      "label": "SIO BIBBLE",
+      "timestep": 2,
+      "attributes": {
+        "value": 9,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n15",
       "label": "JAR JAR",
+      "timestep": 1,
       "attributes": {
         "value": 42,
         "colour": "#9a9a00"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n15",
+      "label": "JAR JAR",
+      "timestep": 2,
+      "attributes": {
+        "value": 42,
+        "colour": "#9a9a00"
+      }
+    },
+    {
+      "id": "n15",
+      "label": "JAR JAR",
+      "timestep": 3,
+      "attributes": {
+        "value": 42,
+        "colour": "#9a9a00"
+      }
     },
     {
       "id": "n16",
       "label": "TARPALS",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n17",
       "label": "BOSS NASS",
+      "timestep": 1,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n18",
       "label": "PADME",
+      "timestep": 1,
       "attributes": {
         "value": 75,
         "colour": "#DDA0DD"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n18",
+      "label": "PADME",
+      "timestep": 2,
+      "attributes": {
+        "value": 75,
+        "colour": "#DDA0DD"
+      }
+    },
+    {
+      "id": "n18",
+      "label": "PADME",
+      "timestep": 3,
+      "attributes": {
+        "value": 75,
+        "colour": "#DDA0DD"
+      }
     },
     {
       "id": "n19",
       "label": "RIC OLIE",
+      "timestep": 1,
       "attributes": {
         "value": 12,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n20",
       "label": "WATTO",
+      "timestep": 1,
       "attributes": {
         "value": 9,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        }
-      ]
+      }
+    },
+    {
+      "id": "n20",
+      "label": "WATTO",
+      "timestep": 2,
+      "attributes": {
+        "value": 9,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n21",
       "label": "ANAKIN",
+      "timestep": 1,
       "attributes": {
         "value": 132,
         "colour": "#ce3b59"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n21",
+      "label": "ANAKIN",
+      "timestep": 2,
+      "attributes": {
+        "value": 132,
+        "colour": "#ce3b59"
+      }
+    },
+    {
+      "id": "n21",
+      "label": "ANAKIN",
+      "timestep": 3,
+      "attributes": {
+        "value": 132,
+        "colour": "#ce3b59"
+      }
+    },
+    {
+      "id": "n21",
+      "label": "ANAKIN",
+      "timestep": 6,
+      "attributes": {
+        "value": 132,
+        "colour": "#ce3b59"
+      }
     },
     {
       "id": "n22",
       "label": "SEBULBA",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n23",
       "label": "JIRA",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n24",
       "label": "SHMI",
+      "timestep": 1,
       "attributes": {
         "value": 12,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        }
-      ]
+      }
+    },
+    {
+      "id": "n24",
+      "label": "SHMI",
+      "timestep": 2,
+      "attributes": {
+        "value": 12,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n25",
       "label": "C-3PO",
+      "timestep": 1,
       "attributes": {
         "value": 151,
         "colour": "#FFD700"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        },
-        {
-          "timestep": 7
-        }
-      ]
+      }
+    },
+    {
+      "id": "n25",
+      "label": "C-3PO",
+      "timestep": 2,
+      "attributes": {
+        "value": 151,
+        "colour": "#FFD700"
+      }
+    },
+    {
+      "id": "n25",
+      "label": "C-3PO",
+      "timestep": 3,
+      "attributes": {
+        "value": 151,
+        "colour": "#FFD700"
+      }
+    },
+    {
+      "id": "n25",
+      "label": "C-3PO",
+      "timestep": 4,
+      "attributes": {
+        "value": 151,
+        "colour": "#FFD700"
+      }
+    },
+    {
+      "id": "n25",
+      "label": "C-3PO",
+      "timestep": 5,
+      "attributes": {
+        "value": 151,
+        "colour": "#FFD700"
+      }
+    },
+    {
+      "id": "n25",
+      "label": "C-3PO",
+      "timestep": 6,
+      "attributes": {
+        "value": 151,
+        "colour": "#FFD700"
+      }
+    },
+    {
+      "id": "n25",
+      "label": "C-3PO",
+      "timestep": 7,
+      "attributes": {
+        "value": 151,
+        "colour": "#FFD700"
+      }
     },
     {
       "id": "n26",
       "label": "DARTH MAUL",
+      "timestep": 1,
       "attributes": {
         "value": 6,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n27",
       "label": "KITSTER",
+      "timestep": 1,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n28",
       "label": "WALD",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n29",
       "label": "FODE/BEED",
+      "timestep": 1,
       "attributes": {
         "value": 12,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n30",
       "label": "JABBA",
+      "timestep": 1,
       "attributes": {
         "value": 8,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n30",
+      "label": "JABBA",
+      "timestep": 4,
+      "attributes": {
+        "value": 8,
+        "colour": "#808080"
+      }
+    },
+    {
+      "id": "n30",
+      "label": "JABBA",
+      "timestep": 6,
+      "attributes": {
+        "value": 8,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n31",
       "label": "GREEDO",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 4
-        }
-      ]
+      }
+    },
+    {
+      "id": "n31",
+      "label": "GREEDO",
+      "timestep": 4,
+      "attributes": {
+        "value": 4,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n32",
       "label": "VALORUM",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n33",
       "label": "MACE WINDU",
+      "timestep": 1,
       "attributes": {
         "value": 23,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n33",
+      "label": "MACE WINDU",
+      "timestep": 2,
+      "attributes": {
+        "value": 23,
+        "colour": "#808080"
+      }
+    },
+    {
+      "id": "n33",
+      "label": "MACE WINDU",
+      "timestep": 3,
+      "attributes": {
+        "value": 23,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n34",
       "label": "KI-ADI-MUNDI",
+      "timestep": 1,
       "attributes": {
         "value": 7,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        }
-      ]
+      }
+    },
+    {
+      "id": "n34",
+      "label": "KI-ADI-MUNDI",
+      "timestep": 2,
+      "attributes": {
+        "value": 7,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n35",
       "label": "YODA",
+      "timestep": 1,
       "attributes": {
         "value": 46,
         "colour": "#9ACD32"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n35",
+      "label": "YODA",
+      "timestep": 2,
+      "attributes": {
+        "value": 46,
+        "colour": "#9ACD32"
+      }
+    },
+    {
+      "id": "n35",
+      "label": "YODA",
+      "timestep": 3,
+      "attributes": {
+        "value": 46,
+        "colour": "#9ACD32"
+      }
+    },
+    {
+      "id": "n35",
+      "label": "YODA",
+      "timestep": 5,
+      "attributes": {
+        "value": 46,
+        "colour": "#9ACD32"
+      }
+    },
+    {
+      "id": "n35",
+      "label": "YODA",
+      "timestep": 6,
+      "attributes": {
+        "value": 46,
+        "colour": "#9ACD32"
+      }
     },
     {
       "id": "n36",
       "label": "RABE",
+      "timestep": 1,
       "attributes": {
         "value": 3,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n37",
       "label": "BAIL ORGANA",
+      "timestep": 1,
       "attributes": {
         "value": 24,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        },
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n37",
+      "label": "BAIL ORGANA",
+      "timestep": 2,
+      "attributes": {
+        "value": 24,
+        "colour": "#808080"
+      }
+    },
+    {
+      "id": "n37",
+      "label": "BAIL ORGANA",
+      "timestep": 3,
+      "attributes": {
+        "value": 24,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n38",
       "label": "GENERAL CEEL",
+      "timestep": 1,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n39",
       "label": "BRAVO TWO",
+      "timestep": 1,
       "attributes": {
         "value": 6,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n40",
       "label": "BRAVO THREE",
+      "timestep": 1,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 1
-        }
-      ]
+      }
     },
     {
       "id": "n41",
       "label": "CAPTAIN TYPHO",
+      "timestep": 2,
       "attributes": {
         "value": 7,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n41",
+      "label": "CAPTAIN TYPHO",
+      "timestep": 3,
+      "attributes": {
+        "value": 7,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n42",
       "label": "SENATOR ASK AAK",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n43",
       "label": "ORN FREE TAA",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n44",
       "label": "SOLA",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n45",
       "label": "JOBAL",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n46",
       "label": "RUWEE",
+      "timestep": 2,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n47",
       "label": "TAUN WE",
+      "timestep": 2,
       "attributes": {
         "value": 8,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n48",
       "label": "LAMA SU",
+      "timestep": 2,
       "attributes": {
         "value": 9,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n49",
       "label": "BOBA FETT",
+      "timestep": 2,
       "attributes": {
         "value": 11,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 5
-        }
-      ]
+      }
+    },
+    {
+      "id": "n49",
+      "label": "BOBA FETT",
+      "timestep": 5,
+      "attributes": {
+        "value": 11,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n50",
       "label": "JANGO FETT",
+      "timestep": 2,
       "attributes": {
         "value": 6,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n51",
       "label": "OWEN",
+      "timestep": 2,
       "attributes": {
         "value": 11,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 4
-        }
-      ]
+      }
+    },
+    {
+      "id": "n51",
+      "label": "OWEN",
+      "timestep": 4,
+      "attributes": {
+        "value": 11,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n52",
       "label": "BERU",
+      "timestep": 2,
       "attributes": {
         "value": 7,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 4
-        }
-      ]
+      }
+    },
+    {
+      "id": "n52",
+      "label": "BERU",
+      "timestep": 4,
+      "attributes": {
+        "value": 7,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n53",
       "label": "CLIEGG",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n54",
       "label": "COUNT DOOKU",
+      "timestep": 2,
       "attributes": {
         "value": 10,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n54",
+      "label": "COUNT DOOKU",
+      "timestep": 3,
+      "attributes": {
+        "value": 10,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n55",
       "label": "SUN RIT",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n56",
       "label": "POGGLE",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        }
-      ]
+      }
     },
     {
       "id": "n57",
       "label": "PLO KOON",
+      "timestep": 2,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 2
-        },
-        {
-          "timestep": 3
-        }
-      ]
+      }
+    },
+    {
+      "id": "n57",
+      "label": "PLO KOON",
+      "timestep": 3,
+      "attributes": {
+        "value": 4,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n58",
       "label": "ODD BALL",
+      "timestep": 3,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n59",
       "label": "GENERAL GRIEVOUS",
+      "timestep": 3,
       "attributes": {
         "value": 13,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n60",
       "label": "FANG ZAR",
+      "timestep": 3,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n61",
       "label": "MON MOTHMA",
+      "timestep": 3,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n61",
+      "label": "MON MOTHMA",
+      "timestep": 6,
+      "attributes": {
+        "value": 5,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n62",
       "label": "GIDDEAN DANU",
+      "timestep": 3,
       "attributes": {
         "value": 3,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n63",
       "label": "CLONE COMMANDER GREE",
+      "timestep": 3,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n64",
       "label": "CLONE COMMANDER CODY",
+      "timestep": 3,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n65",
       "label": "TION MEDON",
+      "timestep": 3,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n66",
       "label": "CAPTAIN ANTILLES",
+      "timestep": 3,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 3
-        }
-      ]
+      }
     },
     {
       "id": "n67",
       "label": "DARTH VADER",
+      "timestep": 3,
       "attributes": {
         "value": 59,
         "colour": "#000000"
-      },
-      "history": [
-        {
-          "timestep": 3
-        },
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n67",
+      "label": "DARTH VADER",
+      "timestep": 4,
+      "attributes": {
+        "value": 59,
+        "colour": "#000000"
+      }
+    },
+    {
+      "id": "n67",
+      "label": "DARTH VADER",
+      "timestep": 5,
+      "attributes": {
+        "value": 59,
+        "colour": "#000000"
+      }
+    },
+    {
+      "id": "n67",
+      "label": "DARTH VADER",
+      "timestep": 6,
+      "attributes": {
+        "value": 59,
+        "colour": "#000000"
+      }
     },
     {
       "id": "n68",
       "label": "LUKE",
+      "timestep": 4,
       "attributes": {
         "value": 161,
         "colour": "#3881e5"
-      },
-      "history": [
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        },
-        {
-          "timestep": 7
-        }
-      ]
+      }
+    },
+    {
+      "id": "n68",
+      "label": "LUKE",
+      "timestep": 5,
+      "attributes": {
+        "value": 161,
+        "colour": "#3881e5"
+      }
+    },
+    {
+      "id": "n68",
+      "label": "LUKE",
+      "timestep": 6,
+      "attributes": {
+        "value": 161,
+        "colour": "#3881e5"
+      }
+    },
+    {
+      "id": "n68",
+      "label": "LUKE",
+      "timestep": 7,
+      "attributes": {
+        "value": 161,
+        "colour": "#3881e5"
+      }
     },
     {
       "id": "n69",
       "label": "CAMIE",
+      "timestep": 4,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n70",
       "label": "BIGGS",
+      "timestep": 4,
       "attributes": {
         "value": 19,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n71",
       "label": "LEIA",
+      "timestep": 4,
       "attributes": {
         "value": 99,
         "colour": "#DCDCDC"
-      },
-      "history": [
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        },
-        {
-          "timestep": 7
-        }
-      ]
+      }
+    },
+    {
+      "id": "n71",
+      "label": "LEIA",
+      "timestep": 5,
+      "attributes": {
+        "value": 99,
+        "colour": "#DCDCDC"
+      }
+    },
+    {
+      "id": "n71",
+      "label": "LEIA",
+      "timestep": 6,
+      "attributes": {
+        "value": 99,
+        "colour": "#DCDCDC"
+      }
+    },
+    {
+      "id": "n71",
+      "label": "LEIA",
+      "timestep": 7,
+      "attributes": {
+        "value": 99,
+        "colour": "#DCDCDC"
+      }
     },
     {
       "id": "n72",
       "label": "MOTTI",
+      "timestep": 4,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n73",
       "label": "TARKIN",
+      "timestep": 4,
       "attributes": {
         "value": 13,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n74",
       "label": "HAN",
+      "timestep": 4,
       "attributes": {
         "value": 170,
         "colour": "#ff9400"
-      },
-      "history": [
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        },
-        {
-          "timestep": 7
-        }
-      ]
+      }
+    },
+    {
+      "id": "n74",
+      "label": "HAN",
+      "timestep": 5,
+      "attributes": {
+        "value": 170,
+        "colour": "#ff9400"
+      }
+    },
+    {
+      "id": "n74",
+      "label": "HAN",
+      "timestep": 6,
+      "attributes": {
+        "value": 170,
+        "colour": "#ff9400"
+      }
+    },
+    {
+      "id": "n74",
+      "label": "HAN",
+      "timestep": 7,
+      "attributes": {
+        "value": 170,
+        "colour": "#ff9400"
+      }
     },
     {
       "id": "n75",
       "label": "DODONNA",
+      "timestep": 4,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n76",
       "label": "GOLD LEADER",
+      "timestep": 4,
       "attributes": {
         "value": 15,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n77",
       "label": "WEDGE",
+      "timestep": 4,
       "attributes": {
         "value": 29,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        },
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n77",
+      "label": "WEDGE",
+      "timestep": 5,
+      "attributes": {
+        "value": 29,
+        "colour": "#808080"
+      }
+    },
+    {
+      "id": "n77",
+      "label": "WEDGE",
+      "timestep": 6,
+      "attributes": {
+        "value": 29,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n78",
       "label": "RED LEADER",
+      "timestep": 4,
       "attributes": {
         "value": 34,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n79",
       "label": "RED TEN",
+      "timestep": 4,
       "attributes": {
         "value": 9,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n80",
       "label": "GOLD FIVE",
+      "timestep": 4,
       "attributes": {
         "value": 9,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 4
-        }
-      ]
+      }
     },
     {
       "id": "n81",
       "label": "RIEEKAN",
+      "timestep": 5,
       "attributes": {
         "value": 8,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        }
-      ]
+      }
     },
     {
       "id": "n82",
       "label": "DERLIN",
+      "timestep": 5,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        }
-      ]
+      }
     },
     {
       "id": "n83",
       "label": "ZEV",
+      "timestep": 5,
       "attributes": {
         "value": 7,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        }
-      ]
+      }
     },
     {
       "id": "n84",
       "label": "PIETT",
+      "timestep": 5,
       "attributes": {
         "value": 13,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n84",
+      "label": "PIETT",
+      "timestep": 6,
+      "attributes": {
+        "value": 13,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n85",
       "label": "OZZEL",
+      "timestep": 5,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        }
-      ]
+      }
     },
     {
       "id": "n86",
       "label": "DACK",
+      "timestep": 5,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        }
-      ]
+      }
     },
     {
       "id": "n87",
       "label": "JANSON",
+      "timestep": 5,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        }
-      ]
+      }
     },
     {
       "id": "n88",
       "label": "NEEDA",
+      "timestep": 5,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        }
-      ]
+      }
     },
     {
       "id": "n89",
       "label": "LANDO",
+      "timestep": 5,
       "attributes": {
         "value": 42,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 5
-        },
-        {
-          "timestep": 6
-        }
-      ]
+      }
+    },
+    {
+      "id": "n89",
+      "label": "LANDO",
+      "timestep": 6,
+      "attributes": {
+        "value": 42,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n90",
       "label": "JERJERROD",
+      "timestep": 6,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 6
-        }
-      ]
+      }
     },
     {
       "id": "n91",
       "label": "BIB FORTUNA",
+      "timestep": 6,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 6
-        }
-      ]
+      }
     },
     {
       "id": "n92",
       "label": "BOUSHH",
+      "timestep": 6,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 6
-        }
-      ]
+      }
     },
     {
       "id": "n93",
       "label": "ADMIRAL ACKBAR",
+      "timestep": 6,
       "attributes": {
         "value": 13,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 6
-        },
-        {
-          "timestep": 7
-        }
-      ]
+      }
+    },
+    {
+      "id": "n93",
+      "label": "ADMIRAL ACKBAR",
+      "timestep": 7,
+      "attributes": {
+        "value": 13,
+        "colour": "#808080"
+      }
     },
     {
       "id": "n94",
       "label": "LOR SAN TEKKA",
+      "timestep": 7,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n95",
       "label": "POE",
+      "timestep": 7,
       "attributes": {
         "value": 31,
         "colour": "#a15bea"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n96",
       "label": "KYLO REN",
+      "timestep": 7,
       "attributes": {
         "value": 23,
         "colour": "#000000"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n97",
       "label": "CAPTAIN PHASMA",
+      "timestep": 7,
       "attributes": {
         "value": 7,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n98",
       "label": "FINN",
+      "timestep": 7,
       "attributes": {
         "value": 64,
         "colour": "#07b19f"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n99",
       "label": "UNKAR PLUTT",
+      "timestep": 7,
       "attributes": {
         "value": 6,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n100",
       "label": "REY",
+      "timestep": 7,
       "attributes": {
         "value": 57,
         "colour": "#ffe0af"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n101",
       "label": "GENERAL HUX",
+      "timestep": 7,
       "attributes": {
         "value": 15,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n102",
       "label": "LIEUTENANT MITAKA",
+      "timestep": 7,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n103",
       "label": "BALA-TIK",
+      "timestep": 7,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n104",
       "label": "SNOKE",
+      "timestep": 7,
       "attributes": {
         "value": 5,
         "colour": "#191970"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n105",
       "label": "MAZ",
+      "timestep": 7,
       "attributes": {
         "value": 7,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n106",
       "label": "SNAP",
+      "timestep": 7,
       "attributes": {
         "value": 6,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n107",
       "label": "ADMIRAL STATURA",
+      "timestep": 7,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n108",
       "label": "YOLO ZIFF",
+      "timestep": 7,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n109",
       "label": "COLONEL DATOO",
+      "timestep": 7,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n110",
       "label": "ELLO ASTY",
+      "timestep": 7,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n111",
       "label": "JESS",
+      "timestep": 7,
       "attributes": {
         "value": 5,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     },
     {
       "id": "n112",
       "label": "NIV LEK",
+      "timestep": 7,
       "attributes": {
         "value": 4,
         "colour": "#808080"
-      },
-      "history": [
-        {
-          "timestep": 7
-        }
-      ]
+      }
     }
   ],
-  "links": [
+  "edges": [
     {
-      "source": "n2",
-      "target": "n1",
+      "source": "n1",
+      "target": "n18",
+      "timestep": 1,
       "attributes": {
-        "value": 17
+        "value": 11
       }
     },
     {
-      "source": "n3",
-      "target": "n1",
+      "source": "n1",
+      "target": "n18",
+      "timestep": 2,
       "attributes": {
-        "value": 2
+        "value": 11
       }
     },
     {
-      "source": "n3",
-      "target": "n2",
+      "source": "n1",
+      "target": "n18",
+      "timestep": 3,
       "attributes": {
-        "value": 8
+        "value": 11
       }
     },
     {
-      "source": "n8",
-      "target": "n1",
+      "source": "n1",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
-        "value": 28
+        "value": 14
       }
     },
     {
-      "source": "n18",
-      "target": "n1",
+      "source": "n1",
+      "target": "n21",
+      "timestep": 1,
       "attributes": {
-        "value": 24
+        "value": 16
       }
     },
     {
-      "source": "n4",
-      "target": "n1",
+      "source": "n1",
+      "target": "n21",
+      "timestep": 2,
       "attributes": {
-        "value": 13
+        "value": 16
       }
     },
     {
-      "source": "n21",
-      "target": "n1",
+      "source": "n1",
+      "target": "n21",
+      "timestep": 3,
       "attributes": {
-        "value": 30
+        "value": 16
       }
     },
     {
       "source": "n1",
       "target": "n20",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n25",
-      "target": "n1",
-      "attributes": {
-        "value": 55
-      }
-    },
-    {
-      "source": "n27",
-      "target": "n1",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n30",
-      "target": "n1",
-      "attributes": {
-        "value": 4
-      }
-    },
-    {
-      "source": "n12",
-      "target": "n1",
-      "attributes": {
-        "value": 5
-      }
-    },
-    {
-      "source": "n41",
-      "target": "n1",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n52",
-      "target": "n1",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n51",
-      "target": "n1",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n37",
-      "target": "n1",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
     },
     {
       "source": "n1",
-      "target": "n35",
-      "attributes": {
-        "value": 5
-      }
-    },
-    {
-      "source": "n68",
-      "target": "n1",
-      "attributes": {
-        "value": 34
-      }
-    },
-    {
-      "source": "n71",
-      "target": "n1",
-      "attributes": {
-        "value": 23
-      }
-    },
-    {
-      "source": "n66",
-      "target": "n1",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n70",
-      "target": "n1",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n67",
-      "target": "n1",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n74",
-      "target": "n1",
-      "attributes": {
-        "value": 18
-      }
-    },
-    {
-      "source": "n89",
-      "target": "n1",
-      "attributes": {
-        "value": 5
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n8",
-      "attributes": {
-        "value": 6
-      }
-    },
-    {
-      "source": "n25",
-      "target": "n2",
-      "attributes": {
-        "value": 39
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n68",
-      "attributes": {
-        "value": 32
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n74",
-      "attributes": {
-        "value": 77
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n30",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n71",
-      "attributes": {
-        "value": 48
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n67",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n81",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n89",
-      "attributes": {
-        "value": 20
-      }
-    },
-    {
-      "source": "n49",
-      "target": "n2",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n98",
-      "attributes": {
-        "value": 20
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n100",
-      "attributes": {
-        "value": 13
-      }
-    },
-    {
-      "source": "n103",
-      "target": "n2",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n105",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n95",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n2",
-      "target": "n96",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n97",
-      "target": "n2",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n95",
-      "attributes": {
-        "value": 8
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n94",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n100",
-      "attributes": {
-        "value": 17
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n99",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n98",
-      "attributes": {
-        "value": 15
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n74",
-      "attributes": {
-        "value": 9
-      }
-    },
-    {
-      "source": "n103",
-      "target": "n3",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n105",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n3",
-      "target": "n71",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n3",
       "target": "n25",
+      "timestep": 1,
       "attributes": {
-        "value": 3
+        "value": 2
       }
     },
     {
-      "source": "n5",
-      "target": "n4",
+      "source": "n1",
+      "target": "n25",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n25",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n25",
+      "timestep": 4,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n25",
+      "timestep": 5,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n25",
+      "timestep": 6,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n25",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n27",
+      "timestep": 1,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n4",
+      "target": "n5",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2047,13 +1815,15 @@
     {
       "source": "n6",
       "target": "n7",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n8",
-      "target": "n7",
+      "source": "n7",
+      "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2061,13 +1831,15 @@
     {
       "source": "n4",
       "target": "n7",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n8",
-      "target": "n4",
+      "source": "n4",
+      "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 26
       }
@@ -2075,27 +1847,31 @@
     {
       "source": "n5",
       "target": "n7",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n9",
-      "target": "n5",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n9",
-      "target": "n7",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n5",
-      "target": "n10",
+      "target": "n9",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n7",
+      "target": "n9",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n10",
+      "target": "n5",
+      "timestep": 1,
       "attributes": {
         "value": 8
       }
@@ -2103,20 +1879,23 @@
     {
       "source": "n10",
       "target": "n11",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n5",
-      "target": "n11",
+      "source": "n11",
+      "target": "n5",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n13",
-      "target": "n12",
+      "source": "n12",
+      "target": "n13",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
@@ -2124,6 +1903,7 @@
     {
       "source": "n12",
       "target": "n14",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2131,6 +1911,7 @@
     {
       "source": "n13",
       "target": "n14",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
@@ -2138,6 +1919,7 @@
     {
       "source": "n15",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 22
       }
@@ -2145,13 +1927,23 @@
     {
       "source": "n15",
       "target": "n8",
+      "timestep": 1,
       "attributes": {
-        "value": 15
+        "value": 12
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n8",
+      "timestep": 2,
+      "attributes": {
+        "value": 12
       }
     },
     {
       "source": "n15",
       "target": "n16",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2159,6 +1951,7 @@
     {
       "source": "n17",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2166,13 +1959,15 @@
     {
       "source": "n17",
       "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n17",
-      "target": "n15",
+      "source": "n15",
+      "target": "n17",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2180,27 +1975,39 @@
     {
       "source": "n12",
       "target": "n5",
+      "timestep": 1,
       "attributes": {
-        "value": 6
+        "value": 5
       }
     },
     {
       "source": "n12",
-      "target": "n10",
+      "target": "n5",
+      "timestep": 3,
+      "attributes": {
+        "value": 5
+      }
+    },
+    {
+      "source": "n10",
+      "target": "n12",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n5",
-      "target": "n14",
+      "source": "n14",
+      "target": "n5",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n15",
-      "target": "n14",
+      "source": "n14",
+      "target": "n15",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2208,13 +2015,15 @@
     {
       "source": "n13",
       "target": "n15",
+      "timestep": 1,
       "attributes": {
         "value": 7
       }
     },
     {
-      "source": "n4",
-      "target": "n14",
+      "source": "n14",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2222,6 +2031,7 @@
     {
       "source": "n13",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 9
       }
@@ -2229,6 +2039,7 @@
     {
       "source": "n13",
       "target": "n18",
+      "timestep": 1,
       "attributes": {
         "value": 7
       }
@@ -2236,13 +2047,15 @@
     {
       "source": "n18",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 16
       }
     },
     {
-      "source": "n18",
-      "target": "n14",
+      "source": "n14",
+      "target": "n18",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2250,13 +2063,15 @@
     {
       "source": "n13",
       "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 7
       }
     },
     {
-      "source": "n8",
-      "target": "n19",
+      "source": "n19",
+      "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
@@ -2264,13 +2079,15 @@
     {
       "source": "n15",
       "target": "n19",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n4",
-      "target": "n19",
+      "source": "n19",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2278,6 +2095,7 @@
     {
       "source": "n13",
       "target": "n19",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2285,27 +2103,47 @@
     {
       "source": "n15",
       "target": "n18",
+      "timestep": 1,
       "attributes": {
-        "value": 10
+        "value": 9
       }
     },
     {
-      "source": "n4",
-      "target": "n20",
+      "source": "n15",
+      "target": "n18",
+      "timestep": 2,
+      "attributes": {
+        "value": 9
+      }
+    },
+    {
+      "source": "n20",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 6
       }
     },
     {
-      "source": "n21",
-      "target": "n20",
+      "source": "n20",
+      "target": "n21",
+      "timestep": 1,
       "attributes": {
-        "value": 5
+        "value": 4
+      }
+    },
+    {
+      "source": "n20",
+      "target": "n21",
+      "timestep": 2,
+      "attributes": {
+        "value": 4
       }
     },
     {
       "source": "n18",
       "target": "n20",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
@@ -2313,20 +2151,39 @@
     {
       "source": "n21",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 22
       }
     },
     {
-      "source": "n21",
-      "target": "n18",
+      "source": "n18",
+      "target": "n21",
+      "timestep": 1,
       "attributes": {
-        "value": 41
+        "value": 16
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n21",
+      "timestep": 2,
+      "attributes": {
+        "value": 16
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n21",
+      "timestep": 3,
+      "attributes": {
+        "value": 16
       }
     },
     {
       "source": "n15",
       "target": "n22",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2334,13 +2191,15 @@
     {
       "source": "n21",
       "target": "n22",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n4",
-      "target": "n22",
+      "source": "n22",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2348,20 +2207,39 @@
     {
       "source": "n18",
       "target": "n22",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n21",
-      "target": "n15",
+      "source": "n15",
+      "target": "n21",
+      "timestep": 1,
       "attributes": {
-        "value": 12
+        "value": 8
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n21",
+      "timestep": 2,
+      "attributes": {
+        "value": 8
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n21",
+      "timestep": 3,
+      "attributes": {
+        "value": 8
       }
     },
     {
       "source": "n21",
       "target": "n23",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2369,13 +2247,15 @@
     {
       "source": "n23",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n23",
-      "target": "n18",
+      "source": "n18",
+      "target": "n23",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2383,20 +2263,31 @@
     {
       "source": "n21",
       "target": "n24",
+      "timestep": 1,
       "attributes": {
-        "value": 8
+        "value": 7
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n24",
+      "timestep": 2,
+      "attributes": {
+        "value": 7
       }
     },
     {
       "source": "n15",
       "target": "n24",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n4",
-      "target": "n24",
+      "source": "n24",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 8
       }
@@ -2404,6 +2295,7 @@
     {
       "source": "n18",
       "target": "n24",
+      "timestep": 1,
       "attributes": {
         "value": 5
       }
@@ -2411,27 +2303,63 @@
     {
       "source": "n21",
       "target": "n25",
+      "timestep": 1,
       "attributes": {
-        "value": 10
+        "value": 3
       }
     },
     {
-      "source": "n25",
-      "target": "n18",
+      "source": "n21",
+      "target": "n25",
+      "timestep": 2,
       "attributes": {
-        "value": 12
+        "value": 3
       }
     },
     {
-      "source": "n8",
-      "target": "n14",
+      "source": "n21",
+      "target": "n25",
+      "timestep": 3,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n25",
+      "timestep": 1,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n25",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n25",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n14",
+      "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n26",
-      "target": "n12",
+      "source": "n12",
+      "target": "n26",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
@@ -2439,6 +2367,7 @@
     {
       "source": "n21",
       "target": "n27",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
@@ -2446,6 +2375,7 @@
     {
       "source": "n21",
       "target": "n28",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2453,6 +2383,7 @@
     {
       "source": "n27",
       "target": "n28",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2460,6 +2391,7 @@
     {
       "source": "n15",
       "target": "n27",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2467,6 +2399,7 @@
     {
       "source": "n27",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2474,13 +2407,15 @@
     {
       "source": "n15",
       "target": "n28",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n4",
-      "target": "n28",
+      "source": "n28",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2488,27 +2423,47 @@
     {
       "source": "n21",
       "target": "n8",
+      "timestep": 1,
       "attributes": {
-        "value": 46
+        "value": 5
       }
     },
     {
-      "source": "n8",
-      "target": "n24",
+      "source": "n21",
+      "target": "n8",
+      "timestep": 2,
+      "attributes": {
+        "value": 5
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n8",
+      "timestep": 3,
+      "attributes": {
+        "value": 5
+      }
+    },
+    {
+      "source": "n24",
+      "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n25",
-      "target": "n20",
+      "source": "n20",
+      "target": "n25",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n27",
-      "target": "n20",
+      "source": "n20",
+      "target": "n27",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2516,6 +2471,7 @@
     {
       "source": "n25",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2523,13 +2479,15 @@
     {
       "source": "n25",
       "target": "n27",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n27",
-      "target": "n18",
+      "source": "n18",
+      "target": "n27",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2537,13 +2495,15 @@
     {
       "source": "n29",
       "target": "n30",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n30",
-      "target": "n24",
+      "source": "n24",
+      "target": "n30",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2551,6 +2511,7 @@
     {
       "source": "n22",
       "target": "n24",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2558,27 +2519,31 @@
     {
       "source": "n21",
       "target": "n30",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n30",
-      "target": "n15",
+      "source": "n15",
+      "target": "n30",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n30",
-      "target": "n18",
+      "source": "n18",
+      "target": "n30",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n30",
-      "target": "n22",
+      "source": "n22",
+      "target": "n30",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2586,20 +2551,23 @@
     {
       "source": "n30",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n29",
-      "target": "n15",
+      "source": "n15",
+      "target": "n29",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n29",
-      "target": "n18",
+      "source": "n18",
+      "target": "n29",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2607,6 +2575,7 @@
     {
       "source": "n31",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2614,34 +2583,39 @@
     {
       "source": "n21",
       "target": "n31",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n31",
-      "target": "n28",
+      "source": "n28",
+      "target": "n31",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n27",
-      "target": "n24",
+      "source": "n24",
+      "target": "n27",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n21",
-      "target": "n13",
+      "source": "n13",
+      "target": "n21",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n21",
-      "target": "n19",
+      "source": "n19",
+      "target": "n21",
+      "timestep": 1,
       "attributes": {
         "value": 4
       }
@@ -2649,6 +2623,7 @@
     {
       "source": "n12",
       "target": "n32",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2656,13 +2631,31 @@
     {
       "source": "n12",
       "target": "n15",
+      "timestep": 1,
       "attributes": {
-        "value": 5
+        "value": 2
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n15",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n15",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
       }
     },
     {
       "source": "n12",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2670,13 +2663,15 @@
     {
       "source": "n15",
       "target": "n32",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n4",
-      "target": "n32",
+      "source": "n32",
+      "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2684,6 +2679,7 @@
     {
       "source": "n33",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2691,27 +2687,55 @@
     {
       "source": "n34",
       "target": "n4",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n4",
-      "target": "n35",
+      "source": "n35",
+      "target": "n4",
+      "timestep": 1,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n4",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n36",
+      "target": "n4",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n33",
+      "target": "n34",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n4",
-      "target": "n36",
+      "source": "n33",
+      "target": "n34",
+      "timestep": 2,
       "attributes": {
-        "value": 1
+        "value": 3
       }
     },
     {
-      "source": "n34",
-      "target": "n33",
+      "source": "n33",
+      "target": "n35",
+      "timestep": 1,
       "attributes": {
         "value": 4
       }
@@ -2719,20 +2743,47 @@
     {
       "source": "n33",
       "target": "n35",
+      "timestep": 2,
       "attributes": {
-        "value": 16
+        "value": 4
+      }
+    },
+    {
+      "source": "n33",
+      "target": "n35",
+      "timestep": 3,
+      "attributes": {
+        "value": 4
       }
     },
     {
       "source": "n21",
       "target": "n33",
+      "timestep": 1,
       "attributes": {
-        "value": 9
+        "value": 3
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n33",
+      "timestep": 2,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n33",
+      "timestep": 3,
+      "attributes": {
+        "value": 3
       }
     },
     {
       "source": "n33",
       "target": "n36",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2740,13 +2791,23 @@
     {
       "source": "n34",
       "target": "n35",
+      "timestep": 1,
       "attributes": {
-        "value": 4
+        "value": 3
+      }
+    },
+    {
+      "source": "n34",
+      "target": "n35",
+      "timestep": 2,
+      "attributes": {
+        "value": 3
       }
     },
     {
       "source": "n21",
       "target": "n34",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2754,6 +2815,7 @@
     {
       "source": "n34",
       "target": "n36",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2761,13 +2823,31 @@
     {
       "source": "n21",
       "target": "n35",
+      "timestep": 1,
       "attributes": {
-        "value": 9
+        "value": 3
       }
     },
     {
-      "source": "n36",
+      "source": "n21",
       "target": "n35",
+      "timestep": 2,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n35",
+      "timestep": 3,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n36",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2775,41 +2855,103 @@
     {
       "source": "n21",
       "target": "n36",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n37",
-      "target": "n12",
-      "attributes": {
-        "value": 6
-      }
-    },
-    {
-      "source": "n37",
-      "target": "n32",
+      "source": "n12",
+      "target": "n37",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n8",
-      "target": "n35",
+      "source": "n12",
+      "target": "n37",
+      "timestep": 2,
       "attributes": {
-        "value": 20
+        "value": 1
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n37",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n32",
+      "target": "n37",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n8",
+      "timestep": 1,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n8",
+      "timestep": 2,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n8",
+      "timestep": 3,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n8",
+      "timestep": 5,
+      "attributes": {
+        "value": 3
       }
     },
     {
       "source": "n33",
       "target": "n8",
+      "timestep": 1,
       "attributes": {
-        "value": 9
+        "value": 2
+      }
+    },
+    {
+      "source": "n33",
+      "target": "n8",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n33",
+      "target": "n8",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
       }
     },
     {
       "source": "n34",
       "target": "n8",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2817,6 +2959,7 @@
     {
       "source": "n17",
       "target": "n18",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2824,34 +2967,55 @@
     {
       "source": "n26",
       "target": "n5",
+      "timestep": 1,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n21",
-      "target": "n17",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
       "source": "n17",
-      "target": "n13",
+      "target": "n21",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n8",
-      "target": "n18",
+      "source": "n13",
+      "target": "n17",
+      "timestep": 1,
       "attributes": {
-        "value": 9
+        "value": 1
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n8",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n8",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n8",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n12",
       "target": "n38",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2859,6 +3023,7 @@
     {
       "source": "n38",
       "target": "n5",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2866,62 +3031,79 @@
     {
       "source": "n26",
       "target": "n38",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n26",
-      "target": "n10",
+      "source": "n10",
+      "target": "n26",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n19",
+      "target": "n39",
+      "timestep": 1,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n39",
+      "timestep": 1,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n38",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n5",
+      "timestep": 1,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n5",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n11",
+      "target": "n9",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n39",
-      "target": "n19",
-      "attributes": {
-        "value": 4
-      }
-    },
-    {
-      "source": "n21",
-      "target": "n39",
+      "target": "n40",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n38",
-      "target": "n15",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n5",
-      "target": "n18",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n9",
-      "target": "n11",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n40",
-      "target": "n39",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n40",
-      "target": "n19",
+      "source": "n19",
+      "target": "n40",
+      "timestep": 1,
       "attributes": {
         "value": 2
       }
@@ -2929,6 +3111,7 @@
     {
       "source": "n21",
       "target": "n40",
+      "timestep": 1,
       "attributes": {
         "value": 1
       }
@@ -2936,13 +3119,23 @@
     {
       "source": "n12",
       "target": "n18",
+      "timestep": 1,
       "attributes": {
-        "value": 5
+        "value": 1
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n18",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n12",
       "target": "n42",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -2950,13 +3143,15 @@
     {
       "source": "n12",
       "target": "n43",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n43",
-      "target": "n42",
+      "source": "n42",
+      "target": "n43",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -2964,48 +3159,71 @@
     {
       "source": "n12",
       "target": "n33",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n12",
-      "target": "n35",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
     },
     {
       "source": "n12",
-      "target": "n34",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n37",
       "target": "n33",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n37",
+      "source": "n12",
       "target": "n35",
+      "timestep": 2,
       "attributes": {
-        "value": 8
+        "value": 2
       }
     },
     {
-      "source": "n37",
+      "source": "n12",
       "target": "n34",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n41",
-      "target": "n15",
+      "source": "n33",
+      "target": "n37",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n37",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n37",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n34",
+      "target": "n37",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n41",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3013,6 +3231,7 @@
     {
       "source": "n41",
       "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -3020,20 +3239,31 @@
     {
       "source": "n21",
       "target": "n41",
+      "timestep": 2,
       "attributes": {
-        "value": 3
+        "value": 2
       }
     },
     {
-      "source": "n8",
-      "target": "n6",
+      "source": "n21",
+      "target": "n41",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n6",
+      "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n21",
-      "target": "n14",
+      "source": "n14",
+      "target": "n21",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3041,6 +3271,7 @@
     {
       "source": "n18",
       "target": "n44",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3048,27 +3279,31 @@
     {
       "source": "n21",
       "target": "n44",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n45",
-      "target": "n44",
+      "source": "n44",
+      "target": "n45",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n46",
-      "target": "n44",
+      "source": "n44",
+      "target": "n46",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n45",
-      "target": "n18",
+      "source": "n18",
+      "target": "n45",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3076,6 +3311,7 @@
     {
       "source": "n18",
       "target": "n46",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3083,6 +3319,7 @@
     {
       "source": "n21",
       "target": "n45",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3090,6 +3327,7 @@
     {
       "source": "n21",
       "target": "n46",
+      "timestep": 2,
       "attributes": {
         "value": 3
       }
@@ -3097,20 +3335,23 @@
     {
       "source": "n45",
       "target": "n46",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n8",
-      "target": "n47",
+      "source": "n47",
+      "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 5
       }
     },
     {
-      "source": "n48",
-      "target": "n47",
+      "source": "n47",
+      "target": "n48",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -3118,13 +3359,15 @@
     {
       "source": "n48",
       "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 6
       }
     },
     {
-      "source": "n49",
-      "target": "n47",
+      "source": "n47",
+      "target": "n49",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -3132,6 +3375,7 @@
     {
       "source": "n49",
       "target": "n50",
+      "timestep": 2,
       "attributes": {
         "value": 3
       }
@@ -3139,13 +3383,15 @@
     {
       "source": "n49",
       "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n50",
-      "target": "n47",
+      "source": "n47",
+      "target": "n50",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3153,6 +3399,7 @@
     {
       "source": "n50",
       "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3160,20 +3407,39 @@
     {
       "source": "n25",
       "target": "n51",
+      "timestep": 2,
       "attributes": {
-        "value": 4
+        "value": 2
       }
     },
     {
-      "source": "n52",
-      "target": "n25",
+      "source": "n25",
+      "target": "n51",
+      "timestep": 4,
       "attributes": {
-        "value": 3
+        "value": 2
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n52",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n52",
+      "timestep": 4,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n25",
       "target": "n53",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3181,6 +3447,7 @@
     {
       "source": "n21",
       "target": "n51",
+      "timestep": 2,
       "attributes": {
         "value": 3
       }
@@ -3188,6 +3455,7 @@
     {
       "source": "n21",
       "target": "n52",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3195,34 +3463,47 @@
     {
       "source": "n21",
       "target": "n53",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n52",
+      "source": "n51",
+      "target": "n52",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n51",
+      "target": "n52",
+      "timestep": 4,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n18",
       "target": "n51",
+      "timestep": 2,
       "attributes": {
         "value": 4
       }
     },
     {
       "source": "n51",
-      "target": "n18",
-      "attributes": {
-        "value": 4
-      }
-    },
-    {
-      "source": "n53",
-      "target": "n51",
+      "target": "n53",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n52",
-      "target": "n18",
+      "source": "n18",
+      "target": "n52",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3230,13 +3511,15 @@
     {
       "source": "n52",
       "target": "n53",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n53",
-      "target": "n18",
+      "source": "n18",
+      "target": "n53",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -3244,41 +3527,63 @@
     {
       "source": "n37",
       "target": "n8",
+      "timestep": 2,
       "attributes": {
-        "value": 8
+        "value": 1
+      }
+    },
+    {
+      "source": "n37",
+      "target": "n8",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n12",
       "target": "n8",
-      "attributes": {
-        "value": 5
-      }
-    },
-    {
-      "source": "n8",
-      "target": "n42",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n37",
-      "target": "n42",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n37",
-      "target": "n15",
+      "source": "n12",
+      "target": "n8",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n42",
-      "target": "n35",
+      "target": "n8",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n37",
+      "target": "n42",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n15",
+      "target": "n37",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n42",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3286,6 +3591,7 @@
     {
       "source": "n15",
       "target": "n35",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3293,6 +3599,7 @@
     {
       "source": "n33",
       "target": "n42",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3300,6 +3607,7 @@
     {
       "source": "n15",
       "target": "n33",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3307,13 +3615,15 @@
     {
       "source": "n15",
       "target": "n42",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n33",
-      "target": "n18",
+      "source": "n18",
+      "target": "n33",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -3321,55 +3631,63 @@
     {
       "source": "n15",
       "target": "n43",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n54",
-      "target": "n18",
+      "source": "n18",
+      "target": "n54",
+      "timestep": 2,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n54",
-      "target": "n50",
+      "source": "n50",
+      "target": "n54",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n55",
+      "target": "n56",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n5",
+      "target": "n55",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n5",
+      "target": "n56",
+      "timestep": 2,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n55",
+      "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n56",
-      "target": "n55",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n5",
-      "target": "n55",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n5",
-      "target": "n56",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n8",
-      "target": "n55",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n8",
-      "target": "n56",
+      "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3377,6 +3695,7 @@
     {
       "source": "n5",
       "target": "n8",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3384,13 +3703,23 @@
     {
       "source": "n54",
       "target": "n8",
+      "timestep": 2,
       "attributes": {
-        "value": 3
+        "value": 2
+      }
+    },
+    {
+      "source": "n54",
+      "target": "n8",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
       }
     },
     {
       "source": "n21",
       "target": "n55",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3398,6 +3727,7 @@
     {
       "source": "n21",
       "target": "n56",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3405,6 +3735,7 @@
     {
       "source": "n21",
       "target": "n5",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3412,13 +3743,23 @@
     {
       "source": "n21",
       "target": "n54",
+      "timestep": 2,
       "attributes": {
-        "value": 3
+        "value": 2
+      }
+    },
+    {
+      "source": "n21",
+      "target": "n54",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
       }
     },
     {
       "source": "n18",
       "target": "n55",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3426,6 +3767,7 @@
     {
       "source": "n54",
       "target": "n55",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3433,6 +3775,7 @@
     {
       "source": "n18",
       "target": "n56",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
@@ -3440,20 +3783,23 @@
     {
       "source": "n54",
       "target": "n56",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n54",
-      "target": "n5",
+      "source": "n5",
+      "target": "n54",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n54",
-      "target": "n33",
+      "source": "n33",
+      "target": "n54",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -3461,13 +3807,15 @@
     {
       "source": "n34",
       "target": "n57",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n54",
-      "target": "n35",
+      "source": "n35",
+      "target": "n54",
+      "timestep": 2,
       "attributes": {
         "value": 2
       }
@@ -3475,20 +3823,79 @@
     {
       "source": "n18",
       "target": "n35",
+      "timestep": 2,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n54",
+      "source": "n12",
+      "target": "n54",
+      "timestep": 2,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n54",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
       "target": "n12",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n8",
-      "target": "n58",
+      "source": "n1",
+      "target": "n8",
+      "timestep": 3,
+      "attributes": {
+        "value": 12
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n8",
+      "timestep": 4,
+      "attributes": {
+        "value": 12
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n37",
+      "timestep": 3,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n35",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n66",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n58",
+      "target": "n8",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3496,13 +3903,15 @@
     {
       "source": "n21",
       "target": "n58",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n21",
-      "target": "n12",
+      "source": "n12",
+      "target": "n21",
+      "timestep": 3,
       "attributes": {
         "value": 14
       }
@@ -3510,6 +3919,7 @@
     {
       "source": "n59",
       "target": "n8",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3517,6 +3927,7 @@
     {
       "source": "n21",
       "target": "n59",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
@@ -3524,6 +3935,7 @@
     {
       "source": "n21",
       "target": "n37",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3531,27 +3943,39 @@
     {
       "source": "n25",
       "target": "n8",
-      "attributes": {
-        "value": 9
-      }
-    },
-    {
-      "source": "n25",
-      "target": "n12",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n37",
-      "target": "n25",
+      "timestep": 3,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n37",
-      "target": "n18",
+      "source": "n25",
+      "target": "n8",
+      "timestep": 4,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n25",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n37",
+      "timestep": 3,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n37",
+      "timestep": 3,
       "attributes": {
         "value": 5
       }
@@ -3559,6 +3983,7 @@
     {
       "source": "n37",
       "target": "n60",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3566,6 +3991,7 @@
     {
       "source": "n37",
       "target": "n61",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3573,13 +3999,15 @@
     {
       "source": "n37",
       "target": "n62",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n60",
-      "target": "n18",
+      "source": "n18",
+      "target": "n60",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3587,6 +4015,7 @@
     {
       "source": "n60",
       "target": "n61",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3594,34 +4023,39 @@
     {
       "source": "n60",
       "target": "n62",
+      "timestep": 3,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n61",
+      "timestep": 3,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n18",
+      "target": "n62",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n61",
-      "target": "n18",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n62",
-      "target": "n18",
+      "target": "n62",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n62",
-      "target": "n61",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n41",
-      "target": "n18",
+      "source": "n18",
+      "target": "n41",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3629,13 +4063,15 @@
     {
       "source": "n25",
       "target": "n41",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n63",
-      "target": "n35",
+      "source": "n35",
+      "target": "n63",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
@@ -3643,20 +4079,23 @@
     {
       "source": "n64",
       "target": "n8",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n8",
-      "target": "n65",
+      "source": "n65",
+      "target": "n8",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n59",
-      "target": "n5",
+      "source": "n5",
+      "target": "n59",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
@@ -3664,20 +4103,23 @@
     {
       "source": "n21",
       "target": "n64",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n64",
-      "target": "n33",
+      "source": "n33",
+      "target": "n64",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n64",
-      "target": "n35",
+      "source": "n35",
+      "target": "n64",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
@@ -3685,6 +4127,7 @@
     {
       "source": "n37",
       "target": "n66",
+      "timestep": 3,
       "attributes": {
         "value": 2
       }
@@ -3692,6 +4135,7 @@
     {
       "source": "n37",
       "target": "n4",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
@@ -3699,41 +4143,319 @@
     {
       "source": "n25",
       "target": "n35",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n67",
-      "target": "n12",
+      "source": "n12",
+      "target": "n67",
+      "timestep": 3,
       "attributes": {
-        "value": 7
+        "value": 1
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n67",
+      "timestep": 5,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n12",
+      "target": "n67",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n25",
       "target": "n66",
+      "timestep": 3,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n69",
-      "target": "n68",
+      "source": "n1",
+      "target": "n2",
+      "timestep": 4,
       "attributes": {
-        "value": 2
+        "value": 3
       }
     },
     {
-      "source": "n70",
+      "source": "n1",
+      "target": "n2",
+      "timestep": 5,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n2",
+      "timestep": 6,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n2",
+      "timestep": 7,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n52",
+      "timestep": 4,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n68",
+      "timestep": 4,
+      "attributes": {
+        "value": 14
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n68",
+      "timestep": 5,
+      "attributes": {
+        "value": 14
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n68",
+      "timestep": 6,
+      "attributes": {
+        "value": 14
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n51",
+      "timestep": 4,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n71",
+      "timestep": 4,
+      "attributes": {
+        "value": 5
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n71",
+      "timestep": 5,
+      "attributes": {
+        "value": 5
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n71",
+      "timestep": 6,
+      "attributes": {
+        "value": 5
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n70",
+      "timestep": 4,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n74",
+      "timestep": 4,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n74",
+      "timestep": 5,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n74",
+      "timestep": 6,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n8",
+      "timestep": 4,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n25",
+      "timestep": 4,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n25",
+      "timestep": 5,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n25",
+      "timestep": 6,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n25",
+      "timestep": 7,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n68",
+      "timestep": 4,
+      "attributes": {
+        "value": 14
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n68",
+      "timestep": 5,
+      "attributes": {
+        "value": 14
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n68",
+      "timestep": 6,
+      "attributes": {
+        "value": 14
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n74",
+      "timestep": 4,
+      "attributes": {
+        "value": 19
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n74",
+      "timestep": 5,
+      "attributes": {
+        "value": 19
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n74",
+      "timestep": 6,
+      "attributes": {
+        "value": 19
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n74",
+      "timestep": 7,
+      "attributes": {
+        "value": 19
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n71",
+      "timestep": 4,
+      "attributes": {
+        "value": 8
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n71",
+      "timestep": 5,
+      "attributes": {
+        "value": 8
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n71",
+      "timestep": 6,
+      "attributes": {
+        "value": 8
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n71",
+      "timestep": 7,
+      "attributes": {
+        "value": 8
+      }
+    },
+    {
+      "source": "n68",
       "target": "n69",
+      "timestep": 4,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n70",
-      "target": "n68",
+      "source": "n69",
+      "target": "n70",
+      "timestep": 4,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n70",
+      "timestep": 4,
       "attributes": {
         "value": 4
       }
@@ -3741,48 +4463,119 @@
     {
       "source": "n67",
       "target": "n71",
+      "timestep": 4,
       "attributes": {
-        "value": 2
+        "value": 1
+      }
+    },
+    {
+      "source": "n67",
+      "target": "n71",
+      "timestep": 5,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n52",
       "target": "n68",
+      "timestep": 4,
       "attributes": {
         "value": 3
+      }
+    },
+    {
+      "source": "n51",
+      "target": "n68",
+      "timestep": 4,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n68",
+      "timestep": 4,
+      "attributes": {
+        "value": 18
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n68",
+      "timestep": 5,
+      "attributes": {
+        "value": 18
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n68",
+      "timestep": 6,
+      "attributes": {
+        "value": 18
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n71",
+      "timestep": 4,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n71",
+      "timestep": 5,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n71",
+      "timestep": 6,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n71",
+      "timestep": 7,
+      "attributes": {
+        "value": 6
       }
     },
     {
       "source": "n68",
-      "target": "n51",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n25",
-      "target": "n68",
-      "attributes": {
-        "value": 29
-      }
-    },
-    {
-      "source": "n25",
       "target": "n71",
+      "timestep": 4,
       "attributes": {
-        "value": 49
+        "value": 17
       }
     },
     {
-      "source": "n71",
-      "target": "n68",
+      "source": "n68",
+      "target": "n71",
+      "timestep": 5,
       "attributes": {
-        "value": 26
+        "value": 17
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n71",
+      "timestep": 6,
+      "attributes": {
+        "value": 17
       }
     },
     {
       "source": "n52",
       "target": "n71",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3790,13 +4583,31 @@
     {
       "source": "n68",
       "target": "n8",
+      "timestep": 4,
       "attributes": {
-        "value": 22
+        "value": 19
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n8",
+      "timestep": 5,
+      "attributes": {
+        "value": 19
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n8",
+      "timestep": 6,
+      "attributes": {
+        "value": 19
       }
     },
     {
       "source": "n71",
       "target": "n8",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3804,6 +4615,7 @@
     {
       "source": "n72",
       "target": "n73",
+      "timestep": 4,
       "attributes": {
         "value": 2
       }
@@ -3811,6 +4623,7 @@
     {
       "source": "n67",
       "target": "n72",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3818,6 +4631,7 @@
     {
       "source": "n67",
       "target": "n73",
+      "timestep": 4,
       "attributes": {
         "value": 7
       }
@@ -3825,27 +4639,55 @@
     {
       "source": "n74",
       "target": "n8",
+      "timestep": 4,
       "attributes": {
-        "value": 10
+        "value": 9
       }
     },
     {
       "source": "n74",
-      "target": "n68",
+      "target": "n8",
+      "timestep": 5,
       "attributes": {
-        "value": 43
+        "value": 9
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n74",
+      "timestep": 4,
+      "attributes": {
+        "value": 26
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n74",
+      "timestep": 5,
+      "attributes": {
+        "value": 26
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n74",
+      "timestep": 6,
+      "attributes": {
+        "value": 26
       }
     },
     {
       "source": "n31",
       "target": "n74",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n74",
-      "target": "n30",
+      "source": "n30",
+      "target": "n74",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3853,13 +4695,39 @@
     {
       "source": "n25",
       "target": "n74",
+      "timestep": 4,
       "attributes": {
-        "value": 54
+        "value": 6
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n74",
+      "timestep": 5,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n74",
+      "timestep": 6,
+      "attributes": {
+        "value": 6
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n74",
+      "timestep": 7,
+      "attributes": {
+        "value": 6
       }
     },
     {
       "source": "n71",
       "target": "n72",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3867,20 +4735,47 @@
     {
       "source": "n71",
       "target": "n73",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n74",
-      "target": "n71",
+      "source": "n71",
+      "target": "n74",
+      "timestep": 4,
       "attributes": {
-        "value": 69
+        "value": 13
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n74",
+      "timestep": 5,
+      "attributes": {
+        "value": 13
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n74",
+      "timestep": 6,
+      "attributes": {
+        "value": 13
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n74",
+      "timestep": 7,
+      "attributes": {
+        "value": 13
       }
     },
     {
       "source": "n67",
       "target": "n8",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3888,6 +4783,7 @@
     {
       "source": "n75",
       "target": "n76",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3895,13 +4791,15 @@
     {
       "source": "n75",
       "target": "n77",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n75",
-      "target": "n68",
+      "source": "n68",
+      "target": "n75",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3909,13 +4807,15 @@
     {
       "source": "n76",
       "target": "n77",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n76",
-      "target": "n68",
+      "source": "n68",
+      "target": "n76",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3923,13 +4823,23 @@
     {
       "source": "n68",
       "target": "n77",
+      "timestep": 4,
       "attributes": {
-        "value": 4
+        "value": 2
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n77",
+      "timestep": 5,
+      "attributes": {
+        "value": 2
       }
     },
     {
       "source": "n70",
       "target": "n71",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3937,6 +4847,7 @@
     {
       "source": "n71",
       "target": "n78",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3944,6 +4855,7 @@
     {
       "source": "n68",
       "target": "n78",
+      "timestep": 4,
       "attributes": {
         "value": 3
       }
@@ -3951,13 +4863,15 @@
     {
       "source": "n70",
       "target": "n78",
+      "timestep": 4,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n70",
-      "target": "n25",
+      "source": "n25",
+      "target": "n70",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3965,13 +4879,15 @@
     {
       "source": "n25",
       "target": "n78",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n78",
-      "target": "n77",
+      "source": "n77",
+      "target": "n78",
+      "timestep": 4,
       "attributes": {
         "value": 3
       }
@@ -3979,6 +4895,7 @@
     {
       "source": "n76",
       "target": "n78",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -3986,6 +4903,7 @@
     {
       "source": "n70",
       "target": "n77",
+      "timestep": 4,
       "attributes": {
         "value": 2
       }
@@ -3993,6 +4911,7 @@
     {
       "source": "n78",
       "target": "n79",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -4000,6 +4919,7 @@
     {
       "source": "n70",
       "target": "n76",
+      "timestep": 4,
       "attributes": {
         "value": 1
       }
@@ -4007,6 +4927,63 @@
     {
       "source": "n68",
       "target": "n79",
+      "timestep": 4,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n89",
+      "timestep": 5,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n89",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n81",
+      "timestep": 5,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n89",
+      "timestep": 5,
+      "attributes": {
+        "value": 9
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n89",
+      "timestep": 6,
+      "attributes": {
+        "value": 9
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n67",
+      "timestep": 5,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n49",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4014,6 +4991,7 @@
     {
       "source": "n74",
       "target": "n81",
+      "timestep": 5,
       "attributes": {
         "value": 3
       }
@@ -4021,6 +4999,7 @@
     {
       "source": "n71",
       "target": "n81",
+      "timestep": 5,
       "attributes": {
         "value": 4
       }
@@ -4028,6 +5007,7 @@
     {
       "source": "n25",
       "target": "n82",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4035,6 +5015,7 @@
     {
       "source": "n74",
       "target": "n83",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4042,13 +5023,15 @@
     {
       "source": "n25",
       "target": "n81",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n85",
-      "target": "n84",
+      "source": "n84",
+      "target": "n85",
+      "timestep": 5,
       "attributes": {
         "value": 2
       }
@@ -4056,34 +5039,47 @@
     {
       "source": "n67",
       "target": "n84",
+      "timestep": 5,
       "attributes": {
-        "value": 8
+        "value": 7
+      }
+    },
+    {
+      "source": "n67",
+      "target": "n84",
+      "timestep": 6,
+      "attributes": {
+        "value": 7
       }
     },
     {
       "source": "n67",
       "target": "n85",
+      "timestep": 5,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n82",
-      "target": "n71",
+      "source": "n71",
+      "target": "n82",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n86",
-      "target": "n68",
+      "source": "n68",
+      "target": "n86",
+      "timestep": 5,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n87",
-      "target": "n77",
+      "source": "n77",
+      "target": "n87",
+      "timestep": 5,
       "attributes": {
         "value": 2
       }
@@ -4091,6 +5087,7 @@
     {
       "source": "n68",
       "target": "n83",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4098,27 +5095,39 @@
     {
       "source": "n67",
       "target": "n88",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n88",
-      "target": "n84",
+      "source": "n84",
+      "target": "n88",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n68",
-      "target": "n35",
+      "source": "n35",
+      "target": "n68",
+      "timestep": 5,
       "attributes": {
-        "value": 6
+        "value": 5
+      }
+    },
+    {
+      "source": "n35",
+      "target": "n68",
+      "timestep": 6,
+      "attributes": {
+        "value": 5
       }
     },
     {
       "source": "n49",
       "target": "n84",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4126,6 +5135,7 @@
     {
       "source": "n49",
       "target": "n67",
+      "timestep": 5,
       "attributes": {
         "value": 3
       }
@@ -4133,27 +5143,55 @@
     {
       "source": "n74",
       "target": "n89",
+      "timestep": 5,
       "attributes": {
-        "value": 12
+        "value": 7
       }
     },
     {
-      "source": "n89",
-      "target": "n71",
+      "source": "n74",
+      "target": "n89",
+      "timestep": 6,
       "attributes": {
-        "value": 12
+        "value": 7
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n89",
+      "timestep": 5,
+      "attributes": {
+        "value": 10
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n89",
+      "timestep": 6,
+      "attributes": {
+        "value": 10
       }
     },
     {
       "source": "n25",
       "target": "n89",
+      "timestep": 5,
       "attributes": {
-        "value": 8
+        "value": 7
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n89",
+      "timestep": 6,
+      "attributes": {
+        "value": 7
       }
     },
     {
       "source": "n67",
       "target": "n89",
+      "timestep": 5,
       "attributes": {
         "value": 4
       }
@@ -4161,6 +5199,7 @@
     {
       "source": "n67",
       "target": "n74",
+      "timestep": 5,
       "attributes": {
         "value": 2
       }
@@ -4168,13 +5207,15 @@
     {
       "source": "n49",
       "target": "n89",
+      "timestep": 5,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n49",
-      "target": "n25",
+      "source": "n25",
+      "target": "n49",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4182,6 +5223,7 @@
     {
       "source": "n25",
       "target": "n67",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4189,6 +5231,7 @@
     {
       "source": "n49",
       "target": "n74",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4196,6 +5239,7 @@
     {
       "source": "n49",
       "target": "n71",
+      "timestep": 5,
       "attributes": {
         "value": 1
       }
@@ -4203,27 +5247,71 @@
     {
       "source": "n67",
       "target": "n68",
+      "timestep": 5,
       "attributes": {
-        "value": 7
+        "value": 2
       }
     },
     {
-      "source": "n89",
+      "source": "n67",
       "target": "n68",
+      "timestep": 6,
       "attributes": {
-        "value": 6
+        "value": 2
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n89",
+      "timestep": 5,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n89",
+      "timestep": 6,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n30",
+      "timestep": 6,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n61",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n61",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n67",
       "target": "n90",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n91",
-      "target": "n25",
+      "source": "n25",
+      "target": "n91",
+      "timestep": 6,
       "attributes": {
         "value": 2
       }
@@ -4231,6 +5319,7 @@
     {
       "source": "n25",
       "target": "n30",
+      "timestep": 6,
       "attributes": {
         "value": 3
       }
@@ -4238,83 +5327,103 @@
     {
       "source": "n30",
       "target": "n68",
+      "timestep": 6,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n92",
-      "target": "n30",
+      "source": "n30",
+      "target": "n92",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n92",
-      "target": "n25",
+      "source": "n25",
+      "target": "n92",
+      "timestep": 6,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n92",
+      "source": "n74",
+      "target": "n92",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n92",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n68",
+      "target": "n91",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n30",
+      "target": "n91",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n61",
       "target": "n74",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n92",
-      "target": "n71",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n91",
-      "target": "n68",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n91",
-      "target": "n30",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n74",
-      "target": "n61",
+      "target": "n93",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n93",
-      "target": "n74",
+      "source": "n74",
+      "target": "n93",
+      "timestep": 7,
       "attributes": {
-        "value": 2
+        "value": 1
+      }
+    },
+    {
+      "source": "n61",
+      "target": "n89",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
       }
     },
     {
       "source": "n89",
-      "target": "n61",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n93",
-      "target": "n89",
+      "target": "n93",
+      "timestep": 6,
       "attributes": {
         "value": 5
       }
     },
     {
-      "source": "n93",
-      "target": "n61",
+      "source": "n61",
+      "target": "n93",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
@@ -4322,41 +5431,63 @@
     {
       "source": "n25",
       "target": "n61",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n61",
+      "target": "n71",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n61",
+      "target": "n68",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n93",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n93",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n71",
-      "target": "n61",
+      "target": "n93",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n93",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n68",
-      "target": "n61",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n93",
-      "target": "n25",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n93",
-      "target": "n71",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n93",
-      "target": "n68",
+      "target": "n93",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
@@ -4364,20 +5495,23 @@
     {
       "source": "n12",
       "target": "n68",
+      "timestep": 6,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n89",
-      "target": "n77",
+      "source": "n77",
+      "target": "n89",
+      "timestep": 6,
       "attributes": {
         "value": 6
       }
     },
     {
-      "source": "n93",
-      "target": "n77",
+      "source": "n77",
+      "target": "n93",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
@@ -4385,6 +5519,7 @@
     {
       "source": "n21",
       "target": "n67",
+      "timestep": 6,
       "attributes": {
         "value": 1
       }
@@ -4392,48 +5527,207 @@
     {
       "source": "n21",
       "target": "n68",
+      "timestep": 6,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n1",
+      "target": "n3",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "timestep": 7,
+      "attributes": {
+        "value": 9
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n98",
+      "timestep": 7,
+      "attributes": {
+        "value": 20
+      }
+    },
+    {
+      "source": "n100",
+      "target": "n2",
+      "timestep": 7,
+      "attributes": {
+        "value": 13
+      }
+    },
+    {
+      "source": "n103",
+      "target": "n2",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n105",
+      "target": "n2",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n95",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n96",
+      "timestep": 7,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n2",
+      "target": "n97",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n95",
+      "timestep": 7,
+      "attributes": {
+        "value": 8
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n94",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n100",
+      "target": "n3",
+      "timestep": 7,
+      "attributes": {
+        "value": 17
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n99",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n98",
+      "timestep": 7,
+      "attributes": {
+        "value": 15
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n74",
+      "timestep": 7,
+      "attributes": {
+        "value": 10
+      }
+    },
+    {
+      "source": "n103",
+      "target": "n3",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n105",
+      "target": "n3",
+      "timestep": 7,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n3",
+      "target": "n71",
+      "timestep": 7,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n25",
+      "target": "n3",
+      "timestep": 7,
+      "attributes": {
+        "value": 5
+      }
+    },
+    {
+      "source": "n94",
+      "target": "n95",
+      "timestep": 7,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n94",
+      "target": "n96",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n95",
+      "target": "n96",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n96",
+      "target": "n97",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n94",
-      "target": "n95",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n96",
-      "target": "n94",
+      "target": "n97",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n96",
-      "target": "n95",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n97",
-      "target": "n96",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n97",
-      "target": "n94",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n97",
-      "target": "n95",
+      "source": "n95",
+      "target": "n97",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4441,6 +5735,7 @@
     {
       "source": "n97",
       "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 3
       }
@@ -4448,6 +5743,7 @@
     {
       "source": "n101",
       "target": "n96",
+      "timestep": 7,
       "attributes": {
         "value": 5
       }
@@ -4455,13 +5751,15 @@
     {
       "source": "n100",
       "target": "n99",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n98",
-      "target": "n95",
+      "source": "n95",
+      "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 11
       }
@@ -4469,41 +5767,47 @@
     {
       "source": "n101",
       "target": "n102",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n96",
-      "target": "n102",
+      "source": "n102",
+      "target": "n96",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n97",
-      "target": "n101",
+      "source": "n101",
+      "target": "n97",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n98",
-      "target": "n100",
+      "source": "n100",
+      "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 29
       }
     },
     {
-      "source": "n74",
-      "target": "n100",
+      "source": "n100",
+      "target": "n74",
+      "timestep": 7,
       "attributes": {
         "value": 17
       }
     },
     {
-      "source": "n98",
-      "target": "n74",
+      "source": "n74",
+      "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 23
       }
@@ -4511,13 +5815,15 @@
     {
       "source": "n103",
       "target": "n74",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n103",
-      "target": "n100",
+      "source": "n100",
+      "target": "n103",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4525,6 +5831,7 @@
     {
       "source": "n103",
       "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4532,132 +5839,151 @@
     {
       "source": "n101",
       "target": "n104",
+      "timestep": 7,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n96",
-      "target": "n104",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n74",
-      "target": "n105",
-      "attributes": {
-        "value": 4
-      }
-    },
-    {
-      "source": "n98",
-      "target": "n105",
+      "source": "n104",
+      "target": "n96",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
       "source": "n105",
-      "target": "n100",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n74",
-      "target": "n95",
-      "attributes": {
-        "value": 2
-      }
-    },
-    {
-      "source": "n71",
-      "target": "n95",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n98",
-      "target": "n71",
-      "attributes": {
-        "value": 3
-      }
-    },
-    {
-      "source": "n96",
-      "target": "n100",
+      "target": "n74",
+      "timestep": 7,
       "attributes": {
         "value": 4
       }
     },
     {
-      "source": "n95",
-      "target": "n106",
+      "source": "n105",
+      "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n93",
-      "target": "n95",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n25",
-      "target": "n95",
+      "source": "n100",
+      "target": "n105",
+      "timestep": 7,
       "attributes": {
         "value": 2
-      }
-    },
-    {
-      "source": "n107",
-      "target": "n95",
-      "attributes": {
-        "value": 1
       }
     },
     {
       "source": "n74",
-      "target": "n106",
+      "target": "n95",
+      "timestep": 7,
       "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n93",
-      "target": "n106",
-      "attributes": {
-        "value": 1
-      }
-    },
-    {
-      "source": "n98",
-      "target": "n106",
-      "attributes": {
-        "value": 1
+        "value": 2
       }
     },
     {
       "source": "n71",
-      "target": "n106",
+      "target": "n95",
+      "timestep": 7,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n71",
+      "target": "n98",
+      "timestep": 7,
+      "attributes": {
+        "value": 3
+      }
+    },
+    {
+      "source": "n100",
+      "target": "n96",
+      "timestep": 7,
+      "attributes": {
+        "value": 4
+      }
+    },
+    {
+      "source": "n106",
+      "target": "n95",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n93",
+      "target": "n95",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
       "source": "n25",
-      "target": "n106",
+      "target": "n95",
+      "timestep": 7,
+      "attributes": {
+        "value": 2
+      }
+    },
+    {
+      "source": "n107",
+      "target": "n95",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n107",
-      "target": "n106",
+      "source": "n106",
+      "target": "n74",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n106",
+      "target": "n93",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n106",
+      "target": "n98",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n106",
+      "target": "n71",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n106",
+      "target": "n25",
+      "timestep": 7,
+      "attributes": {
+        "value": 1
+      }
+    },
+    {
+      "source": "n106",
+      "target": "n107",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4665,6 +5991,7 @@
     {
       "source": "n107",
       "target": "n74",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4672,13 +5999,15 @@
     {
       "source": "n93",
       "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n93",
-      "target": "n107",
+      "source": "n107",
+      "target": "n93",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4686,6 +6015,7 @@
     {
       "source": "n25",
       "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4693,6 +6023,7 @@
     {
       "source": "n107",
       "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4700,6 +6031,7 @@
     {
       "source": "n107",
       "target": "n71",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
@@ -4707,20 +6039,23 @@
     {
       "source": "n107",
       "target": "n25",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n97",
-      "target": "n74",
+      "source": "n74",
+      "target": "n97",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n109",
-      "target": "n101",
+      "source": "n101",
+      "target": "n109",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4728,13 +6063,15 @@
     {
       "source": "n110",
       "target": "n95",
+      "timestep": 7,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n111",
-      "target": "n106",
+      "source": "n106",
+      "target": "n111",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4742,13 +6079,15 @@
     {
       "source": "n74",
       "target": "n96",
+      "timestep": 7,
       "attributes": {
         "value": 3
       }
     },
     {
-      "source": "n98",
-      "target": "n96",
+      "source": "n96",
+      "target": "n98",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
@@ -4756,13 +6095,15 @@
     {
       "source": "n111",
       "target": "n112",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n112",
-      "target": "n108",
+      "source": "n108",
+      "target": "n112",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4770,6 +6111,7 @@
     {
       "source": "n112",
       "target": "n95",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
@@ -4777,13 +6119,15 @@
     {
       "source": "n110",
       "target": "n112",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n111",
-      "target": "n108",
+      "source": "n108",
+      "target": "n111",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
@@ -4791,6 +6135,7 @@
     {
       "source": "n111",
       "target": "n95",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
@@ -4798,37 +6143,43 @@
     {
       "source": "n110",
       "target": "n111",
+      "timestep": 7,
       "attributes": {
         "value": 2
       }
     },
     {
-      "source": "n95",
-      "target": "n108",
+      "source": "n108",
+      "target": "n95",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n110",
-      "target": "n108",
+      "source": "n108",
+      "target": "n110",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n71",
-      "target": "n100",
+      "source": "n100",
+      "target": "n71",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     },
     {
-      "source": "n68",
-      "target": "n100",
+      "source": "n100",
+      "target": "n68",
+      "timestep": 7,
       "attributes": {
         "value": 1
       }
     }
-  ]
+  ],
+  "directed": false
 }

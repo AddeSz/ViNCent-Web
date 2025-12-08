@@ -93,7 +93,7 @@ const FileUploader = ({
             ref={fileInputRef}
             onChange={handleFileUpload}
             className="hidden"
-            accept=".json, .graphml, .xml, .mtx, .mm"
+            accept=".json, .graphml, .xml, .mtx, .mm, .txt, .csv .tsv"
           />
         </div>
       </div>

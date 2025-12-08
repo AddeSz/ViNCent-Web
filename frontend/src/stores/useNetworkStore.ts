@@ -43,7 +43,7 @@ interface NetworkStore {
 }
 
 export const useNetworkStore = create<NetworkStore>((set, get) => ({
-  network: { nodes: [], links: [] },
+  network: { nodes: [], edges: [] },
   nodeMap: new Map<string, Node>(),
   linkCountMap: new Map<string, number>(),
   selectedNodes: new Set<string>(),
@@ -118,7 +118,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   clearSelection: () => set({ selectedNodes: new Set<string>() }),
   clearData: () =>
     set({
-      network: { nodes: [], links: [] },
+      network: { nodes: [], edges: [] },
       nodeMap: new Map(),
       selectedNodes: new Set<string>(),
       hoveredNode: null,
@@ -130,6 +130,6 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
 
   isNetworkEmpty: () => {
     const { network } = get();
-    return network.nodes.length === 0 && network.links.length === 0;
+    return network.nodes.length === 0 && network.edges.length === 0;
   },
 }));

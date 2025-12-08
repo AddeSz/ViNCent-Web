@@ -1,4 +1,5 @@
 import type { ForceEdgeBundlingOptions } from "@/utils/ForceEdgeBundling";
+import { calculateRadialSettings } from "@/utils/utils";
 import { create } from "zustand";
 
 export type DisplayMode = "attributes" | "centrality" | "both";
@@ -40,8 +41,8 @@ type NodeLinkSettings = {
 };
 
 type DisplaySettings = {
-  keepPreviewNodes: boolean;
-  keepStableView: boolean;
+  previewChanges: boolean;
+  showForeshadowing: boolean;
   displayMode: DisplayMode;
   stickyHover: boolean;
 };
@@ -55,17 +56,20 @@ type SettingsStore = {
   setNodeLinkSettings: (settings: Partial<NodeLinkSettings>) => void;
   setDisplaySettings: (settings: Partial<DisplaySettings>) => void;
 
+  setInitialNetworkSettings: (nodeCount: number, metricCount: number) => void;
+
   resetRadialSettings: () => void;
   resetNodeLinkSettings: () => void;
   resetDisplaySettings: () => void;
-
-  setInitialRadialSettings: (settings: RadialSettings) => void;
-  setInitialDisplaySettings: (settings: DisplaySettings) => void;
 };
 
 export const defaultFDEBSettings: ForceEdgeBundlingOptions = {
   stepSize: 0.1,
   compatibilityThreshold: 0.6,
+  iterationsRate: 0.6666667,
+  bundlingStiffness: 0.1,
+  cycles: 6,
+  iterations: 90,
 };
 
 export const defaultRadialSettings: RadialSettings = {
@@ -85,7 +89,7 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   linkDistance: 100,
   chargeStrength: -300,
   showLabels: false,
-  fontSize: 24,
+  fontSize: 14,
   nodeSizeMode: "fixed",
   nodeSizeMetric: "",
   fixedNodeSize: 15,
@@ -102,8 +106,8 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
 };
 
 export const defaultDisplaySettings: DisplaySettings = {
-  keepPreviewNodes: true,
-  keepStableView: true,
+  previewChanges: true,
+  showForeshadowing: true,
   displayMode: "both",
   stickyHover: true,
 };
@@ -133,14 +137,13 @@ export const useSettingsStore = create<SettingsStore>((set) => {
         displaySettings: { ...s.displaySettings, ...settings },
       })),
 
-    setInitialRadialSettings: (settings) => {
-      initialRadial = settings;
-      set({ radialSettings: settings });
-    },
+    setInitialNetworkSettings: (nodeCount, metricCount) => {
+      const calculatedRadial = calculateRadialSettings(nodeCount, metricCount);
+      initialRadial = { ...initialRadial, ...calculatedRadial };
 
-    setInitialDisplaySettings: (settings) => {
-      initialDisplay = settings;
-      set({ displaySettings: settings });
+      set((s) => ({
+        radialSettings: { ...s.radialSettings, ...calculatedRadial },
+      }));
     },
 
     resetRadialSettings: () => set({ radialSettings: initialRadial }),
