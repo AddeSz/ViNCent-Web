@@ -1,7 +1,9 @@
-from .models import CentralityType
+from .types import CentralityType
 
 ALL_CENTRALITIES = [
     CentralityType.DEGREE,
+    CentralityType.IN_DEGREE,
+    CentralityType.OUT_DEGREE,
     CentralityType.BETWEENNESS,
     CentralityType.CLOSENESS,
     CentralityType.EIGENVECTOR,
@@ -18,103 +20,70 @@ ALL_CENTRALITIES = [
     CentralityType.COMMUNICABILITY_BETWEENNESS,
 
     CentralityType.SUBGRAPH,
-    CentralityType.SUBGRAPH_CENTRALITY_EXP,
+    # CentralityType.SUBGRAPH_CENTRALITY_EXP,
     CentralityType.LAPLACIAN,
     CentralityType.SECOND_ORDER,
 
     CentralityType.PERCOLATION,
 
     CentralityType.VOTERANK,
-    CentralityType.DISPERSION,
+    CentralityType.EDGE_DISPERSION,
 
-    CentralityType.IN_DEGREE,
-    CentralityType.OUT_DEGREE,
     CentralityType.LOCAL_REACHING,
-    CentralityType.GLOBAL_REACHING,
+    # CentralityType.GLOBAL_REACHING,
 
     CentralityType.TROPHIC_LEVEL,
-    CentralityType.TROPHIC_DIFFERENCES,
-    CentralityType.TROPHIC_INCOHERENCE,
+    CentralityType.EDGE_TROPHIC_DIFFERENCES,
+    # CentralityType.TROPHIC_INCOHERENCE,
 ]
 
 
 CENTRALITY_CATEGORIES = {
-    "basic": [
-        CentralityType.DEGREE,
-        CentralityType.BETWEENNESS,
-        CentralityType.CLOSENESS,
-        CentralityType.EIGENVECTOR,
-        CentralityType.PAGERANK,
-        CentralityType.KATZ,
-        CentralityType.HARMONIC,
-    ],
-    "degree": [
+    "degree_based": [
         CentralityType.DEGREE,
         CentralityType.IN_DEGREE,
         CentralityType.OUT_DEGREE,
     ],
-    "eigenvector": [
+
+    "eigenvector_based": [
         CentralityType.EIGENVECTOR,
         CentralityType.KATZ,
         CentralityType.PAGERANK,
+        CentralityType.SUBGRAPH,
+        CentralityType.LAPLACIAN,
+        CentralityType.SECOND_ORDER,
     ],
-    "closeness": [
+
+    "distance_based": [
         CentralityType.CLOSENESS,
         CentralityType.HARMONIC,
         CentralityType.INFORMATION_CENTRALITY,
     ],
-    "betweenness": [
+
+    "flow_based": [
         CentralityType.BETWEENNESS,
         CentralityType.CURRENT_FLOW_BETWEENNESS,
-        CentralityType.EDGE_BETWEENNESS,
-        CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
         CentralityType.COMMUNICABILITY_BETWEENNESS,
-    ],
-    "flow": [
         CentralityType.LOAD,
         CentralityType.EDGE_LOAD,
     ],
-    "subgraph": [
-        CentralityType.SUBGRAPH,
-        CentralityType.SUBGRAPH_CENTRALITY_EXP,
-        CentralityType.LAPLACIAN,
-        CentralityType.SECOND_ORDER,
+
+    "edge_specific": [
+        CentralityType.EDGE_BETWEENNESS,
+        CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
+        CentralityType.EDGE_LOAD,
+        CentralityType.EDGE_DISPERSION,
+        CentralityType.EDGE_TROPHIC_DIFFERENCES,
     ],
-    "robustness": [
-        CentralityType.PERCOLATION,
-        CentralityType.DISPERSION,
-    ],
-    "ranking": [
-        CentralityType.VOTERANK,
-    ],
+
     "directed_only": [
         CentralityType.IN_DEGREE,
         CentralityType.OUT_DEGREE,
         CentralityType.LOCAL_REACHING,
-        CentralityType.GLOBAL_REACHING,
     ],
+
     "dag_only": [
         CentralityType.TROPHIC_LEVEL,
-        CentralityType.TROPHIC_DIFFERENCES,
-        CentralityType.TROPHIC_INCOHERENCE,
-    ],
-    "fast": [
-        CentralityType.DEGREE,
-        CentralityType.CLOSENESS,
-        CentralityType.HARMONIC,
-        CentralityType.PAGERANK,
-        CentralityType.LAPLACIAN,
-    ],
-    "slow": [
-        CentralityType.BETWEENNESS,
-        CentralityType.CURRENT_FLOW_BETWEENNESS,
-        CentralityType.EIGENVECTOR,
-        CentralityType.DISPERSION,
-    ],
-    "edge": [
-        CentralityType.EDGE_BETWEENNESS,
-        CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
-        CentralityType.EDGE_LOAD,
-        CentralityType.TROPHIC_DIFFERENCES,
+        CentralityType.EDGE_TROPHIC_DIFFERENCES,
     ],
 }

@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 CACHE_DIR = Path(os.environ.get("CACHE_DIR", "./cache"))
 CACHE_ENABLED = os.environ.get("CACHE_ENABLED", "true").lower() == "true"
 
+# -------------------- OUTDATED -------------------
 
 def get_cache_filename(dataset_id: str, endpoint: str = "all") -> str:
     key = f"{endpoint}:{dataset_id}"

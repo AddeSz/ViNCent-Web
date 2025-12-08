@@ -4,7 +4,7 @@ import uvicorn
 from dotenv import load_dotenv
 
 load_dotenv()
-PORT = int(os.getenv("BACKEND_PORT"))
+PORT = int(os.getenv("BACKEND_PORT", "8000"))
 
 def main():
     uvicorn.run("src.main:app", host="0.0.0.0", port=PORT, reload=False)

@@ -1,9 +1,10 @@
-import uvicorn
 import os
+
+import uvicorn
 from dotenv import load_dotenv
 
 load_dotenv()
-PORT = int(os.getenv("BACKEND_PORT"))
+PORT = int(os.getenv("BACKEND_PORT", "8000"))
 
 def main():
     print(f"\nRunning dev backend on http://localhost:{PORT}\n")
