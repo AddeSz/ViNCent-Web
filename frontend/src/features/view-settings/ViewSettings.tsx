@@ -1,82 +1,144 @@
 import type { ViewType } from "@/App";
 import FileUploader from "@/components/FileUploader";
 import { TimestepSlider } from "@/components/TimeStepSlider";
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useKeys } from "@/hooks/useKeys";
+import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import KeySelector from "../data-filtering/components/KeySelector";
+import SortingSelector from "../data-filtering/components/SortingSelector";
 import DisplaySettings from "./components/DisplaySettings";
-import NodeLinkDiagramSettings from "./components/NodeLinkDiagramSettings";
-import RadialChartSettings from "./components/RadialChartSettings";
+import NodeLinkDiagramSettings from "./nodel-link-settings/NodeLinkDiagramSettings";
+import RadialChartSettings from "./radial-settings/RadialChartSettings";
 
 interface ViewSettingsProps {
   datasets: Record<string, any>;
-  onLoadData: (formData: FormData, datasetID?: string) => void;
+  onLoadData: (formData: FormData, datasetID?: string) => Promise<void>;
   view: ViewType;
-  hasLoadedData: boolean;
 }
 
-const ViewSettings = ({
-  datasets,
-  onLoadData,
-  view,
-  hasLoadedData,
-}: ViewSettingsProps) => {
-  return (
-    <div className="flex flex-col gap-2">
-      {hasLoadedData && (
-        <div>
-          <p className="mb-0 w-full cursor-default truncate" title="Load Data">
-            Load Data
-          </p>
-          <FileUploader
-            datasets={datasets}
-            onLoadData={onLoadData}
-            hasError={false}
-          />
-        </div>
-      )}
+const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const [isOpenDisplay, setIsOpenDisplay] = useState(true);
+  const [isOpenEdge, setIsOpenEdge] = useState(true);
+  const [isOpenPhysics, setIsOpenPhysics] = useState(true);
+  const [isOpenNode, setIsOpenNode] = useState(true);
+  const [isOpenLink, setIsOpenLink] = useState(true);
+  const [isOpenKeys, setIsOpenKeys] = useState(false);
 
-      <div>
-        <p className="mb-0 w-full cursor-default truncate" title="Display Mode">
-          Display Mode
-        </p>
-        <div className="rounded-lg bg-card px-2 py-1">
-          <DisplaySettings />
-        </div>
+  const { resetRadialSettings, resetNodeLinkSettings } = useSettingsStore();
+  const timesteps = useMetricsStore((s) => s.timesteps);
+  const { enabledNodeKeys, allNodeKeys, allEdgeKeys, enabledEdgeKeys } =
+    useKeys();
+
+  return (
+    <div className="flex flex-col pb-4">
+      <div className="flex items-center border-b-2 bg-background px-2 py-2">
+        <span className="truncate text-lg">ViNCent Web</span>
       </div>
 
+      {/* <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
+          <ChevronDown
+            className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
+              isOpen ? "rotate-0" : "-rotate-90"
+            }`}
+          /> */}
+      {/* <p className="truncate pl-1">Load Data</p> */}
+      {/* </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2"> */}
+      <div className="border-b-2 bg-background px-2 py-2">
+        <FileUploader datasets={datasets} onLoadData={onLoadData} />
+      </div>
+      {/* </CollapsibleContent>
+      </Collapsible> */}
+
+      <DisplaySettings />
+
       {view === "radial" && (
-        <div>
-          <div className="bg-card">
-            <RadialChartSettings />
-          </div>
-        </div>
+        <RadialChartSettings
+          isOpenDisplay={isOpenDisplay}
+          isOpenEdge={isOpenEdge}
+          setIsOpenDisplay={setIsOpenDisplay}
+          setIsOpenEdge={setIsOpenEdge}
+        />
       )}
 
       {view === "node-link" && (
-        <div>
-          <p
-            className="mb-0 w-full cursor-default truncate"
-            title="Node-Link View Settings"
-          >
-            Node-Link View Settings
-          </p>
-          <div className="rounded-lg bg-card px-2 py-1">
-            <NodeLinkDiagramSettings />
-          </div>
-        </div>
+        <NodeLinkDiagramSettings
+          isOpenPhysics={isOpenPhysics}
+          isOpenNode={isOpenNode}
+          isOpenLink={isOpenLink}
+          setIsOpenPhysics={setIsOpenPhysics}
+          setIsOpenNode={setIsOpenNode}
+          setIsOpenLink={setIsOpenLink}
+        />
       )}
 
-      {view === "data-table" && (
-        <div>
-          <p
-            className="mb-0 w-full cursor-default truncate"
-            title="Data Tabel View Settings"
-          >
-            Data Tabel View Settings
-          </p>
-          <div className="min-h-10 rounded-lg bg-card px-2 py-1">
+      {view === "data-table" && timesteps.length > 1 && (
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
+            <ChevronDown
+              className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
+                isOpen ? "rotate-0" : "-rotate-90"
+              }`}
+            />
+            <p className="truncate pl-1">Time Settings</p>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2">
             <TimestepSlider />
-          </div>
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
+
+      <Collapsible open={isOpenKeys} onOpenChange={setIsOpenKeys}>
+        <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
+          <ChevronDown
+            className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
+              isOpenKeys ? "rotate-0" : "-rotate-90"
+            }`}
+          />
+          <p className="truncate pl-1">Attribute Settings</p>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2">
+          <KeySelector
+            label="Nodes"
+            description="Toggle Node Attributes"
+            options={allNodeKeys}
+            enabledKeys={enabledNodeKeys}
+          />
+          <KeySelector
+            label="Edges"
+            description="Toggle Edge Attributes"
+            options={allEdgeKeys}
+            enabledKeys={enabledEdgeKeys}
+          />
+          <SortingSelector />
+        </CollapsibleContent>
+      </Collapsible>
+
+      <div className="space-y-2 px-2 py-2">
+        <Button
+          onClick={() => {
+            if (view === "radial") {
+              resetRadialSettings();
+            } else if (view === "node-link") {
+              resetNodeLinkSettings();
+            }
+          }}
+          variant="outline"
+          className="w-full"
+        >
+          <span className="flex-wrap truncate">Reset Settings</span>
+        </Button>
+      </div>
     </div>
   );
 };

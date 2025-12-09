@@ -11,17 +11,11 @@ import { useRef } from "react";
 
 interface FileUploaderProps {
   datasets: Record<string, any>;
-  onLoadData: (formData: FormData, datasetID?: string) => void;
-  hasError?: boolean;
+  onLoadData: (formData: FormData, datasetID?: string) => Promise<void>;
 }
 
-const FileUploader = ({
-  datasets,
-  onLoadData,
-  hasError = false,
-}: FileUploaderProps) => {
+const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const currentDataset = useNetworkStore((s) => s.currentDataset);
   const setCurrentDataset = useNetworkStore((s) => s.setCurrentDataset);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,11 +27,17 @@ const FileUploader = ({
     formData.append("source", "upload");
     formData.append("name", file.name);
 
-    setCurrentDataset(file.name);
-    onLoadData(formData);
+    try {
+      await onLoadData(formData);
+      setCurrentDataset(file.name);
+    } catch (error) {}
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
-  const handleDatasetSelect = (key: string) => {
+  const handleDatasetSelect = async (key: string) => {
     const datasetContent = datasets[key];
     const jsonString = JSON.stringify(datasetContent);
     const blob = new Blob([jsonString], { type: "application/json" });
@@ -48,8 +48,10 @@ const FileUploader = ({
     formData.append("source", "predefined");
     formData.append("name", key);
 
-    setCurrentDataset(key);
-    onLoadData(formData, key);
+    try {
+      await onLoadData(formData, key);
+      setCurrentDataset(key);
+    } catch (error) {}
   };
 
   return (
@@ -97,14 +99,6 @@ const FileUploader = ({
           />
         </div>
       </div>
-      {currentDataset && !hasError && (
-        <p
-          title={currentDataset}
-          className="truncate pt-1 text-xs text-muted-foreground"
-        >
-          Loaded dataset: <span className="font-medium">{currentDataset}</span>
-        </p>
-      )}
     </>
   );
 };

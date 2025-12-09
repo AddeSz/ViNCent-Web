@@ -7,32 +7,24 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useKeys } from "@/hooks/useKeys";
+import { useSortingLogic } from "@/hooks/useSortingLogic";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { formatKeyLabel } from "@/utils/utils";
-import type { SortingState } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, Check, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
-interface SortingSelectorProps {
-  sorting: SortingState;
-  onSortKeyChange: (key: string, preserveDirection?: boolean) => void;
-  setSorting: (sorting: SortingState) => void;
-}
-
-const SortingSelector = ({
-  sorting,
-  onSortKeyChange,
-  setSorting,
-}: SortingSelectorProps) => {
+const SortingSelector = () => {
   const [open, setOpen] = useState(false);
   const { enabledNodeKeys } = useKeys();
+  const { sorting, setSorting, handleSortKeyChange } = useSortingLogic();
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
 
   const sortKey = sorting[0]?.id || "none";
@@ -48,15 +40,20 @@ const SortingSelector = ({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="w-full grow sm:flex-1">
+    <>
+      <div className="space-y-1">
+        <Label htmlFor={"sort-by"} className="truncate text-sm">
+          Sort by
+        </Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              id="sort-by"
               variant="outline"
               title="Sort By"
               className="flex w-full cursor-pointer items-center justify-between px-2 text-sm"
               disabled={isEmpty}
+              size="sm"
             >
               <span
                 className="truncate"
@@ -78,7 +75,7 @@ const SortingSelector = ({
                       key={key}
                       value={key}
                       onSelect={() => {
-                        onSortKeyChange(key, false);
+                        handleSortKeyChange(key, false);
                         setOpen(false);
                       }}
                       className="flex cursor-pointer items-center justify-between gap-2"
@@ -97,30 +94,29 @@ const SortingSelector = ({
           </PopoverContent>
         </Popover>
       </div>
-      <div className="w-full grow sm:flex-1">
-        <Button
-          variant="outline"
-          title="Direction"
-          disabled={isDisabled}
-          onClick={toggleDirection}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 px-2"
-        >
-          <div className="flex w-full items-center justify-center gap-2">
-            <p className="w-fit truncate">
-              {isDisabled ? (
-                "Direction"
-              ) : currentDirection === "asc" ? (
-                <>Ascending&nbsp;</>
-              ) : (
-                "Descending"
-              )}
-            </p>
-            {!isDisabled &&
-              (currentDirection === "asc" ? <ArrowUp /> : <ArrowDown />)}
-          </div>
-        </Button>
-      </div>
-    </div>
+      <Button
+        variant="outline"
+        title="Direction"
+        disabled={isDisabled}
+        onClick={toggleDirection}
+        className="flex w-full cursor-pointer items-center justify-center gap-2 px-2"
+        size="sm"
+      >
+        <div className="flex w-full items-center justify-center gap-2">
+          <p className="w-fit truncate">
+            {isDisabled ? (
+              "Direction"
+            ) : currentDirection === "asc" ? (
+              <>Ascending&nbsp;</>
+            ) : (
+              "Descending"
+            )}
+          </p>
+          {!isDisabled &&
+            (currentDirection === "asc" ? <ArrowUp /> : <ArrowDown />)}
+        </div>
+      </Button>
+    </>
   );
 };
 

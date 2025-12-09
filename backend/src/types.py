@@ -112,3 +112,4 @@ class ProcessedNetworkResult(TypedDict):
     deltas: Dict[int | float, TimestepDelta]
     metrics_info: NotRequired[MetricsInfo]
     centralities: NotRequired[Dict[int | float, Dict[str, Dict[str, Dict[str, float]]]]]
+    graph_type: NotRequired[str]

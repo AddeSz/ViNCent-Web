@@ -1,6 +1,5 @@
 import type { ScaleType, SizeMode } from "@/stores/useSettingsStore";
 import type { Edge, FullData, Node } from "@/types/network";
-import { getNodeId } from "@/utils/utils";
 import type { InteractionProps } from "../Tooltips/useTooltip";
 
 export const calculateNodeSizes = (
@@ -86,10 +85,7 @@ export const calculateLinkWeights = (
 
   if (mode === "fixed" || !metricKey) {
     links.forEach((link) => {
-      const sourceId = getNodeId(link.source);
-      const targetId = getNodeId(link.target);
-      const linkId = `${sourceId}-${targetId}`;
-      weights.set(linkId, fixedThickness);
+      weights.set(link.id, fixedThickness);
     });
     return weights;
   }
@@ -108,10 +104,7 @@ export const calculateLinkWeights = (
 
   if (values.length === 0) {
     links.forEach((link) => {
-      const sourceId = getNodeId(link.source);
-      const targetId = getNodeId(link.target);
-      const linkId = `${sourceId}-${targetId}`;
-      weights.set(linkId, fixedThickness);
+      weights.set(link.id, fixedThickness);
     });
     return weights;
   }
@@ -121,20 +114,16 @@ export const calculateLinkWeights = (
   const range = maxValue - minValue;
 
   links.forEach((link) => {
-    const sourceId = getNodeId(link.source);
-    const targetId = getNodeId(link.target);
-    const linkId = `${sourceId}-${targetId}`;
-
     const edgeData = edgeDataMap.get(link.id);
 
     if (!edgeData) {
-      weights.set(linkId, fixedThickness);
+      weights.set(link.id, fixedThickness);
       return;
     }
 
     const value = edgeData[metricKey];
     if (typeof value !== "number" || isNaN(value) || range === 0) {
-      weights.set(linkId, fixedThickness);
+      weights.set(link.id, fixedThickness);
       return;
     }
 
@@ -150,7 +139,7 @@ export const calculateLinkWeights = (
     }
 
     const thickness = minThickness + normalized * (maxThickness - minThickness);
-    weights.set(linkId, thickness);
+    weights.set(link.id, thickness);
   });
 
   return weights;

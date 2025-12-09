@@ -3,7 +3,7 @@ import { calculateRadialSettings } from "@/utils/utils";
 import { create } from "zustand";
 
 export type DisplayMode = "attributes" | "centrality" | "both";
-export type LinkRenderingMode = "bezier" | "hierarchy" | "fdeB";
+export type EdgeRenderingMode = "bezier" | "hierarchy" | "fdeB";
 export type SizeMode = "fixed" | "metric";
 export type ScaleType = "linear" | "log";
 
@@ -16,7 +16,7 @@ type RadialSettings = {
   labelWidth: number;
   maxLabelWidth: number;
   separateMetrics: boolean;
-  linkRenderingMode: LinkRenderingMode;
+  edgeRenderingMode: EdgeRenderingMode;
   fdebSettings: ForceEdgeBundlingOptions;
 };
 
@@ -61,6 +61,7 @@ type SettingsStore = {
   resetRadialSettings: () => void;
   resetNodeLinkSettings: () => void;
   resetDisplaySettings: () => void;
+  resetFDEBSettings: () => void;
 };
 
 export const defaultFDEBSettings: ForceEdgeBundlingOptions = {
@@ -81,7 +82,7 @@ export const defaultRadialSettings: RadialSettings = {
   labelWidth: 200,
   maxLabelWidth: 200,
   separateMetrics: false,
-  linkRenderingMode: "fdeB",
+  edgeRenderingMode: "fdeB",
   fdebSettings: defaultFDEBSettings,
 };
 
@@ -149,5 +150,12 @@ export const useSettingsStore = create<SettingsStore>((set) => {
     resetRadialSettings: () => set({ radialSettings: initialRadial }),
     resetNodeLinkSettings: () => set({ nodeLinkSettings: initialNodeLink }),
     resetDisplaySettings: () => set({ displaySettings: initialDisplay }),
+    resetFDEBSettings: () =>
+      set((s) => ({
+        radialSettings: {
+          ...s.radialSettings,
+          fdebSettings: defaultFDEBSettings,
+        },
+      })),
   };
 });

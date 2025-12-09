@@ -36,7 +36,6 @@ def process_network(data: NetworkData) -> ProcessedNetworkResult:
         history_data = convert_flat_to_history_format(flat_data, directed)
         normalized_nodes = history_data["nodes"]
         normalized_edges = history_data["edges"]
-
         result = preprocess_temporal_network(normalized_nodes, normalized_edges, directed)
     else:
         result = preprocess_static_network(nodes, edges, directed)
@@ -51,6 +50,8 @@ def process_network(data: NetworkData) -> ProcessedNetworkResult:
         node_centrality_keys,
         edge_centrality_keys
     )
+    
+    result["graph_type"] = "directed" if directed else "undirected"
     
     return result
 

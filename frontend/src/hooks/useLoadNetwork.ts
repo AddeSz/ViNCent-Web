@@ -22,6 +22,7 @@ export interface NetworkResponse {
     nodes: Record<string, AttributeInfo>;
     edges: Record<string, AttributeInfo>;
   };
+  graph_type: "directed" | "undirected";
 }
 
 const validateAndPreprocessNetwork = async (formData: FormData) => {
@@ -44,16 +45,25 @@ export const useLoadNetwork = () => {
   const clearMetricsData = useMetricsStore((s) => s.clearData);
 
   const loadNetwork = async (formData: FormData, datasetID?: string) => {
-    const result = await validateAndPreprocessNetwork(formData);
-    const { network, base_state, deltas, centralities, metrics_info } = result;
+    const result: NetworkResponse =
+      await validateAndPreprocessNetwork(formData);
+    const {
+      network,
+      base_state,
+      deltas,
+      centralities,
+      metrics_info,
+      graph_type,
+    } = result;
 
-    console.log("Result: ", result);
-    console.log("Network", network);
-    console.log("base_state", base_state);
-    console.log("deltas", deltas);
-    console.log("centralities", centralities);
+    // console.log("Result: ", result);
+    // console.log("Network", network);
+    // console.log("base_state", base_state);
+    // console.log("deltas", deltas);
+    // console.log("centralities", centralities);
+    // console.log("graph_type", graph_type);
 
-    setNetwork(network);
+    setNetwork(network, graph_type);
 
     const loadDeltaBasedNetwork =
       useMetricsStore.getState().loadDeltaBasedNetwork;

@@ -9,6 +9,7 @@ interface NetworkStore {
   hoveredNode: null | string;
   sortKey: string;
   sortingState: SortingState;
+  directed: boolean | null;
 
   resetRadialZoomFlag: Boolean;
   resetNodeLinkZoomFlag: Boolean;
@@ -18,7 +19,7 @@ interface NetworkStore {
   restartSimulationFlag: boolean;
   setRestartSimulationFlag: (flag: boolean) => void;
 
-  setNetwork: (data: Network) => void;
+  setNetwork: (data: Network, graphType: string) => void;
   selectNode: (id: string, multi?: boolean) => void;
   deselectNode: (id: string) => void;
   toggleNodeSelection: (id: string) => void;
@@ -50,6 +51,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   hoveredNode: null,
   sortKey: "none",
   sortingState: [],
+  directed: null,
 
   resetRadialZoomFlag: false,
   resetNodeLinkZoomFlag: false,
@@ -57,11 +59,16 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   currentDataset: null,
   restartSimulationFlag: false,
 
-  setNetwork: (data) => {
+  setNetwork: (data, graphType) => {
     const nodeMap = new Map<string, Node>(data.nodes.map((n) => [n.id, n]));
+    let directed = true;
+    if (graphType === "undirected") {
+      directed = false;
+    }
     set({
       network: data,
       nodeMap,
+      directed,
     });
   },
 
@@ -116,6 +123,14 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   restoreAllNodes: () => set({ hiddenNodes: new Set() }),
 
   clearSelection: () => set({ selectedNodes: new Set<string>() }),
+
+  setRestartSimulationFlag: (flag) => set({ restartSimulationFlag: flag }),
+
+  isNetworkEmpty: () => {
+    const { network } = get();
+    return network.nodes.length === 0 && network.edges.length === 0;
+  },
+
   clearData: () =>
     set({
       network: { nodes: [], edges: [] },
@@ -124,12 +139,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       hoveredNode: null,
       sortKey: "none",
       sortingState: [],
+      currentDataset: null,
+      directed: null,
     }),
-
-  setRestartSimulationFlag: (flag) => set({ restartSimulationFlag: flag }),
-
-  isNetworkEmpty: () => {
-    const { network } = get();
-    return network.nodes.length === 0 && network.edges.length === 0;
-  },
 }));

@@ -1,4 +1,4 @@
-import { type LinkRenderingMode } from "@/stores/useSettingsStore";
+import { type EdgeRenderingMode } from "@/stores/useSettingsStore";
 import type { Edge, FullData } from "@/types/network";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import {
@@ -41,7 +41,7 @@ const drawLinks = (
   x: d3.ScaleBand<string>,
   innerRadius: number,
   selectedNodes: Set<string>,
-  mode: LinkRenderingMode,
+  mode: EdgeRenderingMode,
   removedNodeIds: Set<string>,
   fdebSettings: ForceEdgeBundlingOptions,
   angleMap: Map<string, number>,

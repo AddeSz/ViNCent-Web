@@ -16,13 +16,13 @@ import {
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
-import DataFiltering from "@/features/data-filtering/DataFiltering";
 import { useLoadNetwork } from "@/hooks/useLoadNetwork";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ViewSettings from "./features/view-settings/ViewSettings";
 import { useFilteredData } from "./hooks/useFilteredData";
 import { useProcessedData } from "./hooks/useProcessedData";
+import { useNetworkStore } from "./stores/useNetworkStore";
 
 const datasets = {
   "Starwars Dataset": starwarsData,
@@ -53,7 +53,8 @@ const App = () => {
   const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
   const { nodeData, edgeData, filteredNetwork, handlePreview, canPreview } =
     useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
-
+  const currentDataset = useNetworkStore((s) => s.currentDataset);
+  const directed = useNetworkStore((s) => s.directed);
   const handleLoadData = async (formData: FormData, datasetID?: string) => {
     try {
       setStatus("loading");
@@ -82,27 +83,25 @@ const App = () => {
     <div className="flex h-full">
       <PanelGroup direction="horizontal" className="flex">
         <Panel defaultSize={15} minSize={12} maxSize={22}>
-          <PanelGroup direction="vertical">
-            <Panel defaultSize={60} minSize={15}>
-              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-1">
-                <ViewSettings
-                  datasets={datasets}
-                  onLoadData={handleLoadData}
-                  view={view}
-                  hasLoadedData={status === "ready"}
-                />
+          <div className="flex h-full w-full flex-col bg-card">
+            <div className="scrollbar-thin flex-1 overflow-x-hidden overflow-y-auto">
+              <ViewSettings
+                datasets={datasets}
+                onLoadData={handleLoadData}
+                view={view}
+              />
+            </div>
+            {currentDataset !== null && directed !== null && (
+              <div className="border-t-2 border-border bg-background px-2 pt-1 pb-2">
+                <div className="text-xs text-muted-foreground">
+                  <p className="truncate">Data: {currentDataset}</p>
+                  <p className="truncate">
+                    Graph Type: {directed ? "Directed" : "Undirected"}
+                  </p>
+                </div>
               </div>
-            </Panel>
-            <PanelResizeHandle
-              onDragging={handleDragging("left-vert")}
-              className={`h-2 transition-colors ${draggingBars["left-vert"] ? "bg-ring" : "bg-border"}`}
-            />
-            <Panel defaultSize={40} minSize={15}>
-              <div className="scrollbar-thin h-full w-full overflow-x-hidden overflow-y-auto p-2">
-                <DataFiltering />
-              </div>
-            </Panel>
-          </PanelGroup>
+            )}
+          </div>
         </Panel>
 
         <PanelResizeHandle
@@ -123,11 +122,7 @@ const App = () => {
           {status === "error" && (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p className="text-center text-red-500">{error}</p>
-              <FileUploader
-                datasets={datasets}
-                onLoadData={handleLoadData}
-                hasError
-              />
+              <FileUploader datasets={datasets} onLoadData={handleLoadData} />
             </div>
           )}
 

@@ -25,6 +25,9 @@ interface MetricsStore {
   nodeMetricsKeys: string[];
   enabledMetricsKeys: string[];
 
+  disabledNodeMetricsKeys: Set<string>;
+  disabledEdgeMetricsKeys: Set<string>;
+
   edgeMetricsKeys: string[];
   enabledEdgeMetricsKeys: string[];
 
@@ -162,6 +165,9 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   nodeMetricsKeys: [],
   enabledMetricsKeys: [],
 
+  disabledNodeMetricsKeys: new Set(),
+  disabledEdgeMetricsKeys: new Set(),
+
   edgeMetricsKeys: [],
   enabledEdgeMetricsKeys: [],
 
@@ -230,6 +236,9 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       centralities: centralitiesMap,
       metricsInfo: unifiedInfo,
       timesteps,
+
+      disabledNodeMetricsKeys: new Set(),
+      disabledEdgeMetricsKeys: new Set(),
     });
 
     if (timesteps.length > 0) {
@@ -238,7 +247,14 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   },
 
   applyDeltaAndSetTimestep: (timestep) => {
-    const { baseState, deltas, centralities, metricsInfo } = get();
+    const {
+      baseState,
+      deltas,
+      centralities,
+      metricsInfo,
+      disabledNodeMetricsKeys,
+      disabledEdgeMetricsKeys,
+    } = get();
     if (!baseState) {
       console.warn("No base state available");
       return;
@@ -365,6 +381,14 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       ),
     );
 
+    const enabledMetricsKeys = nodeMetricsKeys.filter(
+      (key) => !disabledNodeMetricsKeys.has(key),
+    );
+
+    const enabledEdgeMetricsKeys = edgeMetricsKeys.filter(
+      (key) => !disabledEdgeMetricsKeys.has(key),
+    );
+
     const brushRanges: Record<string, BrushRange | null> = {};
     [...nodeMetricsKeys, ...edgeMetricsKeys].forEach((key) => {
       if (!(key in brushRanges)) {
@@ -377,9 +401,9 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       currentNodes,
       currentEdges,
       nodeMetricsKeys,
-      enabledMetricsKeys: nodeMetricsKeys,
+      enabledMetricsKeys,
       edgeMetricsKeys,
-      enabledEdgeMetricsKeys: edgeMetricsKeys,
+      enabledEdgeMetricsKeys,
       brushRanges,
       metricsInfoCurrent,
     });
@@ -399,30 +423,42 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
         const isEnabled = s.enabledEdgeMetricsKeys.includes(key);
         if (isEnabled) {
           removed = true;
+          const newDisabled = new Set(s.disabledEdgeMetricsKeys);
+          newDisabled.add(key);
           return {
             enabledEdgeMetricsKeys: s.enabledEdgeMetricsKeys.filter(
               (k) => k !== key,
             ),
+            disabledEdgeMetricsKeys: newDisabled,
           };
         } else {
+          const newDisabled = new Set(s.disabledEdgeMetricsKeys);
+          newDisabled.delete(key);
           return {
             enabledEdgeMetricsKeys: s.edgeMetricsKeys.filter(
               (k) => k === key || s.enabledEdgeMetricsKeys.includes(k),
             ),
+            disabledEdgeMetricsKeys: newDisabled,
           };
         }
       } else if (isNodeKey) {
         const isEnabled = s.enabledMetricsKeys.includes(key);
         if (isEnabled) {
           removed = true;
+          const newDisabled = new Set(s.disabledNodeMetricsKeys);
+          newDisabled.add(key);
           return {
             enabledMetricsKeys: s.enabledMetricsKeys.filter((k) => k !== key),
+            disabledNodeMetricsKeys: newDisabled,
           };
         } else {
+          const newDisabled = new Set(s.disabledNodeMetricsKeys);
+          newDisabled.delete(key);
           return {
             enabledMetricsKeys: s.nodeMetricsKeys.filter(
               (k) => k === key || s.enabledMetricsKeys.includes(k),
             ),
+            disabledNodeMetricsKeys: newDisabled,
           };
         }
       }
@@ -520,6 +556,8 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       metricsInfoCurrent: new Map(),
       edgeMetricsKeys: [],
       enabledEdgeMetricsKeys: [],
+      disabledNodeMetricsKeys: new Set(),
+      disabledEdgeMetricsKeys: new Set(),
       brushRanges: {},
       binnedDataByKey: new Map(),
       selectedCategories: {},

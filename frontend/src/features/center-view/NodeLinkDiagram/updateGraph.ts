@@ -70,16 +70,35 @@ const getNodeStyle = (
 
   const isSecondarySelected = Array.from(selectedNodes).some((selectedId) => {
     const selectedNodeData = nodeData.get(selectedId);
+    if (!selectedNodeData || selectedNodeData.stable) return false;
     return selectedNodeData?.linked?.has(node.id);
   });
 
-  const isSecondaryHovered =
-    hoveredNode && nodeData.get(hoveredNode)?.linked?.has(node.id);
+  const isSecondaryHovered = (() => {
+    if (!hoveredNode) return false;
+    const hoveredNodeData = nodeData.get(hoveredNode);
+    if (!hoveredNodeData || hoveredNodeData.stable) return false;
+    return hoveredNodeData?.linked?.has(node.id);
+  })();
 
   const isConnected =
     isSelected || isHovered || isSecondarySelected || isSecondaryHovered;
-  const hasActiveSelection = selectedNodes.size > 0 || hoveredNode !== null;
-  const opacity = !hasActiveSelection || isConnected ? 1 : 0.2;
+
+  const hasActiveSelectedNodes = Array.from(selectedNodes).some((id) => {
+    const data = nodeData.get(id);
+    return data && !data.stable;
+  });
+
+  const hasActiveHoveredNode =
+    hoveredNode &&
+    (() => {
+      const data = nodeData.get(hoveredNode);
+      return data && !data.stable;
+    })();
+
+  const hasAnyActiveHighlight = hasActiveSelectedNodes || hasActiveHoveredNode;
+
+  const opacity = !hasAnyActiveHighlight || isConnected ? 1 : 0.2;
 
   let stroke = "none";
   let strokeWidth = 0;
@@ -121,18 +140,23 @@ const getLinkStyleForNode = (
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   edgeChanges: DataChanges,
+  nodeData: Map<string, FullData>,
 ) => {
   const sourceId = getNodeId(link.source);
   const targetId = getNodeId(link.target);
-  const edgeId = `${sourceId}|${targetId}`;
-  const isRemoved = edgeChanges.removed[edgeId] ? true : false;
-  const isSelected = selectedNodes.has(sourceId) || selectedNodes.has(targetId);
-  const isHovered = !!(
-    hoveredNode &&
-    sourceId &&
-    targetId &&
-    (sourceId === hoveredNode || targetId === hoveredNode)
-  );
+  const isRemoved = edgeChanges.removed[link.id] ? true : false;
+
+  const isSelected =
+    (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.stable) ||
+    (selectedNodes.has(targetId) && !nodeData.get(targetId)?.stable);
+
+  const isHovered = (() => {
+    if (!hoveredNode || !sourceId || !targetId) return false;
+    const hoveredNodeData = nodeData.get(hoveredNode);
+    if (!hoveredNodeData || hoveredNodeData.stable) return false;
+    return sourceId === hoveredNode || targetId === hoveredNode;
+  })();
+
   const style = getLinkStyle(
     isRemoved,
     isSelected,
@@ -142,9 +166,23 @@ const getLinkStyleForNode = (
   );
 
   const isConnected = isSelected || isHovered;
-  const hasActiveSelection = selectedNodes.size > 0 || hoveredNode !== null;
+
+  const hasActiveSelectedNodes = Array.from(selectedNodes).some((id) => {
+    const data = nodeData.get(id);
+    return data && !data.stable;
+  });
+
+  const hasActiveHoveredNode =
+    hoveredNode &&
+    (() => {
+      const data = nodeData.get(hoveredNode);
+      return data && !data.stable;
+    })();
+
+  const hasAnyActiveHighlight = hasActiveSelectedNodes || hasActiveHoveredNode;
+
   const dimmedOpacity =
-    !hasActiveSelection || isConnected ? style.opacity : 0.1;
+    !hasAnyActiveHighlight || isConnected ? style.opacity : 0.1;
 
   return {
     stroke: style.stroke,
@@ -228,6 +266,7 @@ const updateLinks = (
   hoveredNode: string | null,
   edgeChanges: DataChanges,
   nodeSizes: Map<string, number>,
+  nodeData: Map<string, FullData>,
 ) => {
   const links = linkGroup
     .selectAll<SVGLineElement, Edge>("line.link")
@@ -269,10 +308,10 @@ const updateLinks = (
   linksUpdate.attr("stroke-width", (d) => {
     const sourceId = getNodeId(d.source);
     const targetId = getNodeId(d.target);
-    const linkId = `${sourceId}-${targetId}`;
-    const thickness = linkWeights.get(linkId) || 1.5;
+    const thickness = linkWeights.get(d.id) || 1.5;
     const isSelected =
-      selectedNodes.has(sourceId) || selectedNodes.has(targetId);
+      (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.stable) ||
+      (selectedNodes.has(targetId) && !nodeData.get(targetId)?.stable);
     return isSelected ? thickness * 1.5 : thickness;
   });
 
@@ -286,6 +325,7 @@ const updateLinks = (
         selectedNodes,
         hoveredNode,
         edgeChanges,
+        nodeData,
       );
       return style.strokeOpacity;
     })
@@ -295,6 +335,7 @@ const updateLinks = (
         selectedNodes,
         hoveredNode,
         edgeChanges,
+        nodeData,
       );
       return style.stroke;
     });
@@ -335,13 +376,14 @@ export const updateStyle = (
       selectedNodes,
       hoveredNode,
       edgeChanges,
+      nodeData,
     );
     const sourceId = getNodeId(d.source);
     const targetId = getNodeId(d.target);
-    const linkId = `${sourceId}-${targetId}`;
-    const thickness = linkWeights.get(linkId) || 1.5;
+    const thickness = linkWeights.get(d.id) || 1.5;
     const isSelected =
-      selectedNodes.has(sourceId) || selectedNodes.has(targetId);
+      (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.stable) ||
+      (selectedNodes.has(targetId) && !nodeData.get(targetId)?.stable);
 
     const sourceRadius = nodeSizes.get(sourceId) ?? 15;
     const targetRadius = nodeSizes.get(targetId) ?? 15;
@@ -387,6 +429,7 @@ const updateGraph = (
     hoveredNode,
     edgeChanges,
     nodeSizes,
+    nodeData,
   );
   const allNodes = updateNodes(
     nodeGroup,

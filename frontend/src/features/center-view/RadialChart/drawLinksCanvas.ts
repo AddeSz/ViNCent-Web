@@ -1,4 +1,4 @@
-import { type LinkRenderingMode } from "@/stores/useSettingsStore";
+import { type EdgeRenderingMode } from "@/stores/useSettingsStore";
 import type { DataChanges, FullData } from "@/types/network";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import { type ForceEdgeBundlingOptions } from "@/utils/ForceEdgeBundling";
@@ -48,7 +48,7 @@ const drawLinksCanvas = async (
   edgeData: Map<string, FullData>,
   x: d3.ScaleBand<string>,
   selectedNodes: Set<string>,
-  mode: LinkRenderingMode,
+  mode: EdgeRenderingMode,
   edgeChanges: DataChanges,
   fdebSettings: ForceEdgeBundlingOptions,
   angleMap: Map<string, number>,
