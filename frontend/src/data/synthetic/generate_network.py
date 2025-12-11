@@ -3,10 +3,10 @@ import random
 
 random.seed(42)
 
-NUM_NODES = 300
-NUM_LINKS = 800
+NUM_NODES = 4000
+NUM_LINKS = 10000
 MODE = "clustered"  # "clustered" or "interactions" or "hierarchical"
-OUTPUT_FILE = f"test.json"
+OUTPUT_FILE = f"network_{MODE}_n{NUM_NODES}_l{NUM_LINKS}.json"
 
 names = [
     "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace",
@@ -77,8 +77,22 @@ for team in teams:
 links = []
 link_set = set()
 
+all_node_ids = [n["id"] for n in nodes]
+remaining = all_node_ids[1:]
+connected = [all_node_ids[0]]
+
+while remaining:
+    source = random.choice(connected)
+    target = remaining.pop(random.randint(0, len(remaining) - 1))
+    pair = tuple(sorted((source, target)))
+    link_set.add(pair)
+    links.append({"source": source, "target": target})
+    connected.append(target)
+
+remaining_links = NUM_LINKS - len(links)
+
 if MODE == "clustered":
-    for _ in range(NUM_LINKS):
+    for _ in range(remaining_links):
         r = random.random()
         
         if r < 0.5:
@@ -131,7 +145,7 @@ elif MODE == "interactions":
     num_hubs = max(3, NUM_NODES // 50)
     hubs = random.sample([n["id"] for n in nodes], num_hubs)
     
-    for _ in range(NUM_LINKS):
+    for _ in range(remaining_links):
         r = random.random()
         if r < 0.75:
             source = random.choice([n["id"] for n in nodes if n["id"] not in hubs])
@@ -158,15 +172,16 @@ elif MODE == "hierarchical":
     for i in range(1, levels):
         for node in hierarchy[i]:
             parent = random.choice(hierarchy[i - 1])
-            links.append({"source": parent["id"], "target": node["id"]})
+            pair = tuple(sorted((parent["id"], node["id"])))
+            if pair not in link_set:
+                link_set.add(pair)
+                links.append({"source": parent["id"], "target": node["id"]})
 
 else:
     raise ValueError(f"Unknown MODE: {MODE}")
 
-linked_node_ids = {link["source"] for link in links}.union({link["target"] for link in links})
-nodes = [node for node in nodes if node["id"] in linked_node_ids]
-
 graph = {
+    "directed": False,
     "nodes": nodes,
     "links": links
 }

@@ -1,21 +1,20 @@
 import co_author from "./co_author/co_author_network.json";
 import les_miserables from "./les-miserables/les_miserables_network.json";
 import starwars from "./starwars-interactions/starwars_network.json";
-import massiveCluster from "./synthetic/network_clustered_n4000_l8000.json";
+import largeClustered from "./synthetic/network_clustered_1000_2000.json";
+import massiveClustered from "./synthetic/network_clustered_n4000_l10000.json";
 import hierarchical from "./synthetic/network_hierarchical_n2000_l5000.json";
 import interaction from "./synthetic/network_interactions_n500_l1500.json";
-import largeData from "./synthetic/network_n1000_l2500.json";
 import n150 from "./synthetic/network_n150.json";
-import clustered from "./synthetic/network_n500_l1500.json";
-import testData from "./synthetic/test.json";
+import smallClustered from "./synthetic/network_n500_l1500.json";
 
 export const starwarsData = starwars;
 export const miserablesData = les_miserables;
 export const coauthorData = co_author;
 export const testDataSmall = n150;
-export const testDataCluster = clustered;
+export const smallCluster = smallClustered;
+export const largeCluster = largeClustered;
+export const massiveCluster = massiveClustered;
 export const testDataInteraction = interaction;
-export const testDataLarge = largeData;
 export const testHierarchical = hierarchical;
 export const testDataMassive = massiveCluster;
-export const test = testData;
