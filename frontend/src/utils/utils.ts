@@ -17,6 +17,10 @@ export function formatValue(x: any): string {
   if (typeof x === "number") {
     if (isNaN(x)) return "N/A";
 
+    if (Object.is(x, -0) || Math.abs(x) < 1e-12) {
+      x = 0;
+    }
+
     if (Math.abs(x) >= 1000) {
       return Intl.NumberFormat("en", {
         notation: "compact",

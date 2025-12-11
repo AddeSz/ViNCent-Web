@@ -94,7 +94,7 @@ const LinkSettings = ({ isOpen, setIsOpen }: LinkSettingsProps) => {
       onOpenChange={setIsOpen}
       className="group/collapsible"
     >
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
         <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-100 group-data-[state=closed]/collapsible:-rotate-90" />
         <p className="truncate pl-1">Link Settings</p>
       </CollapsibleTrigger>

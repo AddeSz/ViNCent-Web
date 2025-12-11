@@ -1,5 +1,5 @@
 import type { ViewType } from "@/App";
-import FileUploader from "@/components/FileUploader";
+import FileUploader from "@/components/file-uploader/FileUploader";
 import { TimestepSlider } from "@/components/TimeStepSlider";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,17 +20,17 @@ import RadialChartSettings from "./radial-settings/RadialChartSettings";
 
 interface ViewSettingsProps {
   datasets: Record<string, any>;
-  onLoadData: (formData: FormData, datasetID?: string) => Promise<void>;
+  onLoadData: (formData: FormData) => Promise<void>;
   view: ViewType;
 }
 
 const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [isOpenDisplay, setIsOpenDisplay] = useState(true);
-  const [isOpenEdge, setIsOpenEdge] = useState(true);
-  const [isOpenPhysics, setIsOpenPhysics] = useState(true);
-  const [isOpenNode, setIsOpenNode] = useState(true);
-  const [isOpenLink, setIsOpenLink] = useState(true);
+  const [isOpenTime, setIsOpenTime] = useState(true);
+  const [isOpenDisplay, setIsOpenDisplay] = useState(false);
+  const [isOpenEdge, setIsOpenEdge] = useState(false);
+  const [isOpenPhysics, setIsOpenPhysics] = useState(false);
+  const [isOpenNode, setIsOpenNode] = useState(false);
+  const [isOpenLink, setIsOpenLink] = useState(false);
   const [isOpenKeys, setIsOpenKeys] = useState(false);
 
   const { resetRadialSettings, resetNodeLinkSettings } = useSettingsStore();
@@ -83,11 +83,11 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
       )}
 
       {view === "data-table" && timesteps.length > 1 && (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
+        <Collapsible open={isOpenTime} onOpenChange={setIsOpenTime}>
+          <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
             <ChevronDown
               className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
-                isOpen ? "rotate-0" : "-rotate-90"
+                isOpenTime ? "rotate-0" : "-rotate-90"
               }`}
             />
             <p className="truncate pl-1">Time Settings</p>
@@ -99,7 +99,7 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
       )}
 
       <Collapsible open={isOpenKeys} onOpenChange={setIsOpenKeys}>
-        <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
+        <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
           <ChevronDown
             className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
               isOpenKeys ? "rotate-0" : "-rotate-90"

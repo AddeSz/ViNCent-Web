@@ -1,14 +1,14 @@
-import FileUploader from "@/components/FileUploader";
+import FileUploader from "@/components/file-uploader/FileUploader";
 import Legend from "@/components/Legend";
 import { Spinner } from "@/components/ui/spinner";
 import {
   coauthorData,
+  largeCluster,
+  massiveCluster,
   miserablesData,
+  smallCluster,
   starwarsData,
-  test,
-  testDataCluster,
   testDataInteraction,
-  testDataLarge,
   testDataMassive,
   testDataSmall,
   testHierarchical,
@@ -29,12 +29,12 @@ const datasets = {
   "Les Miserables Dataset": miserablesData,
   "Co Author Dataset": coauthorData,
   "Test Dataset Small": testDataSmall,
-  "Test Dataset Clusters": testDataCluster,
+  "Small Cluster": smallCluster,
+  "Large Cluster": largeCluster,
+  "Massive Cluster": massiveCluster,
   "Test Dataset Interactions": testDataInteraction,
-  "Test Dataset Large": testDataLarge,
   "Test Dataset Hierarchical": testHierarchical,
   "Test Dataset Massive": testDataMassive,
-  Test: test,
 };
 
 const VIEW_KEY = "center-view-mode";
@@ -55,13 +55,13 @@ const App = () => {
     useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
   const currentDataset = useNetworkStore((s) => s.currentDataset);
   const directed = useNetworkStore((s) => s.directed);
-  const handleLoadData = async (formData: FormData, datasetID?: string) => {
+  const handleLoadData = async (formData: FormData) => {
     try {
       setStatus("loading");
       setError(null);
 
       clearAllData();
-      await loadNetwork(formData, datasetID);
+      await loadNetwork(formData);
 
       setStatus("ready");
     } catch (err) {
@@ -122,7 +122,9 @@ const App = () => {
           {status === "error" && (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p className="text-center text-red-500">{error}</p>
-              <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+              <div className="w-40">
+                <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+              </div>
             </div>
           )}
 
@@ -131,7 +133,9 @@ const App = () => {
               <p className="text-center text-muted-foreground">
                 No data loaded. Select or import a dataset to begin.
               </p>
-              <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+              <div className="w-40">
+                <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+              </div>
             </div>
           )}
 

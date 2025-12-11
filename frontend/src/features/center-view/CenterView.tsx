@@ -142,10 +142,12 @@ const CenterView = ({
             <div className="absolute inset-0">
               <DataTable
                 key="data-table-component"
-                data={sortedData}
+                nodeData={sortedData}
+                edgeData={edgeData}
                 sorting={sorting}
                 onSortingChange={handleSortingChange}
                 handleContextMenu={handleContextMenu}
+                nodeMap={nodeMap}
               />
             </div>
           )}

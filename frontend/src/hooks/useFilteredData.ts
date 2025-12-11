@@ -63,7 +63,11 @@ export const useFilteredData = (): {
 
         const disabledValuesForKey = disabledValues[key];
         if (disabledValuesForKey && disabledValuesForKey.size > 0) {
-          if (info && info.isNumeric && typeof value === "number") {
+          if (info && info.isCategory) {
+            if (disabledValuesForKey.has(String(value))) {
+              return false;
+            }
+          } else if (info && info.isNumeric && typeof value === "number") {
             const binnedData = binnedDataByKey.get(key);
             if (binnedData) {
               const binIndex = binnedData.valueToBinIndex.get(value);
@@ -74,8 +78,10 @@ export const useFilteredData = (): {
                 return false;
               }
             }
-          } else if (disabledValuesForKey.has(String(value))) {
-            return false;
+          } else {
+            if (disabledValuesForKey.has(String(value))) {
+              return false;
+            }
           }
         }
 
@@ -130,7 +136,11 @@ export const useFilteredData = (): {
 
         const disabledValuesForKey = disabledValues[key];
         if (disabledValuesForKey && disabledValuesForKey.size > 0) {
-          if (info && info.isNumeric && typeof value === "number") {
+          if (info && info.isCategory) {
+            if (disabledValuesForKey.has(String(value))) {
+              return false;
+            }
+          } else if (info && info.isNumeric && typeof value === "number") {
             const binnedData = binnedDataByKey.get(key);
             if (binnedData) {
               const binIndex = binnedData.valueToBinIndex.get(value);

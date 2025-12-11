@@ -228,7 +228,6 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     });
 
     useVisualizationStore.getState().initializeColors(unifiedInfo);
-    console.log("Metrics info from backend:", unifiedInfo);
 
     set({
       baseState,

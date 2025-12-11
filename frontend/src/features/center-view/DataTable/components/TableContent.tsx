@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/utils/shadcnutils";
 import { flexRender, type Table } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
@@ -14,12 +15,13 @@ interface RowData {
   removed?: boolean;
   hidden?: boolean;
 }
-interface TableContentProps<T extends RowData> {
+
+interface TableContentProps<T extends Record<string, any>> {
   table: Table<T>;
   columnsLength: number;
 }
 
-const TableContent = <T extends RowData>({
+const TableContent = <T extends Record<string, any>>({
   table,
   columnsLength,
 }: TableContentProps<T>) => {
@@ -36,21 +38,19 @@ const TableContent = <T extends RowData>({
   const totalSize = rowVirtualizer.getTotalSize();
 
   return (
-    <div
-      ref={parentRef}
-      className="scrollbar-thin flex-1 overflow-auto rounded-md border [scrollbar-gutter:stable] scrollbar-thumb-card-foreground scrollbar-thumb-rounded-full"
-    >
-      <TableComponent>
+    <div ref={parentRef} className="scrollbar-thin flex-1 overflow-auto border">
+      <TableComponent style={{ width: "100%", tableLayout: "fixed" }}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} noHover>
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
                   style={{
-                    width: header.column.getSize(),
-                    minWidth: header.column.getSize(),
-                    maxWidth: header.column.getSize(),
+                    width:
+                      header.id === "filler" ? "auto" : `${header.getSize()}px`,
+                    minWidth:
+                      header.id === "filler" ? 0 : `${header.getSize()}px`,
                   }}
                 >
                   {header.isPlaceholder
@@ -73,8 +73,8 @@ const TableContent = <T extends RowData>({
           {virtualRows.length ? (
             virtualRows.map((virtualRow) => {
               const row = table.getRowModel().rows[virtualRow.index];
-              const isRemoved = row.original.removed;
-              const isHidden = row.original.hidden;
+              const isRemoved = (row.original as RowData).removed ?? false;
+              const isHidden = (row.original as RowData).hidden ?? false;
 
               let backgroundColor: string | undefined = undefined;
               let opacity = 1;
@@ -100,28 +100,36 @@ const TableContent = <T extends RowData>({
                     left: 0,
                     width: "100%",
                     transform: `translateY(${virtualRow.start}px)`,
-                    display: "table-row",
                     height: "40px",
                     backgroundColor,
                     opacity,
                     transition: "opacity 0.3s, background-color 0.3s",
                   }}
-                  className={
+                  className={cn(
+                    "group",
                     isRemoved
                       ? "removed-row"
                       : isHidden
                         ? "hidden-row"
-                        : undefined
-                  }
+                        : undefined,
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
                       style={{
-                        display: "table-cell",
-                        width: cell.column.getSize(),
-                        minWidth: cell.column.getSize(),
-                        maxWidth: cell.column.getSize(),
+                        width:
+                          cell.column.id === "filler"
+                            ? "auto"
+                            : `${cell.column.getSize()}px`,
+                        minWidth:
+                          cell.column.id === "filler"
+                            ? 0
+                            : `${cell.column.getSize()}px`,
+                        maxWidth:
+                          cell.column.id === "filler"
+                            ? "none"
+                            : `${cell.column.getSize()}px`,
                       }}
                     >
                       {flexRender(
@@ -135,7 +143,7 @@ const TableContent = <T extends RowData>({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={columnsLength} className="h-24 text-center">
+              <TableCell colSpan={columnsLength} className="h-20 text-center">
                 No results.
               </TableCell>
             </TableRow>

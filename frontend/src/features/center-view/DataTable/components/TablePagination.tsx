@@ -73,7 +73,6 @@ const TablePagination = <T,>({
       </div>
 
       <div className="flex flex-col items-end space-y-1">
-        {/* <div className="flex items-center"> */}
         <p className="text-xs text-muted-foreground">Rows per page</p>
         <Select
           value={`${table.getState().pagination.pageSize}`}
@@ -90,7 +89,6 @@ const TablePagination = <T,>({
             ))}
           </SelectContent>
         </Select>
-        {/* </div> */}
         <div className="text-xs text-muted-foreground">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}

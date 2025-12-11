@@ -13,7 +13,8 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         type="single"
         value={view}
         onValueChange={(val) => val && onViewChange(val as ViewType)}
-        className="rounded-l-none border-r-2 bg-card"
+        className="rounded-none bg-card"
+        variant={"outline"}
       >
         <ToggleGroupItem
           value="radial"

@@ -34,17 +34,21 @@ export const useRadialChartData = ({
   const visibleData = useMemo(() => data.filter((d) => !d.hidden), [data]);
 
   const chartData = useMemo(() => {
-    if (allKeys.length === 0) return null;
-    if (data.length === 0) return { series: [], arcData: [] };
+    const keys = allKeys.length === 0 ? ["filler"] : allKeys;
 
     if (visibleData.length === 0) {
       return { series: [], arcData: [] };
     }
 
+    const filledData =
+      allKeys.length === 0
+        ? visibleData.map((d) => ({ ...d, filler: 1 }))
+        : visibleData;
+
     const series = d3
       .stack<FullData>()
-      .keys(allKeys)
-      .value(() => 1)(visibleData);
+      .keys(keys)
+      .value((d, key) => d[key] ?? 0)(filledData);
 
     return { series };
   }, [visibleData, allKeys]);
@@ -153,6 +157,9 @@ function createRadialScale({
   }
   if (displayMode === "centrality" || attributeCount === 0) {
     totalRings = centralityCount;
+  }
+  if (centralityCount === 0 && attributeCount === 0) {
+    totalRings = 1;
   }
 
   const yScale = d3

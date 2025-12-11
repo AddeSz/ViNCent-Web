@@ -6,15 +6,39 @@ import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff } from "lucide-react";
 
+import { createColumnHelper } from "@tanstack/react-table";
+import { Check, X } from "lucide-react";
+
+interface AttributeRow {
+  id: string;
+  key: string;
+  isNumeric: boolean;
+  isCategory: boolean;
+  isCentrality: boolean;
+  range: string;
+  minValue: number | null;
+  maxValue: number | null;
+  uniqueValues: number;
+}
+
+const calculateColumnWidth = (text: string, minWidth = 100, maxWidth = 300) => {
+  const estimatedWidth = text.length * 8 + 60;
+  return Math.min(Math.max(estimatedWidth, minWidth), maxWidth);
+};
+
 export const createSelectColumn = <
   T extends Record<string, any>,
 >(): ColumnDef<T> => ({
   id: "select",
   size: 40,
+  minSize: 40,
+  maxSize: 40,
+  enableResizing: false,
   header: ({ table }) => {
     return (
-      <div className="flex items-center justify-center">
+      <div className="flex shrink-0 items-center justify-center">
         <Checkbox
+          id={"select-all-main"}
           checked={
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -29,7 +53,7 @@ export const createSelectColumn = <
   cell: ({ row }) => {
     const rowId = row.id;
     return (
-      <div className="flex items-center justify-center">
+      <div className="flex shrink-0 items-center justify-center">
         <Checkbox
           id={`select-${rowId}`}
           checked={row.getIsSelected()}
@@ -44,54 +68,19 @@ export const createSelectColumn = <
   enableHiding: false,
 });
 
-export const createLabelColumn = <
-  T extends Record<string, any>,
->(): ColumnDef<T> => ({
-  id: "label",
-  accessorFn: (row) => row.label ?? row.id,
-  sortDescFirst: true,
-  size: 100,
-  header: ({ column }) => {
-    let SortIcon = ArrowUpDown;
-    if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
-    if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
-    return (
-      <Button
-        variant="ghost"
-        onClick={column.getToggleSortingHandler()}
-        className="w-full justify-between gap-1"
-        size={"none"}
-        title="Label"
-      >
-        <div className="truncate text-sm font-medium">Label</div>
-        <SortIcon className="h-4 w-4 shrink-0" />
-      </Button>
-    );
-  },
-  cell: ({ row }) => {
-    const value = row.getValue("label");
-    return (
-      <div
-        className="truncate px-2 text-left font-medium"
-        title={formatValue(value)}
-      >
-        {formatValue(value)}
-      </div>
-    );
-  },
-});
-
 export const createHiddenColumn = <
   T extends { id: string },
 >(): ColumnDef<T> => ({
-  id: "isHidden",
-  size: 60,
+  id: "hiddenCol",
+  size: 40,
+  minSize: 40,
+  maxSize: 40,
+  enableResizing: false,
   header: () => (
-    <div
-      className="flex items-center justify-center text-sm font-medium"
-      title="Toggle node visibility"
-    >
-      Visibility
+    <div className="flex items-center justify-center">
+      <Button variant="ghost" size="icon" className="h-6 w-6">
+        <Eye className="h-4 w-4 text-foreground" />
+      </Button>
     </div>
   ),
   cell: ({ row }) => {
@@ -129,61 +118,434 @@ export const createHiddenColumn = <
   enableHiding: false,
 });
 
+export const createLabelColumn = <
+  T extends Record<string, any>,
+>(): ColumnDef<T> => ({
+  id: "label",
+  size: 150,
+  minSize: 60,
+  maxSize: 400,
+  accessorFn: (row) => row.label ?? row.id,
+  sortDescFirst: true,
+  header: ({ column, header }) => {
+    let SortIcon = ArrowUpDown;
+    if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+    if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+    return (
+      <div className="relative flex items-center">
+        <Button
+          variant="ghost"
+          onClick={column.getToggleSortingHandler()}
+          className="flex w-full items-center justify-start gap-1 rounded-none py-3"
+          size={"none"}
+          title="Label"
+        >
+          <SortIcon className="h-4 w-4 shrink-0" />
+          <div className="truncate text-sm font-medium">Label</div>
+        </Button>
+        <div
+          onMouseDown={header.getResizeHandler()}
+          onTouchStart={header.getResizeHandler()}
+          className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+            header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+          }`}
+        />
+      </div>
+    );
+  },
+  cell: ({ row }) => {
+    const value = row.getValue("label");
+    return (
+      <div
+        className="truncate px-2 text-left font-medium"
+        title={formatValue(value)}
+      >
+        {formatValue(value)}
+      </div>
+    );
+  },
+});
+
+export const createEdgeNodeColumn = <T extends { id: string }>(
+  nodeMap: Map<string, any>,
+  type: "source" | "target",
+): ColumnDef<T> => ({
+  id: type,
+  size: 150,
+  minSize: 60,
+  maxSize: 400,
+  accessorFn: (row) => {
+    const index = type === "source" ? 0 : 1;
+    const nodeId = row.id.split("|")[index];
+    const node = nodeMap.get(nodeId);
+    return node?.label ?? nodeId;
+  },
+  sortDescFirst: true,
+  header: ({ column, header }) => {
+    let SortIcon = ArrowUpDown;
+    if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+    if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+    const label = type === "source" ? "Source" : "Target";
+    return (
+      <div className="relative flex items-center">
+        <Button
+          variant="ghost"
+          onClick={column.getToggleSortingHandler()}
+          className="flex w-full items-center justify-start gap-1 rounded-none py-3"
+          size={"none"}
+          title={label}
+        >
+          <SortIcon className="h-4 w-4 shrink-0" />
+          <div className="truncate text-sm font-medium">{label}</div>
+        </Button>
+        <div
+          onMouseDown={header.getResizeHandler()}
+          onTouchStart={header.getResizeHandler()}
+          className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+            header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+          }`}
+        />
+      </div>
+    );
+  },
+  cell: ({ row }) => {
+    const value = row.getValue(type);
+    return (
+      <div
+        className="truncate px-2 text-left font-medium"
+        title={formatValue(value)}
+      >
+        {formatValue(value)}
+      </div>
+    );
+  },
+});
+
 export const createDataColumns = <T extends Record<string, any>>(
   keys: string[],
 ): ColumnDef<T>[] =>
-  keys.map((key) => ({
-    id: key,
-    accessorFn: (row) => row[key as keyof T],
-    size: 100,
-    enableSortingRemoval: true,
-    sortDescFirst: true,
-    filterFn: (row, columnId, filterValue) => {
-      const value = row.getValue(columnId);
+  keys.map((key) => {
+    const formattedLabel = formatKeyLabel(key);
+    const calculatedSize = calculateColumnWidth(formattedLabel);
 
-      const stringValue = String(value).toLowerCase();
-      const stringFilter = String(filterValue).toLowerCase();
+    return {
+      id: key,
+      accessorFn: (row) => row[key as keyof T],
+      size: calculatedSize,
+      minSize: 60,
+      maxSize: 400,
+      enableSortingRemoval: true,
+      sortDescFirst: true,
+      filterFn: (row, columnId, filterValue) => {
+        const value = row.getValue(columnId);
+        const stringValue = String(value).toLowerCase();
+        const stringFilter = String(filterValue).toLowerCase();
+        return stringValue.includes(stringFilter);
+      },
+      header: ({ column, header }) => {
+        const color = useMetricsStore.getState().getColorForMetric(key);
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+        return (
+          <div className="relative w-full">
+            <Button
+              variant="ghost"
+              style={{ color }}
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-start gap-1 rounded-none py-3"
+              size="none"
+              title={formattedLabel}
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium capitalize">
+                {formattedLabel}
+              </div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        const value = row.getValue(key);
+        const headerColor = useMetricsStore.getState().getColorForMetric(key);
+        const color =
+          !headerColor || headerColor === "var(--muted-foreground)"
+            ? useMetricsStore
+                .getState()
+                .getColorForMetric(key, value as string | number)
+            : undefined;
+        return (
+          <div
+            className="truncate px-2 text-left font-medium"
+            style={{ color }}
+            title={value as string}
+          >
+            {value as string | number}
+          </div>
+        );
+      },
+    };
+  });
 
-      return stringValue.includes(stringFilter);
-    },
-    header: ({ column }) => {
-      const color = useMetricsStore.getState().getColorForMetric(key);
-      let SortIcon = ArrowUpDown;
-      if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
-      if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
-      return (
-        <Button
-          variant="ghost"
-          style={{ color }}
-          onClick={column.getToggleSortingHandler()}
-          className="w-full justify-between gap-1"
-          size={"none"}
-          title={formatKeyLabel(key)}
-        >
-          <div className="truncate text-sm font-medium capitalize">
+const columnHelper = createColumnHelper<AttributeRow>();
+
+export const createAttributeColumns = () => {
+  return [
+    columnHelper.accessor("key", {
+      header: ({ column, header }) => {
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+        return (
+          <div className="relative flex items-center">
+            <Button
+              variant="ghost"
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-start gap-1 rounded-none py-3"
+              size="none"
+              title="Attribute Key"
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium">Attribute Key</div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: (info) => {
+        const key = info.getValue() as string;
+        const color = useMetricsStore.getState().getColorForMetric(key);
+
+        return (
+          <div
+            className="truncate px-2 text-left font-medium"
+            style={{ color }}
+            title={formatKeyLabel(key)}
+          >
             {formatKeyLabel(key)}
           </div>
-          <SortIcon className="h-4 w-4 shrink-0" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const value = row.getValue(key);
-      const headerColor = useMetricsStore.getState().getColorForMetric(key);
-      const color =
-        !headerColor || headerColor === "var(--muted-foreground)"
-          ? useMetricsStore
-              .getState()
-              .getColorForMetric(key, value as string | number)
-          : undefined;
-      return (
-        <div
-          className="truncate px-2 text-left font-medium"
-          style={{ color }}
-          title={value as string}
-        >
-          {value as string | number}
+        );
+      },
+      size: 200,
+      minSize: 80,
+      maxSize: 400,
+      sortDescFirst: true,
+    }),
+    columnHelper.accessor("isCentrality", {
+      header: ({ column, header }) => {
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+        return (
+          <div className="relative flex items-center">
+            <Button
+              variant="ghost"
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-center gap-1 rounded-none py-3"
+              size="none"
+              title="Centrality"
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium">Centrality</div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: (info) => (
+        <div className="flex items-center justify-center">
+          {info.getValue() ? (
+            <Check className="h-4 w-4 text-blue-600" />
+          ) : (
+            <X className="h-4 w-4 text-gray-400" />
+          )}
         </div>
-      );
-    },
-  }));
+      ),
+      size: 110,
+      minSize: 80,
+      maxSize: 150,
+      sortDescFirst: true,
+    }),
+    columnHelper.accessor("isNumeric", {
+      header: ({ column, header }) => {
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+        return (
+          <div className="relative flex items-center">
+            <Button
+              variant="ghost"
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-center gap-1 rounded-none py-3"
+              size="none"
+              title="Numeric"
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium">Numeric</div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: (info) => (
+        <div className="flex items-center justify-center">
+          {info.getValue() ? (
+            <Check className="h-4 w-4 text-green-600" />
+          ) : (
+            <X className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+      ),
+      size: 100,
+      minSize: 80,
+      maxSize: 150,
+      sortDescFirst: true,
+    }),
+    columnHelper.accessor("isCategory", {
+      header: ({ column, header }) => {
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+        return (
+          <div className="relative flex items-center">
+            <Button
+              variant="ghost"
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-center gap-1 rounded-none py-3"
+              size="none"
+              title="Categorical"
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium">Categorical</div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: (info) => (
+        <div className="flex items-center justify-center">
+          {info.getValue() ? (
+            <Check className="h-4 w-4 text-green-600" />
+          ) : (
+            <X className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+      ),
+      size: 120,
+      minSize: 80,
+      maxSize: 180,
+      sortDescFirst: true,
+    }),
+    columnHelper.accessor("range", {
+      header: ({ column, header }) => {
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+        return (
+          <div className="relative flex items-center">
+            <Button
+              variant="ghost"
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-start gap-1 rounded-none py-3"
+              size="none"
+              title="Range"
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium">Range</div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: (info) => (
+        <div
+          className="truncate px-2 text-left text-sm text-muted-foreground"
+          title={info.getValue()}
+        >
+          {info.getValue()}
+        </div>
+      ),
+      size: 150,
+      minSize: 100,
+      maxSize: 300,
+      sortDescFirst: true,
+    }),
+    columnHelper.accessor("uniqueValues", {
+      header: ({ column, header }) => {
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+        return (
+          <div className="relative flex items-center">
+            <Button
+              variant="ghost"
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-center gap-1 rounded-none py-3"
+              size="none"
+              title="Unique Values"
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium">Unique Values</div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: (info) => (
+        <div
+          className="truncate px-2 text-left text-sm text-muted-foreground"
+          title={`${info.getValue()}`}
+        >
+          {info.getValue()}
+        </div>
+      ),
+      size: 140,
+      minSize: 100,
+      maxSize: 200,
+      sortDescFirst: true,
+    }),
+  ];
+};

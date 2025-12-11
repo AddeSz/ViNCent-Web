@@ -1,4 +1,3 @@
-import { getProjectEnvVariables } from "@/shared/projectEnvVariables";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
@@ -9,9 +8,7 @@ import type {
   Network,
   TimestepDelta,
 } from "@/types/network";
-
-const env = getProjectEnvVariables();
-const API_BASE_URL = env.envVariables.VITE_BACKEND_URL;
+import api from "@/utils/api";
 
 export interface NetworkResponse {
   network: Network;
@@ -25,28 +22,14 @@ export interface NetworkResponse {
   graph_type: "directed" | "undirected";
 }
 
-const validateAndPreprocessNetwork = async (formData: FormData) => {
-  const response = await fetch(`${API_BASE_URL}/validate-network`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`);
-  }
-
-  return await response.json();
-};
-
 export const useLoadNetwork = () => {
   const setNetwork = useNetworkStore((s) => s.setNetwork);
   const clearNetworkData = useNetworkStore((s) => s.clearData);
   const clearVisualizationData = useVisualizationStore((s) => s.clearData);
   const clearMetricsData = useMetricsStore((s) => s.clearData);
 
-  const loadNetwork = async (formData: FormData, datasetID?: string) => {
-    const result: NetworkResponse =
-      await validateAndPreprocessNetwork(formData);
+  const loadNetwork = async (formData: FormData) => {
+    const result: NetworkResponse = await api.validateNetwork(formData);
     const {
       network,
       base_state,

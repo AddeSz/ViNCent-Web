@@ -3,8 +3,8 @@ import math
 from typing import Dict, List, Set
 
 from ..config import ALL_CENTRALITIES
-from ..types import (Edge, EdgesDict, NetworkData, Node, NodesDict,
-                     ProcessedNetworkResult, TimestepDelta)
+from ..types import (CentralityType, Edge, EdgesDict, NetworkData, Node,
+                     NodesDict, ProcessedNetworkResult, TimestepDelta)
 from .attributes import collect_attribute_data
 from .centrality import calculate_selected_centralities
 from .graph import create_networkx_graph
@@ -20,7 +20,13 @@ logger = logging.getLogger(__name__)
 # 3. Calculate centralities and use as snapshots instead of deltas since all their values change on every node/edge change in the network
 # 4. Build metrics_info for all attributes (cents + attrs)
 
-def process_network(data: NetworkData) -> ProcessedNetworkResult:
+def process_network(
+    data: NetworkData,
+    centralities: List[CentralityType] | None = None
+) -> ProcessedNetworkResult:
+    if centralities is None:
+        centralities = ALL_CENTRALITIES
+    
     nodes = data.get("nodes", [])
     edges = data.get("edges", [])
     directed = data.get("directed", False)
@@ -40,13 +46,21 @@ def process_network(data: NetworkData) -> ProcessedNetworkResult:
     else:
         result = preprocess_static_network(nodes, edges, directed)
     
-    result, node_centrality_keys, edge_centrality_keys = calculate_centralities(result, directed)
-    centralities = result.get("centralities", {})
+    has_attributes = _check_for_attributes(nodes, edges)
+    
+    if not centralities and not has_attributes:
+        logger.info("No centralities selected and no attributes found. Computing degree centrality as fallback.")
+        centralities = [CentralityType.DEGREE]
+    
+    result, node_centrality_keys, edge_centrality_keys = calculate_centralities(
+        result, directed, centralities
+    )
+    centralities_data = result.get("centralities", {})
     
     result["metrics_info"] = collect_attribute_data(
         result["base_state"],
         result["deltas"],
-        centralities,
+        centralities_data,
         node_centrality_keys,
         edge_centrality_keys
     )
@@ -55,10 +69,26 @@ def process_network(data: NetworkData) -> ProcessedNetworkResult:
     
     return result
 
+
+def _check_for_attributes(nodes: List[Node], edges: List[Edge]) -> bool:
+    for node in nodes:
+        if "attributes" in node and node["attributes"]:
+            return True
+    
+    for edge in edges:
+        if "attributes" in edge and edge["attributes"]:
+            return True
+        if "weight" in edge:
+            return True
+    
+    return False
+
+
 # Builds entire snapshots of centrality values
 def calculate_centralities(
     result: ProcessedNetworkResult,
-    directed: bool
+    directed: bool,
+    selected_centralities: List[CentralityType]
 ) -> tuple[ProcessedNetworkResult, Set[str], Set[str]]:
     base_state = result["base_state"]
     deltas = result["deltas"]
@@ -72,6 +102,7 @@ def calculate_centralities(
     current_nodes: NodesDict = {node["id"]: node for node in base_state["nodes"]}
     current_edges: EdgesDict = {edge["id"]: edge for edge in base_state["edges"]}
     
+    logger.info(f"Calculating {len(selected_centralities)} centrality types across {len(timesteps)} timesteps")
     
     for timestep in sorted(timesteps):
         delta = deltas[timestep]
@@ -85,7 +116,9 @@ def calculate_centralities(
             continue
             
         G = create_networkx_graph(network, directed)
-        node_results, edge_results = calculate_selected_centralities(G, ALL_CENTRALITIES)
+        node_results, edge_results = calculate_selected_centralities(
+            G, selected_centralities
+        )
         
         all_node_centrality_keys.update(
             cent_name 

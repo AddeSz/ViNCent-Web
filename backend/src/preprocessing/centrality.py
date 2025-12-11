@@ -357,6 +357,10 @@ def calculate_selected_centralities(
         first_key = next(iter(values.keys()))
         is_edge = isinstance(first_key, tuple)
 
+        unique_values = set(values.values())
+        if len(unique_values) <= 1:
+            continue
+
         if is_edge:
             edge_values = cast(Dict[tuple, float], values)
             for (u, v), value in edge_values.items():

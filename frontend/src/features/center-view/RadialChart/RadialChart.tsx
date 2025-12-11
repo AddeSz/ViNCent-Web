@@ -169,7 +169,13 @@ const RadialChart = ({
     let abortController = new AbortController();
     setIsDrawReady(false);
     (async () => {
-      if (!svgRef.current || !chartData || !dimensions) return;
+      if (!svgRef.current || !dimensions) return;
+      if (!chartData) {
+        setIsCanvasReady(true);
+        onUpdateStateChange(false);
+        setIsDrawReady(true);
+        return;
+      }
       if (isCanvasReady) onUpdateStateChange(true);
 
       const svg = d3.select(svgRef.current);
@@ -374,7 +380,7 @@ const RadialChart = ({
   }, [totalLabelWidth, isViewActive, xScale]);
 
   const showSpinner =
-    !dimensions?.width || !dimensions?.height || !chartData || !isCanvasReady;
+    !dimensions?.width || !dimensions?.height || !isCanvasReady;
 
   return (
     <>
