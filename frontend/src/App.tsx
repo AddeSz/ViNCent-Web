@@ -8,10 +8,7 @@ import {
   miserablesData,
   smallCluster,
   starwarsData,
-  testDataInteraction,
-  testDataMassive,
   testDataSmall,
-  testHierarchical,
 } from "@/data/datasets";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
@@ -27,14 +24,11 @@ import { useNetworkStore } from "./stores/useNetworkStore";
 const datasets = {
   "Starwars Dataset": starwarsData,
   "Les Miserables Dataset": miserablesData,
-  "Co Author Dataset": coauthorData,
   "Test Dataset Small": testDataSmall,
   "Small Cluster": smallCluster,
   "Large Cluster": largeCluster,
   "Massive Cluster": massiveCluster,
-  "Test Dataset Interactions": testDataInteraction,
-  "Test Dataset Hierarchical": testHierarchical,
-  "Test Dataset Massive": testDataMassive,
+  "Co Author Dataset": coauthorData,
 };
 
 const VIEW_KEY = "center-view-mode";
