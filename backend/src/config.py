@@ -1,4 +1,4 @@
-from .types import CentralityType
+from .types import CentralityType, CommunityType
 
 ALL_CENTRALITIES = [
     CentralityType.DEGREE,
@@ -39,7 +39,7 @@ ALL_CENTRALITIES = [
 
 
 CENTRALITY_CATEGORIES = {
-    "node_importance": [
+    "node_importance_centralites": [
         CentralityType.DEGREE,
         CentralityType.IN_DEGREE,
         CentralityType.OUT_DEGREE,
@@ -49,7 +49,7 @@ CENTRALITY_CATEGORIES = {
         CentralityType.PERCOLATION,
         CentralityType.VOTERANK,
     ],
-    "distance_flow": [
+    "distance_flow_centralites": [
         CentralityType.CLOSENESS,
         CentralityType.HARMONIC,
         CentralityType.BETWEENNESS,
@@ -58,7 +58,7 @@ CENTRALITY_CATEGORIES = {
         CentralityType.LOCAL_REACHING,
         # CentralityType.GLOBAL_REACHING,
     ],
-    "network_structure": [
+    "network_structure_centralites": [
         CentralityType.SUBGRAPH,
         # CentralityType.SUBGRAPH_CENTRALITY_EXP,
         CentralityType.COMMUNICABILITY_BETWEENNESS,
@@ -66,14 +66,14 @@ CENTRALITY_CATEGORIES = {
         CentralityType.LAPLACIAN,
         CentralityType.SECOND_ORDER,
     ],
-    "edge_metrics": [
+    "edge_based_centralites": [
         CentralityType.EDGE_BETWEENNESS,
         CentralityType.EDGE_LOAD,
         CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
         CentralityType.EDGE_DISPERSION,
         CentralityType.EDGE_TROPHIC_DIFFERENCES,
     ],
-    "hierarchy": [
+    "hierarchy_based_centralites": [
         CentralityType.TROPHIC_LEVEL,
         CentralityType.EDGE_TROPHIC_DIFFERENCES,
         # CentralityType.TROPHIC_INCOHERENCE,
@@ -84,10 +84,8 @@ CENTRALITY_REQUIREMENTS = {
     CentralityType.IN_DEGREE: "Directed graphs only",
     CentralityType.OUT_DEGREE: "Directed graphs only",
     CentralityType.LOCAL_REACHING: "Directed graphs only",
-    # CentralityType.GLOBAL_REACHING: "Directed graphs only",
     
     CentralityType.SUBGRAPH: "Undirected graphs only",
-    # CentralityType.SUBGRAPH_CENTRALITY_EXP: "Undirected graphs only",
     CentralityType.SECOND_ORDER: "Connected undirected graphs only",
     CentralityType.INFORMATION_CENTRALITY: "Connected undirected graphs only",
     CentralityType.CURRENT_FLOW_BETWEENNESS: "Connected undirected graphs only",
@@ -96,10 +94,12 @@ CENTRALITY_REQUIREMENTS = {
     
     CentralityType.TROPHIC_LEVEL: "Directed acyclic graphs (DAG) only",
     CentralityType.EDGE_TROPHIC_DIFFERENCES: "Directed acyclic graphs (DAG) only",
-    # CentralityType.TROPHIC_INCOHERENCE: "Directed acyclic graphs (DAG) only",
     
     CentralityType.EIGENVECTOR: "Connected graphs only (strongly connected if directed)",
 }
+    # CentralityType.GLOBAL_REACHING: "Directed graphs only",
+    # CentralityType.SUBGRAPH_CENTRALITY_EXP: "Undirected graphs only",
+    # CentralityType.TROPHIC_INCOHERENCE: "Directed acyclic graphs (DAG) only",
 
 CENTRALITY_PERFORMANCE = {
     CentralityType.LAPLACIAN: "Very slow",
@@ -135,3 +135,94 @@ CENTRALITY_PERFORMANCE = {
     # CentralityType.SUBGRAPH_CENTRALITY_EXP: "Fast",
     # CentralityType.TROPHIC_INCOHERENCE: "Fast",
     # CentralityType.GLOBAL_REACHING: "Fast",
+  
+CENTRALITY_DESCRIPTIONS = {
+    CentralityType.DEGREE: "Number of direct connections a node has",
+    CentralityType.IN_DEGREE: "Number of incoming edges to a node",
+    CentralityType.OUT_DEGREE: "Number of outgoing edges from a node",
+    CentralityType.EIGENVECTOR: "Importance based on connections to other important nodes",
+    CentralityType.KATZ: "Influence considering all paths with diminishing weights",
+    CentralityType.PAGERANK: "Probability of reaching a node via random walk",
+    CentralityType.PERCOLATION: "Resilience measure for node removal impact",
+    CentralityType.VOTERANK: "Identifies influential spreaders through voting algorithm",
+    
+    CentralityType.CLOSENESS: "Average distance to all other nodes (reachability)",
+    CentralityType.HARMONIC: "Sum of reciprocal distances (works on disconnected graphs)",
+    CentralityType.BETWEENNESS: "Frequency of appearing on shortest paths between nodes",
+    CentralityType.LOAD: "Expected load on node assuming shortest-path routing",
+    CentralityType.INFORMATION_CENTRALITY: "Importance based on information flow efficiency",
+    CentralityType.LOCAL_REACHING: "Reachability within limited distance",
+    
+    CentralityType.SUBGRAPH: "Number of subgraphs a node participates in",
+    CentralityType.COMMUNICABILITY_BETWEENNESS: "Node importance in network communication paths",
+    CentralityType.CURRENT_FLOW_BETWEENNESS: "Betweenness using electrical current flow model",
+    CentralityType.LAPLACIAN: "Importance based on graph Laplacian eigenvalues",
+    CentralityType.SECOND_ORDER: "Centrality using second-order neighborhood structure",
+    
+    CentralityType.EDGE_BETWEENNESS: "Frequency of edge appearing on shortest paths",
+    CentralityType.EDGE_LOAD: "Expected traffic load on an edge",
+    CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS: "Edge betweenness using current flow model",
+    CentralityType.EDGE_DISPERSION: "Measures how well an edge connects different communities",
+    CentralityType.EDGE_TROPHIC_DIFFERENCES: "Height difference in trophic levels across edge",
+    
+    CentralityType.TROPHIC_LEVEL: "Position in food chain or hierarchy (height in DAG)",
+    # CentralityType.TROPHIC_INCOHERENCE: "Measure of hierarchy disorder",
+    # CentralityType.GLOBAL_REACHING: "Global reachability measure for directed graphs",
+    # CentralityType.SUBGRAPH_CENTRALITY_EXP: "Subgraph centrality using matrix exponential",
+}  
+    
+ALL_COMMUNITY_ALGORITHMS = [
+    CommunityType.LOUVAIN,
+    CommunityType.GREEDY_MODULARITY,
+    CommunityType.LABEL_PROPAGATION,
+    CommunityType.ASYN_LPABASE,
+    CommunityType.GIRVAN_NEWMAN,
+    CommunityType.KERNIGHAN_LIN,
+    CommunityType.ASYN_FLUIDC,
+]
+
+COMMUNITY_CATEGORIES = {
+    "modularity_based": [
+        CommunityType.LOUVAIN,
+        CommunityType.GREEDY_MODULARITY,
+    ],
+    "label_propagation": [
+        CommunityType.LABEL_PROPAGATION,
+        CommunityType.ASYN_LPABASE,
+    ],
+    "hierarchical": [
+        CommunityType.GIRVAN_NEWMAN,
+    ],
+    "fluid_based": [
+        CommunityType.ASYN_FLUIDC,
+    ],
+    "bisection": [
+        CommunityType.KERNIGHAN_LIN,
+    ],
+}
+
+COMMUNITY_REQUIREMENTS = {
+    CommunityType.ASYN_FLUIDC: "Connected graphs only",
+}
+
+COMMUNITY_PERFORMANCE = {
+    CommunityType.GIRVAN_NEWMAN: "Very slow",
+    
+    CommunityType.KERNIGHAN_LIN: "Moderate",
+    CommunityType.GREEDY_MODULARITY: "Moderate",
+    
+    CommunityType.LOUVAIN: "Fast",
+    CommunityType.LABEL_PROPAGATION: "Fast",
+    CommunityType.ASYN_LPABASE: "Fast",
+    CommunityType.ASYN_FLUIDC: "Fast",
+}
+
+COMMUNITY_DESCRIPTIONS = {
+    CommunityType.LOUVAIN: "Fast algorithm that finds groups by maximizing connections within communities",
+    CommunityType.LABEL_PROPAGATION: "Nodes join communities based on their neighbors' memberships",
+    CommunityType.GREEDY_MODULARITY: "Quickly merges nodes into communities with strong internal connections",
+    CommunityType.GIRVAN_NEWMAN: "Identifies communities by removing bridge edges between groups",
+    CommunityType.KERNIGHAN_LIN: "Splits network into two balanced communities with minimal cross-edges",
+    CommunityType.ASYN_LPABASE: "Label propagation variant with asynchronous updates",
+    CommunityType.ASYN_FLUIDC: "Fluid communities algorithm for finding a fixed number of groups",
+}

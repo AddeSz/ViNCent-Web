@@ -113,6 +113,7 @@ def collect_attribute_data(
     base_state: NetworkData,
     deltas: Dict[int | float, TimestepDelta],
     centralities: Dict[int | float, Dict[str, Dict[str, Dict[str, float]]]],
+    communities: Dict[int | float, Dict[str, Dict[str, int]]],
     node_centrality_keys: Set[str],
     edge_centrality_keys: Set[str]
 ) -> MetricsInfo:
@@ -156,7 +157,18 @@ def collect_attribute_data(
         for _, edge_cents in timestep_centralities.get("edges", {}).items():
             collect_from_attributes(cast(AttributesDict, edge_cents), edge_attr_values)
     
-    def build_metadata(attr_values: CollectedAttributes, centrality_keys: set[str]) -> Dict[str, AttributeMetadata]:
+    for timestep_communities in communities.values():
+        for algorithm_name, node_communities in timestep_communities.items():
+            if algorithm_name not in node_attr_values:
+                node_attr_values[algorithm_name] = set()
+            for community_id in node_communities.values():
+                node_attr_values[algorithm_name].add(community_id)
+    
+    def build_metadata(
+        attr_values: CollectedAttributes, 
+        centrality_keys: set[str],
+        community_keys: set[str]
+    ) -> Dict[str, AttributeMetadata]:
         metadata: Dict[str, AttributeMetadata] = {}
         for key, values in attr_values.items():
             values_list = list(values)
@@ -164,10 +176,13 @@ def collect_attribute_data(
             all_strings = all(isinstance(v, str) for v in values_list)
             all_booleans = all(isinstance(v, bool) for v in values_list)
             
+            is_community = key in community_keys
+            
             info: AttributeMetadata = {
                 "key": key,
                 "values": values_list,
                 "isCentrality": key in centrality_keys,
+                "isCommunity": is_community,
                 "isNumeric": False,
                 "isCategory": False,
                 "type": "string",
@@ -183,7 +198,7 @@ def collect_attribute_data(
                 num_values = [float(v) for v in values_list]
                 info["range"] = {"min": min(num_values), "max": max(num_values)}
                 unique_values = set(num_values)
-                if all(v.is_integer() for v in num_values) and len(unique_values) <= 10:
+                if is_community or (all(v.is_integer() for v in num_values) and len(unique_values) <= 10):
                     info["isCategory"] = True
             elif all_strings:
                 info["type"] = "string"
@@ -198,8 +213,14 @@ def collect_attribute_data(
         
         return metadata
     
-    node_metadata = build_metadata(node_attr_values, node_centrality_keys)
-    edge_metadata = build_metadata(edge_attr_values, edge_centrality_keys)
+    community_keys = {
+        algorithm_name 
+        for timestep_communities in communities.values() 
+        for algorithm_name in timestep_communities.keys()
+    }
+    
+    node_metadata = build_metadata(node_attr_values, node_centrality_keys, community_keys)
+    edge_metadata = build_metadata(edge_attr_values, edge_centrality_keys, set())
     
     return {
         "nodes": node_metadata,

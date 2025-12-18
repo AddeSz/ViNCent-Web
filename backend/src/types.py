@@ -39,6 +39,14 @@ class CentralityType(str, Enum):
     EDGE_TROPHIC_DIFFERENCES = "edge_trophic_differences"
     TROPHIC_INCOHERENCE = "trophic_incoherence"
     
+class CommunityType(str, Enum):
+    LOUVAIN = "louvain"
+    GREEDY_MODULARITY = "greedy_modularity"
+    LABEL_PROPAGATION = "label_propagation"
+    ASYN_LPABASE = "asyn_lpabase"
+    GIRVAN_NEWMAN = "girvan_newman"
+    KERNIGHAN_LIN = "kernighan_lin"
+    ASYN_FLUIDC = "asyn_fluidc"
     
 AttributeValue = Union[str, int, float, bool]
 AttributesDict = Dict[str, AttributeValue]
@@ -84,6 +92,7 @@ class AttributeMetadata(TypedDict, total=False):
     key: str
     values: List[AttributeValue]
     isCentrality: bool
+    isCommunity: bool
     isNumeric: bool
     isCategory: bool
     type: str
@@ -113,3 +122,4 @@ class ProcessedNetworkResult(TypedDict):
     metrics_info: NotRequired[MetricsInfo]
     centralities: NotRequired[Dict[int | float, Dict[str, Dict[str, Dict[str, float]]]]]
     graph_type: NotRequired[str]
+    communities:  NotRequired[Dict[int | float, Dict[str, Dict[str, int]]]]

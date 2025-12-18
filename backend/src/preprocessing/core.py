@@ -3,10 +3,12 @@ import math
 from typing import Dict, List, Set
 
 from ..config import ALL_CENTRALITIES
-from ..types import (CentralityType, Edge, EdgesDict, NetworkData, Node,
-                     NodesDict, ProcessedNetworkResult, TimestepDelta)
+from ..types import (CentralityType, CommunityType, Edge, EdgesDict,
+                     NetworkData, Node, NodesDict, ProcessedNetworkResult,
+                     TimestepDelta)
 from .attributes import collect_attribute_data
 from .centrality import calculate_selected_centralities
+from .community import calculate_selected_communities
 from .graph import create_networkx_graph
 from .static import preprocess_static_network
 from .temporal import preprocess_temporal_network
@@ -19,11 +21,12 @@ logger = logging.getLogger(__name__)
 # 2. Preprocess into deltas (temporal) or static
 # 3. Calculate centralities and use as snapshots instead of deltas since all their values change on every node/edge change in the network
 # 4. Build metrics_info for all attributes (cents + attrs)
-
 def process_network(
     data: NetworkData,
-    centralities: List[CentralityType] | None = None
+    centralities: List[CentralityType] | None = None,
+    community_algorithms: List[CommunityType] | None = None
 ) -> ProcessedNetworkResult:
+
     if centralities is None:
         centralities = ALL_CENTRALITIES
     
@@ -55,12 +58,18 @@ def process_network(
     result, node_centrality_keys, edge_centrality_keys = calculate_centralities(
         result, directed, centralities
     )
+    
+    if community_algorithms:
+        result = calculate_communities(result, directed, community_algorithms)
+    
     centralities_data = result.get("centralities", {})
+    communities_data = result.get("communities", {})
     
     result["metrics_info"] = collect_attribute_data(
         result["base_state"],
         result["deltas"],
         centralities_data,
+        communities_data,
         node_centrality_keys,
         edge_centrality_keys
     )
@@ -158,6 +167,43 @@ def calculate_centralities(
     
     return result, all_node_centrality_keys, all_edge_centrality_keys
 
+# Builds entire snapshots of communites
+def calculate_communities(
+    result: ProcessedNetworkResult,
+    directed: bool,
+    selected_algorithms: List[CommunityType]
+) -> ProcessedNetworkResult:
+    base_state = result["base_state"]
+    deltas = result["deltas"]
+    timesteps = result["timesteps"]
+    
+    communities: Dict[int | float, Dict[str, Dict[str, int]]] = {}
+    
+    current_nodes: NodesDict = {node["id"]: node for node in base_state["nodes"]}
+    current_edges: EdgesDict = {edge["id"]: edge for edge in base_state["edges"]}
+    
+    logger.info(f"Detecting communities using {len(selected_algorithms)} algorithms across {len(timesteps)} timesteps")
+    
+    for timestep in sorted(timesteps):
+        delta = deltas[timestep]
+        
+        _apply_delta_to_state(current_nodes, current_edges, delta)
+        
+        network = _build_network_from_state(current_nodes, current_edges, directed)
+        
+        if not network["nodes"]:
+            communities[timestep] = {}
+            continue
+            
+        G = create_networkx_graph(network, directed)
+        
+        community_results = calculate_selected_communities(G, selected_algorithms)
+        
+        communities[timestep] = community_results
+    
+    result["communities"] = communities
+    
+    return result
 
 # Allows us to traverse the changes in the network for each timestep 
 def _apply_delta_to_state(
@@ -221,7 +267,6 @@ def _apply_delta_to_state(
                     edge["weight"] = weight_val
 
 
-# Allows us us to calculate cents for each timestep
 def _build_network_from_state(
     current_nodes: NodesDict,
     current_edges: EdgesDict,

@@ -8,8 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .cache_utils import CACHE_DIR, CACHE_ENABLED
-from .config import (ALL_CENTRALITIES, CENTRALITY_CATEGORIES,
-                     CENTRALITY_PERFORMANCE, CENTRALITY_REQUIREMENTS)
+from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
+                     CENTRALITY_CATEGORIES, CENTRALITY_DESCRIPTIONS,
+                     CENTRALITY_PERFORMANCE, CENTRALITY_REQUIREMENTS,
+                     COMMUNITY_CATEGORIES, COMMUNITY_DESCRIPTIONS,
+                     COMMUNITY_PERFORMANCE, COMMUNITY_REQUIREMENTS)
 from .parsers import parse_network_file
 from .preprocessing import process_network
 from .types import CentralityType
@@ -45,8 +48,8 @@ app.add_middleware(
 )
 
 
-@app.get("/centralities")
-async def get_centralities():
+@app.get("/get-options")
+async def get_options():
     try:
         centralities_data = {
             "all": [c.value for c in ALL_CENTRALITIES],
@@ -61,21 +64,51 @@ async def get_centralities():
             "performance": {
                 centrality_type.value: warning_text
                 for centrality_type, warning_text in CENTRALITY_PERFORMANCE.items()
+            },
+            "descriptions": {
+                centrality_type.value: desc
+                for centrality_type, desc in CENTRALITY_DESCRIPTIONS.items()
             }
         }
-        return JSONResponse(content=centralities_data)
+        
+        communities_data = {
+            "all": [algo.value for algo in ALL_COMMUNITY_ALGORITHMS],
+            "categories": {
+                category: [algo.value for algo in algorithms]
+                for category, algorithms in COMMUNITY_CATEGORIES.items()
+            },
+            "requirements": {
+                algo.value: requirement_text
+                for algo, requirement_text in COMMUNITY_REQUIREMENTS.items()
+            },
+            "performance": {
+                algo.value: warning_text
+                for algo, warning_text in COMMUNITY_PERFORMANCE.items()
+            },
+            "descriptions": {
+                algo.value: desc
+                for algo, desc in COMMUNITY_DESCRIPTIONS.items()
+            }
+        }
+        
+        options_data = {
+            "centralities": centralities_data,
+            "communities": communities_data
+        }
+        
+        return JSONResponse(content=options_data)
     except Exception as e:
-        logger.error(f"Error fetching centralities: {e}", exc_info=True)
+        logger.error(f"Error fetching options: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to fetch centralities: {str(e)}"
+            detail=f"Failed to fetch options: {str(e)}"
         )
-
-
+        
 @app.post("/validate-network")
 async def validate_network(
     file: UploadFile = File(...),
-    centralities: str = Form(default="[]")
+    centralities: str = Form(default="[]"),
+    communities: str = Form(default="[]")
 ):
     try:
         content = await file.read()
@@ -103,7 +136,23 @@ async def validate_network(
             logger.warning(f"Failed to parse centralities, defaulting to empty: {e}")
             selected_centralities = []
         
-        processed = process_network(data, selected_centralities)
+        selected_communities = []
+        try:
+            communities_list = json.loads(communities)
+            if communities_list:
+                selected_communities = [
+                    algo for algo in communities_list
+                    if algo in [a.value for a in ALL_COMMUNITY_ALGORITHMS]
+                ]
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Failed to parse communities, defaulting to empty: {e}")
+            selected_communities = []
+        
+        processed = process_network(
+            data, 
+            selected_centralities,
+            selected_communities
+        )
 
         return JSONResponse(content=processed)
         
