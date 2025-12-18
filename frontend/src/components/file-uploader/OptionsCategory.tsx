@@ -7,55 +7,49 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { Label } from "../ui/label";
-import type { CentralityDataBackend } from "./FileUploader";
+import type { OptionsDataBackend } from "./FileUploader";
 
-interface CentralityCategoryProps {
+interface OptionsCategoryProps {
   category: string;
-  centralities: string[];
-  selectedCentralities: Set<string>;
+  options: string[];
+  selectedOptions: Set<string>;
   expandedCategories: Set<string>;
-  centralityData: CentralityDataBackend;
+  optionsData: OptionsDataBackend;
   toggleCategory: (category: string) => void;
-  selectAllInCategory: (centralities: string[]) => void;
-  deselectAllInCategory: (centralities: string[]) => void;
-  toggleCentrality: (centrality: string) => void;
+  selectAllInCategory: (options: string[]) => void;
+  deselectAllInCategory: (options: string[]) => void;
+  toggleOption: (option: string) => void;
 }
 
-const CentralityCategory = ({
+const OptionsCategory = ({
   category,
-  centralities,
-  selectedCentralities,
+  options,
+  selectedOptions,
   expandedCategories,
-  centralityData,
+  optionsData,
   toggleCategory,
   selectAllInCategory,
   deselectAllInCategory,
-  toggleCentrality,
-}: CentralityCategoryProps) => {
+  toggleOption,
+}: OptionsCategoryProps) => {
   const isExpanded = expandedCategories.has(category);
 
-  const isFullySelected = centralities.every((c) =>
-    selectedCentralities.has(c),
-  );
-  const selectedCount = centralities.filter((c) =>
-    selectedCentralities.has(c),
-  ).length;
+  const isFullySelected = options.every((m) => selectedOptions.has(m));
+  const selectedCount = options.filter((m) => selectedOptions.has(m)).length;
   const isPartiallySelected =
-    selectedCount > 0 && selectedCount < centralities.length;
+    selectedCount > 0 && selectedCount < options.length;
 
   const countDisplay =
-    selectedCount === centralities.length
-      ? centralities.length
-      : `${selectedCount}/${centralities.length}`;
+    selectedCount === options.length
+      ? options.length
+      : `${selectedCount}/${options.length}`;
 
   const getCategoryPerformance = (): string | null => {
-    const selectedInCategory = centralities.filter((c) =>
-      selectedCentralities.has(c),
-    );
+    const selectedInCategory = options.filter((m) => selectedOptions.has(m));
     if (selectedInCategory.length === 0) return null;
 
     const performanceLevels = selectedInCategory
-      .map((c) => centralityData?.performance[c])
+      .map((m) => optionsData?.performance[m])
       .filter(Boolean);
 
     if (performanceLevels.includes("Very slow")) return "Very slow";
@@ -98,9 +92,9 @@ const CentralityCategory = ({
             }
             onCheckedChange={(checked) => {
               if (checked) {
-                selectAllInCategory(centralities);
+                selectAllInCategory(options);
               } else {
-                deselectAllInCategory(centralities);
+                deselectAllInCategory(options);
               }
             }}
             onClick={(e) => e.stopPropagation()}
@@ -128,31 +122,44 @@ const CentralityCategory = ({
         </div>
       </div>
       <CollapsibleContent className="mt-1 min-w-0 space-y-1 overflow-hidden">
-        {centralities.map((centrality) => {
-          const requirement = centralityData.requirements[centrality];
-          const performance = centralityData.performance[centrality];
+        {options.map((option) => {
+          const requirement = optionsData.requirements[option];
+          const performance = optionsData.performance[option];
+          const description = optionsData.descriptions?.[option];
           return (
-            <div key={centrality} className="flex items-center space-x-2 pl-6">
+            <div
+              key={option}
+              className="flex items-center space-x-2 rounded py-0.5 pl-6 hover:bg-accent/50"
+            >
               <Checkbox
-                id={centrality}
-                checked={selectedCentralities.has(centrality)}
-                onCheckedChange={() => toggleCentrality(centrality)}
+                id={option}
+                checked={selectedOptions.has(option)}
+                onCheckedChange={() => toggleOption(option)}
                 className="shrink-0"
               />
               <Label
-                htmlFor={centrality}
-                className="min-w-0 flex-1 cursor-pointer truncate text-xs"
+                htmlFor={option}
+                className="min-w-0 flex-1 cursor-pointer text-xs"
               >
-                {formatKeyLabel(centrality)}
-                {requirement && (
-                  <span className="ml-1 text-[10px] text-muted-foreground italic">
-                    ({requirement})
-                  </span>
-                )}
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1">
+                    <span>{formatKeyLabel(option)}</span>
+                    {requirement && (
+                      <span className="text-[10px] text-muted-foreground italic">
+                        ({requirement})
+                      </span>
+                    )}
+                  </div>
+                  {description && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {description}
+                    </span>
+                  )}
+                </div>
               </Label>
               {performance && (
                 <span
-                  className={`ml-auto flex shrink-0 items-center space-x-1 text-[10px] italic ${performanceColor(
+                  className={`ml-auto flex shrink-0 items-center space-x-1 pr-2 text-[10px] italic ${performanceColor(
                     performance,
                   )}`}
                 >
@@ -168,4 +175,4 @@ const CentralityCategory = ({
   );
 };
 
-export default CentralityCategory;
+export default OptionsCategory;

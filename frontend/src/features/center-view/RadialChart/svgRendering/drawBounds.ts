@@ -115,7 +115,7 @@ export const updateBoundHighlight = <T extends SVGElement>(
         return highlightBoundsColor.selected;
       }
       if (hoveredNode?.id === d.id) {
-        return highlightBoundsColor.hover;
+        return highlightBoundsColor.hovered;
       }
       return highlightBoundsColor.default;
     })

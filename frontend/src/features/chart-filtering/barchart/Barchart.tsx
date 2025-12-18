@@ -18,6 +18,8 @@ interface BarchartProps {
   onDisabledValuesChange: (values: Set<number | string>) => void;
 }
 
+const MIN_BAR_WIDTH = 5;
+
 const Barchart = ({
   categoricalValues,
   filteredData,
@@ -79,6 +81,8 @@ const Barchart = ({
   const barWidth = chartWidth / categories.length;
   const xScale = (index: number) => index * barWidth;
 
+  const canRenderBars = barWidth >= MIN_BAR_WIDTH;
+
   const isCategorySelected = (category: string): boolean => {
     if (!selectedCategories || selectedCategories.length === 0) return false;
     return selectedCategories.includes(category);
@@ -86,6 +90,38 @@ const Barchart = ({
 
   const getBarColor = (category: string) =>
     getColorForMetric(dataKey, category);
+
+  if (!canRenderBars) {
+    return (
+      <div ref={containerRef} className="relative">
+        <svg width={width} height={height}>
+          <g transform={`translate(${margin.left},${margin.top})`}>
+            <rect
+              x={0}
+              y={0}
+              width={chartWidth}
+              height={chartHeight}
+              fill="var(--muted)"
+              opacity={0.1}
+              rx={4}
+            />
+            <foreignObject x={0} y={0} width={chartWidth} height={chartHeight}>
+              <div className="flex h-full w-full items-center justify-center p-4">
+                <div className="text-center">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Too many categories to display ({categories.length})
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Increasing window size may help
+                  </div>
+                </div>
+              </div>
+            </foreignObject>
+          </g>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative">

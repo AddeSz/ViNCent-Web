@@ -20,7 +20,8 @@ export type ContextType =
   | "node-link"
   | "data-table"
   | "label"
-  | "node";
+  | "node"
+  | "community";
 
 export type ContextMenuTarget = {
   type: ContextType;

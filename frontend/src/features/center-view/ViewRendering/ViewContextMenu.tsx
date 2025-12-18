@@ -14,7 +14,6 @@ import type { ContextMenuTarget } from "@/features/center-view/CenterView";
 import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useSettingsStore } from "@/stores/useSettingsStore";
 import { handleHighlight } from "@/utils/ColorHelper";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
@@ -44,10 +43,10 @@ const ViewContextMenu = ({
   const resetNodeLinkZoom = useNetworkStore((s) => s.resetNodeLinkZoom);
   const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const { allNodeCentralityKeys, allNodeAttributeKeys } = useKeys();
+  const { allNodeCentralityKeys, allNodeAttributeKeys, allNodeCommunityKeys } =
+    useKeys();
   const sortKey = useNetworkStore((s) => s.sortKey);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const hideNode = useNetworkStore((s) => s.hideNode);
   const hiddenCount = useNetworkStore((s) => s.hiddenNodes.size);
@@ -86,16 +85,17 @@ const ViewContextMenu = ({
 
         {(contextMenuTarget.type === "radial" ||
           contextMenuTarget.type === "node-link" ||
-          contextMenuTarget.type === "data-table") && (
-          <>
-            <ContextMenuItem
-              onSelect={clearSelection}
-              className="cursor-pointer"
-            >
-              Reset Selection
-            </ContextMenuItem>
-          </>
-        )}
+          contextMenuTarget.type === "data-table") &&
+          selectedNodes.size > 0 && (
+            <>
+              <ContextMenuItem
+                onSelect={clearSelection}
+                className="cursor-pointer"
+              >
+                Reset Selection
+              </ContextMenuItem>
+            </>
+          )}
 
         {contextMenuTarget.type === "arc" && (
           <>
@@ -207,159 +207,166 @@ const ViewContextMenu = ({
                   Label
                 </ContextMenuRadioItem>
 
-                {displayMode === "both" ? (
-                  <>
-                    <ContextMenuSub>
-                      <ContextMenuSubTrigger>
-                        Centralities
-                      </ContextMenuSubTrigger>
-                      <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
-                        {allNodeCentralityKeys.map((key) => {
-                          const isSorted = sorting[0]?.id === key;
-                          const desc = sorting[0]?.desc;
-                          return (
-                            <ContextMenuRadioItem
-                              key={key}
-                              value={key}
-                              className="cursor-pointer"
-                            >
-                              <div className="flex w-full items-center justify-between gap-1">
-                                <span style={{ color: getColorForMetric(key) }}>
-                                  {formatKeyLabel(key)}
-                                </span>
-                                {isSorted &&
-                                  (desc ? (
-                                    <ArrowDown size={14} />
-                                  ) : (
-                                    <ArrowUp size={14} />
-                                  ))}
-                              </div>
-                            </ContextMenuRadioItem>
-                          );
-                        })}
-                      </ContextMenuSubContent>
-                    </ContextMenuSub>
-                    <ContextMenuSub>
-                      <ContextMenuSubTrigger>Attributes</ContextMenuSubTrigger>
-                      <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
-                        {allNodeAttributeKeys.map((key) => {
-                          const isSorted = sorting[0]?.id === key;
-                          const desc = sorting[0]?.desc;
-                          return (
-                            <ContextMenuRadioItem
-                              key={key}
-                              value={key}
-                              className="cursor-pointer"
-                            >
-                              <div className="flex w-full items-center justify-between gap-1">
-                                <span style={{ color: getColorForMetric(key) }}>
-                                  {formatKeyLabel(key)}
-                                </span>
-                                {isSorted &&
-                                  (desc ? (
-                                    <ArrowDown size={16} />
-                                  ) : (
-                                    <ArrowUp size={16} />
-                                  ))}
-                              </div>
-                            </ContextMenuRadioItem>
-                          );
-                        })}
-                      </ContextMenuSubContent>
-                    </ContextMenuSub>
-                  </>
-                ) : displayMode === "attributes" ? (
-                  <>
-                    {allNodeAttributeKeys.map((key) => {
-                      const isSorted = sorting[0]?.id === key;
-                      const desc = sorting[0]?.desc;
-                      return (
-                        <ContextMenuRadioItem
-                          key={key}
-                          value={key}
-                          className="cursor-pointer"
-                        >
-                          <div className="flex w-full items-center justify-between gap-1">
-                            <span style={{ color: getColorForMetric(key) }}>
-                              {formatKeyLabel(key)}
-                            </span>
-                            {isSorted &&
-                              (desc ? (
-                                <ArrowDown size={16} />
-                              ) : (
-                                <ArrowUp size={16} />
-                              ))}
-                          </div>
-                        </ContextMenuRadioItem>
-                      );
-                    })}
-                    {sortKey && allNodeCentralityKeys.includes(sortKey) && (
-                      <ContextMenuRadioItem
-                        value={sortKey}
-                        className="cursor-pointer"
-                      >
-                        <div className="flex w-full items-center justify-between gap-1">
-                          <span style={{ color: getColorForMetric(sortKey) }}>
-                            {formatKeyLabel(sortKey)}
-                          </span>
-                          {sorting[0]?.id === sortKey &&
-                            (sorting[0].desc ? (
-                              <ArrowDown size={14} />
-                            ) : (
-                              <ArrowUp size={14} />
-                            ))}
-                        </div>
-                      </ContextMenuRadioItem>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {allNodeCentralityKeys.map((key) => {
-                      const isSorted = sorting[0]?.id === key;
-                      const desc = sorting[0]?.desc;
-                      return (
-                        <ContextMenuRadioItem
-                          key={key}
-                          value={key}
-                          className="cursor-pointer"
-                        >
-                          <div className="flex w-full items-center justify-between gap-1">
-                            <span style={{ color: getColorForMetric(key) }}>
-                              {formatKeyLabel(key)}
-                            </span>
-                            {isSorted &&
-                              (desc ? (
-                                <ArrowDown size={14} />
-                              ) : (
-                                <ArrowUp size={14} />
-                              ))}
-                          </div>
-                        </ContextMenuRadioItem>
-                      );
-                    })}
-                    {sortKey && allNodeAttributeKeys.includes(sortKey) && (
-                      <ContextMenuRadioItem
-                        value={sortKey}
-                        className="cursor-pointer"
-                      >
-                        <div className="flex w-full items-center justify-between gap-1">
-                          <span style={{ color: getColorForMetric(sortKey) }}>
-                            {formatKeyLabel(sortKey)}
-                          </span>
-                          {sorting[0]?.id === sortKey &&
-                            (sorting[0].desc ? (
-                              <ArrowDown size={16} />
-                            ) : (
-                              <ArrowUp size={16} />
-                            ))}
-                        </div>
-                      </ContextMenuRadioItem>
-                    )}
-                  </>
+                {allNodeCentralityKeys.length > 0 && (
+                  <ContextMenuSub>
+                    <ContextMenuSubTrigger
+                      className={
+                        allNodeCentralityKeys.includes(sortKey || "")
+                          ? "text-blue-500"
+                          : ""
+                      }
+                    >
+                      Centralities
+                    </ContextMenuSubTrigger>
+                    <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
+                      {allNodeCentralityKeys.map((key) => {
+                        const isSorted = sorting[0]?.id === key;
+                        const desc = sorting[0]?.desc;
+                        return (
+                          <ContextMenuRadioItem
+                            key={key}
+                            value={key}
+                            className="cursor-pointer"
+                          >
+                            <div className="flex w-full items-center justify-between gap-1">
+                              <span style={{ color: getColorForMetric(key) }}>
+                                {formatKeyLabel(key)}
+                              </span>
+                              {isSorted &&
+                                (desc ? (
+                                  <ArrowDown size={14} />
+                                ) : (
+                                  <ArrowUp size={14} />
+                                ))}
+                            </div>
+                          </ContextMenuRadioItem>
+                        );
+                      })}
+                    </ContextMenuSubContent>
+                  </ContextMenuSub>
+                )}
+
+                {allNodeAttributeKeys.length > 0 && (
+                  <ContextMenuSub>
+                    <ContextMenuSubTrigger
+                      className={
+                        allNodeAttributeKeys.includes(sortKey || "")
+                          ? "text-blue-500"
+                          : ""
+                      }
+                    >
+                      Attributes
+                    </ContextMenuSubTrigger>
+                    <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
+                      {allNodeAttributeKeys.map((key) => {
+                        const isSorted = sorting[0]?.id === key;
+                        const desc = sorting[0]?.desc;
+                        return (
+                          <ContextMenuRadioItem
+                            key={key}
+                            value={key}
+                            className="cursor-pointer"
+                          >
+                            <div className="flex w-full items-center justify-between gap-1">
+                              <span style={{ color: getColorForMetric(key) }}>
+                                {formatKeyLabel(key)}
+                              </span>
+                              {isSorted &&
+                                (desc ? (
+                                  <ArrowDown size={16} />
+                                ) : (
+                                  <ArrowUp size={16} />
+                                ))}
+                            </div>
+                          </ContextMenuRadioItem>
+                        );
+                      })}
+                    </ContextMenuSubContent>
+                  </ContextMenuSub>
+                )}
+
+                {allNodeCommunityKeys.length > 0 && (
+                  <ContextMenuSub>
+                    <ContextMenuSubTrigger
+                      className={
+                        allNodeCommunityKeys.includes(sortKey || "")
+                          ? "text-blue-500"
+                          : ""
+                      }
+                    >
+                      Community
+                    </ContextMenuSubTrigger>
+                    <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
+                      {allNodeCommunityKeys.map((key) => {
+                        const isSorted = sorting[0]?.id === key;
+                        const desc = sorting[0]?.desc;
+                        return (
+                          <ContextMenuRadioItem
+                            key={key}
+                            value={key}
+                            className="cursor-pointer"
+                          >
+                            <div className="flex w-full items-center justify-between gap-1">
+                              <span style={{ color: getColorForMetric(key) }}>
+                                {formatKeyLabel(key)}
+                              </span>
+                              {isSorted &&
+                                (desc ? (
+                                  <ArrowDown size={16} />
+                                ) : (
+                                  <ArrowUp size={16} />
+                                ))}
+                            </div>
+                          </ContextMenuRadioItem>
+                        );
+                      })}
+                    </ContextMenuSubContent>
+                  </ContextMenuSub>
                 )}
               </ContextMenuRadioGroup>
             </ContextMenuSubContent>
           </ContextMenuSub>
+        )}
+
+        {contextMenuTarget.type === "community" && (
+          <>
+            <ContextMenuItem
+              onSelect={() => {
+                const algorithmKey = contextMenuTarget.data.algorithmKey;
+                onContextMenuSort(algorithmKey);
+              }}
+              className="cursor-pointer"
+            >
+              <div className="flex w-full items-center justify-between gap-1">
+                <span>
+                  Sort by{" "}
+                  <span>
+                    {formatKeyLabel(contextMenuTarget.data.algorithmKey)}
+                  </span>{" "}
+                  Communities
+                </span>
+                {sorting[0]?.id === contextMenuTarget.data.algorithmKey && (
+                  <>
+                    {sorting[0].desc ? (
+                      <ArrowDown size={14} />
+                    ) : (
+                      <ArrowUp size={14} />
+                    )}
+                  </>
+                )}
+              </div>
+            </ContextMenuItem>
+            <ContextMenuItem
+              onSelect={() => {
+                contextMenuTarget.data.nodeIds.forEach((id: string) => {
+                  handleHighlight(id, true);
+                });
+              }}
+              className="cursor-pointer"
+            >
+              Select All Nodes ({contextMenuTarget.data.nodeIds.length})
+            </ContextMenuItem>
+          </>
         )}
 
         {(contextMenuTarget.type === "radial" ||

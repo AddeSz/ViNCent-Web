@@ -1,3 +1,4 @@
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
   DataChanges,
@@ -55,15 +56,19 @@ const getNodeStyle = (
   nodeChanges: DataChanges,
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
+  selectedCommunity: string,
 ) => {
   const { displaySettings } = useSettingsStore.getState();
+  const getColorForMetric = useMetricsStore.getState().getColorForMetric;
   const removed = nodeChanges.removed[node.id] ? true : false;
   const added = nodeChanges.added[node.id] ? true : false;
 
-  let fill = highlightNodeColor.default;
-  if (removed && !displaySettings.previewChanges) {
-    fill = highlightNodeColor.removed;
-  }
+  const data = nodeData.get(node.id);
+  const communityNumber = data?.[selectedCommunity];
+  const fill =
+    communityNumber !== undefined
+      ? getColorForMetric(selectedCommunity, communityNumber)
+      : highlightNodeColor.default;
 
   const isSelected = selectedNodes.has(node.id);
   const isHovered = hoveredNode === node.id;
@@ -82,23 +87,14 @@ const getNodeStyle = (
   })();
 
   const isConnected =
-    isSelected || isHovered || isSecondarySelected || isSecondaryHovered;
+    isSelected || isSecondarySelected || isHovered || isSecondaryHovered;
 
   const hasActiveSelectedNodes = Array.from(selectedNodes).some((id) => {
     const data = nodeData.get(id);
     return data && !data.stable;
   });
 
-  const hasActiveHoveredNode =
-    hoveredNode &&
-    (() => {
-      const data = nodeData.get(hoveredNode);
-      return data && !data.stable;
-    })();
-
-  const hasAnyActiveHighlight = hasActiveSelectedNodes || hasActiveHoveredNode;
-
-  const opacity = !hasAnyActiveHighlight || isConnected ? 1 : 0.2;
+  const opacity = !hasActiveSelectedNodes || isConnected ? 1 : 0.2;
 
   let stroke = "none";
   let strokeWidth = 0;
@@ -108,22 +104,6 @@ const getNodeStyle = (
     strokeWidth = 3;
   } else if (removed && displaySettings.previewChanges) {
     stroke = highlightNodeColor.removed;
-    strokeWidth = 3;
-  }
-
-  if (isSecondarySelected) {
-    fill = highlightNodeColor.linkedToSelected;
-    strokeWidth = 3;
-  } else if (isSecondaryHovered) {
-    fill = highlightNodeColor.linkedToHovered;
-    strokeWidth = 3;
-  }
-
-  if (isSelected) {
-    fill = highlightNodeColor.selected;
-    strokeWidth = 3;
-  } else if (isHovered) {
-    fill = highlightNodeColor.hovered;
     strokeWidth = 3;
   }
 
@@ -172,17 +152,8 @@ const getLinkStyleForNode = (
     return data && !data.stable;
   });
 
-  const hasActiveHoveredNode =
-    hoveredNode &&
-    (() => {
-      const data = nodeData.get(hoveredNode);
-      return data && !data.stable;
-    })();
-
-  const hasAnyActiveHighlight = hasActiveSelectedNodes || hasActiveHoveredNode;
-
   const dimmedOpacity =
-    !hasAnyActiveHighlight || isConnected ? style.opacity : 0.1;
+    !hasActiveSelectedNodes || isConnected ? style.opacity : 0.1;
 
   return {
     stroke: style.stroke,
@@ -204,6 +175,7 @@ const updateNodes = (
   nodeChanges: DataChanges,
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
+  selectedCommunity: string,
 ) => {
   const nodes = nodeGroup
     .selectAll<SVGCircleElement, Node>("circle.node")
@@ -241,6 +213,7 @@ const updateNodes = (
       nodeChanges,
       hoveredNode,
       nodeData,
+      selectedCommunity,
     );
     const size = nodeSizes.get(d.id)!;
     d3.select(this)
@@ -352,6 +325,7 @@ export const updateStyle = (
   edgeChanges: DataChanges,
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
+  selectedCommunity: string,
 ) => {
   svg.selectAll<SVGCircleElement, Node>("circle.node").each(function (d) {
     const style = getNodeStyle(
@@ -360,6 +334,7 @@ export const updateStyle = (
       nodeChanges,
       hoveredNode,
       nodeData,
+      selectedCommunity,
     );
     const size = nodeSizes.get(d.id)!;
     d3.select(this)
@@ -416,6 +391,7 @@ const updateGraph = (
   linkWeights: Map<string, number>,
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
+  selectedCommunity: string,
 ) => {
   const svgGroup = svg.select("g.zoom-group");
   const linkGroup = svgGroup.select("g.links-group");
@@ -440,6 +416,7 @@ const updateGraph = (
     nodeChanges,
     hoveredNode,
     nodeData,
+    selectedCommunity,
   );
 
   simulation.on("tick", () => {

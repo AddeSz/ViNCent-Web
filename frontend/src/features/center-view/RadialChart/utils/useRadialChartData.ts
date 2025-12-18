@@ -7,20 +7,18 @@ import { createAngleMap } from "./calculateLinks";
 
 interface UseRadialChartDataProps {
   data: FullData[];
-  allKeys: string[];
   enabledCentralityKeys: string[];
   enabledAttributeKeys: string[];
+  enabledCommunityKeys: string[];
 }
 
 export const useRadialChartData = ({
   data,
-  allKeys,
   enabledCentralityKeys,
   enabledAttributeKeys,
+  enabledCommunityKeys,
 }: UseRadialChartDataProps) => {
   const radialSettings = useSettingsStore((s) => s.radialSettings);
-  const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
-
   const {
     innerRadius,
     outerRadius,
@@ -29,11 +27,18 @@ export const useRadialChartData = ({
     labelWidth,
     maxLabelWidth,
     separateMetrics,
+    communitiesInArcs,
   } = radialSettings;
 
   const visibleData = useMemo(() => data.filter((d) => !d.hidden), [data]);
 
   const chartData = useMemo(() => {
+    const allKeys = [
+      ...enabledCentralityKeys,
+      ...enabledAttributeKeys,
+      ...(communitiesInArcs ? enabledCommunityKeys : []),
+    ];
+
     const keys = allKeys.length === 0 ? ["filler"] : allKeys;
 
     if (visibleData.length === 0) {
@@ -51,18 +56,27 @@ export const useRadialChartData = ({
       .value((d, key) => d[key] ?? 0)(filledData);
 
     return { series };
-  }, [visibleData, allKeys]);
+  }, [
+    visibleData,
+    enabledCentralityKeys,
+    enabledAttributeKeys,
+    enabledCommunityKeys,
+    communitiesInArcs,
+  ]);
 
   const xScale = useMemo(() => {
     const n = visibleData.length;
     if (n === 0) return d3.scaleBand<string>();
+
     const bandWidth = calculateBandwidth(n);
+
     if (n === 1) {
       const scale = (id: string) => {
         const index = visibleData.findIndex((d) => d.id === id);
         return index === -1 ? undefined : 0;
       };
       scale.bandwidth = () => bandWidth;
+      scale.step = () => bandWidth;
       scale.domain = () => visibleData.map((d) => d.id);
       return scale as d3.ScaleBand<string>;
     }
@@ -75,7 +89,9 @@ export const useRadialChartData = ({
       if (index === -1) return undefined;
       return gapSize / 2 + index * (bandWidth + gapSize);
     };
+
     scale.bandwidth = () => bandWidth;
+    scale.step = () => bandWidth + gapSize;
     scale.domain = () => visibleData.map((d) => d.id);
 
     return scale as d3.ScaleBand<string>;
@@ -87,26 +103,70 @@ export const useRadialChartData = ({
   }, [xScale]);
 
   const { yScale, getKeyIndex } = useMemo(() => {
-    return createRadialScale({
-      innerRadius,
-      outerRadius,
-      separateMetrics,
-      displayMode,
-      enabledCentralityKeys,
-      enabledAttributeKeys,
-    });
+    const centralityCount = enabledCentralityKeys.length;
+    const attributeCount = enabledAttributeKeys.length;
+    const communityCount = communitiesInArcs ? enabledCommunityKeys.length : 0;
+    const gap = separateMetrics ? 2 : 0;
+
+    const gapAfterCentrality =
+      centralityCount > 0 && (attributeCount > 0 || communityCount > 0)
+        ? gap
+        : 0;
+
+    const gapAfterAttribute =
+      attributeCount > 0 && communityCount > 0 ? gap : 0;
+
+    const totalRings = Math.max(
+      centralityCount +
+        gapAfterCentrality +
+        attributeCount +
+        gapAfterAttribute +
+        communityCount,
+      1,
+    );
+
+    const yScale = d3
+      .scaleLinear<number, number>()
+      .domain([0, totalRings])
+      .range([innerRadius, outerRadius]);
+
+    const getKeyIndex = (key: string): number => {
+      const cIndex = enabledCentralityKeys.indexOf(key);
+      if (cIndex !== -1) return cIndex;
+
+      const aIndex = enabledAttributeKeys.indexOf(key);
+      if (aIndex !== -1) {
+        return centralityCount + gapAfterCentrality + aIndex;
+      }
+
+      const commIndex = enabledCommunityKeys.indexOf(key);
+      if (commIndex !== -1 && communityCount > 0) {
+        return (
+          centralityCount +
+          gapAfterCentrality +
+          attributeCount +
+          gapAfterAttribute +
+          commIndex
+        );
+      }
+
+      return 0;
+    };
+
+    return { yScale, getKeyIndex };
   }, [
     innerRadius,
     outerRadius,
     separateMetrics,
-    displayMode,
     enabledCentralityKeys,
     enabledAttributeKeys,
+    enabledCommunityKeys,
+    communitiesInArcs,
   ]);
 
   const totalLabelWidth = truncateLabels ? maxLabelWidth : labelWidth;
 
-  const radius = useMemo(() => {
+  const outerArcsWidth = useMemo(() => {
     return (
       Math.min(
         (outerRadius * calculateBandwidth(visibleData.length)) / 2,
@@ -122,65 +182,10 @@ export const useRadialChartData = ({
     yScale,
     getKeyIndex,
     totalLabelWidth,
-    radius,
+    outerArcsWidth,
     innerRadius,
     outerRadius,
     fontSize,
     truncateLabels,
   };
 };
-
-function createRadialScale({
-  innerRadius,
-  outerRadius,
-  separateMetrics,
-  displayMode,
-  enabledCentralityKeys,
-  enabledAttributeKeys,
-}: {
-  innerRadius: number;
-  outerRadius: number;
-  separateMetrics: boolean;
-  displayMode: string;
-  enabledCentralityKeys: string[];
-  enabledAttributeKeys: string[];
-}) {
-  const centralityCount = enabledCentralityKeys.length;
-  const attributeCount = enabledAttributeKeys.length;
-
-  const gap = separateMetrics ? 1 : 0;
-
-  let totalRings = centralityCount + gap + attributeCount;
-
-  if (displayMode === "attributes" || centralityCount === 0) {
-    totalRings = attributeCount;
-  }
-  if (displayMode === "centrality" || attributeCount === 0) {
-    totalRings = centralityCount;
-  }
-  if (centralityCount === 0 && attributeCount === 0) {
-    totalRings = 1;
-  }
-
-  const yScale = d3
-    .scaleLinear<number, number>()
-    .domain([0, totalRings])
-    .range([innerRadius, outerRadius]);
-
-  const getKeyIndex = (key: string): number => {
-    const cIndex = enabledCentralityKeys.indexOf(key);
-    if (cIndex !== -1) return cIndex;
-
-    const aIndex = enabledAttributeKeys.indexOf(key);
-    if (aIndex !== -1) {
-      if (displayMode === "attributes" || centralityCount === 0) {
-        return aIndex;
-      }
-      return centralityCount + gap + aIndex;
-    }
-
-    return 0;
-  };
-
-  return { yScale, getKeyIndex };
-}

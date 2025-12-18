@@ -1,28 +1,11 @@
 import type { FullData } from "@/types/network";
 import { highlightBoundsColor } from "@/utils/ColorHelper";
 import { arc } from "d3";
-import type { BoundsResult } from "./utils/calculateBounds";
+import type { BoundsResult } from "../utils/calculateBounds";
 
 let cachedBoundsData: {
   groupBounds: Array<{ id: string; pathData: string; type: string }>;
 } = { groupBounds: [] };
-
-const customStep = (angle: number): number => {
-  const deg = (angle * 180) / Math.PI;
-
-  if (deg >= 0 && deg <= 90) {
-    //0 => 1 between 0–90
-    return deg / 90;
-  } else if (deg >= 90 && deg <= 180) {
-    //1 => 1 between 90–180
-    return 1;
-  } else if (deg > 180 && deg <= 250) {
-    //1 => 0 between 180–250
-    return 1 - (deg - 180) / (250 - 180);
-  } else {
-    return 0;
-  }
-};
 
 export const drawBoundsHighlight = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -38,7 +21,7 @@ export const drawBoundsHighlight = (
     innerRadius: number;
     outerRadius: number;
   }>()
-    .innerRadius((d) => d.innerRadius + 0.5 * customStep(d.startAngle))
+    .innerRadius((d) => d.innerRadius)
     .outerRadius((d) => d.outerRadius)
     .startAngle((d) => d.startAngle)
     .endAngle((d) => d.endAngle);
@@ -101,13 +84,13 @@ export const updateBoundsHighlight = (
     if (selectedNodes.has(bound.id)) {
       stroke = highlightBoundsColor.selected;
     } else if (hoveredNode === bound.id) {
-      stroke = highlightBoundsColor.hover;
+      stroke = highlightBoundsColor.hovered;
     } else if (linkedToSelectedIds.has(bound.id)) {
       stroke = highlightBoundsColor.linkedToSelected;
     } else if (linkedToHoveredIds?.has(bound.id)) {
       stroke = highlightBoundsColor.linkedToHovered;
     } else {
-      stroke = highlightBoundsColor.hover;
+      stroke = highlightBoundsColor.hovered;
     }
 
     return {

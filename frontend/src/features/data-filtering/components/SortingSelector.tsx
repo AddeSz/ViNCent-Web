@@ -23,12 +23,17 @@ import { useState } from "react";
 
 const SortingSelector = () => {
   const [open, setOpen] = useState(false);
-  const { enabledNodeKeys } = useKeys();
+  const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
   const { sorting, setSorting, handleSortKeyChange } = useSortingLogic();
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
 
   const sortKey = sorting[0]?.id || "none";
-  const keys = ["none", "label", ...enabledNodeKeys];
+  const keys = [
+    "none",
+    "label",
+    ...enabledNodeKeys,
+    ...enabledNodeCommunityKeys,
+  ];
   const isDisabled = sorting.length === 0;
   const currentDirection = sorting[0]?.desc ? "desc" : "asc";
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());

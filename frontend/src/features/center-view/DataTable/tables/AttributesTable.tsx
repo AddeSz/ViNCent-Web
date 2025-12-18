@@ -6,22 +6,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { createAttributeColumns } from "../Columns";
+import { createAttributeColumns, type AttributeRow } from "../Columns";
 import TableContent from "../components/TableContent";
 import TablePagination from "../components/TablePagination";
 import TableTypeToggle from "../components/TableTypeToggle";
-
-interface AttributeRow {
-  id: string;
-  key: string;
-  isNumeric: boolean;
-  isCategory: boolean;
-  isCentrality: boolean;
-  range: string;
-  minValue: number | null;
-  maxValue: number | null;
-  uniqueValues: number;
-}
 
 interface AttributesTableState {
   columnFilters: any[];

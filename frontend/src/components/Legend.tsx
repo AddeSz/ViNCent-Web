@@ -12,8 +12,8 @@ interface LegendProps {
 const Legend = ({ nodeData }: LegendProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const metricsInfo = useMetricsStore((s) => s.metricsInfoCurrent);
-  const { enabledNodeKeys } = useKeys();
+  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
+  const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
 
   const [lastHoveredNode, setLastHoveredNode] = useState<string | null>(null);
 
@@ -30,7 +30,7 @@ const Legend = ({ nodeData }: LegendProps) => {
     if (!displayNode) return [];
 
     const isStable = data?.stable ?? false;
-    return enabledNodeKeys.map((key) => {
+    return [...enabledNodeKeys, ...enabledNodeCommunityKeys].map((key) => {
       const info = metricsInfo.get(key);
       const value = data?.[key];
 

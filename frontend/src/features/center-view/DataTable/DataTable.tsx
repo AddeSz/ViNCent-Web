@@ -57,7 +57,7 @@ const DataTable = ({
   onSortingChange,
   handleContextMenu,
 }: DataTableProps) => {
-  const metricsInfo = useMetricsStore((s) => s.metricsInfoCurrent);
+  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
   const [dataType, setDataType] = useState<"nodes" | "edges" | "attributes">(
     "nodes",
   );
@@ -98,6 +98,7 @@ const DataTable = ({
         key,
         isNumeric: info.isNumeric || false,
         isCategory: info.isCategory || false,
+        isCommunity: info.isCommunity || false,
         isCentrality: info.isCentrality || false,
         range: info.range
           ? `${formatValue(info.range.min)} - ${formatValue(info.range.max)}`

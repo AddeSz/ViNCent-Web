@@ -1,34 +1,45 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useMemo } from "react";
 
 export const useKeys = () => {
   const allNodeKeys = useMetricsStore((s) => s.nodeMetricsKeys);
-  const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
+  const enabledNodeMetricsKeys = useMetricsStore(
+    (s) => s.enabledNodeMetricsKeys,
+  );
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
-  const displayMode = useSettingsStore((s) => s.displaySettings.displayMode);
   const enabledEdgeMetricsKeys = useMetricsStore(
     (s) => s.enabledEdgeMetricsKeys,
   );
   const allEdgeKeys = useMetricsStore((s) => s.edgeMetricsKeys);
 
-  const { allNodeAttributeKeys, allNodeCentralityKeys } = useMemo(() => {
-    const attrs: string[] = [];
-    const cents: string[] = [];
-    allNodeKeys.forEach((key) => {
-      const info = metricsInfo.get(key);
-      if (info?.isCentrality) {
-        cents.push(key);
-      } else {
-        attrs.push(key);
-      }
-    });
-    return { allNodeAttributeKeys: attrs, allNodeCentralityKeys: cents };
-  }, [allNodeKeys, metricsInfo]);
+  const { allNodeAttributeKeys, allNodeCentralityKeys, allNodeCommunityKeys } =
+    useMemo(() => {
+      const attrs: string[] = [];
+      const cents: string[] = [];
+      const comms: string[] = [];
+
+      allNodeKeys.forEach((key) => {
+        const info = metricsInfo.get(key);
+        if (info?.isCommunity) {
+          comms.push(key);
+        } else if (info?.isCentrality) {
+          cents.push(key);
+        } else {
+          attrs.push(key);
+        }
+      });
+
+      return {
+        allNodeAttributeKeys: attrs,
+        allNodeCentralityKeys: cents,
+        allNodeCommunityKeys: comms,
+      };
+    }, [allNodeKeys, metricsInfo]);
 
   const { allEdgeAttributeKeys, allEdgeCentralityKeys } = useMemo(() => {
     const attrs: string[] = [];
     const cents: string[] = [];
+
     allEdgeKeys.forEach((key) => {
       const info = metricsInfo.get(key);
       if (info?.isCentrality) {
@@ -37,31 +48,42 @@ export const useKeys = () => {
         attrs.push(key);
       }
     });
+
     return { allEdgeAttributeKeys: attrs, allEdgeCentralityKeys: cents };
   }, [allEdgeKeys, metricsInfo]);
 
-  const { enabledNodeAttributeKeys, enabledNodeCentralityKeys } =
-    useMemo(() => {
-      const attrs: string[] = [];
-      const cents: string[] = [];
-      enabledMetricsKeys.forEach((key) => {
-        const info = metricsInfo.get(key);
-        if (info?.isCentrality) {
-          cents.push(key);
-        } else {
-          attrs.push(key);
-        }
-      });
-      return {
-        enabledNodeAttributeKeys: attrs,
-        enabledNodeCentralityKeys: cents,
-      };
-    }, [enabledMetricsKeys, metricsInfo]);
+  const {
+    enabledNodeAttributeKeys,
+    enabledNodeCentralityKeys,
+    enabledNodeCommunityKeys,
+  } = useMemo(() => {
+    const attrs: string[] = [];
+    const cents: string[] = [];
+    const comms: string[] = [];
+
+    enabledNodeMetricsKeys.forEach((key) => {
+      const info = metricsInfo.get(key);
+      if (info?.isCommunity) {
+        comms.push(key);
+      } else if (info?.isCentrality) {
+        cents.push(key);
+      } else {
+        attrs.push(key);
+      }
+    });
+
+    return {
+      enabledNodeAttributeKeys: attrs,
+      enabledNodeCentralityKeys: cents,
+      enabledNodeCommunityKeys: comms,
+    };
+  }, [enabledNodeMetricsKeys, metricsInfo]);
 
   const { enabledEdgeAttributeKeys, enabledEdgeCentralityKeys } =
     useMemo(() => {
       const attrs: string[] = [];
       const cents: string[] = [];
+
       enabledEdgeMetricsKeys.forEach((key) => {
         const info = metricsInfo.get(key);
         if (info?.isCentrality) {
@@ -70,6 +92,7 @@ export const useKeys = () => {
           attrs.push(key);
         }
       });
+
       return {
         enabledEdgeAttributeKeys: attrs,
         enabledEdgeCentralityKeys: cents,
@@ -77,20 +100,20 @@ export const useKeys = () => {
     }, [enabledEdgeMetricsKeys, metricsInfo]);
 
   const enabledNodeKeys = useMemo(() => {
-    if (displayMode === "attributes") return [...enabledNodeAttributeKeys];
-    if (displayMode === "centrality") return [...enabledNodeCentralityKeys];
     return [...enabledNodeCentralityKeys, ...enabledNodeAttributeKeys];
-  }, [enabledNodeAttributeKeys, enabledNodeCentralityKeys, displayMode]);
+  }, [enabledNodeAttributeKeys, enabledNodeCentralityKeys]);
 
   const enabledEdgeKeys = useMemo(() => {
-    if (displayMode === "attributes") return [...enabledEdgeAttributeKeys];
-    if (displayMode === "centrality") return [...enabledEdgeCentralityKeys];
     return [...enabledEdgeCentralityKeys, ...enabledEdgeAttributeKeys];
-  }, [enabledEdgeAttributeKeys, enabledEdgeCentralityKeys, displayMode]);
+  }, [enabledEdgeAttributeKeys, enabledEdgeCentralityKeys]);
 
   const sortedAllNodeKeys = useMemo(() => {
-    return [...allNodeCentralityKeys, ...allNodeAttributeKeys];
-  }, [allNodeCentralityKeys, allNodeAttributeKeys]);
+    return [
+      ...allNodeCentralityKeys,
+      ...allNodeAttributeKeys,
+      ...allNodeCommunityKeys,
+    ];
+  }, [allNodeCentralityKeys, allNodeAttributeKeys, allNodeCommunityKeys]);
 
   const sortedAllEdgeKeys = useMemo(() => {
     return [...allEdgeCentralityKeys, ...allEdgeAttributeKeys];
@@ -99,12 +122,14 @@ export const useKeys = () => {
   return {
     allNodeAttributeKeys,
     allNodeCentralityKeys,
+    allNodeCommunityKeys,
     allNodeKeys: sortedAllNodeKeys,
     allEdgeAttributeKeys,
     allEdgeCentralityKeys,
     allEdgeKeys: sortedAllEdgeKeys,
     enabledNodeAttributeKeys,
     enabledNodeCentralityKeys,
+    enabledNodeCommunityKeys,
     enabledNodeKeys,
     enabledEdgeAttributeKeys,
     enabledEdgeCentralityKeys,

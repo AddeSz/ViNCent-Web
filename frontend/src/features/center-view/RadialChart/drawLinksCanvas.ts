@@ -61,7 +61,7 @@ const drawLinksCanvas = async (
 
   const requiredRadius = outerRadius + 50;
   const canvasSize = Math.ceil(requiredRadius * 2);
-  const center = canvasSize / 2;
+  const center = Math.floor(canvasSize / 2);
 
   let linkGroup = svg.select<SVGGElement>("g.links-group");
   if (linkGroup.empty()) {
@@ -314,6 +314,8 @@ function updateHighlightPaths(
           .attr("stroke", (d) => d.stroke)
           .attr("stroke-width", 2)
           .attr("opacity", 0)
+          .attr("stroke-linecap", "round")
+          .attr("stroke-linejoin", "round")
           .call((enter) => enter.attr("opacity", (d) => d.opacity)),
       (update) =>
         update.call((update) =>

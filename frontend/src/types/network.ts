@@ -11,6 +11,7 @@ export type AttributeInfo = {
   type: "string" | "number" | "boolean";
   values: Set<AttributeValue>;
   isCategory: boolean;
+  isCommunity: boolean;
   isNumeric: boolean;
   isCentrality?: boolean;
   range?: { min: number; max: number };

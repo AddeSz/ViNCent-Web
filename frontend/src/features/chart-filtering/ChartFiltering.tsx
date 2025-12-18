@@ -46,14 +46,29 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
     chartHeight,
   };
 
-  const { enabledNodeKeys } = useKeys();
-
-  const edgeKeys = useMetricsStore((s) => s.enabledEdgeMetricsKeys);
+  const {
+    enabledNodeKeys: nodeKeys,
+    enabledEdgeKeys,
+    enabledNodeCommunityKeys,
+  } = useKeys();
   const [globalBinCount, setGlobalBinCount] = useState(16);
   const [useIndividualBinCounts, setUseIndividualBinCounts] = useState(false);
   const [binCountsByKey, setBinCountsByKey] = useState<Record<string, number>>(
     {},
   );
+  const currentNodes = useMetricsStore((s) => s.currentNodes);
+  const currentEdges = useMetricsStore((s) => s.currentEdges);
+  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
+  const selectedCategories = useMetricsStore((s) => s.selectedCategories);
+  const setSelectedCategories = useMetricsStore((s) => s.setSelectedCategories);
+  const brushRanges = useMetricsStore((s) => s.brushRanges);
+  const setBrushRange = useMetricsStore((s) => s.setBrushRange);
+  const clearBrushRange = useMetricsStore((s) => s.clearBrushRange);
+  const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
+  const setBinnedData = useMetricsStore((s) => s.setBinnedData);
+  const disabledValues = useMetricsStore((s) => s.disabledValues);
+  const setDisabledValues = useMetricsStore((s) => s.setDisabledValues);
+  const clearDisabledValues = useMetricsStore((s) => s.clearDisabledValues);
 
   const getBinCount = (key: string) => {
     if (useIndividualBinCounts) {
@@ -66,19 +81,10 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
     setBinCountsByKey((prev) => ({ ...prev, [key]: count }));
   };
 
-  const currentNodes = useMetricsStore((s) => s.currentNodes);
-  const currentEdges = useMetricsStore((s) => s.currentEdges);
-  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
-  const selectedCategories = useMetricsStore((s) => s.selectedCategories);
-  const setSelectedCategories = useMetricsStore((s) => s.setSelectedCategories);
-  const brushRanges = useMetricsStore((s) => s.brushRanges);
-  const setBrushRange = useMetricsStore((s) => s.setBrushRange);
-  const clearBrushRange = useMetricsStore((s) => s.clearBrushRange);
-  const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
-  const setBinnedData = useMetricsStore((s) => s.setBinnedData);
-  const disabledValues = useMetricsStore((s) => s.disabledValues);
-  const setDisabledValues = useMetricsStore((s) => s.setDisabledValues);
-  const clearDisabledValues = useMetricsStore((s) => s.clearDisabledValues);
+  const enabledNodeKeys = useMemo(
+    () => [...nodeKeys, ...enabledNodeCommunityKeys],
+    [nodeKeys, enabledNodeCommunityKeys],
+  );
 
   const fullNodeData = useMemo(() => {
     return Array.from(currentNodes.values()).map(
@@ -123,7 +129,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
       }
     });
 
-    edgeKeys.forEach((key) => {
+    enabledEdgeKeys.forEach((key) => {
       const info = metricsInfo.get(key);
 
       if (!info || !info.isNumeric || info.isCategory) return;
@@ -143,7 +149,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
     fullNodeData,
     fullEdgeData,
     enabledNodeKeys,
-    edgeKeys,
+    enabledEdgeKeys,
     globalBinCount,
     binCountsByKey,
     useIndividualBinCounts,
@@ -369,7 +375,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
               ? renderBarChart(key, false)
               : renderHistogram(key, false);
           })}
-          {edgeKeys.map((key) => {
+          {enabledEdgeKeys.map((key) => {
             const info = metricsInfo.get(key);
             if (!info) return null;
             return info.isCategory

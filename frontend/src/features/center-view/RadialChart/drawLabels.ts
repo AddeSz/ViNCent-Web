@@ -1,3 +1,4 @@
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData } from "@/types/network";
@@ -22,8 +23,9 @@ const drawLabels = (
   labelWidth: number,
   truncateLabels: boolean,
   interactionProps: InteractionProps,
-  radius: number,
+  outerArcsWidth: number,
   showLabels: boolean,
+  hasCommunitySegments: boolean = false,
 ): void => {
   const { nodeMap } = useNetworkStore.getState();
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
@@ -39,7 +41,11 @@ const drawLabels = (
   const getTransform = (d: string) => {
     const angle = ((x(d)! + x.bandwidth() / 2) * 180) / Math.PI - 90;
     const angleRad = (angle * Math.PI) / 180;
-    const distance = outerRadius + radius * 3 + 2;
+
+    const segmentWidth = 25;
+    const distance = hasCommunitySegments
+      ? outerRadius + segmentWidth + outerArcsWidth * 4 + 2
+      : outerRadius + outerArcsWidth * 3 + 2;
 
     const yOffset = Math.cos(angleRad);
     return `
@@ -57,7 +63,7 @@ const drawLabels = (
     (x(d)! + x.bandwidth() / 2) % (2 * Math.PI) < Math.PI ? "start" : "end";
 
   const getFontSize = () => {
-    return (fontSize / 11) * radius;
+    return (fontSize / 11) * outerArcsWidth;
   };
 
   const getInitialOpacity = () => (showLabels ? 1 : 0);
@@ -186,7 +192,7 @@ export const updateLabels = (
   fontSize: number,
   labelWidth: number,
   truncateLabels: boolean,
-  radius: number,
+  outerArcsWidth: number,
 ) => {
   const { nodeMap } = useNetworkStore.getState();
   LONGESTLABEL = 0;
@@ -203,7 +209,7 @@ export const updateLabels = (
       const label = nodeMap.get(id)?.label ?? id;
 
       const getFontSize = () => {
-        return (fontSize / 11) * radius;
+        return (fontSize / 11) * outerArcsWidth;
       };
 
       textEl.attr("font-size", `${getFontSize()}px`);
@@ -228,10 +234,11 @@ export const updateLabelVisibility = (
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   zoomLevel: number,
-  radius: number,
+  outerArcsWidth: number,
   showLabels: boolean,
+  hoveredCommunity: { key: string; id: number } | null,
 ) => {
-  const showAll = showLabels && shouldShowAllLabels(zoomLevel, radius);
+  const showAll = showLabels && shouldShowAllLabels(zoomLevel, outerArcsWidth);
 
   const linkedNodeIds = new Set<string>();
   const node = hoveredNode ? nodeData.get(hoveredNode) : null;
@@ -250,10 +257,19 @@ export const updateLabelVisibility = (
     .selectAll<SVGGElement, string>("g.labels-group g.label")
     .each(function (d) {
       const label = d3.select(this);
+
+      let isInHoveredCommunity = false;
+      if (hoveredCommunity) {
+        const node = nodeData.get(d);
+        const communityId = node?.[hoveredCommunity.key];
+        isInHoveredCommunity = communityId === hoveredCommunity.id;
+      }
+
       const shouldShow =
         selectedNodes.has(d) ||
         hoveredNode === d ||
         linkedNodeIds.has(d) ||
+        isInHoveredCommunity ||
         showAll;
 
       if (shouldShow) {
@@ -277,14 +293,15 @@ export const updateLabelHighlight = (
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   zoomLevel: number,
-  radius: number,
+  outerArcsWidth: number,
   showLabels: boolean,
+  hoveredCommunity: { key: string; id: number } | null,
 ) => {
-  const showAll = showLabels && shouldShowAllLabels(zoomLevel, radius);
+  const getColorForMetric = useMetricsStore.getState().getColorForMetric;
+  const showAll = showLabels && shouldShowAllLabels(zoomLevel, outerArcsWidth);
   const linkedToHoveredIds = hoveredNode
     ? nodeData.get(hoveredNode)?.linked
     : null;
-
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
@@ -292,33 +309,52 @@ export const updateLabelHighlight = (
       node.linked.forEach((id) => linkedToSelectedIds.add(id));
     }
   });
-
   svg
     .selectAll<SVGGElement, string>("g.labels-group g.label")
     .each(function (d) {
       const label = d3.select(this);
-
       const isLinked = linkedToHoveredIds?.has(d) || linkedToSelectedIds.has(d);
-      const shouldShow =
-        showAll || selectedNodes.has(d) || hoveredNode === d || isLinked;
 
+      let isInHoveredCommunity = false;
+      if (hoveredCommunity) {
+        const node = nodeData.get(d);
+        const communityId = node?.[hoveredCommunity.key];
+        isInHoveredCommunity = communityId === hoveredCommunity.id;
+      }
+
+      const shouldShow =
+        showAll ||
+        selectedNodes.has(d) ||
+        hoveredNode === d ||
+        isLinked ||
+        isInHoveredCommunity;
       if (shouldShow) {
         label.style("display", "block");
         label.attr("opacity", 1);
       } else {
         label.attr("opacity", 0).style("display", "none");
       }
-
       const text = label.select("text");
-
       let fillColor: string;
       let fontWeight: string;
+
+      if (hoveredCommunity) {
+        const node = nodeData.get(d);
+        const communityId = node?.[hoveredCommunity.key];
+        if (communityId === hoveredCommunity.id) {
+          fillColor = getColorForMetric(hoveredCommunity.key, communityId);
+          fontWeight = "700";
+          text.attr("fill", fillColor);
+          text.attr("font-weight", fontWeight);
+          return;
+        }
+      }
 
       if (selectedNodes.has(d)) {
         fillColor = highlightLabelColor.selected;
         fontWeight = "700";
       } else if (hoveredNode === d) {
-        fillColor = highlightLabelColor.hover;
+        fillColor = highlightLabelColor.hovered;
         fontWeight = "700";
       } else if (linkedToSelectedIds.has(d)) {
         fillColor = highlightLabelColor.linkedToSelected;
@@ -330,7 +366,6 @@ export const updateLabelHighlight = (
         fillColor = highlightLabelColor.default;
         fontWeight = "normal";
       }
-
       text.attr("fill", fillColor);
       text.attr("font-weight", fontWeight);
     });

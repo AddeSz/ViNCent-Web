@@ -1,9 +1,10 @@
 import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useTooltipStore } from "@/stores/useTooltipStore";
 import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
-import type { JSX } from "react";
+import { useMemo, type JSX } from "react";
 
 interface ChartTooltipProps {
   dataMap: Map<string, FullData>;
@@ -13,8 +14,43 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
   const tooltip = useTooltipStore((s) => s.tooltip);
   const { allNodeKeys } = useKeys();
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const communities = useMetricsStore((s) => s.currentCommunities);
+  const selectedCommunity = useSettingsStore(
+    (s) => s.radialSettings.selectedRingCommunity,
+  );
+  const currentMetricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
 
-  const { type, nodeId, x, y, visible, arcKey, lastChange } = tooltip;
+  const communityStats = useMemo(() => {
+    const currentCommunities = communities?.[selectedCommunity];
+    if (!currentCommunities) {
+      return {
+        uniqueCommunities: 0,
+        nodesByCommunity: new Map<number, number>(),
+      };
+    }
+
+    const nodesByCommunity = new Map<number, number>();
+    Object.values(currentCommunities).forEach((commId) => {
+      nodesByCommunity.set(commId, (nodesByCommunity.get(commId) || 0) + 1);
+    });
+
+    return {
+      uniqueCommunities: nodesByCommunity.size,
+      nodesByCommunity,
+    };
+  }, [communities, selectedCommunity]);
+
+  const {
+    type,
+    nodeId,
+    x,
+    y,
+    visible,
+    arcKey,
+    lastChange,
+    communityId,
+    nodeCount,
+  } = tooltip;
 
   if (!visible) return null;
 
@@ -44,10 +80,19 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         if (Object.prototype.hasOwnProperty.call(changes, key)) {
           const { before, after } = changes[key];
           const color = getColorForMetric(key);
+          const info = currentMetricsInfo.get(key);
+          let colorBefore = "var(--muted-foreground)";
+          let colorAfter = "var(--muted-foreground)";
+          if (info?.isCategory && !info?.isCentrality) {
+            colorBefore = getColorForMetric(key, before);
+            colorAfter = getColorForMetric(key, after);
+          }
           const changeSpan = (
             <div key={key}>
               <span style={{ color }}>{formatKeyLabel(key)}</span>:{" "}
-              {formatValue(before)} → {formatValue(after)}
+              <span style={{ color: colorBefore }}>{formatValue(before)}</span>{" "}
+              {"->"}{" "}
+              <span style={{ color: colorAfter }}>{formatValue(after)}</span>
             </div>
           );
           allChanges.push(changeSpan);
@@ -107,6 +152,22 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
           <div className="text-xs text-muted-foreground">{changeMessage}</div>
+        </div>
+      )}
+
+      {type === "community" && (
+        <div className="text-xs font-medium">
+          Community {communityId}
+          <div className="text-xs text-muted-foreground">
+            Hovered Segment: {nodeCount} nodes
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Total in Community:{" "}
+            {communityStats.nodesByCommunity.get(communityId!) || 0} nodes
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Total Communities: {communityStats.uniqueCommunities}
+          </div>
         </div>
       )}
     </div>

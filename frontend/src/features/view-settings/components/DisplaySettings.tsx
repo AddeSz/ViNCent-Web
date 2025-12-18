@@ -4,25 +4,15 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useSettingsStore, type DisplayMode } from "@/stores/useSettingsStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 const DisplaySettings = () => {
   const { displaySettings, setDisplaySettings } = useSettingsStore();
-  const { previewChanges, showForeshadowing, displayMode, stickyHover } =
-    displaySettings;
-  const { allNodeAttributeKeys } = useKeys();
+  const { previewChanges, showForeshadowing, stickyHover } = displaySettings;
   const timesteps = useMetricsStore((s) => s.timesteps);
   const [isOpen, setIsOpen] = useState(true);
 
@@ -37,34 +27,6 @@ const DisplaySettings = () => {
         <p className="truncate pl-1">Global Settings</p>
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2">
-        {allNodeAttributeKeys.length > 0 && (
-          <div className="space-y-1">
-            <Label htmlFor="display-mode" className="text-sm">
-              Display Mode
-            </Label>
-            <Select
-              value={displayMode}
-              onValueChange={(val: DisplayMode) =>
-                setDisplaySettings({
-                  displayMode: val,
-                })
-              }
-            >
-              <SelectTrigger
-                id="display-mode"
-                className="w-full text-sm"
-                size="sm"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="both">Both</SelectItem>
-                <SelectItem value="attributes">Attributes Only</SelectItem>
-                <SelectItem value="centrality">Centralites Only</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="preview-nodes" className="text-sm">

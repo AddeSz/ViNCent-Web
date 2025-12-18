@@ -6,14 +6,12 @@ const API_BASE_URL = env.envVariables.VITE_BACKEND_URL;
 export const api = {
   baseUrl: API_BASE_URL,
 
-  async fetchCentralities() {
-    const response = await fetch(`${API_BASE_URL}/centralities`);
-
+  async fetchOptions() {
+    const response = await fetch(`${API_BASE_URL}/get-options`);
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}}`);
+      throw new Error("Failed to fetch options");
     }
-
-    return await response.json();
+    return response.json();
   },
 
   async validateNetwork(formData: FormData) {

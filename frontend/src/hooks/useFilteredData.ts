@@ -16,7 +16,9 @@ export const useFilteredData = (): {
   const nodeData = useNetworkStore((s) => s.nodeMap);
   const currentNodes = useMetricsStore((s) => s.currentNodes);
   const currentEdges = useMetricsStore((s) => s.currentEdges);
-  const enabledMetricsKeys = useMetricsStore((s) => s.enabledMetricsKeys);
+  const enabledNodeMetricsKeys = useMetricsStore(
+    (s) => s.enabledNodeMetricsKeys,
+  );
   const brushRanges = useMetricsStore((s) => s.brushRanges);
   const selectedCategories = useMetricsStore((s) => s.selectedCategories);
   const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
@@ -47,7 +49,7 @@ export const useFilteredData = (): {
       i++;
       const metrics = node.attributes || {};
 
-      const matchesFilters = enabledMetricsKeys.every((key) => {
+      const matchesFilters = enabledNodeMetricsKeys.every((key) => {
         const value = metrics[key];
         const info = metricsInfo.get(key);
 
@@ -96,7 +98,7 @@ export const useFilteredData = (): {
       if (!matchesFilters) return;
 
       const filteredMetrics: Record<string, any> = {};
-      for (const key of enabledMetricsKeys) {
+      for (const key of enabledNodeMetricsKeys) {
         if (key in metrics) {
           filteredMetrics[key] = metrics[key];
         } else {
@@ -289,7 +291,7 @@ export const useFilteredData = (): {
     nodeData,
     currentNodes,
     currentEdges,
-    enabledMetricsKeys,
+    enabledNodeMetricsKeys,
     brushRanges,
     disabledValues,
     binnedDataByKey,

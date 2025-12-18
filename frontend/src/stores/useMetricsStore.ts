@@ -10,6 +10,7 @@ import type {
   TimestepDelta,
 } from "@/types/network";
 import { create } from "zustand";
+import { useSettingsStore } from "./useSettingsStore";
 
 export interface BrushRange {
   range: [number, number];
@@ -23,7 +24,7 @@ export interface CentralityData {
 
 interface MetricsStore {
   nodeMetricsKeys: string[];
-  enabledMetricsKeys: string[];
+  enabledNodeMetricsKeys: string[];
 
   disabledNodeMetricsKeys: Set<string>;
   disabledEdgeMetricsKeys: Set<string>;
@@ -36,9 +37,11 @@ interface MetricsStore {
   baseState: Network | null;
   deltas: Map<number, TimestepDelta>;
   centralities: Map<number, CentralityData>;
+  communities: Map<number, Record<string, Record<string, number>>>;
+  currentCommunities: Record<string, Record<string, number>> | null;
 
   metricsInfo: Map<string, AttributeInfo>;
-  metricsInfoCurrent: Map<string, AttributeInfo>;
+  currentMetricsInfo: Map<string, AttributeInfo>;
 
   brushRanges: Record<string, BrushRange | null>;
   selectedCategories: Record<string, string[]>;
@@ -47,7 +50,7 @@ interface MetricsStore {
   disabledValues: Record<string, Set<number | string>>;
 
   timesteps: number[];
-  currentTimestep: number | null;
+  currentTimestep: number;
 
   setTimesteps: (timesteps: number[]) => void;
   setTimestep: (timestep: number) => void;
@@ -57,6 +60,7 @@ interface MetricsStore {
     deltas: Record<number, TimestepDelta>,
     centralities: Record<number, CentralityData>,
     metricsInfo: Record<string, AttributeInfo>,
+    communities: Record<number, Record<string, Record<string, number>>>,
   ) => void;
 
   applyDeltaAndSetTimestep: (timestep: number) => void;
@@ -163,7 +167,7 @@ function applyDelta(
 
 export const useMetricsStore = create<MetricsStore>((set, get) => ({
   nodeMetricsKeys: [],
-  enabledMetricsKeys: [],
+  enabledNodeMetricsKeys: [],
 
   disabledNodeMetricsKeys: new Set(),
   disabledEdgeMetricsKeys: new Set(),
@@ -176,9 +180,11 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   baseState: null,
   deltas: new Map(),
   centralities: new Map(),
+  communities: new Map(),
+  currentCommunities: null,
 
   metricsInfo: new Map(),
-  metricsInfoCurrent: new Map(),
+  currentMetricsInfo: new Map(),
 
   brushRanges: {},
   selectedCategories: {},
@@ -187,7 +193,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   disabledValues: {},
 
   timesteps: [],
-  currentTimestep: null,
+  currentTimestep: 0,
 
   setTimesteps: (timesteps) => {
     set({ timesteps });
@@ -208,13 +214,22 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     }
   },
 
-  loadDeltaBasedNetwork: (baseState, deltas, centralities, metricsInfo) => {
+  loadDeltaBasedNetwork: (
+    baseState,
+    deltas,
+    centralities,
+    metricsInfo,
+    communities,
+  ) => {
     const deltasMap = new Map(
       Object.entries(deltas).map(([k, v]) => [Number(k), v]),
     );
 
     const centralitiesMap = new Map(
       Object.entries(centralities).map(([k, v]) => [Number(k), v]),
+    );
+    const communitiesMap = new Map(
+      Object.entries(communities).map(([k, v]) => [Number(k), v]),
     );
 
     const timesteps = Array.from(deltasMap.keys()).sort((a, b) => a - b);
@@ -235,7 +250,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       centralities: centralitiesMap,
       metricsInfo: unifiedInfo,
       timesteps,
-
+      communities: communitiesMap,
       disabledNodeMetricsKeys: new Set(),
       disabledEdgeMetricsKeys: new Set(),
     });
@@ -250,6 +265,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       baseState,
       deltas,
       centralities,
+      communities,
       metricsInfo,
       disabledNodeMetricsKeys,
       disabledEdgeMetricsKeys,
@@ -322,6 +338,25 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       });
     }
 
+    const currentCommunities = communities.get(timestep) || null;
+    if (currentCommunities) {
+      Object.entries(currentCommunities).forEach(
+        ([communityKey, nodeAssignments]) => {
+          Object.entries(nodeAssignments).forEach(
+            ([nodeId, communityValue]) => {
+              const node = currentNodes.get(nodeId);
+              if (node) {
+                if (!node.attributes) {
+                  node.attributes = {};
+                }
+                node.attributes[communityKey] = communityValue;
+              }
+            },
+          );
+        },
+      );
+    }
+
     const currentNodeMetrics = new Map<string, Attributes>();
     const currentEdgeMetrics = new Map<string, Attributes>();
 
@@ -340,12 +375,12 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     const currentNodeInfo = computeCurrentMetricsInfo(currentNodeMetrics);
     const currentEdgeInfo = computeCurrentMetricsInfo(currentEdgeMetrics);
 
-    const metricsInfoCurrent = new Map<string, AttributeInfo>();
+    const currentMetricsInfo = new Map<string, AttributeInfo>();
 
     currentNodeInfo.forEach((current, key) => {
       const global = metricsInfo.get(key);
       if (global) {
-        metricsInfoCurrent.set(key, {
+        currentMetricsInfo.set(key, {
           ...global,
           values: current.values,
           range: current.range,
@@ -356,13 +391,30 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     currentEdgeInfo.forEach((current, key) => {
       const global = metricsInfo.get(key);
       if (global) {
-        metricsInfoCurrent.set(key, {
+        currentMetricsInfo.set(key, {
           ...global,
           values: current.values,
           range: current.range,
         });
       }
     });
+
+    if (currentCommunities) {
+      Object.keys(currentCommunities).forEach((communityKey) => {
+        const global = metricsInfo.get(communityKey);
+        if (global && global.isCommunity) {
+          const communityValues = new Set<AttributeValue>();
+          Object.values(currentCommunities[communityKey]).forEach((value) => {
+            communityValues.add(value);
+          });
+
+          currentMetricsInfo.set(communityKey, {
+            ...global,
+            values: communityValues,
+          });
+        }
+      });
+    }
 
     const nodeMetricsKeys = Array.from(
       new Set(
@@ -371,6 +423,14 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
         ),
       ),
     );
+
+    if (currentCommunities) {
+      Object.keys(currentCommunities).forEach((communityKey) => {
+        if (!nodeMetricsKeys.includes(communityKey)) {
+          nodeMetricsKeys.push(communityKey);
+        }
+      });
+    }
 
     const edgeMetricsKeys = Array.from(
       new Set(
@@ -400,16 +460,37 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       currentNodes,
       currentEdges,
       nodeMetricsKeys,
-      enabledMetricsKeys,
+      enabledNodeMetricsKeys: enabledMetricsKeys,
       edgeMetricsKeys,
       enabledEdgeMetricsKeys,
       brushRanges,
-      metricsInfoCurrent,
+      currentMetricsInfo,
+      currentCommunities,
     });
+
+    const { selectedRingCommunity } =
+      useSettingsStore.getState().radialSettings;
+    if (
+      selectedRingCommunity !== "none" &&
+      (!currentCommunities || !currentCommunities[selectedRingCommunity])
+    ) {
+      useSettingsStore.getState().setRadialSettings({
+        selectedRingCommunity: "none",
+      });
+    }
+    const { selectedCommunity } = useSettingsStore.getState().nodeLinkSettings;
+    if (
+      selectedCommunity !== "none" &&
+      (!currentCommunities || !currentCommunities[selectedCommunity])
+    ) {
+      useSettingsStore.getState().setNodeLinkSettings({
+        selectedCommunity: "none",
+      });
+    }
   },
 
   setEnabledMetricsKeys: (keys) => {
-    set({ enabledMetricsKeys: keys });
+    set({ enabledNodeMetricsKeys: keys });
   },
 
   toggleMetricsKey: (key) => {
@@ -441,21 +522,23 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
           };
         }
       } else if (isNodeKey) {
-        const isEnabled = s.enabledMetricsKeys.includes(key);
+        const isEnabled = s.enabledNodeMetricsKeys.includes(key);
         if (isEnabled) {
           removed = true;
           const newDisabled = new Set(s.disabledNodeMetricsKeys);
           newDisabled.add(key);
           return {
-            enabledMetricsKeys: s.enabledMetricsKeys.filter((k) => k !== key),
+            enabledNodeMetricsKeys: s.enabledNodeMetricsKeys.filter(
+              (k) => k !== key,
+            ),
             disabledNodeMetricsKeys: newDisabled,
           };
         } else {
           const newDisabled = new Set(s.disabledNodeMetricsKeys);
           newDisabled.delete(key);
           return {
-            enabledMetricsKeys: s.nodeMetricsKeys.filter(
-              (k) => k === key || s.enabledMetricsKeys.includes(k),
+            enabledNodeMetricsKeys: s.nodeMetricsKeys.filter(
+              (k) => k === key || s.enabledNodeMetricsKeys.includes(k),
             ),
             disabledNodeMetricsKeys: newDisabled,
           };
@@ -532,6 +615,10 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
 
     const vizStore = useVisualizationStore.getState();
 
+    if (info.isCommunity && value !== undefined && value !== null) {
+      return vizStore.getOrAssignCommunityColor(key, value);
+    }
+
     if (info.isCentrality) {
       return vizStore.getOrAssignCentralityColor(key);
     }
@@ -550,9 +637,9 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   clearData: () =>
     set({
       nodeMetricsKeys: [],
-      enabledMetricsKeys: [],
+      enabledNodeMetricsKeys: [],
       metricsInfo: new Map(),
-      metricsInfoCurrent: new Map(),
+      currentMetricsInfo: new Map(),
       edgeMetricsKeys: [],
       enabledEdgeMetricsKeys: [],
       disabledNodeMetricsKeys: new Set(),
@@ -562,11 +649,13 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       selectedCategories: {},
       disabledValues: {},
       timesteps: [],
-      currentTimestep: null,
+      currentTimestep: 0,
       currentNodes: new Map(),
       currentEdges: new Map(),
       baseState: null,
       deltas: new Map(),
       centralities: new Map(),
+      communities: new Map(),
+      currentCommunities: null,
     }),
 }));

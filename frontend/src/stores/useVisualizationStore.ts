@@ -6,6 +6,7 @@ interface VisualizationStore {
   centralityColors: Map<string, string>;
   attributeColors: Map<string, string>;
   categoryColors: Map<string, string>;
+  communityColors: Map<string, string>;
 
   categoryCounter: number;
   set1Counter: number;
@@ -16,6 +17,7 @@ interface VisualizationStore {
   getOrAssignCentralityColor: (key: string) => string;
   getOrAssignAttributeColor: (key: string) => string;
   getOrAssignCategoryColor: (key: string, value: AttributeValue) => string;
+  getOrAssignCommunityColor: (key: string, value: AttributeValue) => string;
 
   clearData: () => void;
 }
@@ -50,38 +52,11 @@ const distinctColors = [
   "#DCD300",
 ];
 
-// https://eleanormaclure.wordpress.com/wp-content/uploads/2011/03/colour-coding.pdf
-// const colorPalette = [
-//   "#fdfdfd",
-//   "#1d1d1d",
-//   "#e6194b",
-//   "#3cb44b",
-//   "#ebce2b",
-//   "#702c8c",
-//   "#db6917",
-//   "#96cde6",
-//   "#ba1c30",
-//   "#c0bd7f",
-//   "#7f7e80",
-//   "#5fa641",
-//   "#d485b2",
-//   "#4277b6",
-//   "#df8461",
-//   "#463397",
-//   "#e1a11a",
-//   "#92ae31",
-//   "#91218c",
-//   "#e8e948",
-//   "#7e1510",
-//   "#6f340d",
-//   "#d32b1e",
-//   "#2b3514",
-// ];
-
 export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
   centralityColors: new Map(),
   attributeColors: new Map(),
   categoryColors: new Map(),
+  communityColors: new Map(),
   categoryCounter: 0,
   set1Counter: 0,
   pairedCounter: 0,
@@ -91,13 +66,17 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     const centralityColors = new Map<string, string>();
     const attributeColors = new Map<string, string>();
     const categoryColors = new Map<string, string>();
+    const communityColors = new Map<string, string>();
 
     const centralityKeys: string[] = [];
     const attributeKeys: string[] = [];
     const categoricalKeys: string[] = [];
+    const communityKeys: string[] = [];
 
     metricsInfo.forEach((info, key) => {
-      if (info.isCentrality) {
+      if (info.isCommunity) {
+        communityKeys.push(key);
+      } else if (info.isCentrality) {
         centralityKeys.push(key);
       } else if (info.isCategory) {
         categoricalKeys.push(key);
@@ -116,6 +95,18 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       const t = numAttributes > 1 ? index / (numAttributes - 1) : 0.5;
       const color = d3.interpolateCool(t);
       attributeColors.set(key, color);
+    });
+
+    communityKeys.forEach((key) => {
+      const info = metricsInfo.get(key);
+      if (info) {
+        const numValues = info.values.size;
+        Array.from(info.values).forEach((value, index) => {
+          const t = numValues > 1 ? index / (numValues - 1) : 0.5;
+          const color = d3.interpolateSpectral(t);
+          communityColors.set(`${key}:${value}`, color);
+        });
+      }
     });
 
     const palettes = [
@@ -147,6 +138,7 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       centralityColors,
       attributeColors,
       categoryColors,
+      communityColors,
       categoryCounter: categoricalKeys.length,
       category10Counter: paletteCounters[0],
       pairedCounter: paletteCounters[1],
@@ -251,11 +243,35 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
     return color;
   },
 
+  getOrAssignCommunityColor: (key: string, value: AttributeValue) => {
+    const { communityColors } = get();
+    const communityKey = `${key}:${value}`;
+
+    if (communityColors.has(communityKey)) {
+      return communityColors.get(communityKey)!;
+    }
+
+    const existingValuesForKey = Array.from(communityColors.keys())
+      .filter((k) => k.startsWith(`${key}:`))
+      .map((k) => k.split(":")[1]);
+
+    const numExisting = existingValuesForKey.length;
+    const t = numExisting > 0 ? numExisting / (numExisting + 1) : 0.5;
+    const color = d3.interpolateSpectral(t);
+
+    set((state) => ({
+      communityColors: new Map(state.communityColors).set(communityKey, color),
+    }));
+
+    return color;
+  },
+
   clearData: () =>
     set({
       centralityColors: new Map(),
       attributeColors: new Map(),
       categoryColors: new Map(),
+      communityColors: new Map(),
       categoryCounter: 0,
       set1Counter: 0,
       pairedCounter: 0,

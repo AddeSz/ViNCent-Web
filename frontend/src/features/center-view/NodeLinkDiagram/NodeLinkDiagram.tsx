@@ -98,6 +98,7 @@ const NodeLinkDiagram = ({
     linkThicknessMetric,
     showLabels,
     fontSize,
+    selectedCommunity,
   } = nodeLinkSettings;
 
   const interactionProps: InteractionProps = useMemo(
@@ -247,6 +248,7 @@ const NodeLinkDiagram = ({
         linkWeights,
         hoveredNode,
         nodeData,
+        selectedCommunity,
       );
       drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
       setupNodeEvents(svg, interactionProps);
@@ -302,6 +304,7 @@ const NodeLinkDiagram = ({
         linkWeights,
         hoveredNode,
         nodeData,
+        selectedCommunity,
       );
 
       setupNodeEvents(svg, interactionProps);
@@ -316,7 +319,14 @@ const NodeLinkDiagram = ({
     return () => {
       cancelAnimationFrame(frameId);
     };
-  }, [nodeChanges, edgeChanges, linkWeights, nodeSizes, showLabels]);
+  }, [
+    nodeChanges,
+    edgeChanges,
+    linkWeights,
+    nodeSizes,
+    showLabels,
+    selectedCommunity,
+  ]);
 
   useEffect(() => {
     if (
@@ -362,6 +372,7 @@ const NodeLinkDiagram = ({
         edgeChanges,
         state.hoveredNode,
         nodeData,
+        selectedCommunity,
       );
       updateLabelHighlight(
         svg,
@@ -374,7 +385,14 @@ const NodeLinkDiagram = ({
     });
 
     return unsubscribe;
-  }, [nodeChanges, edgeChanges, nodeSizes, linkWeights, showLabels]);
+  }, [
+    nodeChanges,
+    edgeChanges,
+    nodeSizes,
+    linkWeights,
+    showLabels,
+    selectedCommunity,
+  ]);
 
   useEffect(() => {
     if (!svgRef.current || !isInitializedRef.current) return;

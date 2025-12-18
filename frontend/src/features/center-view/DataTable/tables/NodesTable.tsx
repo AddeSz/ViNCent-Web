@@ -53,13 +53,16 @@ const NodesTable = ({
 }: NodesTableProps) => {
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
 
-  const { enabledNodeKeys } = useKeys();
+  const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
 
   const columns = useMemo(() => {
     const selectColumn = createSelectColumn<FullData>();
     const hiddenColumn = createHiddenColumn<FullData>();
     const labelColumn = createLabelColumn<FullData>();
-    const dataColumns = createDataColumns<FullData>(enabledNodeKeys);
+    const dataColumns = createDataColumns<FullData>([
+      ...enabledNodeKeys,
+      ...enabledNodeCommunityKeys,
+    ]);
 
     return [
       selectColumn,
@@ -79,7 +82,7 @@ const NodesTable = ({
         enableGlobalFilter: false,
       },
     ];
-  }, [enabledNodeKeys]);
+  }, [enabledNodeKeys, enabledNodeCommunityKeys]);
 
   const rowSelection = useMemo(() => {
     const selection: Record<string, true> = {};

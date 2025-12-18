@@ -54,12 +54,14 @@ const BarchartBars = ({
         const isHovered = hoverCategory === category;
         const isDisabled = disabledValues.has(category);
         const color = getBarColor(category);
-        const startPos = i === 0 ? x + 3 : x + 2;
-        const width = i === 0 ? barWidth - 5 : barWidth - 4;
+        const startPos = x + 1;
+        const width = barWidth - 2;
+
         const nodeHoveredCategory =
           hoveredValue != null && !node?.removed && !node?.stable
-            ? hoveredValue === category
-            : null;
+            ? String(hoveredValue) === String(category)
+            : false;
+
         return (
           <g key={category}>
             <rect

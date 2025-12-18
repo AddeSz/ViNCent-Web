@@ -6,35 +6,35 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { Spinner } from "../ui/spinner";
-import CentralityCategory from "./CentralityCategory";
-import type { CentralityDataBackend } from "./FileUploader";
+import type { OptionsDataBackend } from "./FileUploader";
+import OptionsCategory from "./OptionsCategory";
 
-interface CentralitySelectorProps {
-  centralityData: CentralityDataBackend | null;
+interface OptionsSelectorProps {
+  optionsData: OptionsDataBackend | null;
   isLoading?: boolean;
   error?: string | null;
-  selectedCentralities: Set<string>;
-  setSelectedCentralities: React.Dispatch<React.SetStateAction<Set<string>>>;
+  selectedOptions: Set<string>;
+  setSelectedOptions: React.Dispatch<React.SetStateAction<Set<string>>>;
   expandedCategories: Set<string>;
   setExpandedCategories: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
-const CentralitySelector = ({
-  centralityData,
+const OptionsSelector = ({
+  optionsData,
   isLoading = false,
   error = null,
-  selectedCentralities,
-  setSelectedCentralities,
+  selectedOptions,
+  setSelectedOptions,
   expandedCategories,
   setExpandedCategories,
-}: CentralitySelectorProps) => {
-  const toggleCentrality = (centrality: string) => {
-    setSelectedCentralities((prev) => {
+}: OptionsSelectorProps) => {
+  const toggleOption = (option: string) => {
+    setSelectedOptions((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(centrality)) {
-        newSet.delete(centrality);
+      if (newSet.has(option)) {
+        newSet.delete(option);
       } else {
-        newSet.add(centrality);
+        newSet.add(option);
       }
       return newSet;
     });
@@ -52,18 +52,18 @@ const CentralitySelector = ({
     });
   };
 
-  const selectAllInCategory = (centralities: string[]) => {
-    setSelectedCentralities((prev) => {
+  const selectAllInCategory = (option: string[]) => {
+    setSelectedOptions((prev) => {
       const newSet = new Set(prev);
-      centralities.forEach((c) => newSet.add(c));
+      option.forEach((m) => newSet.add(m));
       return newSet;
     });
   };
 
-  const deselectAllInCategory = (centralities: string[]) => {
-    setSelectedCentralities((prev) => {
+  const deselectAllInCategory = (option: string[]) => {
+    setSelectedOptions((prev) => {
       const newSet = new Set(prev);
-      centralities.forEach((c) => newSet.delete(c));
+      option.forEach((m) => newSet.delete(m));
       return newSet;
     });
   };
@@ -73,7 +73,7 @@ const CentralitySelector = ({
       <div className="space-y-2">
         <Collapsible>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Available Centralities</p>
+            <p className="text-sm font-medium">Network Options</p>
             <div className="flex gap-2">
               <CollapsibleTrigger asChild>
                 <Button
@@ -91,11 +91,10 @@ const CentralitySelector = ({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  centralityData &&
-                  setSelectedCentralities(new Set(centralityData.all))
+                  optionsData && setSelectedOptions(new Set(optionsData.all))
                 }
                 className="h-7 text-xs"
-                disabled={isLoading || !centralityData}
+                disabled={isLoading || !optionsData}
               >
                 Select All
               </Button>
@@ -103,9 +102,9 @@ const CentralitySelector = ({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setSelectedCentralities(new Set())}
+                onClick={() => setSelectedOptions(new Set())}
                 className="h-7 text-xs"
-                disabled={isLoading || !centralityData}
+                disabled={isLoading || !optionsData}
               >
                 Clear
               </Button>
@@ -124,37 +123,37 @@ const CentralitySelector = ({
           ) : error ? (
             <div className="flex h-[170px] flex-col items-center justify-center gap-2 px-4 text-center">
               <p className="text-sm font-medium text-muted-foreground">
-                Failed to load centralities
+                Failed to load options
               </p>
               <p className="text-xs text-destructive">{error}</p>
             </div>
-          ) : centralityData ? (
-            Object.entries(centralityData.categories).map(
-              ([category, centralities]) => (
-                <CentralityCategory
+          ) : optionsData ? (
+            Object.entries(optionsData.categories).map(
+              ([category, options]) => (
+                <OptionsCategory
                   key={category}
                   category={category}
-                  centralities={centralities}
-                  selectedCentralities={selectedCentralities}
+                  options={options}
+                  selectedOptions={selectedOptions}
                   expandedCategories={expandedCategories}
-                  centralityData={centralityData}
+                  optionsData={optionsData}
                   toggleCategory={toggleCategory}
                   selectAllInCategory={selectAllInCategory}
                   deselectAllInCategory={deselectAllInCategory}
-                  toggleCentrality={toggleCentrality}
+                  toggleOption={toggleOption}
                 />
               ),
             )
           ) : (
             <div className="flex h-[170px] items-center justify-center text-sm text-muted-foreground">
-              Failed to load centralities
+              Failed to load options
             </div>
           )}
         </div>
 
-        {centralityData && (
+        {optionsData && (
           <p className="text-xs text-muted-foreground">
-            {selectedCentralities.size} of {centralityData.all.length} selected
+            {selectedOptions.size} of {optionsData.all.length} selected
           </p>
         )}
       </div>
@@ -193,4 +192,4 @@ const PerformanceLegend = () => (
   </div>
 );
 
-export default CentralitySelector;
+export default OptionsSelector;

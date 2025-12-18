@@ -9,6 +9,8 @@ export interface TooltipState {
   visible: boolean;
   arcKey?: string;
   lastChange?: DataChanges;
+  communityId?: number;
+  nodeCount?: number;
 }
 
 interface TooltipStore {
@@ -17,6 +19,7 @@ interface TooltipStore {
   hideTooltip: () => void;
   updatePosition: (x: number, y: number) => void;
 }
+
 //  just easier to manage a seperate store for it ...
 export const useTooltipStore = create<TooltipStore>((set) => ({
   tooltip: {

@@ -45,8 +45,22 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
   const setSettings = useSettingsStore((s) => s.setNodeLinkSettings);
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const { enabledNodeKeys } = useKeys();
+  const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
   const [open, setOpen] = useState(false);
+
+  const handleCommunityChange = (value: string) => {
+    setSettings({ selectedCommunity: value });
+  };
+
+  const getCommunityCount = (communityName: string) => {
+    if (!metricsInfo.get(communityName)) return 0;
+    return metricsInfo.get(communityName)?.values.size;
+  };
+
+  const formatCommunityLabel = (communityName: string) => {
+    const count = getCommunityCount(communityName);
+    return `${formatKeyLabel(communityName)} (${count})`;
+  };
 
   useEffect(() => {
     if (
@@ -285,6 +299,32 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
             checked={settings.showLabels}
             onCheckedChange={(checked) => setSettings({ showLabels: checked })}
           />
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="community-select" className="text-sm">
+            Community Node Coloring
+          </Label>
+          <Select
+            value={settings.selectedCommunity}
+            onValueChange={handleCommunityChange}
+          >
+            <SelectTrigger
+              id="community-select"
+              className="w-full text-sm"
+              size="sm"
+            >
+              <SelectValue placeholder="Select community" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Default</SelectItem>
+              {enabledNodeCommunityKeys.map((communityName) => (
+                <SelectItem key={communityName} value={communityName}>
+                  {formatCommunityLabel(communityName)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CollapsibleContent>
     </Collapsible>

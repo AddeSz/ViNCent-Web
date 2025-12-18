@@ -23,6 +23,8 @@ interface HistogramProps {
   onDisabledValuesChange: (values: Set<number | string>) => void;
 }
 
+const MIN_BAR_WIDTH = 5;
+
 const Histogram = ({
   binnedData,
   filteredData,
@@ -45,6 +47,9 @@ const Histogram = ({
   } = dimensions;
 
   const color = getColorForMetric(dataKey);
+
+  const barWidth = chartWidth / binnedData.bins.length;
+  const canRenderBars = barWidth >= MIN_BAR_WIDTH;
 
   const filteredBinCounts = useMemo(() => {
     if (!filteredData) return null;
@@ -104,6 +109,38 @@ const Histogram = ({
     );
     return binIndex;
   };
+
+  if (!canRenderBars) {
+    return (
+      <div className="relative" ref={containerRef}>
+        <svg width={width} height={height}>
+          <g transform={`translate(${margin.left},${margin.top})`}>
+            <rect
+              x={0}
+              y={0}
+              width={chartWidth}
+              height={chartHeight}
+              fill="var(--muted)"
+              opacity={0.1}
+              rx={4}
+            />
+            <foreignObject x={0} y={0} width={chartWidth} height={chartHeight}>
+              <div className="flex h-full w-full items-center justify-center p-4">
+                <div className="text-center">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Too many bins to display ({binnedData.bins.length})
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Increasing window size or lowering bin count may help
+                  </div>
+                </div>
+              </div>
+            </foreignObject>
+          </g>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <div className="relative" ref={containerRef}>

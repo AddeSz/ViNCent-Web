@@ -19,6 +19,7 @@ export interface NetworkResponse {
     nodes: Record<string, AttributeInfo>;
     edges: Record<string, AttributeInfo>;
   };
+  communities: Record<number, Record<string, Record<string, number>>>;
   graph_type: "directed" | "undirected";
 }
 
@@ -37,14 +38,9 @@ export const useLoadNetwork = () => {
       centralities,
       metrics_info,
       graph_type,
+      communities,
     } = result;
-
-    // console.log("Result: ", result);
-    // console.log("Network", network);
-    // console.log("base_state", base_state);
-    // console.log("deltas", deltas);
-    // console.log("centralities", centralities);
-    // console.log("graph_type", graph_type);
+    console.log(result);
 
     setNetwork(network, graph_type);
 
@@ -54,7 +50,13 @@ export const useLoadNetwork = () => {
       ...metrics_info.nodes,
       ...metrics_info.edges,
     };
-    loadDeltaBasedNetwork(base_state!, deltas!, centralities!, allMetricsInfo);
+    loadDeltaBasedNetwork(
+      base_state!,
+      deltas!,
+      centralities!,
+      allMetricsInfo,
+      communities,
+    );
 
     const metricsInfo = useMetricsStore.getState().metricsInfo;
     useSettingsStore

@@ -2,10 +2,10 @@ import type { ForceEdgeBundlingOptions } from "@/utils/ForceEdgeBundling";
 import { calculateRadialSettings } from "@/utils/utils";
 import { create } from "zustand";
 
-export type DisplayMode = "attributes" | "centrality" | "both";
 export type EdgeRenderingMode = "bezier" | "hierarchy" | "fdeB";
 export type SizeMode = "fixed" | "metric";
 export type ScaleType = "linear" | "log";
+export type CommunityType = "none" | string;
 
 type RadialSettings = {
   innerRadius: number;
@@ -18,6 +18,8 @@ type RadialSettings = {
   separateMetrics: boolean;
   edgeRenderingMode: EdgeRenderingMode;
   fdebSettings: ForceEdgeBundlingOptions;
+  communitiesInArcs: boolean;
+  selectedRingCommunity: CommunityType;
 };
 
 type NodeLinkSettings = {
@@ -38,12 +40,12 @@ type NodeLinkSettings = {
   collisionEnabled: boolean;
   nodeScaleType: ScaleType;
   linkScaleType: ScaleType;
+  selectedCommunity: CommunityType;
 };
 
 type DisplaySettings = {
   previewChanges: boolean;
   showForeshadowing: boolean;
-  displayMode: DisplayMode;
   stickyHover: boolean;
 };
 
@@ -84,13 +86,15 @@ export const defaultRadialSettings: RadialSettings = {
   separateMetrics: false,
   edgeRenderingMode: "fdeB",
   fdebSettings: defaultFDEBSettings,
+  communitiesInArcs: false,
+  selectedRingCommunity: "none",
 };
 
 export const defaultNodeLinkSettings: NodeLinkSettings = {
   linkDistance: 100,
   chargeStrength: -300,
   showLabels: false,
-  fontSize: 14,
+  fontSize: 16,
   nodeSizeMode: "fixed",
   nodeSizeMetric: "",
   fixedNodeSize: 15,
@@ -104,12 +108,12 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   collisionEnabled: true,
   nodeScaleType: "linear",
   linkScaleType: "linear",
+  selectedCommunity: "none",
 };
 
 export const defaultDisplaySettings: DisplaySettings = {
   previewChanges: true,
   showForeshadowing: true,
-  displayMode: "both",
   stickyHover: true,
 };
 

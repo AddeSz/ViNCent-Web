@@ -4,9 +4,19 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { useKeys } from "@/hooks/useKeys";
+import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
+import { formatKeyLabel } from "@/utils/utils";
 import { ChevronDown } from "lucide-react";
 
 interface RadialDisplaySettingsProps {
@@ -18,8 +28,7 @@ const RadialDisplaySettings = ({
   isOpen,
   setIsOpen,
 }: RadialDisplaySettingsProps) => {
-  const { radialSettings, setRadialSettings, displaySettings } =
-    useSettingsStore();
+  const { radialSettings, setRadialSettings } = useSettingsStore();
   const {
     innerRadius,
     outerRadius,
@@ -28,10 +37,34 @@ const RadialDisplaySettings = ({
     showLabels,
     maxLabelWidth,
     separateMetrics,
+    communitiesInArcs,
   } = radialSettings;
-  const { displayMode } = displaySettings;
-
+  const {
+    enabledNodeAttributeKeys,
+    enabledNodeCentralityKeys,
+    enabledNodeCommunityKeys,
+  } = useKeys();
   const outerRadiusMin = innerRadius + 200;
+
+  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
+
+  const handleCommunityChange = (value: string) => {
+    if (!enabledNodeCommunityKeys.includes(value)) {
+      setRadialSettings({ selectedRingCommunity: "none" });
+    } else {
+      setRadialSettings({ selectedRingCommunity: value });
+    }
+  };
+
+  const getCommunityCount = (communityName: string) => {
+    if (!metricsInfo.get(communityName)) return 0;
+    return metricsInfo.get(communityName)?.values.size;
+  };
+
+  const formatCommunityLabel = (communityName: string) => {
+    const count = getCommunityCount(communityName);
+    return `${formatKeyLabel(communityName)} (${count})`;
+  };
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -169,10 +202,30 @@ const RadialDisplaySettings = ({
           </div>
         )}
 
-        {displayMode === "both" && (
+        <div className="flex items-center justify-between">
+          <Label htmlFor="communities-in-arcs" className="text-sm">
+            Include Communities
+          </Label>
+          <Switch
+            id="communities-in-arcs"
+            checked={radialSettings.communitiesInArcs}
+            onCheckedChange={(checked) =>
+              setRadialSettings({ communitiesInArcs: checked })
+            }
+          />
+        </div>
+
+        {(enabledNodeCentralityKeys.length > 0 &&
+          enabledNodeAttributeKeys.length > 0) ||
+        (enabledNodeCentralityKeys.length > 0 &&
+          communitiesInArcs &&
+          enabledNodeCommunityKeys.length > 0) ||
+        (enabledNodeAttributeKeys.length > 0 &&
+          communitiesInArcs &&
+          enabledNodeCommunityKeys.length > 0) ? (
           <div className="flex items-center justify-between">
             <Label htmlFor="separate-metrics" className="text-sm">
-              Separate Metrics
+              Separate Metric Types
             </Label>
             <Switch
               id="separate-metrics"
@@ -182,7 +235,33 @@ const RadialDisplaySettings = ({
               }
             />
           </div>
-        )}
+        ) : null}
+
+        <div className="space-y-1">
+          <Label htmlFor="community-select" className="text-sm">
+            Display Community Ring
+          </Label>
+          <Select
+            value={radialSettings.selectedRingCommunity ?? "none"}
+            onValueChange={handleCommunityChange}
+          >
+            <SelectTrigger
+              id="community-select"
+              className="w-full text-sm"
+              size="sm"
+            >
+              <SelectValue placeholder="Select community" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {enabledNodeCommunityKeys.map((communityName) => (
+                <SelectItem key={communityName} value={communityName}>
+                  {formatCommunityLabel(communityName)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </CollapsibleContent>
     </Collapsible>
   );

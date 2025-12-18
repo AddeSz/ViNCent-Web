@@ -35,8 +35,13 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
 
   const { resetRadialSettings, resetNodeLinkSettings } = useSettingsStore();
   const timesteps = useMetricsStore((s) => s.timesteps);
-  const { enabledNodeKeys, allNodeKeys, allEdgeKeys, enabledEdgeKeys } =
-    useKeys();
+  const {
+    enabledNodeKeys,
+    allNodeKeys,
+    allEdgeKeys,
+    enabledEdgeKeys,
+    enabledNodeCommunityKeys,
+  } = useKeys();
 
   return (
     <div className="flex flex-col pb-4">
@@ -44,21 +49,9 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
         <span className="truncate text-lg">ViNCent Web</span>
       </div>
 
-      {/* <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
-          <ChevronDown
-            className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
-              isOpen ? "rotate-0" : "-rotate-90"
-            }`}
-          /> */}
-      {/* <p className="truncate pl-1">Load Data</p> */}
-      {/* </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2"> */}
       <div className="border-b-2 bg-background px-2 py-2">
         <FileUploader datasets={datasets} onLoadData={onLoadData} />
       </div>
-      {/* </CollapsibleContent>
-      </Collapsible> */}
 
       <DisplaySettings />
 
@@ -112,7 +105,7 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
             label="Nodes"
             description="Toggle Node Attributes"
             options={allNodeKeys}
-            enabledKeys={enabledNodeKeys}
+            enabledKeys={[...enabledNodeKeys, ...enabledNodeCommunityKeys]}
           />
           <KeySelector
             label="Edges"

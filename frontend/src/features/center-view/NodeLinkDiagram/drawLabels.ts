@@ -231,12 +231,36 @@ export const updateLabelHighlight = (
     const isSelected = selectedNodes.has(d.id);
     const isHovered = hoveredNode === d.id;
 
+    let textColor = highlightLabelColor.default;
+
+    if (isSelected) {
+      textColor = highlightLabelColor.selected;
+    } else if (isHovered) {
+      textColor = highlightLabelColor.hovered;
+    } else if (isLinked) {
+      const isLinkedToSelected = Array.from(selectedNodes).some(
+        (selectedId) => {
+          const selectedNodeData = nodeData.get(selectedId);
+          return selectedNodeData?.linked?.has(d.id);
+        },
+      );
+
+      const isLinkedToHovered =
+        hoveredNode && nodeData.get(hoveredNode)?.linked?.has(d.id);
+
+      if (isLinkedToSelected) {
+        textColor = highlightLabelColor.linkedToSelected;
+      } else if (isLinkedToHovered) {
+        textColor = highlightLabelColor.linkedToHovered;
+      }
+    }
+
     let underline = label.select<SVGLineElement>("line.underline");
     if (underline.empty()) {
       underline = label
         .append("line")
         .attr("class", "underline")
-        .attr("stroke", highlightLabelColor.default)
+        .attr("stroke", textColor)
         .attr("stroke-width", 1.5)
         .attr("y1", 0)
         .attr("y2", 0);
@@ -256,8 +280,11 @@ export const updateLabelHighlight = (
       showUnderline = false;
     }
 
-    text.attr("fill", highlightLabelColor.default);
+    text.attr("fill", textColor);
     text.attr("font-weight", fontWeight);
+    text.attr("stroke", "#000000");
+    text.attr("stroke-width", "2px");
+    text.attr("paint-order", "stroke fill");
 
     if (showUnderline) {
       const bbox = (text.node() as SVGTextElement)?.getBBox();
@@ -267,6 +294,7 @@ export const updateLabelHighlight = (
           .attr("x2", bbox.width / 2)
           .attr("y1", dy + 2)
           .attr("y2", dy + 2)
+          .attr("stroke", textColor)
           .style("opacity", 1);
       }
     } else {

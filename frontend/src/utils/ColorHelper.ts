@@ -21,7 +21,7 @@ export const highlightBoundsColor = {
   default: "black",
   selected: "orange",
   linkedToSelected: "OrangeRed",
-  hover: "var(--accent-foreground)",
+  hovered: "var(--accent-foreground)",
   linkedToHovered: "var(--primary)",
 };
 
@@ -29,14 +29,14 @@ export const highlightLabelColor = {
   default: "var(--foreground)",
   selected: "orange",
   linkedToSelected: "OrangeRed",
-  hover: "var(--accent-foreground)",
+  hovered: "var(--accent-foreground)",
   linkedToHovered: "var(--primary)",
 };
 
 export const highlightLinksColor = {
   default: "#888",
   selected: "orange",
-  hover: "var(--accent-foreground)",
+  hovered: "var(--accent-foreground)",
 };
 
 export const highlightNodeColor = {
@@ -66,7 +66,7 @@ export const getLinkStyle = (
   } else if (isSelected) {
     stroke = highlightLinksColor.selected;
   } else if (isHovered) {
-    stroke = highlightLinksColor.hover;
+    stroke = highlightLinksColor.hovered;
   } else {
     stroke = highlightLinksColor.default;
   }

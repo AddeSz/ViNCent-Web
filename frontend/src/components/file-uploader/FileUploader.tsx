@@ -9,8 +9,8 @@ import {
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import api from "@/utils/api";
 import { useRef, useState } from "react";
-import CentralitySelector from "./CentralitySelector";
 import DataSourceInput from "./DataSourceInput";
+import OptionsSelector from "./OptionsSelector";
 
 const SUPPORTED_EXTENSIONS = [
   "json",
@@ -27,11 +27,12 @@ interface FileUploaderProps {
   onLoadData: (formData: FormData) => Promise<void>;
 }
 
-export interface CentralityDataBackend {
+export interface OptionsDataBackend {
   all: string[];
   categories: Record<string, string[]>;
   requirements: Record<string, string>;
   performance: Record<string, string>;
+  descriptions: Record<string, string>;
 }
 
 const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
@@ -44,11 +45,12 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  const [centralityData, setCentralityData] =
-    useState<CentralityDataBackend | null>(null);
-  const [isLoadingCentralities, setIsLoadingCentralities] = useState(false);
-  const [centralityError, setCentralityError] = useState<string | null>(null);
-  const [selectedCentralities, setSelectedCentralities] = useState<Set<string>>(
+  const [optionsData, setOptionsData] = useState<OptionsDataBackend | null>(
+    null,
+  );
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(
     new Set(),
   );
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -57,18 +59,38 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
 
   const handleLoadDataClick = async () => {
     setIsDialogOpen(true);
-    setIsLoadingCentralities(true);
-    setCentralityError(null);
+
+    setIsLoadingOptions(true);
+    setOptionsError(null);
     try {
-      const data = await api.fetchCentralities();
-      setCentralityData(data);
-      setSelectedCentralities(new Set(data.all));
+      const options = await api.fetchOptions();
+
+      const combinedData: OptionsDataBackend = {
+        all: [...options.centralities.all, ...options.communities.all],
+        categories: {
+          ...options.centralities.categories,
+          community_detection: options.communities.all,
+        },
+        requirements: {
+          ...options.centralities.requirements,
+          ...options.communities.requirements,
+        },
+        performance: {
+          ...options.centralities.performance,
+          ...options.communities.performance,
+        },
+        descriptions: {
+          ...options.centralities.descriptions,
+          ...options.communities.descriptions,
+        },
+      };
+
+      setOptionsData(combinedData);
+      setSelectedOptions(new Set(combinedData.all));
     } catch (error) {
-      setCentralityError(
-        error instanceof Error ? error.message : "Server Error",
-      );
+      setOptionsError(error instanceof Error ? error.message : "Server Error");
     } finally {
-      setIsLoadingCentralities(false);
+      setIsLoadingOptions(false);
     }
   };
 
@@ -94,8 +116,21 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
     handleCloseDialog();
 
     const formData = new FormData();
-    const centralitiesArray =
-      selectedCentralities.size > 0 ? Array.from(selectedCentralities) : [];
+    const optionsArray =
+      selectedOptions.size > 0 ? Array.from(selectedOptions) : [];
+
+    const centralitiesArray: string[] = [];
+    const communitiesArray: string[] = [];
+
+    if (optionsData) {
+      optionsArray.forEach((option) => {
+        if (optionsData.categories.community_detection?.includes(option)) {
+          communitiesArray.push(option);
+        } else {
+          centralitiesArray.push(option);
+        }
+      });
+    }
 
     if (dataSource === "dataset") {
       const datasetContent = datasets[selectedDataset];
@@ -109,6 +144,7 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
       formData.append("source", "predefined");
       formData.append("name", selectedDataset);
       formData.append("centralities", JSON.stringify(centralitiesArray));
+      formData.append("communities", JSON.stringify(communitiesArray));
 
       try {
         await onLoadData(formData);
@@ -119,6 +155,7 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
       formData.append("source", "upload");
       formData.append("name", selectedFile!.name);
       formData.append("centralities", JSON.stringify(centralitiesArray));
+      formData.append("communities", JSON.stringify(communitiesArray));
 
       try {
         await onLoadData(formData);
@@ -133,10 +170,10 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
     setSelectedDataset("");
     setSelectedFile(null);
     setFileError(null);
-    setCentralityError(null);
+    setOptionsError(null);
 
-    if (centralityData) {
-      setSelectedCentralities(new Set(centralityData.all));
+    if (optionsData) {
+      setSelectedOptions(new Set(optionsData.all));
     }
     setExpandedCategories(new Set());
 
@@ -148,8 +185,8 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
   const canConfirm =
     ((dataSource === "dataset" && selectedDataset) ||
       (dataSource === "file" && selectedFile)) &&
-    !centralityError &&
-    centralityData !== null;
+    !optionsError &&
+    optionsData !== null;
 
   return (
     <>
@@ -191,12 +228,12 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
               }}
             />
 
-            <CentralitySelector
-              centralityData={centralityData}
-              isLoading={isLoadingCentralities}
-              error={centralityError}
-              selectedCentralities={selectedCentralities}
-              setSelectedCentralities={setSelectedCentralities}
+            <OptionsSelector
+              optionsData={optionsData}
+              isLoading={isLoadingOptions}
+              error={optionsError}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={setSelectedOptions}
               expandedCategories={expandedCategories}
               setExpandedCategories={setExpandedCategories}
             />
