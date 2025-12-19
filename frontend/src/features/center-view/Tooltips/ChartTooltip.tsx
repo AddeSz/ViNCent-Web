@@ -15,13 +15,17 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
   const { allNodeKeys } = useKeys();
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const communities = useMetricsStore((s) => s.currentCommunities);
-  const selectedCommunity = useSettingsStore(
+  const selectedRingCommunity = useSettingsStore(
     (s) => s.radialSettings.selectedRingCommunity,
   );
+  const selectedCOmmunity = useSettingsStore(
+    (s) => s.nodeLinkSettings.selectedCommunity,
+  );
+
   const currentMetricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
 
   const communityStats = useMemo(() => {
-    const currentCommunities = communities?.[selectedCommunity];
+    const currentCommunities = communities?.[selectedRingCommunity];
     if (!currentCommunities) {
       return {
         uniqueCommunities: 0,
@@ -38,7 +42,7 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
       uniqueCommunities: nodesByCommunity.size,
       nodesByCommunity,
     };
-  }, [communities, selectedCommunity]);
+  }, [communities, selectedRingCommunity]);
 
   const {
     type,
@@ -56,7 +60,6 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
 
   const nodeData = dataMap.get(nodeId);
   if (!nodeData) return null;
-
   const tooltipStyle: React.CSSProperties = {
     position: "fixed",
     left: x + 10,
@@ -133,8 +136,11 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
       {type === "label" && (
         <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
-          <div className="text-xs text-muted-foreground">
-            Links: {nodeData.linkCount}
+          <div className="flex-col text-xs text-muted-foreground">
+            <div>Links: {nodeData.linkCount} </div>
+            {selectedRingCommunity !== "none" && (
+              <div>Community: {nodeData?.[selectedRingCommunity]}</div>
+            )}
           </div>
         </div>
       )}
@@ -142,8 +148,11 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
       {type === "node" && (
         <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
-          <div className="text-xs text-muted-foreground">
-            Links: {nodeData.linkCount}
+          <div className="flex-col text-xs text-muted-foreground">
+            <div>Links: {nodeData.linkCount} </div>
+            {selectedCOmmunity !== "none" && (
+              <div>Community: {nodeData?.[selectedCOmmunity]}</div>
+            )}
           </div>
         </div>
       )}

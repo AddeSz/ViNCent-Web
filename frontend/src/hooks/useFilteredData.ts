@@ -1,11 +1,65 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useMetricsStore, type BrushRange } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData } from "@/types/network";
+import type { DataChanges, FullData, AttributeInfo } from "@/types/network";
+import type { BinnedData } from "@/features/chart-filtering/components/createBinnedData";
 import { diffData } from "@/utils/diffData";
 import { useMemo, useRef } from "react";
 
 const emptyChanges: DataChanges = { added: {}, removed: {}, updated: {} };
+
+const matchesAllFilters = (
+  metrics: Record<string, any>,
+  enabledKeys: string[],
+  brushRanges: Record<string, BrushRange | null>,
+  disabledValues: Record<string, Set<number | string>>,
+  selectedCategories: Record<string, string[]>,
+  metricsInfo: Map<string, AttributeInfo>,
+  binnedDataByKey: Map<string, BinnedData>,
+): boolean => {
+  return enabledKeys.every((key) => {
+    const value = metrics[key];
+    const info = metricsInfo.get(key);
+
+    const rangeObj = brushRanges[key];
+    if (rangeObj && typeof value === "number") {
+      const {
+        range: [min, max],
+        inclusive,
+      } = rangeObj;
+      const upperBoundCheck = inclusive ? value > max : value >= max;
+      if (value < min || upperBoundCheck) return false;
+    }
+
+    const disabledValuesForKey = disabledValues[key];
+    if (disabledValuesForKey && disabledValuesForKey.size > 0) {
+      if (info && info.isCategory) {
+        if (disabledValuesForKey.has(String(value))) {
+          return false;
+        }
+      } else if (info && info.isNumeric && typeof value === "number") {
+        const binnedData = binnedDataByKey.get(key);
+        if (binnedData) {
+          const binIndex = binnedData.valueToBinIndex.get(value);
+          if (binIndex !== undefined && disabledValuesForKey.has(binIndex)) {
+            return false;
+          }
+        }
+      } else {
+        if (disabledValuesForKey.has(String(value))) {
+          return false;
+        }
+      }
+    }
+
+    const selected = selectedCategories[key];
+    if (selected && selected.length > 0) {
+      if (!selected.includes(String(value))) return false;
+    }
+
+    return true;
+  });
+};
 
 export const useFilteredData = (): {
   nodeMap: Map<string, FullData>;
@@ -53,55 +107,20 @@ export const useFilteredData = (): {
   return useMemo(() => {
     let i = 0;
     const currentMap = new Map<string, FullData>();
+
     currentNodes.forEach((node, id) => {
       i++;
       const metrics = node.attributes || {};
 
-      const matchesFilters = enabledNodeMetricsKeys.every((key) => {
-        const value = metrics[key];
-        const info = metricsInfo.get(key);
-
-        const rangeObj = brushRanges[key];
-        if (rangeObj && typeof value === "number") {
-          const {
-            range: [min, max],
-            inclusive,
-          } = rangeObj;
-          const upperBoundCheck = inclusive ? value > max : value >= max;
-          if (value < min || upperBoundCheck) return false;
-        }
-
-        const disabledValuesForKey = disabledValues[key];
-        if (disabledValuesForKey && disabledValuesForKey.size > 0) {
-          if (info && info.isCategory) {
-            if (disabledValuesForKey.has(String(value))) {
-              return false;
-            }
-          } else if (info && info.isNumeric && typeof value === "number") {
-            const binnedData = binnedDataByKey.get(key);
-            if (binnedData) {
-              const binIndex = binnedData.valueToBinIndex.get(value);
-              if (
-                binIndex !== undefined &&
-                disabledValuesForKey.has(binIndex)
-              ) {
-                return false;
-              }
-            }
-          } else {
-            if (disabledValuesForKey.has(String(value))) {
-              return false;
-            }
-          }
-        }
-
-        const selected = selectedCategories[key];
-        if (selected && selected.length > 0) {
-          if (!selected.includes(String(value))) return false;
-        }
-
-        return true;
-      });
+      const matchesFilters = matchesAllFilters(
+        metrics,
+        enabledNodeMetricsKeys,
+        brushRanges,
+        disabledValues,
+        selectedCategories,
+        metricsInfo,
+        binnedDataByKey,
+      );
 
       if (!matchesFilters) return;
 
@@ -125,56 +144,26 @@ export const useFilteredData = (): {
     });
 
     i = 0;
-    const currentEdgeMap = new Map<string, FullData>();
+    const validEdgeMap = new Map<string, FullData>();
     currentEdges.forEach((edge, edgeId) => {
+      const [source, target] = edgeId.split("|");
+
+      if (!currentMap.has(source) || !currentMap.has(target)) {
+        return;
+      }
+
       i++;
       const metrics = edge.attributes || {};
 
-      const matchesFilters = enabledEdgeMetricsKeys.every((key) => {
-        const value = metrics[key];
-        const info = metricsInfo.get(key);
-
-        const rangeObj = brushRanges[key];
-        if (rangeObj && typeof value === "number") {
-          const {
-            range: [min, max],
-            inclusive,
-          } = rangeObj;
-          const upperBoundCheck = inclusive ? value > max : value >= max;
-          if (value < min || upperBoundCheck) return false;
-        }
-
-        const disabledValuesForKey = disabledValues[key];
-        if (disabledValuesForKey && disabledValuesForKey.size > 0) {
-          if (info && info.isCategory) {
-            if (disabledValuesForKey.has(String(value))) {
-              return false;
-            }
-          } else if (info && info.isNumeric && typeof value === "number") {
-            const binnedData = binnedDataByKey.get(key);
-            if (binnedData) {
-              const binIndex = binnedData.valueToBinIndex.get(value);
-              if (
-                binIndex !== undefined &&
-                disabledValuesForKey.has(binIndex)
-              ) {
-                return false;
-              }
-            }
-          } else {
-            if (disabledValuesForKey.has(String(value))) {
-              return false;
-            }
-          }
-        }
-
-        const selected = selectedCategories[key];
-        if (selected && selected.length > 0) {
-          if (!selected.includes(String(value))) return false;
-        }
-
-        return true;
-      });
+      const matchesFilters = matchesAllFilters(
+        metrics,
+        enabledEdgeMetricsKeys,
+        brushRanges,
+        disabledValues,
+        selectedCategories,
+        metricsInfo,
+        binnedDataByKey,
+      );
 
       if (!matchesFilters) return;
 
@@ -187,7 +176,7 @@ export const useFilteredData = (): {
         }
       }
 
-      currentEdgeMap.set(edgeId, {
+      validEdgeMap.set(edgeId, {
         id: edgeId,
         ...filteredMetrics,
         removed: false,
@@ -214,15 +203,6 @@ export const useFilteredData = (): {
       : prevChangesRef.current || { added: {}, removed: {}, updated: {} };
 
     const prevEdgeMap = prevEdgeMapRef.current || new Map();
-
-    const validEdgeMap = new Map<string, FullData>();
-    currentEdgeMap.forEach((edge, edgeId) => {
-      const [source, target] = edgeId.split("|");
-      if (currentMap.has(source) && currentMap.has(target)) {
-        validEdgeMap.set(edgeId, edge);
-      }
-    });
-
     const edgeChanges = diffData(prevEdgeMap, validEdgeMap);
 
     const hasEdgeChanges =

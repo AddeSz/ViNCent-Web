@@ -448,7 +448,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       (key) => !disabledEdgeMetricsKeys.has(key),
     );
 
-    const brushRanges: Record<string, BrushRange | null> = {};
+    const brushRanges = { ...get().brushRanges };
     [...nodeMetricsKeys, ...edgeMetricsKeys].forEach((key) => {
       if (!(key in brushRanges)) {
         brushRanges[key] = null;

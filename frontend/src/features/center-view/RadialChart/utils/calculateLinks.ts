@@ -7,15 +7,6 @@ import {
 import { getNodeId } from "@/utils/utils";
 import * as d3 from "d3";
 
-export const createAngleMap = (x: d3.ScaleBand<string>) => {
-  const angleMap = new Map<string, number>();
-  x.domain().forEach((id) => {
-    const angle = x(id);
-    if (angle !== undefined) angleMap.set(id, angle + x.bandwidth() / 2);
-  });
-  return angleMap;
-};
-
 export const createBezierPath = (
   sourceAngle: number,
   targetAngle: number,

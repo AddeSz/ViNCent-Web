@@ -3,7 +3,6 @@ import type { FullData } from "@/types/network";
 import { calculateBandwidth, calculateGapProportion } from "@/utils/utils";
 import * as d3 from "d3";
 import { useMemo } from "react";
-import { createAngleMap } from "./calculateLinks";
 
 interface UseRadialChartDataProps {
   data: FullData[];
@@ -99,7 +98,12 @@ export const useRadialChartData = ({
 
   const angleMap = useMemo(() => {
     if (!xScale) return new Map<string, number>();
-    return createAngleMap(xScale);
+    const angleMap = new Map<string, number>();
+    xScale.domain().forEach((id) => {
+      const angle = xScale(id);
+      if (angle !== undefined) angleMap.set(id, angle + xScale.bandwidth() / 2);
+    });
+    return angleMap;
   }, [xScale]);
 
   const { yScale, getKeyIndex } = useMemo(() => {

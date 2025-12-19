@@ -249,6 +249,7 @@ const RadialDisplaySettings = ({
               id="community-select"
               className="w-full text-sm"
               size="sm"
+              defaultValue={"none"}
             >
               <SelectValue placeholder="Select community" />
             </SelectTrigger>
