@@ -6,3 +6,5 @@ numpy
 scipy
 psutil
 python-multipart
+python-igraph
+leidenalg

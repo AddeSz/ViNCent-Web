@@ -8,7 +8,6 @@ import type {
   Network,
   TimestepDelta,
 } from "@/types/network";
-import api from "@/utils/api";
 
 export interface NetworkResponse {
   network: Network;
@@ -29,8 +28,7 @@ export const useLoadNetwork = () => {
   const clearVisualizationData = useVisualizationStore((s) => s.clearData);
   const clearMetricsData = useMetricsStore((s) => s.clearData);
 
-  const loadNetwork = async (formData: FormData) => {
-    const result: NetworkResponse = await api.validateNetwork(formData);
+  const loadNetwork = async (data: NetworkResponse) => {
     const {
       network,
       base_state,
@@ -39,8 +37,8 @@ export const useLoadNetwork = () => {
       metrics_info,
       graph_type,
       communities,
-    } = result;
-    console.log(result);
+    } = data;
+    console.log(data);
 
     setNetwork(network, graph_type);
 

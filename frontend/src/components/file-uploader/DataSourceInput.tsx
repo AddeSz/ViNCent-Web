@@ -1,3 +1,4 @@
+import { formatKeyLabel } from "@/utils/utils";
 import { X } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -14,7 +15,7 @@ import {
 interface DataSourceInputProps {
   dataSource: "dataset" | "file";
   setDataSource: (value: "dataset" | "file") => void;
-  datasets: Record<string, any>;
+  datasets: string[];
   selectedDataset: string;
   setSelectedDataset: (value: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -67,11 +68,17 @@ const DataSourceInput = ({
             <SelectValue placeholder="Choose a dataset..." />
           </SelectTrigger>
           <SelectContent>
-            {Object.keys(datasets).map((key) => (
-              <SelectItem key={key} value={key}>
-                {key}
+            {datasets.length === 0 ? (
+              <SelectItem value="none" disabled>
+                No datasets available
               </SelectItem>
-            ))}
+            ) : (
+              datasets.map((datasetId) => (
+                <SelectItem key={datasetId} value={datasetId}>
+                  {formatKeyLabel(datasetId)}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
         <p className="h-3"></p>

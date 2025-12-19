@@ -150,5 +150,9 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       sortingState: [],
       currentDataset: null,
       directed: null,
+      resetRadialZoomFlag: false,
+      resetNodeLinkZoomFlag: false,
+      hiddenNodes: new Set<string>(),
+      restartSimulationFlag: false,
     }),
 }));

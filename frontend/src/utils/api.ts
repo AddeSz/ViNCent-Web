@@ -14,6 +14,28 @@ export const api = {
     return response.json();
   },
 
+  async getPrecomputedDataset(
+    datasetId: string,
+    centralities?: string[],
+    communities?: string[],
+  ) {
+    const params = new URLSearchParams();
+    if (centralities && centralities.length > 0) {
+      params.append("centralities", centralities.join(","));
+    }
+    if (communities && communities.length > 0) {
+      params.append("communities", communities.join(","));
+    }
+
+    const url = `${API_BASE_URL}/dataset/${datasetId}${params.toString() ? `?${params.toString()}` : ""}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch dataset: ${datasetId}`);
+    }
+    return response.json();
+  },
+
   async validateNetwork(formData: FormData) {
     const response = await fetch(`${API_BASE_URL}/validate-network`, {
       method: "POST",

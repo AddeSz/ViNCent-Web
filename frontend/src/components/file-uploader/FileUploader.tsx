@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useLoadNetwork } from "@/hooks/useLoadNetwork";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import api from "@/utils/api";
 import { useRef, useState } from "react";
@@ -23,8 +24,9 @@ const SUPPORTED_EXTENSIONS = [
 ];
 
 interface FileUploaderProps {
-  datasets: Record<string, any>;
-  onLoadData: (formData: FormData) => Promise<void>;
+  onLoadingStart?: () => void;
+  onLoadingComplete?: () => void;
+  onLoadingError?: (error: string) => void;
 }
 
 export interface OptionsDataBackend {
@@ -35,12 +37,18 @@ export interface OptionsDataBackend {
   descriptions: Record<string, string>;
 }
 
-const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
+const FileUploader = ({
+  onLoadingStart,
+  onLoadingComplete,
+  onLoadingError,
+}: FileUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const setCurrentDataset = useNetworkStore((s) => s.setCurrentDataset);
+  const { loadNetwork, clearAllData } = useLoadNetwork();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dataSource, setDataSource] = useState<"dataset" | "file">("dataset");
+  const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -64,6 +72,8 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
     setOptionsError(null);
     try {
       const options = await api.fetchOptions();
+
+      setAvailableDatasets(options.datasets || []);
 
       const combinedData: OptionsDataBackend = {
         all: [...options.centralities.all, ...options.communities.all],
@@ -115,7 +125,9 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
 
     handleCloseDialog();
 
-    const formData = new FormData();
+    onLoadingStart?.();
+    clearAllData();
+
     const optionsArray =
       selectedOptions.size > 0 ? Array.from(selectedOptions) : [];
 
@@ -132,35 +144,33 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
       });
     }
 
-    if (dataSource === "dataset") {
-      const datasetContent = datasets[selectedDataset];
-      const jsonString = JSON.stringify(datasetContent);
-      const blob = new Blob([jsonString], { type: "application/json" });
-      const file = new File([blob], `${selectedDataset}.json`, {
-        type: "application/json",
-      });
+    try {
+      let networkData;
 
-      formData.append("file", file);
-      formData.append("source", "predefined");
-      formData.append("name", selectedDataset);
-      formData.append("centralities", JSON.stringify(centralitiesArray));
-      formData.append("communities", JSON.stringify(communitiesArray));
-
-      try {
-        await onLoadData(formData);
+      if (dataSource === "dataset") {
+        networkData = await api.getPrecomputedDataset(
+          selectedDataset,
+          centralitiesArray,
+          communitiesArray,
+        );
         setCurrentDataset(selectedDataset);
-      } catch (error) {}
-    } else {
-      formData.append("file", selectedFile!);
-      formData.append("source", "upload");
-      formData.append("name", selectedFile!.name);
-      formData.append("centralities", JSON.stringify(centralitiesArray));
-      formData.append("communities", JSON.stringify(communitiesArray));
+      } else {
+        const formData = new FormData();
+        formData.append("file", selectedFile!);
+        formData.append("centralities", JSON.stringify(centralitiesArray));
+        formData.append("communities", JSON.stringify(communitiesArray));
 
-      try {
-        await onLoadData(formData);
+        networkData = await api.validateNetwork(formData);
         setCurrentDataset(selectedFile!.name);
-      } catch (error) {}
+      }
+
+      await loadNetwork(networkData);
+
+      onLoadingComplete?.();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load data";
+      onLoadingError?.(errorMessage);
     }
   };
 
@@ -204,7 +214,8 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
           <DialogHeader>
             <DialogTitle>Load Data</DialogTitle>
             <DialogDescription>
-              Choose a dataset or import your own file
+              Choose a dataset or import your own file, then select which
+              metrics to calculate
             </DialogDescription>
           </DialogHeader>
 
@@ -212,7 +223,7 @@ const FileUploader = ({ datasets, onLoadData }: FileUploaderProps) => {
             <DataSourceInput
               dataSource={dataSource}
               setDataSource={setDataSource}
-              datasets={datasets}
+              datasets={availableDatasets}
               selectedDataset={selectedDataset}
               setSelectedDataset={setSelectedDataset}
               fileInputRef={fileInputRef}

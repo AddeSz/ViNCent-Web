@@ -2,6 +2,8 @@ import logging
 import time
 from typing import Any, Dict, List, Optional, Union, cast
 
+import igraph as ig
+import leidenalg
 import networkx as nx
 from networkx.algorithms import community
 
@@ -32,6 +34,7 @@ class Community:
         
         self.community_handlers = {
             CommunityType.LOUVAIN: self._louvain,
+            CommunityType.LEIDEN: self._leiden,
             CommunityType.LABEL_PROPAGATION: self._label_propagation,
             CommunityType.GREEDY_MODULARITY: self._greedy_modularity,
             CommunityType.GIRVAN_NEWMAN: self._girvan_newman,
@@ -152,14 +155,62 @@ class Community:
     
     def _girvan_newman(self) -> Dict[str, int]:
         comp = community.girvan_newman(self.G)
+        best_communities = None
+        best_modularity = -1
+        
         try:
-            first_level = next(comp)
-            communities = list(first_level)
-            return self._communities_to_node_dict(communities)
+            for i, communities in enumerate(comp):
+                if i >= 4:
+                    break
+                
+                communities_list = list(communities)
+                mod = community.modularity(
+                    self.G, 
+                    communities_list, 
+                    weight=self.weight_param
+                )
+                
+                if mod > best_modularity:
+                    best_modularity = mod
+                    best_communities = communities_list
+            
+            if best_communities:
+                return self._communities_to_node_dict(best_communities)
+            
         except StopIteration:
+            if best_communities:
+                return self._communities_to_node_dict(best_communities)
             logger.warning("Girvan-Newman returned empty generator")
-            return {}
-    
+        
+        return {}
+        
+    def _leiden(self) -> Dict[str, int]:
+        edges = list(self.G.edges())
+        nodes = list(self.G.nodes())
+        node_to_idx = {node: idx for idx, node in enumerate(nodes)}
+        
+        g = ig.Graph()
+        g.add_vertices(len(nodes))
+        g.add_edges([(node_to_idx[u], node_to_idx[v]) for u, v in edges])
+        
+        weights = None
+        if self.use_weights:
+            weights = [self.G[u][v].get("weight", 1.0) for u, v in edges]
+            g.es["weight"] = weights
+        
+        partition = leidenalg.find_partition(
+            g,
+            leidenalg.ModularityVertexPartition,
+            weights=weights,
+            seed=42
+        )
+        
+        result = {}
+        for idx, comm_id in enumerate(partition.membership):
+            result[str(nodes[idx])] = comm_id
+        
+        return result
+
     def _kernighan_lin(self) -> Dict[str, int]:
         if len(self.G.nodes()) < 2:
             return {}

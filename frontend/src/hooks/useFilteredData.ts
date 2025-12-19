@@ -38,9 +38,17 @@ export const useFilteredData = (): {
 
   const prevNodeMapRef = useRef<Map<string, FullData> | null>(null);
   const prevChangesRef = useRef<DataChanges>(emptyChanges);
-
   const prevEdgeMapRef = useRef<Map<string, FullData> | null>(null);
   const prevEdgeChangesRef = useRef<DataChanges>(emptyChanges);
+
+  const prevNodeDataRef = useRef(nodeData);
+  if (nodeData !== prevNodeDataRef.current) {
+    prevNodeDataRef.current = nodeData;
+    prevNodeMapRef.current = null;
+    prevChangesRef.current = emptyChanges;
+    prevEdgeMapRef.current = null;
+    prevEdgeChangesRef.current = emptyChanges;
+  }
 
   return useMemo(() => {
     let i = 0;

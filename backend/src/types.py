@@ -41,12 +41,13 @@ class CentralityType(str, Enum):
     
 class CommunityType(str, Enum):
     LOUVAIN = "louvain"
+    LEIDEN = "leiden"
     GREEDY_MODULARITY = "greedy_modularity"
     LABEL_PROPAGATION = "label_propagation"
     ASYN_LPABASE = "asyn_lpabase"
+    ASYN_FLUIDC = "asyn_fluidc"
     GIRVAN_NEWMAN = "girvan_newman"
     KERNIGHAN_LIN = "kernighan_lin"
-    ASYN_FLUIDC = "asyn_fluidc"
     
 AttributeValue = Union[str, int, float, bool]
 AttributesDict = Dict[str, AttributeValue]

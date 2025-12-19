@@ -1,13 +1,16 @@
 import json
 import logging
 import os
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .cache_utils import CACHE_DIR, CACHE_ENABLED
+from .cache_utils import CACHE_DIR, CACHE_ENABLED, get_precomputed_data
 from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
                      CENTRALITY_CATEGORIES, CENTRALITY_DESCRIPTIONS,
                      CENTRALITY_PERFORMANCE, CENTRALITY_REQUIREMENTS,
@@ -16,6 +19,9 @@ from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
 from .parsers import parse_network_file
 from .preprocessing import process_network
 from .types import CentralityType
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from datasets_registry import list_datasets
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -91,9 +97,13 @@ async def get_options():
             }
         }
         
+        datasets = list_datasets()
+        dataset_ids = [d["id"] for d in datasets]
+        
         options_data = {
             "centralities": centralities_data,
-            "communities": communities_data
+            "communities": communities_data,
+            "datasets": dataset_ids
         }
         
         return JSONResponse(content=options_data)
@@ -163,4 +173,151 @@ async def validate_network(
         raise HTTPException(
             status_code=500, 
             detail=f"Failed to process network: {str(e)}"
+        )
+
+def filter_metrics_info(
+    metrics: dict,
+    selected_centralities: list[str] | None,
+    selected_communities: list[str] | None,
+) -> dict:
+    selected_centralities = selected_centralities or []
+    selected_communities = selected_communities or []
+
+    all_selected = set(selected_centralities + selected_communities)
+
+    all_centrality_keys = {c.value for c in ALL_CENTRALITIES}
+    all_community_keys = {a.value for a in ALL_COMMUNITY_ALGORITHMS}
+
+    filtered = {}
+
+    for key, value in metrics.items():
+        is_centrality = key in all_centrality_keys
+        is_community = key in all_community_keys
+
+        if not is_centrality and not is_community:
+            filtered[key] = value
+            continue
+
+        if key in all_selected:
+            filtered[key] = value
+
+    return filtered
+
+
+def filter_precomputed_data(
+    data: dict,
+    centralities: list[str] | None,
+    communities: list[str] | None,
+) -> dict:
+    filtered_data = data.copy()
+
+    if "centralities" in filtered_data:
+        filtered_centralities = {}
+
+        for timestep, timestep_data in filtered_data["centralities"].items():
+            filtered_timestep = {}
+
+            if "nodes" in timestep_data:
+                if centralities:
+                    filtered_nodes = {}
+                    for node_id, node_data in timestep_data["nodes"].items():
+                        filtered_node = {
+                            k: v for k, v in node_data.items() if k in centralities
+                        }
+                        if filtered_node:
+                            filtered_nodes[node_id] = filtered_node
+                    filtered_timestep["nodes"] = filtered_nodes
+                else:
+                    filtered_timestep["nodes"] = {}
+
+            if "edges" in timestep_data:
+                if centralities:
+                    filtered_edges = {}
+                    for edge_id, edge_data in timestep_data["edges"].items():
+                        filtered_edge = {
+                            k: v for k, v in edge_data.items() if k in centralities
+                        }
+                        if filtered_edge:
+                            filtered_edges[edge_id] = filtered_edge
+                    filtered_timestep["edges"] = filtered_edges
+                else:
+                    filtered_timestep["edges"] = {}
+
+            filtered_centralities[timestep] = filtered_timestep
+
+        filtered_data["centralities"] = filtered_centralities
+
+    if "communities" in filtered_data:
+        filtered_communities = {}
+
+        for timestep, timestep_data in filtered_data["communities"].items():
+            if communities:
+                filtered_communities[timestep] = {
+                    k: v for k, v in timestep_data.items() if k in communities
+                }
+            else:
+                filtered_communities[timestep] = {}
+
+        filtered_data["communities"] = filtered_communities
+
+    if "metrics_info" in filtered_data:
+        if "nodes" in filtered_data["metrics_info"]:
+            filtered_data["metrics_info"]["nodes"] = filter_metrics_info(
+                filtered_data["metrics_info"]["nodes"],
+                centralities,
+                communities,
+            )
+
+        if "edges" in filtered_data["metrics_info"]:
+            filtered_data["metrics_info"]["edges"] = filter_metrics_info(
+                filtered_data["metrics_info"]["edges"],
+                centralities,
+                communities,
+            )
+            
+    return filtered_data
+
+
+@app.get("/dataset/{dataset_id}")
+async def get_dataset(
+    dataset_id: str,
+    centralities: Optional[str] = Query(
+        None, description="Comma-separated list of centrality measures"
+    ),
+    communities: Optional[str] = Query(
+        None, description="Comma-separated list of community detection algorithms"
+    ),
+):
+    try:
+        data = get_precomputed_data(dataset_id)
+
+        if data is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Dataset '{dataset_id}' not found in precomputed cache"
+            )
+
+        centralities_list = centralities.split(",") if centralities else None
+        communities_list = communities.split(",") if communities else None
+
+        logger.info(
+            f"Filtering dataset {dataset_id} - "
+            f"centralities: {centralities_list}, communities: {communities_list}"
+        )
+
+        data = filter_precomputed_data(
+            data,
+            centralities_list,
+            communities_list,
+        )
+
+        return JSONResponse(content=data)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching dataset {dataset_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch dataset: {str(e)}"
         )

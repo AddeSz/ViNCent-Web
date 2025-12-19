@@ -173,6 +173,7 @@ CENTRALITY_DESCRIPTIONS = {
     
 ALL_COMMUNITY_ALGORITHMS = [
     CommunityType.LOUVAIN,
+    CommunityType.LEIDEN,
     CommunityType.GREEDY_MODULARITY,
     CommunityType.LABEL_PROPAGATION,
     CommunityType.ASYN_LPABASE,
@@ -184,6 +185,7 @@ ALL_COMMUNITY_ALGORITHMS = [
 COMMUNITY_CATEGORIES = {
     "modularity_based": [
         CommunityType.LOUVAIN,
+        CommunityType.LEIDEN,
         CommunityType.GREEDY_MODULARITY,
     ],
     "label_propagation": [
@@ -212,6 +214,7 @@ COMMUNITY_PERFORMANCE = {
     CommunityType.GREEDY_MODULARITY: "Moderate",
     
     CommunityType.LOUVAIN: "Fast",
+    CommunityType.LEIDEN: "Fast",
     CommunityType.LABEL_PROPAGATION: "Fast",
     CommunityType.ASYN_LPABASE: "Fast",
     CommunityType.ASYN_FLUIDC: "Fast",
@@ -219,9 +222,10 @@ COMMUNITY_PERFORMANCE = {
 
 COMMUNITY_DESCRIPTIONS = {
     CommunityType.LOUVAIN: "Fast algorithm that finds groups by maximizing connections within communities",
+    CommunityType.LEIDEN: "Improved version of Louvain with better quality guarantees and well-connected communities",
     CommunityType.LABEL_PROPAGATION: "Nodes join communities based on their neighbors' memberships",
     CommunityType.GREEDY_MODULARITY: "Quickly merges nodes into communities with strong internal connections",
-    CommunityType.GIRVAN_NEWMAN: "Identifies communities by removing bridge edges between groups",
+    CommunityType.GIRVAN_NEWMAN: "Hierarchical algorithm that progressively splits networks into nested community structures",
     CommunityType.KERNIGHAN_LIN: "Splits network into two balanced communities with minimal cross-edges",
     CommunityType.ASYN_LPABASE: "Label propagation variant with asynchronous updates",
     CommunityType.ASYN_FLUIDC: "Fluid communities algorithm for finding a fixed number of groups",

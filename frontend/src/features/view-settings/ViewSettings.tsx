@@ -19,12 +19,18 @@ import NodeLinkDiagramSettings from "./nodel-link-settings/NodeLinkDiagramSettin
 import RadialChartSettings from "./radial-settings/RadialChartSettings";
 
 interface ViewSettingsProps {
-  datasets: Record<string, any>;
-  onLoadData: (formData: FormData) => Promise<void>;
+  onLoadingStart?: () => void;
+  onLoadingComplete?: () => void;
+  onLoadingError?: (error: string) => void;
   view: ViewType;
 }
 
-const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
+const ViewSettings = ({
+  onLoadingStart,
+  onLoadingComplete,
+  onLoadingError,
+  view,
+}: ViewSettingsProps) => {
   const [isOpenTime, setIsOpenTime] = useState(true);
   const [isOpenDisplay, setIsOpenDisplay] = useState(false);
   const [isOpenEdge, setIsOpenEdge] = useState(false);
@@ -50,7 +56,11 @@ const ViewSettings = ({ datasets, onLoadData, view }: ViewSettingsProps) => {
       </div>
 
       <div className="border-b-2 bg-background px-2 py-2">
-        <FileUploader datasets={datasets} onLoadData={onLoadData} />
+        <FileUploader
+          onLoadingStart={onLoadingStart}
+          onLoadingComplete={onLoadingComplete}
+          onLoadingError={onLoadingError}
+        />
       </div>
 
       <DisplaySettings />

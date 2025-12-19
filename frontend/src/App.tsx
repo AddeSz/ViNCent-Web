@@ -1,35 +1,15 @@
 import FileUploader from "@/components/file-uploader/FileUploader";
 import Legend from "@/components/Legend";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  coauthorData,
-  largeCluster,
-  massiveCluster,
-  miserablesData,
-  smallCluster,
-  starwarsData,
-  testDataSmall,
-} from "@/data/datasets";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
-import { useLoadNetwork } from "@/hooks/useLoadNetwork";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ViewSettings from "./features/view-settings/ViewSettings";
 import { useFilteredData } from "./hooks/useFilteredData";
 import { useProcessedData } from "./hooks/useProcessedData";
 import { useNetworkStore } from "./stores/useNetworkStore";
-
-const datasets = {
-  "Starwars Dataset": starwarsData,
-  "Les Miserables Dataset": miserablesData,
-  "Test Dataset Small": testDataSmall,
-  "Small Cluster": smallCluster,
-  "Large Cluster": largeCluster,
-  "Massive Cluster": massiveCluster,
-  "Co Author Dataset": coauthorData,
-};
 
 const VIEW_KEY = "center-view-mode";
 export type ViewType = "radial" | "node-link" | "data-table";
@@ -41,7 +21,6 @@ const App = () => {
   const [status, setStatus] = useState<LoadStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const { loadNetwork, clearAllData } = useLoadNetwork();
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
 
   const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
@@ -49,24 +28,19 @@ const App = () => {
     useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
   const currentDataset = useNetworkStore((s) => s.currentDataset);
   const directed = useNetworkStore((s) => s.directed);
-  const handleLoadData = async (formData: FormData) => {
-    try {
-      setStatus("loading");
-      setError(null);
 
-      clearAllData();
-      await loadNetwork(formData);
+  const handleLoadingStart = () => {
+    setStatus("loading");
+    setError(null);
+  };
 
-      setStatus("ready");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "An unknown error occurred";
+  const handleLoadingComplete = () => {
+    setStatus("ready");
+  };
 
-      setError(message);
-      setStatus("error");
-
-      console.error("Error loading dataset:", err);
-    }
+  const handleLoadingError = (errorMessage: string) => {
+    setError(errorMessage);
+    setStatus("error");
   };
 
   const handleDragging = (id: string) => (isDragging: boolean) => {
@@ -80,8 +54,9 @@ const App = () => {
           <div className="flex h-full w-full flex-col bg-card">
             <div className="scrollbar-thin flex-1 overflow-x-hidden overflow-y-auto">
               <ViewSettings
-                datasets={datasets}
-                onLoadData={handleLoadData}
+                onLoadingStart={handleLoadingStart}
+                onLoadingComplete={handleLoadingComplete}
+                onLoadingError={handleLoadingError}
                 view={view}
               />
             </div>
@@ -117,7 +92,11 @@ const App = () => {
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p className="text-center text-red-500">{error}</p>
               <div className="w-40">
-                <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+                <FileUploader
+                  onLoadingStart={handleLoadingStart}
+                  onLoadingComplete={handleLoadingComplete}
+                  onLoadingError={handleLoadingError}
+                />
               </div>
             </div>
           )}
@@ -128,7 +107,11 @@ const App = () => {
                 No data loaded. Select or import a dataset to begin.
               </p>
               <div className="w-40">
-                <FileUploader datasets={datasets} onLoadData={handleLoadData} />
+                <FileUploader
+                  onLoadingStart={handleLoadingStart}
+                  onLoadingComplete={handleLoadingComplete}
+                  onLoadingError={handleLoadingError}
+                />
               </div>
             </div>
           )}
