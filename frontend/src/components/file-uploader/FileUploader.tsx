@@ -12,6 +12,7 @@ import api from "@/utils/api";
 import { useRef, useState } from "react";
 import DataSourceInput from "./DataSourceInput";
 import OptionsSelector from "./OptionsSelector";
+import type { FileUploaderState } from "./useFileUploaderState";
 
 const SUPPORTED_EXTENSIONS = [
   "json",
@@ -23,16 +24,6 @@ const SUPPORTED_EXTENSIONS = [
   "tsv",
 ];
 
-interface FileUploaderProps {
-  onLoadingStart: () => void;
-  onLoadingComplete: () => void;
-  onLoadingError: (error: string) => void;
-  optionsData: OptionsDataBackend | null;
-  setOptionsData: (data: OptionsDataBackend | null) => void;
-  availableDatasets: string[];
-  setAvailableDatasets: (datasets: string[]) => void;
-}
-
 export interface OptionsDataBackend {
   all: string[];
   categories: Record<string, string[]>;
@@ -41,40 +32,48 @@ export interface OptionsDataBackend {
   descriptions: Record<string, string>;
 }
 
+interface FileUploaderProps {
+  onLoadingStart: () => void;
+  onLoadingComplete: () => void;
+  onLoadingError: (error: string) => void;
+  fileUploaderState: FileUploaderState;
+}
+
 const FileUploader = ({
   onLoadingStart,
   onLoadingComplete,
   onLoadingError,
-  optionsData,
-  setOptionsData,
-  availableDatasets,
-  setAvailableDatasets,
+  fileUploaderState,
 }: FileUploaderProps) => {
+  const {
+    optionsData,
+    setOptionsData,
+    availableDatasets,
+    setAvailableDatasets,
+    selectedOptions,
+    setSelectedOptions,
+    expandedCategories,
+    setExpandedCategories,
+    dataSource,
+    setDataSource,
+    selectedDataset,
+    setSelectedDataset,
+    selectedFile,
+    setSelectedFile,
+  } = fileUploaderState;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const setCurrentDataset = useNetworkStore((s) => s.setCurrentDataset);
   const { loadNetwork, clearAllData } = useLoadNetwork();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dataSource, setDataSource] = useState<"dataset" | "file">("dataset");
-  const [selectedDataset, setSelectedDataset] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [optionsError, setOptionsError] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(
-    new Set(),
-  );
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(),
-  );
 
   const handleLoadDataClick = async () => {
     setIsDialogOpen(true);
-
-    if (optionsData && selectedOptions.size === 0) {
-      setSelectedOptions(new Set(optionsData.all));
-    }
 
     if (!optionsData) {
       setIsLoadingOptions(true);
@@ -188,17 +187,13 @@ const FileUploader = ({
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setDataSource("dataset");
-    setSelectedDataset("");
-    setSelectedFile(null);
     setFileError(null);
     setOptionsError(null);
+  };
 
-    if (optionsData) {
-      setSelectedOptions(new Set(optionsData.all));
-    }
-    setExpandedCategories(new Set());
-
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    setFileError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -242,13 +237,7 @@ const FileUploader = ({
               selectedFile={selectedFile}
               fileError={fileError}
               onFileSelect={handleFileSelect}
-              onClearFile={() => {
-                setSelectedFile(null);
-                setFileError(null);
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = "";
-                }
-              }}
+              onClearFile={handleClearFile}
             />
 
             <OptionsSelector

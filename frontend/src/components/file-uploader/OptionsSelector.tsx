@@ -11,8 +11,8 @@ import OptionsCategory from "./OptionsCategory";
 
 interface OptionsSelectorProps {
   optionsData: OptionsDataBackend | null;
-  isLoading?: boolean;
-  error?: string | null;
+  isLoading: boolean;
+  error: string | null;
   selectedOptions: Set<string>;
   setSelectedOptions: React.Dispatch<React.SetStateAction<Set<string>>>;
   expandedCategories: Set<string>;
@@ -115,13 +115,13 @@ const OptionsSelector = ({
           </CollapsibleContent>
         </Collapsible>
 
-        <div className="min-x-0 scrollbar-thin max-h-[330px] min-h-[190px] w-full space-y-2 overflow-y-auto rounded-md border bg-muted/50 p-2">
+        <div className="min-x-0 scrollbar-thin max-h-82.5 min-h-47.5 w-full space-y-2 overflow-y-auto rounded-md border bg-muted/50 p-2">
           {isLoading ? (
-            <div className="flex h-[170px] items-center justify-center">
+            <div className="flex h-42.5 items-center justify-center">
               <Spinner className="h-8 w-8" />
             </div>
           ) : error ? (
-            <div className="flex h-[170px] flex-col items-center justify-center gap-2 px-4 text-center">
+            <div className="flex h-42.5 flex-col items-center justify-center gap-2 px-4 text-center">
               <p className="text-sm font-medium text-muted-foreground">
                 Failed to load options
               </p>
@@ -145,7 +145,7 @@ const OptionsSelector = ({
               ),
             )
           ) : (
-            <div className="flex h-[170px] items-center justify-center text-sm text-muted-foreground">
+            <div className="flex h-42.5 items-center justify-center text-sm text-muted-foreground">
               Failed to load options
             </div>
           )}
