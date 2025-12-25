@@ -24,9 +24,13 @@ const SUPPORTED_EXTENSIONS = [
 ];
 
 interface FileUploaderProps {
-  onLoadingStart?: () => void;
-  onLoadingComplete?: () => void;
-  onLoadingError?: (error: string) => void;
+  onLoadingStart: () => void;
+  onLoadingComplete: () => void;
+  onLoadingError: (error: string) => void;
+  optionsData: OptionsDataBackend | null;
+  setOptionsData: (data: OptionsDataBackend | null) => void;
+  availableDatasets: string[];
+  setAvailableDatasets: (datasets: string[]) => void;
 }
 
 export interface OptionsDataBackend {
@@ -41,6 +45,10 @@ const FileUploader = ({
   onLoadingStart,
   onLoadingComplete,
   onLoadingError,
+  optionsData,
+  setOptionsData,
+  availableDatasets,
+  setAvailableDatasets,
 }: FileUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const setCurrentDataset = useNetworkStore((s) => s.setCurrentDataset);
@@ -48,14 +56,10 @@ const FileUploader = ({
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dataSource, setDataSource] = useState<"dataset" | "file">("dataset");
-  const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  const [optionsData, setOptionsData] = useState<OptionsDataBackend | null>(
-    null,
-  );
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [optionsError, setOptionsError] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Set<string>>(
@@ -68,39 +72,47 @@ const FileUploader = ({
   const handleLoadDataClick = async () => {
     setIsDialogOpen(true);
 
-    setIsLoadingOptions(true);
-    setOptionsError(null);
-    try {
-      const options = await api.fetchOptions();
+    if (optionsData && selectedOptions.size === 0) {
+      setSelectedOptions(new Set(optionsData.all));
+    }
 
-      setAvailableDatasets(options.datasets || []);
+    if (!optionsData) {
+      setIsLoadingOptions(true);
+      setOptionsError(null);
+      try {
+        const options = await api.fetchOptions();
 
-      const combinedData: OptionsDataBackend = {
-        all: [...options.centralities.all, ...options.communities.all],
-        categories: {
-          ...options.centralities.categories,
-          community_detection: options.communities.all,
-        },
-        requirements: {
-          ...options.centralities.requirements,
-          ...options.communities.requirements,
-        },
-        performance: {
-          ...options.centralities.performance,
-          ...options.communities.performance,
-        },
-        descriptions: {
-          ...options.centralities.descriptions,
-          ...options.communities.descriptions,
-        },
-      };
+        setAvailableDatasets(options.datasets || []);
 
-      setOptionsData(combinedData);
-      setSelectedOptions(new Set(combinedData.all));
-    } catch (error) {
-      setOptionsError(error instanceof Error ? error.message : "Server Error");
-    } finally {
-      setIsLoadingOptions(false);
+        const combinedData: OptionsDataBackend = {
+          all: [...options.centralities.all, ...options.communities.all],
+          categories: {
+            ...options.centralities.categories,
+            community_detection: options.communities.all,
+          },
+          requirements: {
+            ...options.centralities.requirements,
+            ...options.communities.requirements,
+          },
+          performance: {
+            ...options.centralities.performance,
+            ...options.communities.performance,
+          },
+          descriptions: {
+            ...options.centralities.descriptions,
+            ...options.communities.descriptions,
+          },
+        };
+
+        setOptionsData(combinedData);
+        setSelectedOptions(new Set(combinedData.all));
+      } catch (error) {
+        setOptionsError(
+          error instanceof Error ? error.message : "Server Error",
+        );
+      } finally {
+        setIsLoadingOptions(false);
+      }
     }
   };
 

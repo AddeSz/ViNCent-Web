@@ -66,17 +66,16 @@ CENTRALITY_CATEGORIES = {
         CentralityType.LAPLACIAN,
         CentralityType.SECOND_ORDER,
     ],
+        "hierarchy_based_centralites": [
+        CentralityType.TROPHIC_LEVEL,
+        # CentralityType.TROPHIC_INCOHERENCE,
+    ],
     "edge_based_centralites": [
         CentralityType.EDGE_BETWEENNESS,
         CentralityType.EDGE_LOAD,
         CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
         CentralityType.EDGE_DISPERSION,
         CentralityType.EDGE_TROPHIC_DIFFERENCES,
-    ],
-    "hierarchy_based_centralites": [
-        CentralityType.TROPHIC_LEVEL,
-        CentralityType.EDGE_TROPHIC_DIFFERENCES,
-        # CentralityType.TROPHIC_INCOHERENCE,
     ],
 }
 

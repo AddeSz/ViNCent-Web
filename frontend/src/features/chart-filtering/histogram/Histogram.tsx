@@ -112,32 +112,15 @@ const Histogram = ({
 
   if (!canRenderBars) {
     return (
-      <div className="relative" ref={containerRef}>
-        <svg width={width} height={height}>
-          <g transform={`translate(${margin.left},${margin.top})`}>
-            <rect
-              x={0}
-              y={0}
-              width={chartWidth}
-              height={chartHeight}
-              fill="var(--muted)"
-              opacity={0.1}
-              rx={4}
-            />
-            <foreignObject x={0} y={0} width={chartWidth} height={chartHeight}>
-              <div className="flex h-full w-full items-center justify-center p-4">
-                <div className="text-center">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Too many bins to display ({binnedData.bins.length})
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    Increasing window size or lowering bin count may help
-                  </div>
-                </div>
-              </div>
-            </foreignObject>
-          </g>
-        </svg>
+      <div className="flex h-full w-full items-center justify-center p-1">
+        <div className="text-center">
+          <div className="text-sm font-medium text-muted-foreground">
+            Too many bins to display ({binnedData.bins.length})
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            Increasing window size may help
+          </div>
+        </div>
       </div>
     );
   }

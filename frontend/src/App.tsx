@@ -4,12 +4,14 @@ import { Spinner } from "@/components/ui/spinner";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ViewSettings from "./features/view-settings/ViewSettings";
 import { useFilteredData } from "./hooks/useFilteredData";
 import { useProcessedData } from "./hooks/useProcessedData";
 import { useNetworkStore } from "./stores/useNetworkStore";
+import api from "@/utils/api";
+import type { OptionsDataBackend } from "@/components/file-uploader/FileUploader";
 
 const VIEW_KEY = "center-view-mode";
 export type ViewType = "radial" | "node-link" | "data-table";
@@ -23,11 +25,48 @@ const App = () => {
 
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
 
+  const [optionsData, setOptionsData] = useState<OptionsDataBackend | null>(
+    null,
+  );
+  const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
+
   const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
   const { nodeData, edgeData, filteredNetwork, handlePreview, canPreview } =
     useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
   const currentDataset = useNetworkStore((s) => s.currentDataset);
   const directed = useNetworkStore((s) => s.directed);
+
+  useEffect(() => {
+    const prefetchOptions = async () => {
+      const options = await api.fetchOptions();
+
+      setAvailableDatasets(options.datasets || []);
+
+      const combinedData: OptionsDataBackend = {
+        all: [...options.centralities.all, ...options.communities.all],
+        categories: {
+          ...options.centralities.categories,
+          community_detection: options.communities.all,
+        },
+        requirements: {
+          ...options.centralities.requirements,
+          ...options.communities.requirements,
+        },
+        performance: {
+          ...options.centralities.performance,
+          ...options.communities.performance,
+        },
+        descriptions: {
+          ...options.centralities.descriptions,
+          ...options.communities.descriptions,
+        },
+      };
+
+      setOptionsData(combinedData);
+    };
+
+    prefetchOptions();
+  }, []);
 
   const handleLoadingStart = () => {
     setStatus("loading");
@@ -47,18 +86,33 @@ const App = () => {
     setDraggingBars((prev) => ({ ...prev, [id]: isDragging }));
   };
 
+  const isNotReady = status === "idle" || status === "error";
+
   return (
     <div className="flex h-full">
       <PanelGroup direction="horizontal" className="flex">
         <Panel defaultSize={15} minSize={12} maxSize={22}>
           <div className="flex h-full w-full flex-col bg-card">
             <div className="scrollbar-thin flex-1 overflow-x-hidden overflow-y-auto">
-              <ViewSettings
-                onLoadingStart={handleLoadingStart}
-                onLoadingComplete={handleLoadingComplete}
-                onLoadingError={handleLoadingError}
-                view={view}
-              />
+              <div className="flex flex-col pb-4">
+                <div className="flex items-center border-b-2 bg-background px-2 pt-2 pb-1.5">
+                  <span className="truncate text-lg">ViNCent Web</span>
+                </div>
+
+                <div className="border-b-2 bg-background px-2 py-2">
+                  <FileUploader
+                    onLoadingStart={handleLoadingStart}
+                    onLoadingComplete={handleLoadingComplete}
+                    onLoadingError={handleLoadingError}
+                    optionsData={optionsData}
+                    setOptionsData={setOptionsData}
+                    availableDatasets={availableDatasets}
+                    setAvailableDatasets={setAvailableDatasets}
+                  />
+                </div>
+
+                <ViewSettings view={view} />
+              </div>
             </div>
             {currentDataset !== null && directed !== null && (
               <div className="border-t-2 border-border bg-background px-2 pt-1 pb-2">
@@ -88,29 +142,27 @@ const App = () => {
             </div>
           )}
 
-          {status === "error" && (
+          {isNotReady && (
             <div className="flex h-full flex-col items-center justify-center gap-2">
-              <p className="text-center text-red-500">{error}</p>
-              <div className="w-40">
-                <FileUploader
-                  onLoadingStart={handleLoadingStart}
-                  onLoadingComplete={handleLoadingComplete}
-                  onLoadingError={handleLoadingError}
-                />
-              </div>
-            </div>
-          )}
-
-          {status === "idle" && (
-            <div className="flex h-full flex-col items-center justify-center gap-2">
-              <p className="text-center text-muted-foreground">
-                No data loaded. Select or import a dataset to begin.
+              <p
+                className={`text-center ${
+                  status === "error" ? "text-red-500" : "text-muted-foreground"
+                }`}
+              >
+                {status === "error"
+                  ? error
+                  : "No data loaded. Select or import a dataset to begin."}
               </p>
+
               <div className="w-40">
                 <FileUploader
                   onLoadingStart={handleLoadingStart}
                   onLoadingComplete={handleLoadingComplete}
                   onLoadingError={handleLoadingError}
+                  optionsData={optionsData}
+                  setOptionsData={setOptionsData}
+                  availableDatasets={availableDatasets}
+                  setAvailableDatasets={setAvailableDatasets}
                 />
               </div>
             </div>

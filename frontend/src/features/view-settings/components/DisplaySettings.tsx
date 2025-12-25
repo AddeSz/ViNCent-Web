@@ -18,7 +18,7 @@ const DisplaySettings = () => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-sidebar-border/50">
         <ChevronDown
           className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
             isOpen ? "rotate-0" : "-rotate-90"

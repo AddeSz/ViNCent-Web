@@ -186,7 +186,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
       <div key={key} className="h-full w-full rounded border bg-card pb-1">
         <div className="flex items-center justify-between gap-1 px-2 py-1">
           <p
-            className="min-w-[30px] flex-1 truncate text-sm"
+            className="min-w-7.5 flex-1 truncate text-sm"
             title={formatKeyLabel(key)}
           >
             {formatKeyLabel(key)}
@@ -240,7 +240,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
       <div key={key} className="h-full w-full rounded border bg-card pb-1">
         <div className="flex items-center justify-between gap-1 px-2 py-1">
           <p
-            className="min-w-[30px] flex-1 truncate text-sm"
+            className="min-w-7.5 flex-1 truncate text-sm"
             title={formatKeyLabel(key)}
           >
             {formatKeyLabel(key)}
@@ -272,7 +272,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           onDisabledValuesChange={(values) => setDisabledValues(key, values)}
         />
         {brushRanges[key] && (
-          <p className="min-w-[30px] flex-1 truncate pl-2 text-xs text-muted-foreground">
+          <p className="min-w-7.5 flex-1 truncate pl-2 text-xs text-muted-foreground">
             {(() => {
               const { range, inclusive } = brushRanges[key]!;
               const [min, max] = range;

@@ -101,11 +101,11 @@ const OptionsCategory = ({
           />
           <CollapsibleTrigger className="flex h-full w-full min-w-0 flex-1 cursor-pointer items-center gap-1">
             <ChevronDown
-              className={`h-4 w-4 shrink-0 translate-y-px transition-transform duration-100 ${
+              className={`h-4 w-4 shrink-0 transition-transform duration-100 ${
                 isExpanded ? "rotate-0" : "-rotate-90"
               }`}
             />
-            <div className="flex -translate-y-px items-baseline gap-1">
+            <div className="flex items-baseline gap-1">
               <span className="text-sm">{formatKeyLabel(category)}</span>
               <span className="text-xs text-muted-foreground">
                 ({countDisplay})

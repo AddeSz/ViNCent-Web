@@ -1,5 +1,4 @@
 import type { ViewType } from "@/App";
-import FileUploader from "@/components/file-uploader/FileUploader";
 import { TimestepSlider } from "@/components/TimeStepSlider";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,18 +18,10 @@ import NodeLinkDiagramSettings from "./nodel-link-settings/NodeLinkDiagramSettin
 import RadialChartSettings from "./radial-settings/RadialChartSettings";
 
 interface ViewSettingsProps {
-  onLoadingStart?: () => void;
-  onLoadingComplete?: () => void;
-  onLoadingError?: (error: string) => void;
   view: ViewType;
 }
 
-const ViewSettings = ({
-  onLoadingStart,
-  onLoadingComplete,
-  onLoadingError,
-  view,
-}: ViewSettingsProps) => {
+const ViewSettings = ({ view }: ViewSettingsProps) => {
   const [isOpenTime, setIsOpenTime] = useState(true);
   const [isOpenDisplay, setIsOpenDisplay] = useState(false);
   const [isOpenEdge, setIsOpenEdge] = useState(false);
@@ -50,19 +41,7 @@ const ViewSettings = ({
   } = useKeys();
 
   return (
-    <div className="flex flex-col pb-4">
-      <div className="flex items-center border-b-2 bg-background px-2 py-2">
-        <span className="truncate text-lg">ViNCent Web</span>
-      </div>
-
-      <div className="border-b-2 bg-background px-2 py-2">
-        <FileUploader
-          onLoadingStart={onLoadingStart}
-          onLoadingComplete={onLoadingComplete}
-          onLoadingError={onLoadingError}
-        />
-      </div>
-
+    <>
       <DisplaySettings />
 
       {view === "radial" && (
@@ -142,7 +121,7 @@ const ViewSettings = ({
           <span className="flex-wrap truncate">Reset Settings</span>
         </Button>
       </div>
-    </div>
+    </>
   );
 };
 
