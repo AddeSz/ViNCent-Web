@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from datasets_registry import DATASETS, PRECOMPUTED_DIR
+from src.datasets_registry import DATASETS, PRECOMPUTED_DIR
 from src.config import ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS
 from src.parsers import parse_network_file
 from src.preprocessing import process_network

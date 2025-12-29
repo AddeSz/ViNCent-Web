@@ -1,9 +1,7 @@
 import json
 import logging
 import os
-import sys
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
@@ -19,9 +17,7 @@ from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
 from .parsers import parse_network_file
 from .preprocessing import process_network
 from .types import CentralityType
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from datasets_registry import list_datasets
+from .datasets_registry import list_datasets
 
 logging.basicConfig(
     level=logging.DEBUG,

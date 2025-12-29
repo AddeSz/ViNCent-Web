@@ -2,12 +2,9 @@ import hashlib
 import json
 import logging
 import os
-import sys
 from pathlib import Path
 from typing import Optional
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from datasets_registry import PRECOMPUTED_DIR, get_dataset_ids
+from .datasets_registry import PRECOMPUTED_DIR, get_dataset_ids
 
 logger = logging.getLogger(__name__)
 

@@ -20,7 +20,13 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "../src"),
       },
     },
-    server: { port: parseInt(env.VITE_PORT || "3000") },
+    server: {
+      port: parseInt(env.VITE_PORT || "3000"),
+      host: "0.0.0.0",
+      watch: {
+        usePolling: true,
+      },
+    },
     define: {
       "import.meta.env.VITE_BACKEND_URL": JSON.stringify(env.VITE_BACKEND_URL),
     },

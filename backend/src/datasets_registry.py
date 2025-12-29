@@ -1,6 +1,6 @@
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).parent.parent
 DATASETS_DIR = BASE_DIR / "datasets"
 PRECOMPUTED_DIR = BASE_DIR / "precomputed"
 
@@ -41,12 +41,12 @@ DATASETS = {
     #     "description": "Massive clustered synthetic network (4000 nodes, 10000 links)",
     #     "size": "large"
     # },
-        "co_author": {
-        "path": DATASETS_DIR / "co_author" / "co_author_network.json",
-        "name": "Co-Author Network",
-        "description": "Academic co-authorship network (5000+ nodes, 16000+ links)",
-        "size": "large"
-    },
+    #     "co_author": {
+    #     "path": DATASETS_DIR / "co_author" / "co_author_network.json",
+    #     "name": "Co-Author Network",
+    #     "description": "Academic co-authorship network (5000+ nodes, 16000+ links)",
+    #     "size": "large"
+    # },
 }
 
 
