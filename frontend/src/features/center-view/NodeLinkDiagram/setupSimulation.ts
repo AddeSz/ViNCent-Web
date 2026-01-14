@@ -83,6 +83,8 @@ export function updateCollisionRadiuses(
 
 export function createDrag(
   simulation: Simulation<Node, Edge>,
+  onTooltipUpdate?: (nodeId: string, x: number, y: number) => void,
+  onDragStateChange?: (isDragging: boolean) => void,
 ): DragBehavior<SVGCircleElement, Node, unknown> {
   return d3
     .drag<SVGCircleElement, Node>()
@@ -99,11 +101,23 @@ export function createDrag(
       if (!event.active) simulation.alphaTarget(0.2).restart();
       d.fx = d.x;
       d.fy = d.y;
+
+      if (onDragStateChange) {
+        onDragStateChange(true);
+      }
     })
     .on("drag", (event, d) => {
       if (d.fx !== undefined && d.fx !== null) {
         d.fx = event.x;
         d.fy = event.y;
+
+        if (onTooltipUpdate) {
+          onTooltipUpdate(
+            d.id,
+            event.sourceEvent.clientX,
+            event.sourceEvent.clientY,
+          );
+        }
       }
     })
     .on("end", (event, d) => {
@@ -119,6 +133,10 @@ export function createDrag(
       if (!event.active) simulation.alphaTarget(0);
       d.fx = null;
       d.fy = null;
+
+      if (onDragStateChange) {
+        onDragStateChange(false);
+      }
     });
 }
 

@@ -62,7 +62,7 @@ export const useTooltip = (dataMap?: Map<string, FullData>) => {
           nullUpdateTimer.current = window.setTimeout(() => {
             setHoveredNode(null);
             nullUpdateTimer.current = null;
-          }, 300);
+          }, 150);
         }
         return;
       }

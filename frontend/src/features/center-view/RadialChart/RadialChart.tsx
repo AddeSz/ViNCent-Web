@@ -22,11 +22,7 @@ import {
   redrawBoundsOnZoom,
   updateBoundsHighlight,
 } from "./drawBoundsCanvas";
-import drawLabels, {
-  updateLabelHighlight,
-  updateLabels,
-  updateLabelVisibility,
-} from "./drawLabels";
+import drawLabels, { updateLabels, updateLabelStyles } from "./drawLabels";
 import drawLinksCanvas, {
   redrawLinksCanvasOnZoom,
   updateLinkHighlightCanvas,
@@ -167,7 +163,7 @@ const RadialChart = ({
         redrawLinksCanvasOnZoom(svgGroup, innerRadius, zoomLevel);
         redrawBoundsOnZoom(zoomLevel);
         redrawOuterLayerOnZoom(zoomLevel);
-        updateLabelVisibility(
+        updateLabelStyles(
           svgGroup,
           nodeMap,
           selectedNodes,
@@ -176,6 +172,7 @@ const RadialChart = ({
           outerArcsWidth,
           showLabels,
           hoveredCommunity,
+          true,
         );
       });
     }, 150),
@@ -299,7 +296,7 @@ const RadialChart = ({
       );
 
       requestAnimationFrame(() => {
-        updateLabelHighlight(
+        updateLabelStyles(
           svgGroup,
           nodeMap,
           selectedNodes,
@@ -395,7 +392,7 @@ const RadialChart = ({
         .select(svgRef.current)
         .select<SVGGElement>("g.zoom-group");
       requestAnimationFrame(() => {
-        updateLabelHighlight(
+        updateLabelStyles(
           svgGroup,
           nodeMap,
           state.selectedNodes,
@@ -432,7 +429,7 @@ const RadialChart = ({
       truncateLabels,
       outerArcsWidth,
     );
-    updateLabelHighlight(
+    updateLabelStyles(
       svg.select<SVGGElement>("g.zoom-group"),
       nodeMap,
       selectedNodes,

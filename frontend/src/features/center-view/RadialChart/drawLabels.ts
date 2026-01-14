@@ -228,7 +228,7 @@ export const updateLabels = (
   });
 };
 
-export const updateLabelVisibility = (
+export const updateLabelStyles = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   nodeData: Map<string, FullData>,
   selectedNodes: Set<string>,
@@ -237,71 +237,15 @@ export const updateLabelVisibility = (
   outerArcsWidth: number,
   showLabels: boolean,
   hoveredCommunity: { key: string; id: number } | null,
-) => {
-  const showAll = showLabels && shouldShowAllLabels(zoomLevel, outerArcsWidth);
-
-  const linkedNodeIds = new Set<string>();
-  const node = hoveredNode ? nodeData.get(hoveredNode) : null;
-  if (node?.linked) {
-    node.linked.forEach((id) => linkedNodeIds.add(id));
-  }
-
-  selectedNodes.forEach((nodeId) => {
-    const node = nodeData.get(nodeId);
-    if (node?.linked) {
-      node.linked.forEach((id) => linkedNodeIds.add(id));
-    }
-  });
-
-  svg
-    .selectAll<SVGGElement, string>("g.labels-group g.label")
-    .each(function (d) {
-      const label = d3.select(this);
-
-      let isInHoveredCommunity = false;
-      if (hoveredCommunity) {
-        const node = nodeData.get(d);
-        const communityId = node?.[hoveredCommunity.key];
-        isInHoveredCommunity = communityId === hoveredCommunity.id;
-      }
-
-      const shouldShow =
-        selectedNodes.has(d) ||
-        hoveredNode === d ||
-        linkedNodeIds.has(d) ||
-        isInHoveredCommunity ||
-        showAll;
-
-      if (shouldShow) {
-        label.style("display", "block");
-        label.transition().duration(300).attr("opacity", 1);
-      } else {
-        label
-          .transition()
-          .duration(300)
-          .attr("opacity", 0)
-          .on("end", function () {
-            d3.select(this).style("display", "none");
-          });
-      }
-    });
-};
-
-export const updateLabelHighlight = (
-  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  nodeData: Map<string, FullData>,
-  selectedNodes: Set<string>,
-  hoveredNode: string | null,
-  zoomLevel: number,
-  outerArcsWidth: number,
-  showLabels: boolean,
-  hoveredCommunity: { key: string; id: number } | null,
+  animate: boolean = false,
 ) => {
   const getColorForMetric = useMetricsStore.getState().getColorForMetric;
   const showAll = showLabels && shouldShowAllLabels(zoomLevel, outerArcsWidth);
+
   const linkedToHoveredIds = hoveredNode
     ? nodeData.get(hoveredNode)?.linked
     : null;
+
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
@@ -309,11 +253,12 @@ export const updateLabelHighlight = (
       node.linked.forEach((id) => linkedToSelectedIds.add(id));
     }
   });
+
   svg
     .selectAll<SVGGElement, string>("g.labels-group g.label")
     .each(function (d) {
       const label = d3.select(this);
-      const isLinked = linkedToHoveredIds?.has(d) || linkedToSelectedIds.has(d);
+      const text = label.select("text");
 
       let isInHoveredCommunity = false;
       if (hoveredCommunity) {
@@ -322,19 +267,35 @@ export const updateLabelHighlight = (
         isInHoveredCommunity = communityId === hoveredCommunity.id;
       }
 
+      const isLinked = linkedToHoveredIds?.has(d) || linkedToSelectedIds.has(d);
       const shouldShow =
         showAll ||
         selectedNodes.has(d) ||
         hoveredNode === d ||
         isLinked ||
         isInHoveredCommunity;
+
       if (shouldShow) {
         label.style("display", "block");
-        label.attr("opacity", 1);
+        if (animate) {
+          label.transition().duration(300).attr("opacity", 1);
+        } else {
+          label.attr("opacity", 1);
+        }
       } else {
-        label.attr("opacity", 0).style("display", "none");
+        if (animate) {
+          label
+            .transition()
+            .duration(300)
+            .attr("opacity", 0)
+            .on("end", function () {
+              d3.select(this).style("display", "none");
+            });
+        } else {
+          label.attr("opacity", 0).style("display", "none");
+        }
       }
-      const text = label.select("text");
+
       let fillColor: string;
       let fontWeight: string;
 
@@ -366,6 +327,7 @@ export const updateLabelHighlight = (
         fillColor = highlightLabelColor.default;
         fontWeight = "normal";
       }
+
       text.attr("fill", fillColor);
       text.attr("font-weight", fontWeight);
     });

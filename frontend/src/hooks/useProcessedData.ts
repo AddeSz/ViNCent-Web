@@ -42,7 +42,6 @@ export const useProcessedData = (
 
     for (const [id, node] of nodeMap) {
       const isAccepted = node.removed && acceptedRemovals.has(node.id!);
-      const isHidden = hiddenNodes.has(node.id!);
 
       const processedNode = {
         ...(isAccepted
@@ -54,7 +53,6 @@ export const useProcessedData = (
               stable: true,
             }
           : node),
-        hidden: isHidden,
         linkCount: 0,
         linked: new Set<string>(),
       };
@@ -65,7 +63,7 @@ export const useProcessedData = (
         validNodeIds.add(processedNode.id!);
       }
 
-      if (processedNode.removed || isHidden) {
+      if (processedNode.removed) {
         removedNodeIds.add(processedNode.id!);
       }
     }
@@ -74,11 +72,7 @@ export const useProcessedData = (
 
     for (const [edgeId, edge] of edgeMap) {
       const [s, t] = edgeId.split("|");
-      const shouldRemove =
-        !validNodeIds.has(s) ||
-        !validNodeIds.has(t) ||
-        hiddenNodes.has(s) ||
-        hiddenNodes.has(t);
+      const shouldRemove = !validNodeIds.has(s) || !validNodeIds.has(t);
 
       const processedEdge = shouldRemove ? { ...edge, removed: true } : edge;
 
@@ -88,6 +82,7 @@ export const useProcessedData = (
 
       processedEdgeMap.set(edgeId, processedEdge);
     }
+
     const filteredNodes = networkData.nodes.filter(
       (node) => validNodeIds.has(node.id) && !hiddenNodes.has(node.id),
     );
@@ -139,9 +134,24 @@ export const useProcessedData = (
       }
     }
 
+    const finalNodeData = new Map<string, FullData>();
+    for (const [id, node] of dataMap) {
+      if (!hiddenNodes.has(id)) {
+        finalNodeData.set(id, node);
+      }
+    }
+
+    const finalEdgeData = new Map<string, FullData>();
+    for (const [edgeId, edge] of processedEdgeMap) {
+      const [s, t] = edgeId.split("|");
+      if (!hiddenNodes.has(s) && !hiddenNodes.has(t)) {
+        finalEdgeData.set(edgeId, edge);
+      }
+    }
+
     return {
-      nodeData: dataMap,
-      edgeData: processedEdgeMap,
+      nodeData: finalNodeData,
+      edgeData: finalEdgeData,
       filteredNetwork: { nodes: filteredNodes, edges: filteredLinks },
       linkCountMap,
     };

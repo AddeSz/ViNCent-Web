@@ -25,8 +25,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import drawLabels, {
   updateLabelFontSize,
-  updateLabelHighlight,
-  updateLabelVisibility,
+  updateLabelStyles,
 } from "./drawLabels";
 import drawSelectionBrush from "./drawSelectionBrush";
 import {
@@ -68,12 +67,15 @@ const NodeLinkDiagram = ({
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const [isSimulationStable, setIsSimulationStable] = useState(false);
   const isInitializedRef = useRef(false);
+  const isDraggingRef = useRef(false);
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.1, 6]);
   const networkData = useNetworkStore.getState().network;
   const resetZoomFlag = useNetworkStore((s) => s.resetNodeLinkZoomFlag);
   const lastZoomLevel = useRef(1);
   const { onNodeHover, showTooltip, hideTooltip } = useTooltip(nodeData);
   const restartSimulationFlag = useNetworkStore((s) => s.restartSimulationFlag);
+  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const setRestartSimulationFlag = useNetworkStore(
     (s) => s.setRestartSimulationFlag,
   );
@@ -157,18 +159,20 @@ const NodeLinkDiagram = ({
   const latestValuesRef = useRef({
     nodeData,
     showLabels,
+    nodeSizes,
   });
 
   useEffect(() => {
     latestValuesRef.current = {
       nodeData,
       showLabels,
+      nodeSizes,
     };
-  }, [nodeData, showLabels]);
+  }, [nodeData, showLabels, nodeSizes]);
 
   const zoomUpdates = useRef(
     throttle((currentK: number) => {
-      const { showLabels, nodeData } = latestValuesRef.current;
+      const { showLabels, nodeData, nodeSizes } = latestValuesRef.current;
 
       if (!svgRef.current) return;
       const zoomLevel = getClosestZoomLevel(currentK);
@@ -180,20 +184,24 @@ const NodeLinkDiagram = ({
 
       requestAnimationFrame(() => {
         if (!svgRef.current) return;
-
         const svg = d3.select(svgRef.current);
-
-        updateLabelVisibility(
+        updateLabelStyles(
           svg,
           nodeData,
           selectedNodes,
           hoveredNode,
           showLabels,
           zoomLevel,
+          nodeSizes,
+          true,
         );
       });
     }, 150),
   ).current;
+
+  const handleDragStateChange = (isDragging: boolean) => {
+    isDraggingRef.current = isDragging;
+  };
 
   useEffect(() => {
     if (!svgRef.current || isInitializedRef.current) return;
@@ -236,7 +244,7 @@ const NodeLinkDiagram = ({
       networkData.edges?.length &&
       nodeData
     ) {
-      drawLabels(svg, networkData.nodes, nodeSizes, showLabels, fontSize);
+      drawLabels(svg, networkData.nodes, showLabels, fontSize);
       updateGraph(
         svg,
         simulationRef.current,
@@ -249,9 +257,11 @@ const NodeLinkDiagram = ({
         hoveredNode,
         nodeData,
         selectedCommunity,
+        (nodeId, x, y) => showTooltip({ type: "node", nodeId, x, y }),
+        handleDragStateChange,
       );
       drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
-      setupNodeEvents(svg, interactionProps);
+      setupNodeEvents(svg, interactionProps, isDraggingRef);
     }
 
     isInitializedRef.current = true;
@@ -268,13 +278,11 @@ const NodeLinkDiagram = ({
   }, [collisionEnabled, nodeSizes]);
 
   useEffect(() => {
-    if (!svgRef.current || !isInitializedRef.current || !isSimulationStable) {
+    if (!svgRef.current || !isInitializedRef.current || !isSimulationStable)
       return;
-    }
-
     const svg = d3.select(svgRef.current);
-    updateLabelFontSize(svg, fontSize);
-  }, [fontSize]);
+    updateLabelFontSize(svg, fontSize, nodeSizes);
+  }, [fontSize, nodeSizes]);
 
   useEffect(() => {
     if (
@@ -291,6 +299,7 @@ const NodeLinkDiagram = ({
     const svg = d3.select(svgRef.current);
     const hoveredNode = useNetworkStore.getState().hoveredNode;
     const selectedNodes = useNetworkStore.getState().selectedNodes;
+    const zoomLevel = getClosestZoomLevel(getCurrentTransform().k);
 
     const runUpdate = () => {
       updateGraph(
@@ -305,9 +314,19 @@ const NodeLinkDiagram = ({
         hoveredNode,
         nodeData,
         selectedCommunity,
+        (nodeId, x, y) => showTooltip({ type: "node", nodeId, x, y }),
+        handleDragStateChange,
       );
-
-      setupNodeEvents(svg, interactionProps);
+      updateLabelStyles(
+        svg,
+        nodeData,
+        selectedNodes,
+        hoveredNode,
+        showLabels,
+        zoomLevel,
+        nodeSizes,
+      );
+      setupNodeEvents(svg, interactionProps, isDraggingRef);
     };
 
     frameId = requestAnimationFrame(runUpdate);
@@ -343,81 +362,44 @@ const NodeLinkDiagram = ({
       .select<SVGGElement>("g.zoom-group");
 
     drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
+    updateLabelStyles(
+      d3.select(svgRef.current),
+      nodeData,
+      selectedNodes,
+      hoveredNode,
+      showLabels,
+      getClosestZoomLevel(getCurrentTransform().k),
+      nodeSizes,
+    );
   }, [isViewActive]);
 
   useEffect(() => {
-    if (!isInitializedRef.current) return;
-
-    let previousHoveredNode = useNetworkStore.getState().hoveredNode;
-    let previousSelectedNodes = useNetworkStore.getState().selectedNodes;
-
-    const unsubscribe = useNetworkStore.subscribe((state) => {
-      if (
-        state.hoveredNode === previousHoveredNode &&
-        state.selectedNodes === previousSelectedNodes
-      )
-        return;
-      previousHoveredNode = state.hoveredNode;
-      previousSelectedNodes = state.selectedNodes;
-
-      if (!svgRef.current || !nodeData) return;
-      const svg = d3.select(svgRef.current);
-
-      updateStyle(
-        svg,
-        state.selectedNodes,
-        nodeSizes,
-        linkWeights,
-        nodeChanges,
-        edgeChanges,
-        state.hoveredNode,
-        nodeData,
-        selectedCommunity,
-      );
-      updateLabelHighlight(
-        svg,
-        nodeData,
-        state.selectedNodes,
-        state.hoveredNode,
-        showLabels,
-        getClosestZoomLevel(getCurrentTransform().k),
-      );
-    });
-
-    return unsubscribe;
-  }, [
-    nodeChanges,
-    edgeChanges,
-    nodeSizes,
-    linkWeights,
-    showLabels,
-    selectedCommunity,
-  ]);
-
-  useEffect(() => {
     if (!svgRef.current || !isInitializedRef.current) return;
-
     const svg = d3.select(svgRef.current);
-    const hoveredNode = useNetworkStore.getState().hoveredNode;
-    const selectedNodes = useNetworkStore.getState().selectedNodes;
     const zoomLevel = getClosestZoomLevel(getCurrentTransform().k);
-    updateLabelVisibility(
+
+    updateStyle(
+      svg,
+      selectedNodes,
+      nodeSizes,
+      linkWeights,
+      nodeChanges,
+      edgeChanges,
+      hoveredNode,
+      nodeData,
+      selectedCommunity,
+    );
+
+    updateLabelStyles(
       svg,
       nodeData,
       selectedNodes,
       hoveredNode,
       showLabels,
       zoomLevel,
+      nodeSizes,
     );
-    updateLabelHighlight(
-      svg,
-      nodeData,
-      selectedNodes,
-      hoveredNode,
-      showLabels,
-      zoomLevel,
-    );
-  }, [showLabels, nodeData]);
+  }, [showLabels, hoveredNode, selectedNodes]);
 
   useEffect(() => {
     if (resetZoomFlag) {

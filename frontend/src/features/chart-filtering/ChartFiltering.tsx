@@ -87,16 +87,18 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   );
 
   const fullNodeData = useMemo(() => {
-    return Array.from(currentNodes.values()).map(
-      (node) => node.attributes || {},
-    );
-  }, [currentNodes]);
+    const validKeys = new Set(nodeData.keys());
+    return Array.from(currentNodes.values())
+      .filter((node) => validKeys.has(node.id))
+      .map((node) => node.attributes || {});
+  }, [currentNodes, nodeData.size]);
 
   const fullEdgeData = useMemo(() => {
-    return Array.from(currentEdges.values()).map(
-      (edge) => edge.attributes || {},
-    );
-  }, [currentEdges]);
+    const validKeys = new Set(edgeData.keys());
+    return Array.from(currentEdges.values())
+      .filter((edge) => validKeys.has(edge.id))
+      .map((edge) => edge.attributes || {});
+  }, [currentEdges, edgeData.size]);
 
   const filteredNodeData = new Map<string, FullData>();
   for (const [key, value] of nodeData.entries()) {

@@ -1,8 +1,8 @@
+import type { BinnedData } from "@/features/chart-filtering/components/createBinnedData";
 import { useMetricsStore, type BrushRange } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData, AttributeInfo } from "@/types/network";
-import type { BinnedData } from "@/features/chart-filtering/components/createBinnedData";
+import type { AttributeInfo, DataChanges, FullData } from "@/types/network";
 import { diffData } from "@/utils/diffData";
 import { useMemo, useRef } from "react";
 

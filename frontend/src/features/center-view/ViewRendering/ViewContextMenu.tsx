@@ -92,7 +92,7 @@ const ViewContextMenu = ({
                 onSelect={clearSelection}
                 className="cursor-pointer"
               >
-                Reset Selection
+                Clear Selection
               </ContextMenuItem>
             </>
           )}

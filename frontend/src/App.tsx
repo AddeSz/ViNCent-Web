@@ -5,12 +5,12 @@ import { useViewPersistence } from "@/features/center-view/ViewRendering/useView
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
 import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import FileUploader from "./components/file-uploader/FileUploader";
+import { useFileUploaderState } from "./components/file-uploader/useFileUploaderState";
 import ViewSettings from "./features/view-settings/ViewSettings";
 import { useFilteredData } from "./hooks/useFilteredData";
 import { useProcessedData } from "./hooks/useProcessedData";
 import { useNetworkStore } from "./stores/useNetworkStore";
-import { useFileUploaderState } from "./components/file-uploader/useFileUploaderState";
-import FileUploader from "./components/file-uploader/FileUploader";
 
 const VIEW_KEY = "center-view-mode";
 export type ViewType = "radial" | "node-link" | "data-table";

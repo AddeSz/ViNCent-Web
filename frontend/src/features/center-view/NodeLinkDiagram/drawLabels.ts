@@ -4,14 +4,93 @@ import * as d3 from "d3";
 import { getNodeLabel } from "./nodeLinkUtils";
 
 const shouldShowAllLabels = (zoomLevel: number, numNodes: number): boolean => {
-  if (zoomLevel <= 0.5 && numNodes >= 400) return false;
+  if (zoomLevel <= 0.5 && numNodes >= 1000) return false;
   return true;
+};
+
+const getVisibleLabelSet = (
+  nodeData: Map<string, FullData>,
+  selectedNodes: Set<string>,
+  hoveredNode: string | null,
+  showLabels: boolean,
+  zoomLevel: number,
+): Set<string> => {
+  const visible = new Set<string>();
+  const showAll = showLabels && shouldShowAllLabels(zoomLevel, nodeData.size);
+
+  const linkedNodeIds = new Set<string>();
+
+  if (hoveredNode) {
+    const node = nodeData.get(hoveredNode);
+    if (node?.linked) {
+      node.linked.forEach((id) => linkedNodeIds.add(id));
+    }
+  }
+
+  selectedNodes.forEach((nodeId) => {
+    const node = nodeData.get(nodeId);
+    if (node?.linked) {
+      node.linked.forEach((id) => linkedNodeIds.add(id));
+    }
+  });
+
+  nodeData.forEach((data, nodeId) => {
+    if (data.stable) return;
+
+    const isSelected = selectedNodes.has(nodeId);
+    const isHovered = hoveredNode === nodeId;
+    const isLinked = linkedNodeIds.has(nodeId);
+
+    if (showAll || isSelected || isHovered || isLinked) {
+      visible.add(nodeId);
+    }
+  });
+
+  return visible;
+};
+
+const getLabelColor = (
+  nodeId: string,
+  selectedNodes: Set<string>,
+  hoveredNode: string | null,
+  linkedNodeIds: Set<string>,
+  nodeData: Map<string, FullData>,
+): string => {
+  const isSelected = selectedNodes.has(nodeId);
+  const isHovered = hoveredNode === nodeId;
+  const isLinked = linkedNodeIds.has(nodeId);
+
+  if (isSelected) {
+    return highlightLabelColor.selected;
+  }
+
+  if (isHovered) {
+    return highlightLabelColor.hovered;
+  }
+
+  if (isLinked) {
+    const isLinkedToSelected = Array.from(selectedNodes).some((selectedId) => {
+      const selectedNodeData = nodeData.get(selectedId);
+      return selectedNodeData?.linked?.has(nodeId);
+    });
+
+    const isLinkedToHovered =
+      hoveredNode && nodeData.get(hoveredNode)?.linked?.has(nodeId);
+
+    if (isLinkedToSelected) {
+      return highlightLabelColor.linkedToSelected;
+    }
+    if (isLinkedToHovered) {
+      return highlightLabelColor.linkedToHovered;
+    }
+  }
+
+  return highlightLabelColor.default;
 };
 
 const drawLabels = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   visibleNodes: Node[],
-  nodeSizes: Map<string, number>,
   showLabels: boolean,
   labelFontSize: number,
 ): void => {
@@ -19,7 +98,10 @@ const drawLabels = (
   let labelGroup = svgGroup.select<SVGGElement>("g.labels-group");
 
   if (labelGroup.empty()) {
-    labelGroup = svgGroup.append("g").attr("class", "labels-group");
+    labelGroup = svgGroup
+      .append("g")
+      .attr("class", "labels-group")
+      .attr("pointer-events", "none");
   }
 
   const getInitialOpacity = () => (showLabels ? 1 : 0);
@@ -42,10 +124,20 @@ const drawLabels = (
           const label = d?.label ?? getNodeLabel(d);
 
           group
+            .append("rect")
+            .attr("class", "label-background")
+            .attr("fill", "var(--background)")
+            .attr("fill-opacity", 0.9)
+            .attr("stroke", "var(--border)")
+            .attr("stroke-width", 0.5)
+            .attr("rx", 2)
+            .attr("ry", 2);
+
+          group
             .append("text")
             .attr("data-type", d.id)
             .attr("text-anchor", "middle")
-            .attr("dy", -(nodeSizes.get(d.id) ?? 15) - 2)
+            .attr("dy", "0.34em")
             .attr("font-size", `${labelFontSize}px`)
             .attr("pointer-events", "none")
             .text(label);
@@ -61,10 +153,7 @@ const drawLabels = (
           const label = d?.label ?? getNodeLabel(d);
 
           const text = group.select<SVGTextElement>("text");
-          text
-            .text(label)
-            .attr("dy", -(nodeSizes.get(d.id) ?? 15) - 2)
-            .attr("font-size", `${labelFontSize}px`);
+          text.text(label).attr("font-size", `${labelFontSize}px`);
         });
 
         return update;
@@ -78,6 +167,29 @@ const drawLabels = (
 
 export default drawLabels;
 
+const updateLabelBackgroundAndPosition = (
+  label: d3.Selection<SVGGElement, unknown, null, undefined>,
+  nodeSize: number,
+) => {
+  const text = label.select<SVGTextElement>("text");
+  const bbox = text.node()?.getBBox();
+
+  if (bbox) {
+    const padding = 2;
+    const background = label.select("rect.label-background");
+
+    const textCenterY = -nodeSize - bbox.height / 2 - 1;
+
+    text.attr("y", textCenterY);
+
+    background
+      .attr("x", bbox.x - padding)
+      .attr("y", textCenterY - bbox.height / 2)
+      .attr("width", bbox.width + padding * 2)
+      .attr("height", bbox.height);
+  }
+};
+
 export const updateLabelPositions = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   nodeSizes: Map<string, number>,
@@ -87,65 +199,51 @@ export const updateLabelPositions = (
     .attr("transform", (d) => `translate(${d.x ?? 0}, ${d.y ?? 0})`)
     .each(function (d) {
       const label = d3.select(this);
-      const text = label.select("text");
       const nodeSize = nodeSizes.get(d.id) ?? 15;
-      const dy = -nodeSize - 3;
-      text.attr("dy", dy);
-
-      const underline = label.select<SVGLineElement>("line.underline");
-      if (!underline.empty() && parseFloat(underline.style("opacity")) > 0) {
-        const bbox = (text.node() as SVGTextElement)?.getBBox();
-        if (bbox) {
-          underline
-            .attr("x1", -bbox.width / 2)
-            .attr("x2", bbox.width / 2)
-            .attr("y1", dy + 2)
-            .attr("y2", dy + 2);
-        }
-      }
+      updateLabelBackgroundAndPosition(label, nodeSize);
     });
 };
 
 export const updateLabelFontSize = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   labelFontSize: number,
+  nodeSizes: Map<string, number>,
 ) => {
-  svg.selectAll<SVGGElement, Node>("g.labels-group g.label").each(function () {
+  svg.selectAll<SVGGElement, Node>("g.labels-group g.label").each(function (d) {
     const label = d3.select(this);
     const text = label.select("text");
     text.attr("font-size", `${labelFontSize}px`);
 
-    const underline = label.select<SVGLineElement>("line.underline");
-    if (!underline.empty() && parseFloat(underline.style("opacity")) > 0) {
-      const bbox = (text.node() as SVGTextElement)?.getBBox();
-      const dy = parseFloat(text.attr("dy")) || 0;
-      if (bbox) {
-        underline
-          .attr("x1", -bbox.width / 2)
-          .attr("x2", bbox.width / 2)
-          .attr("y1", dy + 2)
-          .attr("y2", dy + 2);
-      }
-    }
+    const nodeSize = nodeSizes.get(d.id) ?? 15;
+    updateLabelBackgroundAndPosition(label, nodeSize);
   });
 };
 
-export const updateLabelVisibility = (
+export const updateLabelStyles = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   nodeData: Map<string, FullData>,
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   showLabels: boolean,
   zoomLevel: number,
+  nodeSizes: Map<string, number>,
+  animate: boolean = false,
 ) => {
-  const showAll = showLabels && shouldShowAllLabels(zoomLevel, nodeData.size);
+  const visibleSet = getVisibleLabelSet(
+    nodeData,
+    selectedNodes,
+    hoveredNode,
+    showLabels,
+    zoomLevel,
+  );
 
   const linkedNodeIds = new Set<string>();
-  const node = hoveredNode ? nodeData.get(hoveredNode) : null;
-  if (node?.linked) {
-    node.linked.forEach((id) => linkedNodeIds.add(id));
+  if (hoveredNode) {
+    const node = nodeData.get(hoveredNode);
+    if (node?.linked) {
+      node.linked.forEach((id) => linkedNodeIds.add(id));
+    }
   }
-
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
     if (node?.linked) {
@@ -153,152 +251,73 @@ export const updateLabelVisibility = (
     }
   });
 
-  svg.selectAll<SVGGElement, Node>("g.labels-group g.label").each(function (d) {
-    const label = d3.select(this);
-    const nodeInfo = nodeData.get(d.id);
-
-    if (!nodeInfo || nodeInfo?.stable) {
-      label.attr("opacity", 0).style("display", "none");
-      return;
-    }
-
-    const shouldShow =
-      selectedNodes.has(d.id) ||
-      hoveredNode === d.id ||
-      linkedNodeIds.has(d.id) ||
-      showAll;
-
-    if (shouldShow) {
-      label.style("display", "block");
-      label.transition().duration(300).attr("opacity", 1);
-    } else {
-      label
-        .transition()
-        .duration(300)
-        .attr("opacity", 0)
-        .on("end", function () {
-          d3.select(this).style("display", "none");
-        });
-    }
-  });
-};
-
-export const updateLabelHighlight = (
-  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-  nodeData: Map<string, FullData>,
-  selectedNodes: Set<string>,
-  hoveredNode: string | null,
-  showLabels: boolean,
-  zoomLevel: number,
-) => {
-  const showAll = showLabels && shouldShowAllLabels(zoomLevel, nodeData.size);
-
-  const linkedNodeIds = new Set<string>();
-  const node = hoveredNode ? nodeData.get(hoveredNode) : null;
-  if (node?.linked) {
-    node.linked.forEach((id) => linkedNodeIds.add(id));
+  if (hoveredNode) {
+    svg
+      .selectAll<SVGGElement, Node>("g.labels-group g.label")
+      .each(function (d) {
+        if (d.id === hoveredNode) {
+          this.parentNode?.appendChild(this);
+        }
+      });
   }
 
-  selectedNodes.forEach((nodeId) => {
-    const node = nodeData.get(nodeId);
-    if (node?.linked) {
-      node.linked.forEach((id) => linkedNodeIds.add(id));
-    }
+  const hasActiveSelectedNodes = Array.from(selectedNodes).some((id) => {
+    const data = nodeData.get(id);
+    return data && !data.stable;
   });
 
   svg.selectAll<SVGGElement, Node>("g.labels-group g.label").each(function (d) {
     const label = d3.select(this);
-    const nodeInfo = nodeData.get(d.id);
+    const shouldShow = visibleSet.has(d.id);
 
-    if (!nodeInfo || nodeInfo?.stable) {
-      label.attr("opacity", 0).style("display", "none");
-      return;
-    }
-
+    const isSelected = selectedNodes.has(d.id);
+    const isHovered = hoveredNode === d.id;
     const isLinked = linkedNodeIds.has(d.id);
-    const shouldShow =
-      showAll || selectedNodes.has(d.id) || hoveredNode === d.id || isLinked;
+    const isConnected = isSelected || isHovered || isLinked;
+
+    let labelOpacity = 1;
+    if (hasActiveSelectedNodes && !isConnected) {
+      labelOpacity = 0.2;
+    }
 
     if (shouldShow) {
       label.style("display", "block");
-      label.attr("opacity", 1);
+      if (animate) {
+        label.transition().duration(300).attr("opacity", labelOpacity);
+      } else {
+        label.attr("opacity", labelOpacity);
+      }
     } else {
-      label.attr("opacity", 0).style("display", "none");
+      if (animate) {
+        label
+          .transition()
+          .duration(300)
+          .attr("opacity", 0)
+          .on("end", function () {
+            d3.select(this).style("display", "none");
+          });
+      } else {
+        label.attr("opacity", 0).style("display", "none");
+      }
     }
 
     const text = label.select("text");
-    const dy = parseFloat(text.attr("dy")) || 0;
-    const isSelected = selectedNodes.has(d.id);
-    const isHovered = hoveredNode === d.id;
+    const background = label.select("rect.label-background");
+    const textColor = getLabelColor(
+      d.id,
+      selectedNodes,
+      hoveredNode,
+      linkedNodeIds,
+      nodeData,
+    );
 
-    let textColor = highlightLabelColor.default;
+    const fontWeight = isSelected && isHovered ? "700" : "normal";
 
-    if (isSelected) {
-      textColor = highlightLabelColor.selected;
-    } else if (isHovered) {
-      textColor = highlightLabelColor.hovered;
-    } else if (isLinked) {
-      const isLinkedToSelected = Array.from(selectedNodes).some(
-        (selectedId) => {
-          const selectedNodeData = nodeData.get(selectedId);
-          return selectedNodeData?.linked?.has(d.id);
-        },
-      );
+    text.attr("fill", textColor).attr("font-weight", fontWeight);
 
-      const isLinkedToHovered =
-        hoveredNode && nodeData.get(hoveredNode)?.linked?.has(d.id);
+    background.attr("fill-opacity", labelOpacity * 0.9);
 
-      if (isLinkedToSelected) {
-        textColor = highlightLabelColor.linkedToSelected;
-      } else if (isLinkedToHovered) {
-        textColor = highlightLabelColor.linkedToHovered;
-      }
-    }
-
-    let underline = label.select<SVGLineElement>("line.underline");
-    if (underline.empty()) {
-      underline = label
-        .append("line")
-        .attr("class", "underline")
-        .attr("stroke", textColor)
-        .attr("stroke-width", 1.5)
-        .attr("y1", 0)
-        .attr("y2", 0);
-    }
-
-    let fontWeight: string;
-    let showUnderline: boolean;
-
-    if (isSelected && isHovered) {
-      fontWeight = "700";
-      showUnderline = true;
-    } else if (isSelected || isHovered) {
-      fontWeight = "normal";
-      showUnderline = true;
-    } else {
-      fontWeight = "normal";
-      showUnderline = false;
-    }
-
-    text.attr("fill", textColor);
-    text.attr("font-weight", fontWeight);
-    text.attr("stroke", "#000000");
-    text.attr("stroke-width", "2px");
-    text.attr("paint-order", "stroke fill");
-
-    if (showUnderline) {
-      const bbox = (text.node() as SVGTextElement)?.getBBox();
-      if (bbox) {
-        underline
-          .attr("x1", -bbox.width / 2)
-          .attr("x2", bbox.width / 2)
-          .attr("y1", dy + 2)
-          .attr("y2", dy + 2)
-          .attr("stroke", textColor)
-          .style("opacity", 1);
-      }
-    } else {
-      underline.style("opacity", 0);
-    }
+    const nodeSize = nodeSizes.get(d.id) ?? 15;
+    updateLabelBackgroundAndPosition(label, nodeSize);
   });
 };

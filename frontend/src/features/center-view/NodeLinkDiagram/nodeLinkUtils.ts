@@ -152,6 +152,7 @@ export const getNodeLabel = (node: Node): string => {
 export const setupNodeEvents = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   interactionProps: InteractionProps,
+  isDraggingRef: { current: boolean },
 ) => {
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
@@ -164,8 +165,10 @@ export const setupNodeEvents = (
       onTooltipShow({ type: "node", nodeId: d.id, x, y });
     })
     .on("mouseleave", () => {
-      onTooltipHide();
-      onNodeHover(null);
+      if (!isDraggingRef.current) {
+        onTooltipHide();
+        onNodeHover(null);
+      }
     })
     .on("contextmenu", (event, d) => {
       event._handledByChild = true;
