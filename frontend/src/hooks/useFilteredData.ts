@@ -2,14 +2,19 @@ import type { BinnedData } from "@/features/chart-filtering/components/createBin
 import { useMetricsStore, type BrushRange } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { AttributeInfo, DataChanges, FullData } from "@/types/network";
+import type {
+  AttributeInfo,
+  Attributes,
+  DataChanges,
+  FullData,
+} from "@/types/network";
 import { diffData } from "@/utils/diffData";
 import { useMemo, useRef } from "react";
 
 const emptyChanges: DataChanges = { added: {}, removed: {}, updated: {} };
 
 const matchesAllFilters = (
-  metrics: Record<string, any>,
+  metrics: Attributes,
   enabledKeys: string[],
   brushRanges: Record<string, BrushRange | null>,
   disabledValues: Record<string, Set<number | string>>,
@@ -68,6 +73,7 @@ export const useFilteredData = (): {
   edgeChanges: DataChanges;
 } => {
   const nodeData = useNetworkStore((s) => s.nodeMap);
+  const edgeData = useNetworkStore((s) => s.edgeMap);
   const currentNodes = useMetricsStore((s) => s.currentNodes);
   const currentEdges = useMetricsStore((s) => s.currentEdges);
   const enabledNodeMetricsKeys = useMetricsStore(
@@ -98,6 +104,15 @@ export const useFilteredData = (): {
   const prevNodeDataRef = useRef(nodeData);
   if (nodeData !== prevNodeDataRef.current) {
     prevNodeDataRef.current = nodeData;
+    prevNodeMapRef.current = null;
+    prevChangesRef.current = emptyChanges;
+    prevEdgeMapRef.current = null;
+    prevEdgeChangesRef.current = emptyChanges;
+  }
+
+  const prevEdgeDataRef = useRef(edgeData);
+  if (edgeData !== prevEdgeDataRef.current) {
+    prevEdgeDataRef.current = edgeData;
     prevNodeMapRef.current = null;
     prevChangesRef.current = emptyChanges;
     prevEdgeMapRef.current = null;
@@ -137,8 +152,8 @@ export const useFilteredData = (): {
         id: node.id,
         label: node.label,
         ...filteredMetrics,
+        pendingRemoval: false,
         removed: false,
-        stable: false,
         index: i - 1,
       });
     });
@@ -179,8 +194,8 @@ export const useFilteredData = (): {
       validEdgeMap.set(edgeId, {
         id: edgeId,
         ...filteredMetrics,
+        pendingRemoval: false,
         removed: false,
-        stable: false,
         index: i - 1,
       });
     });
@@ -200,7 +215,7 @@ export const useFilteredData = (): {
 
     const activeNodeChanges = hasChanges
       ? nodeChanges
-      : prevChangesRef.current || { added: {}, removed: {}, updated: {} };
+      : prevChangesRef.current || emptyChanges;
 
     const prevEdgeMap = prevEdgeMapRef.current || new Map();
     const edgeChanges = diffData(prevEdgeMap, validEdgeMap);
@@ -217,26 +232,11 @@ export const useFilteredData = (): {
 
     const activeEdgeChanges = hasEdgeChanges
       ? edgeChanges
-      : prevEdgeChangesRef.current || { added: {}, removed: {}, updated: {} };
+      : prevEdgeChangesRef.current || emptyChanges;
 
-    const removedEdgeSet = new Set(
-      Object.keys(activeEdgeChanges.removed ?? {}),
+    const removedNodeSet = new Set(
+      Object.keys(activeNodeChanges.removed ?? {}),
     );
-    const filteredEdges = new Map<string, FullData>(validEdgeMap);
-
-    if (previewChanges) {
-      for (const edgeId of removedEdgeSet) {
-        if (!filteredEdges.has(edgeId)) {
-          filteredEdges.set(edgeId, {
-            ...activeEdgeChanges.removed[edgeId],
-            removed: true,
-            stable: false,
-          });
-        }
-      }
-    }
-
-    const removedSet = new Set(Object.keys(activeNodeChanges.removed ?? {}));
     const filteredNodes = new Map<string, FullData>();
     const baseNodeSource = showForeshadowing ? nodeData : currentNodes;
 
@@ -246,26 +246,63 @@ export const useFilteredData = (): {
       } else if (baseNodeSource.has(id)) {
         const baseNode = baseNodeSource.get(id)!;
 
-        if (previewChanges && removedSet.has(id)) {
+        if (previewChanges && removedNodeSet.has(id)) {
           filteredNodes.set(id, {
             ...activeNodeChanges.removed[id],
-            removed: true,
-            stable: false,
+            pendingRemoval: true,
+            removed: false,
           });
         } else {
           filteredNodes.set(id, {
             id,
             label: baseNode.label,
-            removed: false,
-            stable: true,
+            pendingRemoval: false,
+            removed: true,
           });
         }
-      } else if (previewChanges && removedSet.has(id)) {
+      } else if (previewChanges && removedNodeSet.has(id)) {
         filteredNodes.set(id, {
           ...activeNodeChanges.removed[id],
-          removed: true,
-          stable: false,
+          pendingRemoval: true,
+          removed: false,
         });
+      }
+    }
+
+    const removedEdgeSet = new Set(
+      Object.keys(activeEdgeChanges.removed ?? {}),
+    );
+    const filteredEdges = new Map<string, FullData>();
+
+    for (const edgeId of currentEdges.keys()) {
+      if (validEdgeMap.has(edgeId)) {
+        filteredEdges.set(edgeId, validEdgeMap.get(edgeId)!);
+      } else {
+        if (previewChanges && removedEdgeSet.has(edgeId)) {
+          filteredEdges.set(edgeId, {
+            ...activeEdgeChanges.removed[edgeId],
+            pendingRemoval: true,
+            removed: false,
+          });
+        } else {
+          filteredEdges.set(edgeId, {
+            id: edgeId,
+            pendingRemoval: false,
+            removed: true,
+          });
+        }
+      }
+    }
+
+    if (previewChanges) {
+      for (const edgeId of removedEdgeSet) {
+        if (!filteredEdges.has(edgeId)) {
+          filteredEdges.set(edgeId, {
+            ...activeEdgeChanges.removed[edgeId],
+            pendingRemoval: true,
+            removed: false,
+          });
+        }
       }
     }
 
@@ -277,6 +314,7 @@ export const useFilteredData = (): {
     };
   }, [
     nodeData,
+    edgeData,
     currentNodes,
     currentEdges,
     enabledNodeMetricsKeys,

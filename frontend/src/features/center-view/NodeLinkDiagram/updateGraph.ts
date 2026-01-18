@@ -1,16 +1,16 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
-  DataChanges,
-  Edge,
-  FullData,
-  Network,
-  Node,
+    DataChanges,
+    Edge,
+    FullData,
+    Network,
+    Node,
 } from "@/types/network";
 import {
-  getLinkStyle,
-  handleHighlight,
-  highlightNodeColor,
+    getLinkStyle,
+    handleHighlight,
+    highlightNodeColor,
 } from "@/utils/ColorHelper";
 import { getNodeId } from "@/utils/utils";
 import * as d3 from "d3";
@@ -75,14 +75,14 @@ const getNodeStyle = (
 
   const isSecondarySelected = Array.from(selectedNodes).some((selectedId) => {
     const selectedNodeData = nodeData.get(selectedId);
-    if (!selectedNodeData || selectedNodeData.stable) return false;
+    if (!selectedNodeData || selectedNodeData.removed) return false;
     return selectedNodeData?.linked?.has(node.id);
   });
 
   const isSecondaryHovered = (() => {
     if (!hoveredNode) return false;
     const hoveredNodeData = nodeData.get(hoveredNode);
-    if (!hoveredNodeData || hoveredNodeData.stable) return false;
+    if (!hoveredNodeData || hoveredNodeData.removed) return false;
     return hoveredNodeData?.linked?.has(node.id);
   })();
 
@@ -91,7 +91,7 @@ const getNodeStyle = (
 
   const hasActiveSelectedNodes = Array.from(selectedNodes).some((id) => {
     const data = nodeData.get(id);
-    return data && !data.stable;
+    return data && !data.removed;
   });
 
   const opacity = !hasActiveSelectedNodes || isConnected ? 1 : 0.2;
@@ -127,13 +127,13 @@ const getLinkStyleForNode = (
   const isRemoved = edgeChanges.removed[link.id] ? true : false;
 
   const isSelected =
-    (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.stable) ||
-    (selectedNodes.has(targetId) && !nodeData.get(targetId)?.stable);
+    (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.removed) ||
+    (selectedNodes.has(targetId) && !nodeData.get(targetId)?.removed);
 
   const isHovered = (() => {
     if (!hoveredNode || !sourceId || !targetId) return false;
     const hoveredNodeData = nodeData.get(hoveredNode);
-    if (!hoveredNodeData || hoveredNodeData.stable) return false;
+    if (!hoveredNodeData || hoveredNodeData.removed) return false;
     return sourceId === hoveredNode || targetId === hoveredNode;
   })();
 
@@ -149,7 +149,7 @@ const getLinkStyleForNode = (
 
   const hasActiveSelectedNodes = Array.from(selectedNodes).some((id) => {
     const data = nodeData.get(id);
-    return data && !data.stable;
+    return data && !data.removed;
   });
 
   const dimmedOpacity =
@@ -303,8 +303,8 @@ const updateLinks = (
     const targetId = getNodeId(d.target);
     const thickness = linkWeights.get(d.id) || 1.5;
     const isSelected =
-      (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.stable) ||
-      (selectedNodes.has(targetId) && !nodeData.get(targetId)?.stable);
+      (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.removed) ||
+      (selectedNodes.has(targetId) && !nodeData.get(targetId)?.removed);
 
     d3.select(this)
       .attr("stroke-width", isSelected ? thickness * 1.5 : thickness)
@@ -353,8 +353,8 @@ export const updateStyle = (
     const targetId = getNodeId(d.target);
     const thickness = linkWeights.get(d.id) || 1.5;
     const isSelected =
-      (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.stable) ||
-      (selectedNodes.has(targetId) && !nodeData.get(targetId)?.stable);
+      (selectedNodes.has(sourceId) && !nodeData.get(sourceId)?.removed) ||
+      (selectedNodes.has(targetId) && !nodeData.get(targetId)?.removed);
 
     d3.select(this)
       .style("stroke", style.stroke)
@@ -406,6 +406,8 @@ const updateGraph = (
     onDragStateChange,
   );
 
+  let frameCount = 0;
+
   simulation.on("tick", () => {
     allLinks.each(function (d) {
       const sourceId = getNodeId(d.source);
@@ -429,7 +431,10 @@ const updateGraph = (
 
     allNodes.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
 
-    updateLabelPositions(svg, nodeSizes);
+    frameCount++;
+    if (frameCount % 3 === 0) {
+      updateLabelPositions(svg, nodeSizes);
+    }
   });
 };
 

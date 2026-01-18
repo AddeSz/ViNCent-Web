@@ -58,7 +58,7 @@ const BarchartBars = ({
         const width = barWidth - 2;
 
         const nodeHoveredCategory =
-          hoveredValue != null && !node?.removed && !node?.stable
+          hoveredValue != null
             ? String(hoveredValue) === String(category)
             : false;
 

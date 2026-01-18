@@ -1,4 +1,4 @@
-import { handleBrushSelection } from "@/utils/ColorHelper";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import * as d3 from "d3";
 
 const drawSelectionBrush = (
@@ -254,7 +254,8 @@ const drawSelectionBrush = (
         [start, end] = [end, start];
       }
       const selectedIds = getSelectedIds(start, end);
-      handleBrushSelection(selectedIds);
+
+      useNetworkStore.getState().toggleNodesSelection(selectedIds);
 
       setTimeout(clearBrushSelection, 50);
     });

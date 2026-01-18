@@ -1,13 +1,9 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData } from "@/types/network";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
-import { truncateText } from "@/utils/utils";
+import { formatValue, truncateText } from "@/utils/utils";
 import * as d3 from "d3";
 import type { InteractionProps } from "../Tooltips/useTooltip";
-
-let LONGESTLABEL = 0;
 
 const shouldShowAllLabels = (zoomLevel: number, radius: number): boolean => {
   if (zoomLevel <= 0.5 && radius <= 8) return false;
@@ -15,8 +11,27 @@ const shouldShowAllLabels = (zoomLevel: number, radius: number): boolean => {
   return true;
 };
 
+const getDisplayText = (
+  node: FullData | undefined,
+  nodeId: string,
+  displayLabel: string,
+): string => {
+  if (displayLabel === "label" || !displayLabel) {
+    return node?.label ?? nodeId;
+  }
+
+  const value = node?.[displayLabel as keyof FullData];
+
+  if (value !== undefined && value !== null) {
+    return String(formatValue(value));
+  }
+
+  return "N/A";
+};
+
 const drawLabels = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  nodeMap: Map<string, FullData>,
   x: d3.ScaleBand<string>,
   outerRadius: number,
   fontSize: number,
@@ -25,18 +40,15 @@ const drawLabels = (
   interactionProps: InteractionProps,
   outerArcsWidth: number,
   showLabels: boolean,
+  displayLabel: string,
   hasCommunitySegments: boolean = false,
 ): void => {
-  const { nodeMap } = useNetworkStore.getState();
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
-
   let labelGroup = svg.select<SVGGElement>("g.labels-group");
   if (labelGroup.empty()) {
     labelGroup = svg.append("g").attr("class", "labels-group");
   }
-
-  LONGESTLABEL = 0;
 
   const getTransform = (d: string) => {
     const angle = ((x(d)! + x.bandwidth() / 2) * 180) / Math.PI - 90;
@@ -86,7 +98,7 @@ const drawLabels = (
         g.each(function (d) {
           const group = d3.select(this);
           const node = nodeMap.get(d);
-          const label = node?.label ?? d;
+          const label = getDisplayText(node, d, displayLabel);
 
           const text = group
             .append("text")
@@ -98,17 +110,9 @@ const drawLabels = (
             .text(label);
 
           const textNode = text.node();
-          if (textNode) {
-            const displayText = truncateLabels
-              ? truncateText(textNode, label, labelWidth)
-              : label;
-
+          if (textNode && truncateLabels) {
+            const displayText = truncateText(textNode, label, labelWidth);
             text.text(displayText);
-
-            const w = textNode.getBBox().width;
-            if (w > LONGESTLABEL) {
-              LONGESTLABEL = w;
-            }
           }
         });
 
@@ -120,7 +124,7 @@ const drawLabels = (
         update.each(function (d) {
           const group = d3.select(this);
           const node = nodeMap.get(d);
-          const label = node?.label ?? d;
+          const label = getDisplayText(node, d, displayLabel);
 
           const text = group.select<SVGTextElement>("text");
           const textNode = text.node();
@@ -128,13 +132,7 @@ const drawLabels = (
             const displayText = truncateLabels
               ? truncateText(textNode, label, labelWidth)
               : label;
-
             text.text(displayText);
-
-            const w = textNode.getBBox().width;
-            if (w > LONGESTLABEL) {
-              LONGESTLABEL = w;
-            }
           }
         });
 
@@ -179,24 +177,19 @@ const drawLabels = (
       onTooltipHide();
       onNodeHover(null);
     });
-
-  useSettingsStore.getState().setRadialSettings({
-    labelWidth: truncateLabels ? labelWidth : Math.ceil(LONGESTLABEL / 10) * 10,
-  });
 };
 
 export default drawLabels;
 
 export const updateLabels = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  nodeMap: Map<string, FullData>,
   fontSize: number,
   labelWidth: number,
   truncateLabels: boolean,
   outerArcsWidth: number,
+  displayLabel: string,
 ) => {
-  const { nodeMap } = useNetworkStore.getState();
-  LONGESTLABEL = 0;
-
   svg
     .selectAll<SVGGElement, string>("g.labels-group g.label")
     .each(function () {
@@ -206,7 +199,8 @@ export const updateLabels = (
       if (!textNode) return;
 
       const id = (textEl.attr("data-type") as string) ?? "";
-      const label = nodeMap.get(id)?.label ?? id;
+      const node = nodeMap.get(id);
+      const label = getDisplayText(node, id, displayLabel);
 
       const getFontSize = () => {
         return (fontSize / 11) * outerArcsWidth;
@@ -218,14 +212,7 @@ export const updateLabels = (
         ? truncateText(textNode, label, labelWidth)
         : label;
       textEl.text(displayText);
-
-      const textWidth = textNode.getBBox().width;
-      if (textWidth > LONGESTLABEL) LONGESTLABEL = textWidth;
     });
-
-  useSettingsStore.getState().setRadialSettings({
-    labelWidth: truncateLabels ? labelWidth : Math.ceil(LONGESTLABEL / 10) * 10,
-  });
 };
 
 export const updateLabelStyles = (
@@ -249,7 +236,7 @@ export const updateLabelStyles = (
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
-    if (node?.linked && !node?.stable) {
+    if (node?.linked && !node?.removed && !node?.hidden) {
       node.linked.forEach((id) => linkedToSelectedIds.add(id));
     }
   });

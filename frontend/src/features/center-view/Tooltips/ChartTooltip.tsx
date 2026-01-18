@@ -15,17 +15,14 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
   const { allNodeKeys } = useKeys();
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const communities = useMetricsStore((s) => s.currentCommunities);
-  const selectedRingCommunity = useSettingsStore(
-    (s) => s.radialSettings.selectedRingCommunity,
-  );
-  const selectedCOmmunity = useSettingsStore(
-    (s) => s.nodeLinkSettings.selectedCommunity,
+  const selectedCommunity = useSettingsStore(
+    (s) => s.displaySettings.selectedCommunity,
   );
 
   const currentMetricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
 
   const communityStats = useMemo(() => {
-    const currentCommunities = communities?.[selectedRingCommunity];
+    const currentCommunities = communities?.[selectedCommunity];
     if (!currentCommunities) {
       return {
         uniqueCommunities: 0,
@@ -42,7 +39,7 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
       uniqueCommunities: nodesByCommunity.size,
       nodesByCommunity,
     };
-  }, [communities, selectedRingCommunity]);
+  }, [communities, selectedCommunity]);
 
   const {
     type,
@@ -138,8 +135,8 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
           {nodeData.label ? nodeData.label : nodeId}
           <div className="flex-col text-xs text-muted-foreground">
             <div>Links: {nodeData.linkCount} </div>
-            {selectedRingCommunity !== "none" && (
-              <div>Community: {nodeData?.[selectedRingCommunity]}</div>
+            {selectedCommunity !== "none" && (
+              <div>Community: {nodeData?.[selectedCommunity]}</div>
             )}
           </div>
         </div>
@@ -150,8 +147,8 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
           {nodeData.label ? nodeData.label : nodeId}
           <div className="flex-col text-xs text-muted-foreground">
             <div>Links: {nodeData.linkCount} </div>
-            {selectedCOmmunity !== "none" && (
-              <div>Community: {nodeData?.[selectedCOmmunity]}</div>
+            {selectedCommunity !== "none" && (
+              <div>Community: {nodeData?.[selectedCommunity]}</div>
             )}
           </div>
         </div>

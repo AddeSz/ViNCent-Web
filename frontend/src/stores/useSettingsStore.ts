@@ -5,21 +5,16 @@ import { create } from "zustand";
 export type EdgeRenderingMode = "bezier" | "hierarchy" | "fdeB";
 export type SizeMode = "fixed" | "metric";
 export type ScaleType = "linear" | "log";
-export type CommunityType = "none" | string;
 
 type RadialSettings = {
   innerRadius: number;
   outerRadius: number;
   fontSize: number;
   showLabels: boolean;
-  truncateLabels: boolean;
-  labelWidth: number;
-  maxLabelWidth: number;
   separateMetrics: boolean;
   edgeRenderingMode: EdgeRenderingMode;
   fdebSettings: ForceEdgeBundlingOptions;
   communitiesInArcs: boolean;
-  selectedRingCommunity: CommunityType;
 };
 
 type NodeLinkSettings = {
@@ -40,13 +35,17 @@ type NodeLinkSettings = {
   collisionEnabled: boolean;
   nodeScaleType: ScaleType;
   linkScaleType: ScaleType;
-  selectedCommunity: CommunityType;
 };
 
 type DisplaySettings = {
   previewChanges: boolean;
   showForeshadowing: boolean;
   stickyHover: boolean;
+  keepRemoved: boolean;
+  displayLabel: "label" | string;
+  selectedCommunity: "none" | string;
+  truncateLabels: boolean;
+  maxLabelWidth: number;
 };
 
 type SettingsStore = {
@@ -79,15 +78,11 @@ export const defaultRadialSettings: RadialSettings = {
   innerRadius: 100,
   outerRadius: 600,
   fontSize: 24,
-  truncateLabels: false,
   showLabels: true,
-  labelWidth: 200,
-  maxLabelWidth: 200,
   separateMetrics: false,
   edgeRenderingMode: "fdeB",
   fdebSettings: defaultFDEBSettings,
   communitiesInArcs: false,
-  selectedRingCommunity: "none",
 };
 
 export const defaultNodeLinkSettings: NodeLinkSettings = {
@@ -108,13 +103,17 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   collisionEnabled: true,
   nodeScaleType: "linear",
   linkScaleType: "linear",
-  selectedCommunity: "none",
 };
 
 export const defaultDisplaySettings: DisplaySettings = {
   previewChanges: true,
   showForeshadowing: true,
   stickyHover: true,
+  keepRemoved: true,
+  displayLabel: "label",
+  selectedCommunity: "none",
+  truncateLabels: false,
+  maxLabelWidth: 200,
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => {

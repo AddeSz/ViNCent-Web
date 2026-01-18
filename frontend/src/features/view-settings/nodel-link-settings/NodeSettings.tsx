@@ -26,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { ScaleType } from "@/stores/useSettingsStore";
@@ -42,15 +41,15 @@ interface NodeSettingsProps {
 
 const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
   const settings = useSettingsStore((s) => s.nodeLinkSettings);
-  const setSettings = useSettingsStore((s) => s.setNodeLinkSettings);
+  const setNodeLinkSettings = useSettingsStore((s) => s.setNodeLinkSettings);
+  const setDisplaySettings = useSettingsStore((s) => s.setDisplaySettings);
+  const selectedCommunity = useSettingsStore(
+    (s) => s.displaySettings.selectedCommunity,
+  );
   const metricsInfo = useMetricsStore((s) => s.metricsInfo);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
   const [open, setOpen] = useState(false);
-
-  const handleCommunityChange = (value: string) => {
-    setSettings({ selectedCommunity: value });
-  };
 
   const getCommunityCount = (communityName: string) => {
     if (!metricsInfo.get(communityName)) return 0;
@@ -67,7 +66,7 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
       !settings.nodeSizeMetric ||
       !enabledNodeKeys.includes(settings.nodeSizeMetric)
     ) {
-      setSettings({ nodeSizeMetric: "fixed" });
+      setNodeLinkSettings({ nodeSizeMetric: "fixed" });
     }
   }, [enabledNodeKeys, settings.nodeSizeMetric]);
 
@@ -84,9 +83,9 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
 
   const handleNodeSizeChange = (value: string) => {
     if (value === "fixed") {
-      setSettings({ nodeSizeMode: "fixed" });
+      setNodeLinkSettings({ nodeSizeMode: "fixed" });
     } else {
-      setSettings({ nodeSizeMode: "metric", nodeSizeMetric: value });
+      setNodeLinkSettings({ nodeSizeMode: "metric", nodeSizeMetric: value });
     }
     setOpen(false);
   };
@@ -99,14 +98,14 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
   };
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="group/collapsible"
-    >
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
-        <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-100 group-data-[state=closed]/collapsible:-rotate-90" />
-        <p className="truncate pl-1">Node Settings</p>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-0.5 transition-colors hover:bg-border/50">
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
+            isOpen ? "rotate-0" : "-rotate-90"
+          }`}
+        />
+        <p className="truncate pl-1">Nodes</p>
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2">
         <div className="space-y-1">
@@ -189,7 +188,7 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
             <Select
               value={settings.nodeScaleType}
               onValueChange={(value) =>
-                setSettings({ nodeScaleType: value as ScaleType })
+                setNodeLinkSettings({ nodeScaleType: value as ScaleType })
               }
             >
               <SelectTrigger
@@ -223,7 +222,9 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
               max={30}
               step={1}
               value={[settings.fixedNodeSize]}
-              onValueChange={([value]) => setSettings({ fixedNodeSize: value })}
+              onValueChange={([value]) =>
+                setNodeLinkSettings({ fixedNodeSize: value })
+              }
               className="cursor-pointer"
             />
           </div>
@@ -244,7 +245,9 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
                 max={20}
                 step={1}
                 value={[settings.minNodeSize]}
-                onValueChange={([value]) => setSettings({ minNodeSize: value })}
+                onValueChange={([value]) =>
+                  setNodeLinkSettings({ minNodeSize: value })
+                }
                 className="cursor-pointer"
               />
             </div>
@@ -263,7 +266,9 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
                 max={50}
                 step={1}
                 value={[settings.maxNodeSize]}
-                onValueChange={([value]) => setSettings({ maxNodeSize: value })}
+                onValueChange={([value]) =>
+                  setNodeLinkSettings({ maxNodeSize: value })
+                }
                 className="cursor-pointer"
               />
             </div>
@@ -271,53 +276,25 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
         )}
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="label-font-size" className="text-sm">
-              Label Font Size
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {settings.fontSize}px
-            </span>
-          </div>
-          <Slider
-            id="label-font-size"
-            min={0}
-            max={100}
-            step={1}
-            value={[settings.fontSize]}
-            onValueChange={([value]) => setSettings({ fontSize: value })}
-            className="cursor-pointer"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label htmlFor="show-labels" className="text-sm">
-            Show All Labels
-          </Label>
-          <Switch
-            id="show-labels"
-            checked={settings.showLabels}
-            onCheckedChange={(checked) => setSettings({ showLabels: checked })}
-          />
-        </div>
-
-        <div className="space-y-1">
           <Label htmlFor="community-select" className="text-sm">
-            Community Node Coloring
+            Community Coloring
           </Label>
           <Select
-            value={settings.selectedCommunity}
-            onValueChange={handleCommunityChange}
+            value={selectedCommunity}
+            onValueChange={(value) =>
+              setDisplaySettings({ selectedCommunity: value })
+            }
           >
             <SelectTrigger
               id="community-select"
               className="w-full text-sm"
               size="sm"
+              defaultValue="none"
             >
               <SelectValue placeholder="Select community" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">Default</SelectItem>
+              <SelectItem value="none">None</SelectItem>
               {enabledNodeCommunityKeys.map((communityName) => (
                 <SelectItem key={communityName} value={communityName}>
                   {formatCommunityLabel(communityName)}

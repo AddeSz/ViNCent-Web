@@ -7,8 +7,9 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData } from "@/types/network";
-import { formatKeyLabel, formatValue } from "@/utils/utils";
+import { formatKeyLabel, formatValue, getNodeId } from "@/utils/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Barchart from "./barchart/Barchart";
 import { createBinnedData } from "./components/createBinnedData";
@@ -69,6 +70,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   const disabledValues = useMetricsStore((s) => s.disabledValues);
   const setDisabledValues = useMetricsStore((s) => s.setDisabledValues);
   const clearDisabledValues = useMetricsStore((s) => s.clearDisabledValues);
+  const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
 
   const getBinCount = (key: string) => {
     if (useIndividualBinCounts) {
@@ -87,32 +89,40 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   );
 
   const fullNodeData = useMemo(() => {
-    const validKeys = new Set(nodeData.keys());
     return Array.from(currentNodes.values())
-      .filter((node) => validKeys.has(node.id))
+      .filter((node) => !hiddenNodes.has(node.id))
       .map((node) => node.attributes || {});
-  }, [currentNodes, nodeData.size]);
+  }, [currentNodes, hiddenNodes]);
 
   const fullEdgeData = useMemo(() => {
-    const validKeys = new Set(edgeData.keys());
     return Array.from(currentEdges.values())
-      .filter((edge) => validKeys.has(edge.id))
+      .filter(
+        (edge) =>
+          !hiddenNodes.has(getNodeId(edge.source)) &&
+          !hiddenNodes.has(getNodeId(edge.target)),
+      )
       .map((edge) => edge.attributes || {});
-  }, [currentEdges, edgeData.size]);
+  }, [currentEdges, hiddenNodes]);
 
-  const filteredNodeData = new Map<string, FullData>();
-  for (const [key, value] of nodeData.entries()) {
-    if (value && !value.removed && !value.stable) {
-      filteredNodeData.set(key, value);
+  const filteredNodeData = useMemo(() => {
+    const filtered = new Map<string, FullData>();
+    for (const [key, value] of nodeData.entries()) {
+      if (value && !value.pendingRemoval) {
+        filtered.set(key, value);
+      }
     }
-  }
+    return filtered;
+  }, [nodeData]);
 
-  const filteredEdgeData = new Map<string, FullData>();
-  for (const [key, value] of edgeData.entries()) {
-    if (value && !value.removed && !value.stable) {
-      filteredEdgeData.set(key, value);
+  const filteredEdgeData = useMemo(() => {
+    const filtered = new Map<string, FullData>();
+    for (const [key, value] of edgeData.entries()) {
+      if (value && !value.pendingRemoval) {
+        filtered.set(key, value);
+      }
     }
-  }
+    return filtered;
+  }, [edgeData]);
 
   useEffect(() => {
     enabledNodeKeys.forEach((key) => {
@@ -126,14 +136,14 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
       if (values.length > 0) {
         const binCount = getBinCount(key);
         const binnedData = createBinnedData(values, binCount);
-
         setBinnedData(key, binnedData);
+      } else {
+        setBinnedData(key, null);
       }
     });
 
     enabledEdgeKeys.forEach((key) => {
       const info = metricsInfo.get(key);
-
       if (!info || !info.isNumeric || info.isCategory) return;
 
       const values = fullEdgeData
@@ -143,8 +153,9 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
       if (values.length > 0) {
         const binCount = getBinCount(key);
         const binnedData = createBinnedData(values, binCount);
-
         setBinnedData(key, binnedData);
+      } else {
+        setBinnedData(key, null);
       }
     });
   }, [

@@ -16,7 +16,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import ChartTooltip from "../Tooltips/ChartTooltip";
 import { useTooltip, type InteractionProps } from "../Tooltips/useTooltip";
-import drawArcsCanvas, { redrawArcsCanvasOnZoom } from "./drawArcsCanvas";
+import drawArcsCanvas, {
+  getProcessedArcs,
+  redrawArcsCanvasOnZoom,
+} from "./drawArcsCanvas";
 import {
   drawBoundsCanvas,
   redrawBoundsOnZoom,
@@ -60,8 +63,8 @@ const RadialChart = ({
   onUpdateStateChange,
 }: RadialChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const lastZoomLevel = useRef(1);
-  const processedArcsRef = useRef<any[]>([]);
+
+  const [currentZoomLevel, setCurrentZoomLevel] = useState(1);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const [isDrawReady, setIsDrawReady] = useState(false);
   const attributeInfo = useMetricsStore((s) => s.currentMetricsInfo);
@@ -69,13 +72,37 @@ const RadialChart = ({
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const hoveredCommunity = useNetworkStore((s) => s.hoveredCommunity);
-  const selectedCommunity = useSettingsStore(
-    (s) => s.radialSettings.selectedRingCommunity,
-  );
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
-  const radialSettings = useSettingsStore(useShallow((s) => s.radialSettings));
-  const { separateMetrics, edgeRenderingMode, fdebSettings, showLabels } =
-    radialSettings;
+  const {
+    selectedCommunity,
+    truncateLabels,
+    maxLabelWidth,
+    displayLabel,
+    innerRadius,
+    outerRadius,
+    fontSize,
+    separateMetrics,
+    communitiesInArcs,
+    edgeRenderingMode,
+    fdebSettings,
+    showLabels,
+  } = useSettingsStore(
+    useShallow((s) => ({
+      selectedCommunity: s.displaySettings.selectedCommunity,
+      truncateLabels: s.displaySettings.truncateLabels,
+      maxLabelWidth: s.displaySettings.maxLabelWidth,
+      displayLabel: s.displaySettings.displayLabel,
+      innerRadius: s.radialSettings.innerRadius,
+      outerRadius: s.radialSettings.outerRadius,
+      fontSize: s.radialSettings.fontSize,
+      separateMetrics: s.radialSettings.separateMetrics,
+      communitiesInArcs: s.radialSettings.communitiesInArcs,
+      edgeRenderingMode: s.radialSettings.edgeRenderingMode,
+      fdebSettings: s.radialSettings.fdebSettings,
+      showLabels: s.radialSettings.showLabels,
+    })),
+  );
+
   const {
     enabledNodeAttributeKeys,
     enabledNodeCentralityKeys,
@@ -92,24 +119,17 @@ const RadialChart = ({
     [onNodeHover, showTooltip, hideTooltip, handleContextMenu],
   );
 
-  const {
-    chartData,
-    xScale,
-    angleMap,
-    yScale,
-    getKeyIndex,
-    totalLabelWidth,
-    outerArcsWidth,
-    innerRadius,
-    outerRadius,
-    fontSize,
-    truncateLabels,
-  } = useRadialChartData({
-    data,
-    enabledCentralityKeys: enabledNodeCentralityKeys,
-    enabledAttributeKeys: enabledNodeAttributeKeys,
-    enabledCommunityKeys: enabledNodeCommunityKeys,
-  });
+  const { chartData, xScale, angleMap, yScale, getKeyIndex, outerArcsWidth } =
+    useRadialChartData({
+      data,
+      enabledCentralityKeys: enabledNodeCentralityKeys,
+      enabledAttributeKeys: enabledNodeAttributeKeys,
+      enabledCommunityKeys: enabledNodeCommunityKeys,
+      communitiesInArcs,
+      separateMetrics,
+      innerRadius,
+      outerRadius,
+    });
 
   const latestValuesRef = useRef({
     chartData,
@@ -129,52 +149,10 @@ const RadialChart = ({
     };
   }, [chartData, innerRadius, outerRadius, outerArcsWidth, showLabels]);
 
-  const redrawCanvas = useRef(
-    throttle((currentK: number) => {
-      const {
-        chartData,
-        innerRadius,
-        outerRadius,
-        outerArcsWidth,
-        showLabels,
-      } = latestValuesRef.current;
-
-      if (!svgRef.current || !chartData) return;
-
-      const zoomLevel = getClosestZoomLevel(currentK);
-
-      if (zoomLevel === lastZoomLevel.current) return;
-      lastZoomLevel.current = zoomLevel;
-      const hoveredNode = useNetworkStore.getState().hoveredNode;
-      const hoveredCommunity = useNetworkStore.getState().hoveredCommunity;
-      const selectedNodes = useNetworkStore.getState().selectedNodes;
-      requestAnimationFrame(() => {
-        if (!svgRef.current || !chartData) return;
-
-        const svg = d3.select(svgRef.current);
-        const svgGroup = svg.select<SVGGElement>("g.zoom-group");
-        if (svgGroup.empty()) return;
-        redrawArcsCanvasOnZoom(
-          svgGroup,
-          outerRadius,
-          outerArcsWidth,
-          zoomLevel,
-        );
-        redrawLinksCanvasOnZoom(svgGroup, innerRadius, zoomLevel);
-        redrawBoundsOnZoom(zoomLevel);
-        redrawOuterLayerOnZoom(zoomLevel);
-        updateLabelStyles(
-          svgGroup,
-          nodeMap,
-          selectedNodes,
-          hoveredNode,
-          zoomLevel,
-          outerArcsWidth,
-          showLabels,
-          hoveredCommunity,
-          true,
-        );
-      });
+  const handleZoomChange = useRef(
+    throttle((k: number) => {
+      const newZoomLevel = getClosestZoomLevel(k);
+      setCurrentZoomLevel(newZoomLevel);
     }, 150),
   ).current;
 
@@ -204,7 +182,7 @@ const RadialChart = ({
 
       if (svgGroup.empty()) {
         svgGroup = svg.append("g").attr("class", "zoom-group");
-        setupZoom(svg, svgGroup, getCurrentTransform(), (k) => redrawCanvas(k));
+        setupZoom(svg, svgGroup, getCurrentTransform(), handleZoomChange);
       }
 
       const { series } = chartData;
@@ -239,8 +217,6 @@ const RadialChart = ({
         outerArcsWidth,
       );
 
-      processedArcsRef.current = processedArcs;
-
       drawBoundsCanvas(
         svgGroup,
         bounds,
@@ -252,14 +228,16 @@ const RadialChart = ({
 
       drawLabels(
         svgGroup,
+        nodeMap,
         xScale,
         outerRadius,
         fontSize,
-        totalLabelWidth,
+        maxLabelWidth,
         truncateLabels,
         interactionProps,
         outerArcsWidth,
         showLabels,
+        displayLabel,
         selectedCommunity !== "none",
       );
 
@@ -350,24 +328,62 @@ const RadialChart = ({
 
     drawLabels(
       svgGroup,
+      nodeMap,
       xScale,
       outerRadius,
       fontSize,
-      totalLabelWidth,
+      maxLabelWidth,
       truncateLabels,
       interactionProps,
       outerArcsWidth,
       showLabels,
+      displayLabel,
       selectedCommunity !== "none",
     );
 
     updateInteractionData(
-      processedArcsRef.current,
+      getProcessedArcs(),
       outerLayerData.changeCircles,
       outerLayerData.segments,
       outerLayerData.totalCommunities,
     );
   }, [isDrawReady, selectedCommunity]);
+
+  useEffect(() => {
+    if (!isDrawReady || !svgRef.current || !chartData) return;
+
+    const svgGroup = d3
+      .select(svgRef.current)
+      .select<SVGGElement>("g.zoom-group");
+
+    if (svgGroup.empty()) return;
+
+    const hoveredNode = useNetworkStore.getState().hoveredNode;
+    const hoveredCommunity = useNetworkStore.getState().hoveredCommunity;
+
+    requestAnimationFrame(() => {
+      redrawArcsCanvasOnZoom(
+        svgGroup,
+        outerRadius,
+        outerArcsWidth,
+        currentZoomLevel,
+      );
+      redrawLinksCanvasOnZoom(svgGroup, innerRadius, currentZoomLevel);
+      redrawBoundsOnZoom(currentZoomLevel);
+      redrawOuterLayerOnZoom(currentZoomLevel);
+      updateLabelStyles(
+        svgGroup,
+        nodeMap,
+        selectedNodes,
+        hoveredNode,
+        currentZoomLevel,
+        outerArcsWidth,
+        showLabels,
+        hoveredCommunity,
+        true,
+      );
+    });
+  }, [currentZoomLevel]);
 
   useEffect(() => {
     if (!isDrawReady) return;
@@ -424,10 +440,12 @@ const RadialChart = ({
     const svg = d3.select(svgRef.current);
     updateLabels(
       svg,
+      nodeMap,
       fontSize,
-      totalLabelWidth,
+      maxLabelWidth,
       truncateLabels,
       outerArcsWidth,
+      displayLabel,
     );
     updateLabelStyles(
       svg.select<SVGGElement>("g.zoom-group"),
@@ -439,10 +457,18 @@ const RadialChart = ({
       showLabels,
       hoveredCommunity,
     );
-  }, [fontSize, totalLabelWidth, truncateLabels, showLabels, hoveredCommunity]);
+  }, [
+    fontSize,
+    maxLabelWidth,
+    truncateLabels,
+    showLabels,
+    hoveredCommunity,
+    displayLabel,
+    isViewActive,
+  ]);
 
   useEffect(() => {
-    if (!svgRef.current || edgeRenderingMode !== "fdeB" || !dimensions) {
+    if (!svgRef.current || !dimensions) {
       return;
     }
     onUpdateStateChange(true);
@@ -488,7 +514,7 @@ const RadialChart = ({
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
     drawSelectionBrush(svgGroup, outerRadius, xScale, isViewActive);
-  }, [totalLabelWidth, isViewActive, xScale]);
+  }, [isViewActive, xScale, outerRadius]);
 
   const showSpinner =
     !dimensions?.width || !dimensions?.height || !isCanvasReady;

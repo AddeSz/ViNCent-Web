@@ -1,7 +1,28 @@
 import type { FullData, Node } from "@/types/network";
 import { highlightLabelColor } from "@/utils/ColorHelper";
+import { formatValue, truncateText } from "@/utils/utils";
 import * as d3 from "d3";
 import { getNodeLabel } from "./nodeLinkUtils";
+
+const getDisplayText = (
+  node: Node,
+  nodeData: Map<string, FullData>,
+  displayLabel: string,
+): string => {
+  if (displayLabel === "label" || !displayLabel) {
+    return node?.label ?? getNodeLabel(node);
+  }
+
+  const fullData = nodeData.get(node.id);
+  if (fullData) {
+    const value = fullData[displayLabel as keyof FullData];
+    if (value !== undefined && value !== null) {
+      return String(formatValue(value));
+    }
+  }
+
+  return "N/A";
+};
 
 const shouldShowAllLabels = (zoomLevel: number, numNodes: number): boolean => {
   if (zoomLevel <= 0.5 && numNodes >= 1000) return false;
@@ -35,7 +56,7 @@ const getVisibleLabelSet = (
   });
 
   nodeData.forEach((data, nodeId) => {
-    if (data.stable) return;
+    if (data.removed) return;
 
     const isSelected = selectedNodes.has(nodeId);
     const isHovered = hoveredNode === nodeId;
@@ -93,6 +114,10 @@ const drawLabels = (
   visibleNodes: Node[],
   showLabels: boolean,
   labelFontSize: number,
+  nodeData: Map<string, FullData>,
+  displayLabel: string,
+  truncateLabels: boolean,
+  labelWidth: number,
 ): void => {
   const svgGroup = svg.select("g.zoom-group");
   let labelGroup = svgGroup.select<SVGGElement>("g.labels-group");
@@ -121,7 +146,7 @@ const drawLabels = (
 
         g.each(function (d) {
           const group = d3.select(this);
-          const label = d?.label ?? getNodeLabel(d);
+          const label = getDisplayText(d, nodeData, displayLabel);
 
           group
             .append("rect")
@@ -133,7 +158,7 @@ const drawLabels = (
             .attr("rx", 2)
             .attr("ry", 2);
 
-          group
+          const text = group
             .append("text")
             .attr("data-type", d.id)
             .attr("text-anchor", "middle")
@@ -141,6 +166,12 @@ const drawLabels = (
             .attr("font-size", `${labelFontSize}px`)
             .attr("pointer-events", "none")
             .text(label);
+
+          const textNode = text.node();
+          if (textNode && truncateLabels) {
+            const displayText = truncateText(textNode, label, labelWidth);
+            text.text(displayText);
+          }
         });
 
         return g.call((enter) =>
@@ -150,10 +181,18 @@ const drawLabels = (
       (update) => {
         update.each(function (d) {
           const group = d3.select(this);
-          const label = d?.label ?? getNodeLabel(d);
+          const label = getDisplayText(d, nodeData, displayLabel);
 
           const text = group.select<SVGTextElement>("text");
-          text.text(label).attr("font-size", `${labelFontSize}px`);
+          text.attr("font-size", `${labelFontSize}px`);
+
+          const textNode = text.node();
+          if (textNode) {
+            const displayText = truncateLabels
+              ? truncateText(textNode, label, labelWidth)
+              : label;
+            text.text(displayText);
+          }
         });
 
         return update;
@@ -204,19 +243,46 @@ export const updateLabelPositions = (
     });
 };
 
-export const updateLabelFontSize = (
+export const updateLabels = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   labelFontSize: number,
   nodeSizes: Map<string, number>,
+  nodeData: Map<string, FullData>,
+  displayLabel: string,
+  truncateLabels: boolean,
+  labelWidth: number,
 ) => {
+  const updates: Array<() => void> = [];
+
   svg.selectAll<SVGGElement, Node>("g.labels-group g.label").each(function (d) {
     const label = d3.select(this);
-    const text = label.select("text");
+    const text = label.select<SVGTextElement>("text");
+
     text.attr("font-size", `${labelFontSize}px`);
 
+    const labelText = getDisplayText(d, nodeData, displayLabel);
+
+    const textNode = text.node();
+    if (textNode) {
+      const displayText = truncateLabels
+        ? truncateText(textNode, labelText, labelWidth)
+        : labelText;
+      text.text(displayText);
+    }
+
     const nodeSize = nodeSizes.get(d.id) ?? 15;
-    updateLabelBackgroundAndPosition(label, nodeSize);
+    updates.push(() => {
+      updateLabelBackgroundAndPosition(label, nodeSize);
+    });
   });
+
+  if (updates.length > 0) {
+    requestAnimationFrame(() => {
+      updates.forEach((fn) => fn());
+    });
+  }
+
+  updateLabelPositions(svg, nodeSizes);
 };
 
 export const updateLabelStyles = (
@@ -263,12 +329,15 @@ export const updateLabelStyles = (
 
   const hasActiveSelectedNodes = Array.from(selectedNodes).some((id) => {
     const data = nodeData.get(id);
-    return data && !data.stable;
+    return data && !data.removed;
   });
+
+  const backgroundUpdates: Array<() => void> = [];
 
   svg.selectAll<SVGGElement, Node>("g.labels-group g.label").each(function (d) {
     const label = d3.select(this);
     const shouldShow = visibleSet.has(d.id);
+    const wasHidden = label.style("display") === "none";
 
     const isSelected = selectedNodes.has(d.id);
     const isHovered = hoveredNode === d.id;
@@ -282,6 +351,14 @@ export const updateLabelStyles = (
 
     if (shouldShow) {
       label.style("display", "block");
+
+      if (wasHidden && nodeSizes) {
+        const nodeSize = nodeSizes.get(d.id) ?? 15;
+        backgroundUpdates.push(() => {
+          updateLabelBackgroundAndPosition(label, nodeSize);
+        });
+      }
+
       if (animate) {
         label.transition().duration(300).attr("opacity", labelOpacity);
       } else {
@@ -314,10 +391,12 @@ export const updateLabelStyles = (
     const fontWeight = isSelected && isHovered ? "700" : "normal";
 
     text.attr("fill", textColor).attr("font-weight", fontWeight);
-
     background.attr("fill-opacity", labelOpacity * 0.9);
-
-    const nodeSize = nodeSizes.get(d.id) ?? 15;
-    updateLabelBackgroundAndPosition(label, nodeSize);
   });
+
+  if (backgroundUpdates.length > 0) {
+    requestAnimationFrame(() => {
+      backgroundUpdates.forEach((fn) => fn());
+    });
+  }
 };

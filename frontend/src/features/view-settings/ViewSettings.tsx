@@ -11,9 +11,8 @@ import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import KeySelector from "../data-filtering/components/KeySelector";
-import SortingSelector from "../data-filtering/components/SortingSelector";
 import DisplaySettings from "./components/DisplaySettings";
+import KeySelector from "./components/KeySelector";
 import NodeLinkDiagramSettings from "./nodel-link-settings/NodeLinkDiagramSettings";
 import RadialChartSettings from "./radial-settings/RadialChartSettings";
 
@@ -29,14 +28,19 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
   const [isOpenNode, setIsOpenNode] = useState(false);
   const [isOpenLink, setIsOpenLink] = useState(false);
   const [isOpenKeys, setIsOpenKeys] = useState(false);
+  const [isOpenLabel, setIsOpenLabel] = useState(false);
 
-  const { resetRadialSettings, resetNodeLinkSettings } = useSettingsStore();
+  const { resetRadialSettings, resetNodeLinkSettings, resetDisplaySettings } =
+    useSettingsStore();
   const timesteps = useMetricsStore((s) => s.timesteps);
   const {
-    enabledNodeKeys,
-    allNodeKeys,
     allEdgeKeys,
+    allNodeAttributeKeys,
+    allNodeCentralityKeys,
+    allNodeCommunityKeys,
     enabledEdgeKeys,
+    enabledNodeAttributeKeys,
+    enabledNodeCentralityKeys,
     enabledNodeCommunityKeys,
   } = useKeys();
 
@@ -48,8 +52,10 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
         <RadialChartSettings
           isOpenDisplay={isOpenDisplay}
           isOpenEdge={isOpenEdge}
+          isOpenLabel={isOpenLabel}
           setIsOpenDisplay={setIsOpenDisplay}
           setIsOpenEdge={setIsOpenEdge}
+          setIsOpenLabel={setIsOpenLabel}
         />
       )}
 
@@ -58,21 +64,23 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
           isOpenPhysics={isOpenPhysics}
           isOpenNode={isOpenNode}
           isOpenLink={isOpenLink}
+          isOpenLabel={isOpenLabel}
           setIsOpenPhysics={setIsOpenPhysics}
           setIsOpenNode={setIsOpenNode}
           setIsOpenLink={setIsOpenLink}
+          setIsOpenLabel={setIsOpenLabel}
         />
       )}
 
       {view === "data-table" && timesteps.length > 1 && (
         <Collapsible open={isOpenTime} onOpenChange={setIsOpenTime}>
-          <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
+          <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-0.5 transition-colors hover:bg-border/50">
             <ChevronDown
               className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
                 isOpenTime ? "rotate-0" : "-rotate-90"
               }`}
             />
-            <p className="truncate pl-1">Time Settings</p>
+            <p className="truncate pl-1">Time Controls</p>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2">
             <TimestepSlider />
@@ -81,34 +89,49 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
       )}
 
       <Collapsible open={isOpenKeys} onOpenChange={setIsOpenKeys}>
-        <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
+        <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-0.5 transition-colors hover:bg-border/50">
           <ChevronDown
             className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
               isOpenKeys ? "rotate-0" : "-rotate-90"
             }`}
           />
-          <p className="truncate pl-1">Attribute Settings</p>
+          <p className="truncate pl-1">Data Keys</p>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2">
-          <KeySelector
-            label="Nodes"
-            description="Toggle Node Attributes"
-            options={allNodeKeys}
-            enabledKeys={[...enabledNodeKeys, ...enabledNodeCommunityKeys]}
-          />
-          <KeySelector
-            label="Edges"
-            description="Toggle Edge Attributes"
-            options={allEdgeKeys}
-            enabledKeys={enabledEdgeKeys}
-          />
-          <SortingSelector />
+          {allNodeCentralityKeys.length + allNodeAttributeKeys.length > 0 && (
+            <KeySelector
+              label="Nodes..."
+              description="Toggle Node Attributes"
+              options={[...allNodeCentralityKeys, ...allNodeAttributeKeys]}
+              enabledKeys={[
+                ...enabledNodeCentralityKeys,
+                ...enabledNodeAttributeKeys,
+              ]}
+            />
+          )}
+          {allNodeCommunityKeys.length > 0 && (
+            <KeySelector
+              label="Communities..."
+              description="Toggle Communities"
+              options={allNodeCommunityKeys}
+              enabledKeys={enabledNodeCommunityKeys}
+            />
+          )}
+          {allEdgeKeys.length > 0 && (
+            <KeySelector
+              label="Edges..."
+              description="Toggle Edge Attributes"
+              options={allEdgeKeys}
+              enabledKeys={enabledEdgeKeys}
+            />
+          )}
         </CollapsibleContent>
       </Collapsible>
 
       <div className="space-y-2 px-2 py-2">
         <Button
           onClick={() => {
+            resetDisplaySettings();
             if (view === "radial") {
               resetRadialSettings();
             } else if (view === "node-link") {

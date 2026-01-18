@@ -77,13 +77,43 @@ export const createHiddenColumn = <
   minSize: 40,
   maxSize: 40,
   enableResizing: false,
-  header: () => (
-    <div className="flex items-center justify-center">
-      <Button variant="ghost" size="icon" className="h-6 w-6">
-        <Eye className="h-4 w-4 text-foreground" />
-      </Button>
-    </div>
-  ),
+  header: ({ table }) => {
+    const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
+    const hideNode = useNetworkStore((s) => s.hideNode);
+    const restoreNode = useNetworkStore((s) => s.restoreNode);
+
+    const allRows = table.getRowModel().rows;
+    const allHidden = allRows.every((row) => hiddenNodes.has(row.original.id));
+    const someHidden = allRows.some((row) => hiddenNodes.has(row.original.id));
+
+    const toggleAllHidden = () => {
+      if (allHidden) {
+        allRows.forEach((row) => restoreNode(row.original.id));
+      } else {
+        allRows.forEach((row) => hideNode(row.original.id));
+      }
+    };
+
+    return (
+      <div className="flex items-center justify-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleAllHidden}
+          title={allHidden ? "Show all nodes" : "Hide all nodes"}
+          className="h-6 w-6"
+        >
+          {allHidden ? (
+            <EyeOff className="h-4 w-4 text-muted-foreground" />
+          ) : someHidden ? (
+            <Eye className="h-4 w-4 text-muted-foreground opacity-90" />
+          ) : (
+            <Eye className="h-4 w-4 text-foreground" />
+          )}
+        </Button>
+      </div>
+    );
+  },
   cell: ({ row }) => {
     const nodeId = row.original.id;
     const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);

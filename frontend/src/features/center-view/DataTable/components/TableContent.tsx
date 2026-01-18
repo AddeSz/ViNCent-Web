@@ -11,11 +11,6 @@ import { flexRender, type Table } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
 
-interface RowData {
-  removed?: boolean;
-  hidden?: boolean;
-}
-
 interface TableContentProps<T extends Record<string, any>> {
   table: Table<T>;
   columnsLength: number;
@@ -73,16 +68,16 @@ const TableContent = <T extends Record<string, any>>({
           {virtualRows.length ? (
             virtualRows.map((virtualRow) => {
               const row = table.getRowModel().rows[virtualRow.index];
-              const isRemoved = (row.original as RowData).removed ?? false;
-              const isHidden = (row.original as RowData).hidden ?? false;
+              const pendingRemoval = row.original.pendingRemoval ?? false;
+              const isHidden = row.original.hidden ?? false;
 
               let backgroundColor: string | undefined = undefined;
               let opacity = 1;
 
-              if (isRemoved && isHidden) {
+              if (pendingRemoval && isHidden) {
                 backgroundColor = "rgba(255, 0, 0, 0.1)";
                 opacity = 0.6;
-              } else if (isRemoved) {
+              } else if (pendingRemoval) {
                 backgroundColor = "rgba(255, 0, 0, 0.1)";
                 opacity = 1;
               } else if (isHidden) {
@@ -107,7 +102,7 @@ const TableContent = <T extends Record<string, any>>({
                   }}
                   className={cn(
                     "group",
-                    isRemoved
+                    pendingRemoval
                       ? "removed-row"
                       : isHidden
                         ? "hidden-row"

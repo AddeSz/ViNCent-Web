@@ -3,11 +3,10 @@ import type { AttributeInfo } from "@/types/network";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 import type { InteractionProps } from "../../Tooltips/useTooltip";
-import type { ArcData } from "../RadialChart";
 
 const drawArcs = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  arcData: ArcData[],
+  arcData: any[],
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
   attributeInfo: Map<string, AttributeInfo>,
@@ -30,7 +29,7 @@ const drawArcs = (
     const fullOuterRadius = y(getKeyIndex(d.key) + 1);
 
     const backgroundArc = d3
-      .arc<ArcData>()
+      .arc<any>()
       .innerRadius(innerRadius)
       .outerRadius(fullOuterRadius)
       .startAngle(startAngle)
@@ -54,7 +53,7 @@ const drawArcs = (
     }
 
     const foregroundArc = d3
-      .arc<ArcData>()
+      .arc<any>()
       .innerRadius(innerRadius)
       .outerRadius(foregroundOuterRadius)
       .startAngle(startAngle)

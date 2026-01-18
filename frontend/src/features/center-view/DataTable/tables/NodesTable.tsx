@@ -52,7 +52,6 @@ const NodesTable = ({
   setTableState,
 }: NodesTableProps) => {
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-
   const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
 
   const columns = useMemo(() => {
@@ -99,7 +98,7 @@ const NodesTable = ({
 
   const filteredData = useMemo(() => {
     return data.filter((row) => {
-      if (row.stable) return false;
+      if (row.removed) return false;
 
       if (tableState.visibilityFilter === "hidden") return row.hidden === true;
       if (tableState.visibilityFilter === "visible") return !row.hidden;
@@ -165,7 +164,6 @@ const NodesTable = ({
 
   return (
     <>
-      {/* <TableControls table={table} setVisibilityFilter={setVisibilityFilter} /> */}
       <TableTypeToggle
         dataType={dataType}
         setDataType={setDataType}

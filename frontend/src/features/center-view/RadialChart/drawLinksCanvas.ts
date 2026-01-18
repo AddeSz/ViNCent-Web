@@ -26,12 +26,7 @@ interface ProcessedLink {
   path2d?: Path2D;
 }
 
-interface ZoomLevelCache {
-  canvas: HTMLCanvasElement;
-  processedLinks: ProcessedLink[];
-}
-
-const zoomLevelCaches = new Map<ZoomLevel, ZoomLevelCache>();
+const zoomLevelCaches = new Map<ZoomLevel, HTMLCanvasElement>();
 let currentZoomLevel: ZoomLevel = 1;
 let cachedProcessedLinks: ProcessedLink[] = [];
 
@@ -149,10 +144,7 @@ const drawLinksCanvas = async (
       drawCanvasLinks(ctx, processedLinks, center, pixelRatio);
     }
 
-    zoomLevelCaches.set(zoomLevel, {
-      canvas: offscreenCanvas,
-      processedLinks: processedLinks,
-    });
+    zoomLevelCaches.set(zoomLevel, offscreenCanvas);
   });
 
   const displayCanvas = getOrCreateCanvas(linkGroup, canvasSize, center);
@@ -176,8 +168,8 @@ function swapToZoomLevel(
   zoomLevel: ZoomLevel,
   canvasSize: number,
 ): void {
-  const cache = zoomLevelCaches.get(zoomLevel);
-  if (!cache) return;
+  const cachedCanvas = zoomLevelCaches.get(zoomLevel);
+  if (!cachedCanvas) return;
 
   const node = displayCanvas.node();
   if (!node) return;
@@ -189,7 +181,7 @@ function swapToZoomLevel(
   const ctx = node.getContext("2d", { alpha: true });
   if (!ctx) return;
 
-  ctx.drawImage(cache.canvas, 0, 0, bufferSize, bufferSize);
+  ctx.drawImage(cachedCanvas, 0, 0, bufferSize, bufferSize);
 
   currentZoomLevel = zoomLevel;
 }

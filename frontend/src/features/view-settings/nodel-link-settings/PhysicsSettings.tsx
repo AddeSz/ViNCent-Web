@@ -26,14 +26,14 @@ const PhysicsSettings = ({ isOpen, setIsOpen }: PhysicsSettingsProps) => {
   };
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="group/collapsible"
-    >
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
-        <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-100 group-data-[state=closed]/collapsible:-rotate-90" />
-        <p className="truncate pl-1">Physics Settings</p>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-0.5 transition-colors hover:bg-border/50">
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
+            isOpen ? "rotate-0" : "-rotate-90"
+          }`}
+        />
+        <p className="truncate pl-1">Physics</p>
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 py-2">
         <div className="space-y-1">
@@ -89,8 +89,13 @@ const PhysicsSettings = ({ isOpen, setIsOpen }: PhysicsSettingsProps) => {
           />
         </div>
 
-        <Button onClick={handleRestart} size="sm" className="w-full">
-          <span className="flex-wrap truncate">Restart Simulation</span>
+        <Button
+          onClick={handleRestart}
+          size="sm"
+          variant="outline"
+          className="w-full"
+        >
+          <span className="flex-wrap truncate">Run Simulation</span>
         </Button>
       </CollapsibleContent>
     </Collapsible>

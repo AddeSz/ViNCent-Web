@@ -172,9 +172,26 @@ def collect_attribute_data(
         metadata: Dict[str, AttributeMetadata] = {}
         for key, values in attr_values.items():
             values_list = list(values)
-            all_numbers = all(isinstance(v, (int, float)) for v in values_list)
-            all_strings = all(isinstance(v, str) for v in values_list)
-            all_booleans = all(isinstance(v, bool) for v in values_list)
+            
+            non_none_values = [v for v in values_list if v is not None]
+            
+            if not non_none_values:
+                info: AttributeMetadata = {
+                    "key": key,
+                    "values": values_list,
+                    "isCentrality": key in centrality_keys,
+                    "isCommunity": key in community_keys,
+                    "isNumeric": False,
+                    "isCategory": False,
+                    "type": "string",
+                    "range": None
+                }
+                metadata[key] = info
+                continue
+            
+            all_numbers = all(isinstance(v, (int, float)) for v in non_none_values)
+            all_strings = all(isinstance(v, str) for v in non_none_values)
+            all_booleans = all(isinstance(v, bool) for v in non_none_values)
             
             is_community = key in community_keys
             
@@ -195,18 +212,18 @@ def collect_attribute_data(
             elif all_numbers:
                 info["type"] = "number"
                 info["isNumeric"] = True
-                num_values = [float(v) for v in values_list]
+                num_values = [float(v) for v in non_none_values]
                 info["range"] = {"min": min(num_values), "max": max(num_values)}
                 unique_values = set(num_values)
                 if is_community or (all(v.is_integer() for v in num_values) and len(unique_values) <= 10):
                     info["isCategory"] = True
             elif all_strings:
                 info["type"] = "string"
-                if len(set(values_list)) <= 10:
+                if len(set(non_none_values)) <= 10:
                     info["isCategory"] = True
             else:
                 info["type"] = "string"
-                if len(set(map(str, values_list))) <= 10:
+                if len(set(map(str, non_none_values))) <= 10:
                     info["isCategory"] = True
             
             metadata[key] = info

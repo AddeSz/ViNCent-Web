@@ -21,8 +21,6 @@ export type Node = SimulationNodeDatum & {
   id: string;
   label?: string;
   attributes?: Attributes;
-  linkCount?: number;
-  removed?: boolean;
 };
 
 export type Edge = SimulationLinkDatum<Node> & {
@@ -30,14 +28,14 @@ export type Edge = SimulationLinkDatum<Node> & {
   source: string | Node;
   target: string | Node;
   weight?: number;
-  directed?: boolean;
   attributes?: Attributes;
 };
 
 export type FullData = Record<string, any> & {
   id: string;
+  pendingRemoval?: boolean;
   removed?: boolean;
-  stable?: boolean;
+  hidden?: boolean;
   linked?: Set<string>;
 };
 

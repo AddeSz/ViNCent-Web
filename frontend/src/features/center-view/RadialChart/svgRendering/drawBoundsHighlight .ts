@@ -64,7 +64,7 @@ export const updateBoundsHighlight = (
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
-    if (node?.linked && !node?.stable) {
+    if (node?.linked && !node?.removed) {
       node.linked.forEach((id) => linkedToSelectedIds.add(id));
     }
   });

@@ -47,21 +47,21 @@ const SortingSelector = () => {
   return (
     <>
       <div className="space-y-1">
-        <Label htmlFor={"sort-by"} className="truncate text-sm">
-          Sort by
+        <Label htmlFor={"order-by"} className="truncate text-sm">
+          Order by
         </Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
-              id="sort-by"
+              id="order-by"
               variant="outline"
-              title="Sort By"
-              className="flex w-full cursor-pointer items-center justify-between px-2 text-sm"
+              title="Order By"
+              className="w-full justify-between border-input px-3 font-normal"
               disabled={isEmpty}
               size="sm"
             >
               <span
-                className="truncate"
+                className="truncate text-sm"
                 style={{ color: getColorForMetric(sortKey) }}
               >
                 {formatKeyLabel(sortKey)}

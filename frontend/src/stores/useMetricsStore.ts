@@ -10,7 +10,6 @@ import type {
   TimestepDelta,
 } from "@/types/network";
 import { create } from "zustand";
-import { useSettingsStore } from "./useSettingsStore";
 
 export interface BrushRange {
   range: [number, number];
@@ -73,7 +72,7 @@ interface MetricsStore {
   setSelectedCategories: (key: string, categories: string[]) => void;
   clearBrushRange: (key: string) => void;
 
-  setBinnedData: (key: string, binnedData: BinnedData) => void;
+  setBinnedData: (key: string, binnedData: BinnedData | null) => void;
   clearBinnedData: () => void;
 
   setDisabledValues: (key: string, values: Set<number | string>) => void;
@@ -157,10 +156,6 @@ function applyDelta(
     const edge = currentEdges.get(edgeId);
     if (edge) {
       edge.attributes = { ...edge.attributes, ...attrChanges };
-
-      if ("weight" in attrChanges) {
-        edge.weight = attrChanges._weight as number;
-      }
     }
   });
 }
@@ -467,26 +462,6 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       currentMetricsInfo,
       currentCommunities,
     });
-
-    const { selectedRingCommunity } =
-      useSettingsStore.getState().radialSettings;
-    if (
-      selectedRingCommunity !== "none" &&
-      (!currentCommunities || !currentCommunities[selectedRingCommunity])
-    ) {
-      useSettingsStore.getState().setRadialSettings({
-        selectedRingCommunity: "none",
-      });
-    }
-    const { selectedCommunity } = useSettingsStore.getState().nodeLinkSettings;
-    if (
-      selectedCommunity !== "none" &&
-      (!currentCommunities || !currentCommunities[selectedCommunity])
-    ) {
-      useSettingsStore.getState().setNodeLinkSettings({
-        selectedCommunity: "none",
-      });
-    }
   },
 
   setEnabledMetricsKeys: (keys) => {
@@ -581,7 +556,11 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
   setBinnedData: (key, binnedData) => {
     set((s) => {
       const newMap = new Map(s.binnedDataByKey);
-      newMap.set(key, binnedData);
+      if (binnedData === null) {
+        newMap.delete(key);
+      } else {
+        newMap.set(key, binnedData);
+      }
       return { binnedDataByKey: newMap };
     });
   },
@@ -610,7 +589,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     const info = metricsInfo.get(key);
 
     if (!info) {
-      return "var(--muted-foreground)";
+      return "var(--foreground)";
     }
 
     const vizStore = useVisualizationStore.getState();
@@ -628,7 +607,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     }
 
     if (info.isCategory) {
-      return "var(--muted-foreground)";
+      return "var(--foreground)";
     }
 
     return vizStore.getOrAssignAttributeColor(key);

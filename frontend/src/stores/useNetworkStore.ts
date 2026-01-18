@@ -1,10 +1,11 @@
-import type { Network, Node } from "@/types/network";
+import type { Edge, Network, Node } from "@/types/network";
 import type { SortingState } from "@tanstack/react-table";
 import { create } from "zustand";
 
 interface NetworkStore {
   network: Network;
   nodeMap: Map<string, Node>;
+  edgeMap: Map<string, Edge>;
   selectedNodes: Set<string>;
   hoveredNode: null | string;
   hoveredCommunity: { key: string; id: number } | null;
@@ -24,6 +25,7 @@ interface NetworkStore {
   selectNode: (id: string, multi?: boolean) => void;
   deselectNode: (id: string) => void;
   toggleNodeSelection: (id: string) => void;
+  toggleNodesSelection: (ids: string[]) => void;
   setHoveredNode: (node: string | null) => void;
   setHoveredCommunity: (key: string | null, id: number | null) => void;
 
@@ -36,6 +38,7 @@ interface NetworkStore {
   hideNode: (id: string) => void;
   restoreNode: (id: string) => void;
   restoreAllNodes: () => void;
+  hideSelection: () => void;
 
   setCurrentDataset: (dataset: string) => void;
 
@@ -48,6 +51,7 @@ interface NetworkStore {
 export const useNetworkStore = create<NetworkStore>((set, get) => ({
   network: { nodes: [], edges: [] },
   nodeMap: new Map<string, Node>(),
+  edgeMap: new Map<string, Edge>(),
   linkCountMap: new Map<string, number>(),
   selectedNodes: new Set<string>(),
   hoveredNode: null,
@@ -64,6 +68,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
 
   setNetwork: (data, graphType) => {
     const nodeMap = new Map<string, Node>(data.nodes.map((n) => [n.id, n]));
+    const edgeMap = new Map<string, Edge>(data.edges.map((e) => [e.id, e]));
     let directed = true;
     if (graphType === "undirected") {
       directed = false;
@@ -71,6 +76,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     set({
       network: data,
       nodeMap,
+      edgeMap,
       directed,
     });
   },
@@ -98,6 +104,21 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       next.add(id);
     }
     set({ selectedNodes: next });
+  },
+
+  toggleNodesSelection: (ids: string[]) => {
+    const { selectedNodes } = get();
+    const allSelected = ids.every((id) => selectedNodes.has(id));
+
+    set((state) => {
+      const next = new Set(state.selectedNodes);
+      if (allSelected) {
+        ids.forEach((id) => next.delete(id));
+      } else {
+        ids.forEach((id) => next.add(id));
+      }
+      return { selectedNodes: next };
+    });
   },
 
   setHoveredNode: (node) => set({ hoveredNode: node }),
@@ -130,6 +151,17 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
 
   restoreAllNodes: () => set({ hiddenNodes: new Set() }),
 
+  hideSelection: () => {
+    const { selectedNodes } = get();
+    if (selectedNodes.size === 0) return;
+
+    set((state) => {
+      const next = new Set(state.hiddenNodes);
+      selectedNodes.forEach((id) => next.add(id));
+      return { hiddenNodes: next, selectedNodes: new Set<string>() };
+    });
+  },
+
   clearSelection: () => set({ selectedNodes: new Set<string>() }),
 
   setRestartSimulationFlag: (flag) => set({ restartSimulationFlag: flag }),
@@ -143,6 +175,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     set({
       network: { nodes: [], edges: [] },
       nodeMap: new Map(),
+      edgeMap: new Map(),
       selectedNodes: new Set<string>(),
       hoveredNode: null,
       hoveredCommunity: null,

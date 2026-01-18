@@ -33,10 +33,7 @@ export const HistogramBars = ({
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
   const hoveredValue = node?.[dataKey];
-  const hoveredBinIndex =
-    hoveredValue != null && !node?.stable
-      ? (binnedData.valueToBinIndex.get(hoveredValue) ?? null)
-      : null;
+  const hoveredBinIndex = binnedData.valueToBinIndex.get(hoveredValue) ?? null;
 
   return (
     <>

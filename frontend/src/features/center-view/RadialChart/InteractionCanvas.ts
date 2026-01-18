@@ -3,25 +3,12 @@ import type { DataChanges } from "@/types/network";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 import type { InteractionProps } from "../Tooltips/useTooltip";
+import type { ProcessedArc } from "./drawArcsCanvas";
 import {
   updateCommunityHover,
   type ChangeCircle,
   type CommunitySegment,
 } from "./drawOuterLayersCanvas";
-
-interface ProcessedArc {
-  data: {
-    key: string;
-    value: any;
-    id: string;
-    removed: boolean | undefined;
-    stable: boolean | undefined;
-  };
-  startAngle: number;
-  endAngle: number;
-  innerRadius: number;
-  fullOuterRadius: number;
-}
 
 interface InteractionCache {
   processedArcs: ProcessedArc[];

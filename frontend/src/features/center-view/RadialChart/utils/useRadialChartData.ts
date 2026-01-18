@@ -1,4 +1,3 @@
-import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData } from "@/types/network";
 import { calculateBandwidth, calculateGapProportion } from "@/utils/utils";
 import * as d3 from "d3";
@@ -9,6 +8,10 @@ interface UseRadialChartDataProps {
   enabledCentralityKeys: string[];
   enabledAttributeKeys: string[];
   enabledCommunityKeys: string[];
+  communitiesInArcs: boolean;
+  separateMetrics: boolean;
+  innerRadius: number;
+  outerRadius: number;
 }
 
 export const useRadialChartData = ({
@@ -16,19 +19,11 @@ export const useRadialChartData = ({
   enabledCentralityKeys,
   enabledAttributeKeys,
   enabledCommunityKeys,
+  communitiesInArcs,
+  separateMetrics,
+  innerRadius,
+  outerRadius,
 }: UseRadialChartDataProps) => {
-  const radialSettings = useSettingsStore((s) => s.radialSettings);
-  const {
-    innerRadius,
-    outerRadius,
-    fontSize,
-    truncateLabels,
-    labelWidth,
-    maxLabelWidth,
-    separateMetrics,
-    communitiesInArcs,
-  } = radialSettings;
-
   const visibleData = useMemo(() => data.filter((d) => !d.hidden), [data]);
 
   const chartData = useMemo(() => {
@@ -168,8 +163,6 @@ export const useRadialChartData = ({
     communitiesInArcs,
   ]);
 
-  const totalLabelWidth = truncateLabels ? maxLabelWidth : labelWidth;
-
   const outerArcsWidth = useMemo(() => {
     return (
       Math.min(
@@ -185,11 +178,6 @@ export const useRadialChartData = ({
     angleMap,
     yScale,
     getKeyIndex,
-    totalLabelWidth,
     outerArcsWidth,
-    innerRadius,
-    outerRadius,
-    fontSize,
-    truncateLabels,
   };
 };

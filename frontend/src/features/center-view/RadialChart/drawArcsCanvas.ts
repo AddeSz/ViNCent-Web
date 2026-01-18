@@ -13,11 +13,11 @@ type ArcData = {
   1: number;
   value: any;
   id: string;
+  pendingRemoval: boolean | undefined;
   removed: boolean | undefined;
-  stable: boolean | undefined;
 };
 
-interface ProcessedArc {
+export interface ProcessedArc {
   data: ArcData;
   fillColor: string;
   arcOpacity: number;
@@ -34,13 +34,9 @@ interface ArcsByColor {
   [color: string]: ProcessedArc[];
 }
 
-interface ZoomLevelCache {
-  canvas: HTMLCanvasElement;
-  processedArcs: ProcessedArc[];
-}
-
-const zoomLevelCaches = new Map<ZoomLevel, ZoomLevelCache>();
+const zoomLevelCaches = new Map<ZoomLevel, HTMLCanvasElement>();
 let currentZoomLevel: ZoomLevel = 1;
+let cachedProcessedArcs: ProcessedArc[] = [];
 
 const drawArcsCanvas = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -87,7 +83,7 @@ const drawArcsCanvas = (
       const datum = d.data;
       const id = datum.id;
       const value = datum[key as keyof FullData];
-      const removed = datum.removed === true;
+      const pendingRemoval = datum.pendingRemoval === true;
 
       const startAngle = x(id) ?? 0;
       const endAngle = startAngle + x.bandwidth();
@@ -111,8 +107,8 @@ const drawArcsCanvas = (
           (layerFullOuterRadius - layerInnerRadius) * proportion;
       }
 
-      const fillColor = removed ? "red" : getColorForMetric(key, value);
-      const arcOpacity = removed ? 0.6 : 1;
+      const fillColor = pendingRemoval ? "red" : getColorForMetric(key, value);
+      const arcOpacity = pendingRemoval ? 0.6 : 1;
 
       const foregroundPath = new Path2D();
       foregroundPath.arc(
@@ -161,8 +157,8 @@ const drawArcsCanvas = (
           key,
           value,
           id,
-          removed,
-          stable: datum.stable,
+          pendingRemoval,
+          removed: datum.removed,
           0: d[0],
           1: d[1],
         },
@@ -179,7 +175,7 @@ const drawArcsCanvas = (
 
       processedArcs.push(arc);
 
-      if (!datum.stable && value !== null) {
+      if (!datum.removed && value !== null) {
         const colorKey = `${fillColor}_${arcOpacity}`;
         if (!arcsByColor[colorKey]) {
           arcsByColor[colorKey] = [];
@@ -188,6 +184,8 @@ const drawArcsCanvas = (
       }
     }
   }
+
+  cachedProcessedArcs = processedArcs;
 
   ZOOM_LEVELS.forEach((zoomLevel) => {
     const offscreenCanvas = document.createElement("canvas");
@@ -202,10 +200,7 @@ const drawArcsCanvas = (
       drawCanvasArcs(ctx, arcsByColor, center, pixelRatio);
     }
 
-    zoomLevelCaches.set(zoomLevel, {
-      canvas: offscreenCanvas,
-      processedArcs: processedArcs,
-    });
+    zoomLevelCaches.set(zoomLevel, offscreenCanvas);
   });
 
   const displayCanvas = getOrCreateCanvas(
@@ -225,8 +220,8 @@ function swapToZoomLevel(
   zoomLevel: ZoomLevel,
   canvasSize: number,
 ): void {
-  const cache = zoomLevelCaches.get(zoomLevel);
-  if (!cache) return;
+  const cachedCanvas = zoomLevelCaches.get(zoomLevel);
+  if (!cachedCanvas) return;
 
   const node = displayCanvas.node();
   if (!node) return;
@@ -238,7 +233,7 @@ function swapToZoomLevel(
   const ctx = node.getContext("2d");
   if (!ctx) return;
 
-  ctx.drawImage(cache.canvas, 0, 0, bufferSize, bufferSize);
+  ctx.drawImage(cachedCanvas, 0, 0, bufferSize, bufferSize);
 
   currentZoomLevel = zoomLevel;
 }
@@ -264,6 +259,10 @@ export function redrawArcsCanvasOnZoom(
   if (canvas.empty()) return;
 
   swapToZoomLevel(canvas, zoomFactor as ZoomLevel, canvasSize);
+}
+
+export function getProcessedArcs(): ProcessedArc[] {
+  return cachedProcessedArcs;
 }
 
 function getOrCreateCanvas(

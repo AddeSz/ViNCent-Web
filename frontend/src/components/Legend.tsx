@@ -29,7 +29,7 @@ const Legend = ({ nodeData }: LegendProps) => {
   const nodeMetrics = useMemo(() => {
     if (!displayNode) return [];
 
-    const isStable = data?.stable ?? false;
+    const isRemoved = data?.removed ?? false;
     return [...enabledNodeKeys, ...enabledNodeCommunityKeys].map((key) => {
       const info = metricsInfo.get(key);
       const value = data?.[key];
@@ -56,11 +56,11 @@ const Legend = ({ nodeData }: LegendProps) => {
 
       return {
         key,
-        proportion: isStable ? 0 : proportion,
-        percentage: isStable ? "" : percentage,
+        proportion: isRemoved ? 0 : proportion,
+        percentage: isRemoved ? "" : percentage,
         color,
         isNumeric: info?.isNumeric,
-        formattedValue: isStable ? "N/A" : formattedValue,
+        formattedValue: isRemoved ? "N/A" : formattedValue,
       };
     });
   }, [displayNode, enabledNodeKeys, nodeData, metricsInfo]);
@@ -84,14 +84,14 @@ const Legend = ({ nodeData }: LegendProps) => {
             {" "}
             {data?.label || data?.id}
           </span>{" "}
-          {data?.stable && (
-            <span className="text-xs text-muted-foreground italic">
-              (Stable Node)
-            </span>
-          )}
           {data?.removed && (
             <span className="text-xs text-muted-foreground italic">
               (Removed Node)
+            </span>
+          )}
+          {data?.pendingRemoval && (
+            <span className="text-xs text-muted-foreground italic">
+              (Pending Removal)
             </span>
           )}
         </div>

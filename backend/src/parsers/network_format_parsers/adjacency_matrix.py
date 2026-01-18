@@ -15,11 +15,13 @@
 # Steps:
 # 1. extract matrix data and optional node labels from input dict or direct 2D aray
 # 2. Validate matrix is square (NxN)
-# 3. Use provided labels as node IDs, or generate "nX" etc. if no labels
-# 4. for each non-zero value at [i][j], create edge from node i to node j
-# 5. skip zero, None, False, empty string values (treated as no edge)
-# 6. Add weight to edge if value is not 1 or 1.0, otherwise include weight=1
-# 7. Return nodes list, edges list, and directed flag
+# 3. Detect if matrix is symmetric (undirected) when directed flag not specified
+# 4. Use provided labels as node IDs, or generate "nX" etc. if no labels
+# 5. for each non-zero value at [i][j], create edge from node i to node j
+#    - for undirected graps, only process upper triangle (i < j) to avoid duplicates
+# 6. skip zero, None, False, empty string values (treated as no edge)
+# 7. Add weight to edge if value is not 1 or 1.0, otherwise include weight=1
+# 8. Return nodes list, edges list, and directed flag
 
 import logging
 from typing import Any, Dict, List, Optional, Union, cast
@@ -31,6 +33,34 @@ from ...types import Edge, NetworkData, Node
 logger = logging.getLogger(__name__)
 
 class AdjacencyMatrixConverter:
+    @staticmethod
+    def _is_symmetric(matrix: List[List[Any]]) -> bool:
+        n = len(matrix)
+        for i in range(n):
+            for j in range(i + 1, n):
+                val_ij = matrix[i][j]
+                val_ji = matrix[j][i]
+                
+                def normalize(v):
+                    if v in (0, None, False, "", 0.0):
+                        return 0
+                    if isinstance(v, (int, float)):
+                        return float(v)
+                    if isinstance(v, str):
+                        try:
+                            return float(v)
+                        except ValueError:
+                            return v
+                    return v
+                
+                norm_ij = normalize(val_ij)
+                norm_ji = normalize(val_ji)
+                
+                if norm_ij != norm_ji:
+                    return False
+        
+        return True
+    
     @staticmethod
     def convert(matrix_data: Union[List[List[Any]], Dict[str, Any]], directed: Optional[bool] = None) -> NetworkData:
         # 1. extract matrix data and optional node labels from input dict or direct 2D aray
@@ -76,7 +106,14 @@ class AdjacencyMatrixConverter:
                     status_code=422,
                     detail=f"Matrix must be square: row {i} has {len(row)} elements, expected {num_nodes}"
                 )
-        # 3. use provided labels as nodeIDs, or generate "nX" etc. if no labels
+        
+        # 3. Detect if matrix is symmetric (undirected) when directed flag not specified
+        if directed is None:
+            is_symmetric = AdjacencyMatrixConverter._is_symmetric(matrix)
+            directed = not is_symmetric
+            logger.info(f"Matrix symmetry detected: symmetric={is_symmetric}, setting directed={directed}")
+        
+        # 4. use provided labels as nodeIDs, or generate "nX" etc. if no labels
         if node_labels:
             if len(node_labels) != num_nodes:
                 raise HTTPException(
@@ -92,12 +129,15 @@ class AdjacencyMatrixConverter:
         edges: List[Edge] = []
         has_weights = False
         
-        # 4. for each non-zero value at [i][j], create edge from node i to node j
+        # 5. for each non-zero value at [i][j], create edge from node i to node j
+        #    for undirected graphs, only process upper triangle (i < j) to avoid duplicates
         for i in range(num_nodes):
-            for j in range(num_nodes):
+            start_j = i + 1 if not directed else 0
+            
+            for j in range(start_j, num_nodes):
                 value = matrix[i][j]
                 
-                # 5. skip zero, None, False, empty string values (treated as no edge)
+                # 6. skip zero, None, False, empty string values (treated as no edge)
                 if value in (0, None, False, "", 0.0):
                     continue
                 
@@ -109,7 +149,7 @@ class AdjacencyMatrixConverter:
                     "target": target_id
                 })
                 
-                # 6. Add weight to edge if value is not 1 or 1.0, otherwise include weight=1
+                # 7. Add weight to edge if value is not 1 or 1.0, otherwise include weight=1
                 if isinstance(value, (int, float)):
                     if value != 1 and value != 1.0:
                         edge["weight"] = value
@@ -133,13 +173,14 @@ class AdjacencyMatrixConverter:
          
         logger.info(
             f"Converted adjacency matrix to node-link: {len(nodes)} nodes, "
-            f"{len(edges)} edges (weighted: {has_weights})"
+            f"{len(edges)} edges (weighted: {has_weights}, directed: {directed})"
         )
         
+        # 8. Return nodes list, edges list, and directed flag
         result: NetworkData = {
             "nodes": nodes,
             "edges": edges,
-            "directed": directed if directed is not None else True
+            "directed": directed
         }
         
         return result

@@ -1,26 +1,33 @@
-import RadialDisplaySettings from "./RadialDisplaySettings";
-import RadialEdgeSettings from "./RadialEdgeSettings";
+import LabelSettings from "../components/LabelSettings";
+import EdgeSettings from "./EdgeSettings";
+import LayoutSettings from "./LayoutSettings";
 
-interface RadialSettingsProps {
+interface RadialChartSettingsProps {
   isOpenDisplay: boolean;
   isOpenEdge: boolean;
+  isOpenLabel: boolean;
   setIsOpenDisplay: (open: boolean) => void;
   setIsOpenEdge: (open: boolean) => void;
+  setIsOpenLabel: (open: boolean) => void;
 }
 
 const RadialChartSettings = ({
   isOpenDisplay,
   isOpenEdge,
+  isOpenLabel,
   setIsOpenDisplay,
   setIsOpenEdge,
-}: RadialSettingsProps) => {
+  setIsOpenLabel,
+}: RadialChartSettingsProps) => {
   return (
     <div className="flex flex-col">
-      <RadialDisplaySettings
-        isOpen={isOpenDisplay}
-        setIsOpen={setIsOpenDisplay}
+      <LayoutSettings isOpen={isOpenDisplay} setIsOpen={setIsOpenDisplay} />
+      <EdgeSettings isOpen={isOpenEdge} setIsOpen={setIsOpenEdge} />
+      <LabelSettings
+        isOpen={isOpenLabel}
+        setIsOpen={setIsOpenLabel}
+        settingsType="radialSettings"
       />
-      <RadialEdgeSettings isOpen={isOpenEdge} setIsOpen={setIsOpenEdge} />
     </div>
   );
 };

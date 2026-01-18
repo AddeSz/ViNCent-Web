@@ -40,12 +40,12 @@ const fdebParamConfig: Record<
 
 const THROTTLE_MS = 100;
 
-interface RadialEdgeSettingsProps {
+interface EdgeSettingsProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
 
-const RadialEdgeSettings = ({ isOpen, setIsOpen }: RadialEdgeSettingsProps) => {
+const EdgeSettings = ({ isOpen, setIsOpen }: EdgeSettingsProps) => {
   const { radialSettings, setRadialSettings, resetFDEBSettings } =
     useSettingsStore();
   const { edgeRenderingMode, fdebSettings } = radialSettings;
@@ -94,13 +94,13 @@ const RadialEdgeSettings = ({ isOpen, setIsOpen }: RadialEdgeSettingsProps) => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-0.5 transition-colors hover:bg-border/50">
         <ChevronDown
           className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
             isOpen ? "rotate-0" : "-rotate-90"
           }`}
         />
-        <p className="truncate pl-1">Edge Settings</p>
+        <p className="truncate pl-1">Edges</p>
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-2 border-b-2 bg-background px-2 pt-2 pb-3">
         <div className="space-y-1">
@@ -174,4 +174,4 @@ const RadialEdgeSettings = ({ isOpen, setIsOpen }: RadialEdgeSettingsProps) => {
   );
 };
 
-export default RadialEdgeSettings;
+export default EdgeSettings;

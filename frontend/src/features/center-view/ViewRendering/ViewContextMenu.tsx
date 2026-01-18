@@ -25,8 +25,8 @@ interface ViewContextMenuProps {
   children: React.ReactNode;
   contextMenuTarget: ContextMenuTarget;
   sorting: SortingState;
-  canPreview: boolean | null;
-  onPreview?: () => void;
+  canConfirm: boolean;
+  confirmRemovals: () => void;
 }
 
 const ViewContextMenu = ({
@@ -35,8 +35,8 @@ const ViewContextMenu = ({
   children,
   contextMenuTarget,
   sorting,
-  canPreview = false,
-  onPreview,
+  canConfirm,
+  confirmRemovals,
 }: ViewContextMenuProps) => {
   const clearSelection = useNetworkStore((s) => s.clearSelection);
   const resetRadialZoom = useNetworkStore((s) => s.resetRadialZoom);
@@ -49,8 +49,11 @@ const ViewContextMenu = ({
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const selectedNodes = useNetworkStore((s) => s.selectedNodes);
   const hideNode = useNetworkStore((s) => s.hideNode);
-  const hiddenCount = useNetworkStore((s) => s.hiddenNodes.size);
+  const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
+  const hiddenCount = hiddenNodes.size;
   const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
+  const hideSelection = useNetworkStore((s) => s.hideSelection);
+
   const handleResetZoom = () => {
     if (view === "radial") {
       resetRadialZoom();
@@ -94,6 +97,12 @@ const ViewContextMenu = ({
               >
                 Clear Selection
               </ContextMenuItem>
+              <ContextMenuItem
+                onSelect={hideSelection}
+                className="cursor-pointer"
+              >
+                <span>Hide Selected Nodes ({selectedNodes.size})</span>
+              </ContextMenuItem>
             </>
           )}
 
@@ -107,13 +116,21 @@ const ViewContextMenu = ({
                 ? "Deselect Node"
                 : "Select Node"}
             </ContextMenuItem>
-
+            <ContextMenuItem
+              onSelect={() => hideNode(contextMenuTarget.data.id)}
+              className="cursor-pointer"
+            >
+              <p>
+                <span className="text-red-500">Hide </span>
+                <span>Node</span>
+              </p>
+            </ContextMenuItem>
             <ContextMenuItem
               onSelect={() => onContextMenuSort(contextMenuTarget.data.key)}
             >
               <div className="flex w-full cursor-pointer items-center justify-between gap-1">
                 <span>
-                  Sort by{" "}
+                  Order By{" "}
                   <span
                     style={{
                       color: getColorForMetric(
@@ -138,15 +155,6 @@ const ViewContextMenu = ({
               </div>
             </ContextMenuItem>
             <ContextMenuItem
-              onSelect={() => hideNode(contextMenuTarget.data.id)}
-              className="cursor-pointer"
-            >
-              <p>
-                <span className="text-red-500">Hide </span>
-                <span>Node</span>
-              </p>
-            </ContextMenuItem>
-            <ContextMenuItem
               onSelect={() => {
                 const key = contextMenuTarget.data.key;
                 toggleMetricsKey(key);
@@ -154,7 +162,7 @@ const ViewContextMenu = ({
               className="cursor-pointer"
             >
               <div className="flex items-center gap-1">
-                <span className="text-red-500">Hide</span>
+                <span className="text-red-500">Disable</span>
                 <span
                   style={{
                     color: getColorForMetric(
@@ -194,7 +202,7 @@ const ViewContextMenu = ({
 
         {contextMenuTarget.type === "radial" && (
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Sort By</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger>Order By</ContextMenuSubTrigger>
             <ContextMenuSubContent className="overflow-y-auto">
               <ContextMenuRadioGroup
                 value={sortKey || "none"}
@@ -381,9 +389,9 @@ const ViewContextMenu = ({
             </ContextMenuItem>
           )}
 
-        {canPreview && onPreview && (
-          <ContextMenuItem onSelect={onPreview}>
-            <div className="flex items-center gap-2">Remove Preview Nodes</div>
+        {canConfirm && (
+          <ContextMenuItem onSelect={confirmRemovals}>
+            <div className="flex items-center gap-2">Confirm Removals</div>
           </ContextMenuItem>
         )}
       </ContextMenuContent>

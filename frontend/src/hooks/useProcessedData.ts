@@ -37,11 +37,10 @@ export const useProcessedData = (
 
   const result = useMemo(() => {
     const dataMap = new Map<string, FullData>();
-    const validNodeIds = new Set<string>();
-    const removedNodeIds = new Set<string>();
+    const activeNodeIds = new Set<string>();
 
     for (const [id, node] of nodeMap) {
-      const isAccepted = node.removed && acceptedRemovals.has(node.id!);
+      const isAccepted = node.pendingRemoval && acceptedRemovals.has(node.id!);
 
       const processedNode = {
         ...(isAccepted
@@ -49,8 +48,8 @@ export const useProcessedData = (
               id: node.id,
               label: node.label,
               linkCount: node.linkCount,
-              removed: false,
-              stable: true,
+              pendingRemoval: false,
+              removed: true,
             }
           : node),
         linkCount: 0,
@@ -59,12 +58,8 @@ export const useProcessedData = (
 
       dataMap.set(id, processedNode);
 
-      if (!processedNode.stable) {
-        validNodeIds.add(processedNode.id!);
-      }
-
-      if (processedNode.removed) {
-        removedNodeIds.add(processedNode.id!);
+      if (!processedNode.removed) {
+        activeNodeIds.add(processedNode.id!);
       }
     }
 
@@ -72,19 +67,26 @@ export const useProcessedData = (
 
     for (const [edgeId, edge] of edgeMap) {
       const [s, t] = edgeId.split("|");
-      const shouldRemove = !validNodeIds.has(s) || !validNodeIds.has(t);
+      const isAcceptedEdge =
+        edge.pendingRemoval && acceptedEdgeRemovals.has(edgeId);
 
-      const processedEdge = shouldRemove ? { ...edge, removed: true } : edge;
+      const shouldRemove = !activeNodeIds.has(s) || !activeNodeIds.has(t);
 
-      if (processedEdge.removed && acceptedEdgeRemovals.has(edgeId)) {
-        continue;
-      }
+      const processedEdge = isAcceptedEdge
+        ? { ...edge, pendingRemoval: false, removed: true }
+        : shouldRemove || edge.removed
+          ? {
+              ...edge,
+              pendingRemoval: shouldRemove && !edge.removed,
+              removed: edge.removed || shouldRemove,
+            }
+          : { ...edge };
 
       processedEdgeMap.set(edgeId, processedEdge);
     }
 
     const filteredNodes = networkData.nodes.filter(
-      (node) => validNodeIds.has(node.id) && !hiddenNodes.has(node.id),
+      (node) => activeNodeIds.has(node.id) && !hiddenNodes.has(node.id),
     );
 
     const filteredLinks = networkData.edges.filter((link) => {
@@ -95,7 +97,9 @@ export const useProcessedData = (
         !hiddenNodes.has(s) &&
         !hiddenNodes.has(t) &&
         edge &&
-        !acceptedEdgeRemovals.has(link.id)
+        !edge.removed &&
+        activeNodeIds.has(s) &&
+        activeNodeIds.has(t)
       );
     });
 
@@ -105,20 +109,25 @@ export const useProcessedData = (
       const t = getNodeId(link.target);
       const edge = processedEdgeMap.get(link.id);
 
-      if (edge) {
-        linkCountMap.set(s, (linkCountMap.get(s) || 0) + 1);
-        linkCountMap.set(t, (linkCountMap.get(t) || 0) + 1);
-
+      if (edge && !edge.removed) {
         const sourceNode = dataMap.get(s);
         const targetNode = dataMap.get(t);
 
         if (
-          sourceNode?.linked &&
-          targetNode?.linked &&
-          (!sourceNode?.stable || !targetNode?.stable)
+          sourceNode &&
+          targetNode &&
+          !sourceNode.removed &&
+          !targetNode.removed &&
+          !hiddenNodes.has(s) &&
+          !hiddenNodes.has(t)
         ) {
-          sourceNode.linked.add(t);
-          targetNode.linked.add(s);
+          linkCountMap.set(s, (linkCountMap.get(s) || 0) + 1);
+          linkCountMap.set(t, (linkCountMap.get(t) || 0) + 1);
+
+          if (sourceNode.linked && targetNode.linked) {
+            sourceNode.linked.add(t);
+            targetNode.linked.add(s);
+          }
         }
       }
     }
@@ -134,26 +143,45 @@ export const useProcessedData = (
       }
     }
 
-    const finalNodeData = new Map<string, FullData>();
+    const fullNodeData = new Map<string, FullData>();
     for (const [id, node] of dataMap) {
-      if (!hiddenNodes.has(id)) {
-        finalNodeData.set(id, node);
+      fullNodeData.set(id, {
+        ...node,
+        hidden: hiddenNodes.has(id),
+      });
+    }
+
+    const fullEdgeData = new Map<string, FullData>();
+    for (const [edgeId, edge] of processedEdgeMap) {
+      const [s, t] = edgeId.split("|");
+      const isHidden = hiddenNodes.has(s) || hiddenNodes.has(t);
+
+      fullEdgeData.set(edgeId, {
+        ...edge,
+        hidden: isHidden,
+      });
+    }
+
+    const filteredEdgeData = new Map<string, FullData>();
+    for (const [edgeId, edge] of fullEdgeData) {
+      if (!edge.removed && !edge.hidden) {
+        filteredEdgeData.set(edgeId, edge);
       }
     }
 
-    const finalEdgeData = new Map<string, FullData>();
-    for (const [edgeId, edge] of processedEdgeMap) {
-      const [s, t] = edgeId.split("|");
-      if (!hiddenNodes.has(s) && !hiddenNodes.has(t)) {
-        finalEdgeData.set(edgeId, edge);
+    const filteredNodeData = new Map<string, FullData>();
+    for (const [id, node] of fullNodeData) {
+      if (!node.removed && !node.hidden) {
+        filteredNodeData.set(id, node);
       }
     }
 
     return {
-      nodeData: finalNodeData,
-      edgeData: finalEdgeData,
+      nodeData: fullNodeData,
+      edgeData: fullEdgeData,
+      filteredNodeData,
+      filteredEdgeData,
       filteredNetwork: { nodes: filteredNodes, edges: filteredLinks },
-      linkCountMap,
     };
   }, [
     nodeMap,
@@ -164,7 +192,7 @@ export const useProcessedData = (
     networkData,
   ]);
 
-  const handlePreview = () => {
+  const confirmRemovals = () => {
     const removedIds = Object.keys(changes?.removed ?? {});
     const removedEdgeIds = Object.keys(edgeChanges?.removed ?? {});
 
@@ -187,9 +215,9 @@ export const useProcessedData = (
     (id) => !acceptedEdgeRemovals.has(id),
   );
 
-  const canPreview =
+  const canConfirm =
     (unacceptedRemovals.length > 0 || unacceptedEdgeRemovals.length > 0) &&
     previewChanges;
 
-  return { ...result, handlePreview, canPreview };
+  return { ...result, confirmRemovals, canConfirm };
 };

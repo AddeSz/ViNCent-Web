@@ -30,12 +30,14 @@ export type ContextMenuTarget = {
 
 interface CenterViewProps {
   nodeMap: Map<string, FullData>;
+  filteredNodeData: Map<string, FullData>;
   edgeData: Map<string, FullData>;
+  filteredEdgeData: Map<string, FullData>;
   filteredNetwork: Network;
   nodeChanges: DataChanges;
   edgeChanges: DataChanges;
-  canPreview?: boolean | null;
-  onPreview?: () => void;
+  canConfirm: boolean;
+  confirmRemovals: () => void;
   view: ViewType;
   onViewChange: (view: ViewType) => void;
   isViewLoaded: boolean;
@@ -43,12 +45,14 @@ interface CenterViewProps {
 
 const CenterView = ({
   nodeMap,
+  filteredNodeData,
   edgeData,
+  filteredEdgeData,
   filteredNetwork,
   nodeChanges,
   edgeChanges,
-  canPreview = false,
-  onPreview,
+  canConfirm,
+  confirmRemovals,
   view,
   onViewChange,
   isViewLoaded,
@@ -87,8 +91,8 @@ const CenterView = ({
         onContextMenuSort={handleContextMenuSort}
         contextMenuTarget={contextMenuTarget}
         sorting={sorting}
-        canPreview={canPreview}
-        onPreview={onPreview}
+        canConfirm={canConfirm}
+        confirmRemovals={confirmRemovals}
       >
         <div
           ref={containerRef}
@@ -112,7 +116,7 @@ const CenterView = ({
               data={sortedData}
               nodeMap={nodeMap}
               nodeChanges={nodeChanges}
-              edgeMap={edgeData}
+              edgeMap={filteredEdgeData}
               edgeChanges={edgeChanges}
               isViewActive={view === "radial"}
               handleContextMenu={handleContextMenu}
@@ -129,8 +133,8 @@ const CenterView = ({
             <NodeLinkDiagram
               dimensions={dimensions}
               filteredNetwork={filteredNetwork}
-              nodeData={nodeMap}
-              edgeData={edgeData}
+              nodeData={filteredNodeData}
+              edgeData={filteredEdgeData}
               handleContextMenu={handleContextMenu}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
@@ -157,15 +161,15 @@ const CenterView = ({
               <div className="pointer-events-none absolute bottom-2 left-2">
                 <DataSummary filteredNetwork={filteredNetwork} />
               </div>
-              {canPreview && onPreview && !nodeLinkUpdating && (
+              {canConfirm && !nodeLinkUpdating && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
                   <Button
-                    onClick={onPreview}
+                    onClick={confirmRemovals}
                     size="sm"
                     variant="outline"
                     className="pointer-events-auto shadow-lg"
                   >
-                    Remove Preview
+                    Confirm Removals
                   </Button>
                 </div>
               )}

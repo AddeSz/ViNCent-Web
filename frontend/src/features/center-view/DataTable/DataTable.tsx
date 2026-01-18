@@ -3,11 +3,11 @@ import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { FullData } from "@/types/network";
 import { formatValue } from "@/utils/utils";
 import type {
-  ColumnFiltersState,
-  ColumnSizingState,
-  PaginationState,
-  SortingState,
-  VisibilityState,
+    ColumnFiltersState,
+    ColumnSizingState,
+    PaginationState,
+    SortingState,
+    VisibilityState,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import AttributesTable from "./tables/AttributesTable";
@@ -90,6 +90,10 @@ const DataTable = ({
     () => Array.from(edgeData.values()),
     [edgeData],
   );
+  const nodeDataArray = useMemo(
+    () => Array.from(nodeMap.values()).filter((node) => !node.removed),
+    [nodeMap],
+  );
 
   const attributesData = useMemo(
     () =>
@@ -111,7 +115,7 @@ const DataTable = ({
   );
 
   const tableCounts = {
-    nodes: nodeData.length,
+    nodes: nodeDataArray.length,
     edges: edgeDataArray.length,
     attributes: attributesData.length,
   };

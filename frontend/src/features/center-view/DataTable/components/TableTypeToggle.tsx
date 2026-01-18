@@ -22,13 +22,25 @@ const TableTypeToggle = ({
         variant="outline"
         className="justify-start"
       >
-        <ToggleGroupItem value="nodes" size="default">
+        <ToggleGroupItem
+          value="nodes"
+          size="default"
+          className="cursor-pointer px-3"
+        >
           Nodes ({tableCounts.nodes})
         </ToggleGroupItem>
-        <ToggleGroupItem value="edges" size="default">
+        <ToggleGroupItem
+          value="edges"
+          size="default"
+          className="cursor-pointer px-3"
+        >
           Edges ({tableCounts.edges})
         </ToggleGroupItem>
-        <ToggleGroupItem value="attributes" size="default">
+        <ToggleGroupItem
+          value="attributes"
+          size="default"
+          className="cursor-pointer px-3"
+        >
           Attributes ({tableCounts.attributes})
         </ToggleGroupItem>
       </ToggleGroup>

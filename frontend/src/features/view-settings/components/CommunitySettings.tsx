@@ -21,17 +21,19 @@ import { useState } from "react";
 const CommunitySettings = () => {
   const [isOpen, setIsOpen] = useState(false);
   const currentCommunities = useMetricsStore((s) => s.currentCommunities);
-  const radialSettings = useSettingsStore((s) => s.radialSettings);
+  const communitiesInArcs = useSettingsStore(
+    (s) => s.radialSettings.communitiesInArcs,
+  );
+  const selectedCommunity = useSettingsStore(
+    (s) => s.displaySettings.selectedCommunity,
+  );
   const setRadialSettings = useSettingsStore((s) => s.setRadialSettings);
+  const setDisplaySettings = useSettingsStore((s) => s.setDisplaySettings);
   const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
 
   const communityOptions = currentCommunities
     ? Object.keys(currentCommunities)
     : [];
-
-  const handleCommunityChange = (value: string) => {
-    setRadialSettings({ selectedRingCommunity: value });
-  };
 
   const getCommunityCount = (communityName: string) => {
     if (
@@ -50,7 +52,7 @@ const CommunitySettings = () => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-1 transition-colors hover:bg-border/50">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center border-b-2 px-1 py-0.5 transition-colors hover:bg-border/50">
         <ChevronDown
           className={`h-5 w-5 shrink-0 transition-transform duration-100 ${
             isOpen ? "rotate-0" : "-rotate-90"
@@ -65,7 +67,7 @@ const CommunitySettings = () => {
           </Label>
           <Switch
             id="communities-in-arcs"
-            checked={radialSettings.communitiesInArcs}
+            checked={communitiesInArcs}
             onCheckedChange={(checked) =>
               setRadialSettings({ communitiesInArcs: checked })
             }
@@ -77,8 +79,10 @@ const CommunitySettings = () => {
             Community Ring
           </Label>
           <Select
-            value={radialSettings.selectedRingCommunity}
-            onValueChange={handleCommunityChange}
+            value={selectedCommunity}
+            onValueChange={(value) =>
+              setDisplaySettings({ selectedCommunity: value })
+            }
           >
             <SelectTrigger
               id="community-select"

@@ -10,6 +10,7 @@ import { useFileUploaderState } from "./components/file-uploader/useFileUploader
 import ViewSettings from "./features/view-settings/ViewSettings";
 import { useFilteredData } from "./hooks/useFilteredData";
 import { useProcessedData } from "./hooks/useProcessedData";
+import { useValidateSettings } from "./hooks/useValidateSettings";
 import { useNetworkStore } from "./stores/useNetworkStore";
 
 const VIEW_KEY = "center-view-mode";
@@ -26,8 +27,17 @@ const App = () => {
   const fileUploaderState = useFileUploaderState();
 
   const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
-  const { nodeData, edgeData, filteredNetwork, handlePreview, canPreview } =
-    useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
+  const {
+    nodeData,
+    edgeData,
+    filteredNodeData,
+    filteredEdgeData,
+    filteredNetwork,
+    confirmRemovals,
+    canConfirm,
+  } = useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
+
+  useValidateSettings();
   const currentDataset = useNetworkStore((s) => s.currentDataset);
   const directed = useNetworkStore((s) => s.directed);
 
@@ -129,12 +139,14 @@ const App = () => {
           {status === "ready" && (
             <CenterView
               nodeMap={nodeData}
+              filteredNodeData={filteredNodeData}
               edgeData={edgeData}
+              filteredEdgeData={filteredEdgeData}
               filteredNetwork={filteredNetwork}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
-              canPreview={canPreview}
-              onPreview={handlePreview}
+              canConfirm={canConfirm}
+              confirmRemovals={confirmRemovals}
               view={view}
               onViewChange={setView}
               isViewLoaded={isViewLoaded}
@@ -151,7 +163,10 @@ const App = () => {
           <PanelGroup direction="vertical" className="flex">
             <Panel defaultSize={70} minSize={10}>
               <div className="h-full w-full">
-                <ChartFiltering nodeData={nodeData} edgeData={edgeData} />
+                <ChartFiltering
+                  nodeData={filteredNodeData}
+                  edgeData={filteredEdgeData}
+                />
               </div>
             </Panel>
             <PanelResizeHandle
