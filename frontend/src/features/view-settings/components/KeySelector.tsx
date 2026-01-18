@@ -36,12 +36,12 @@ const KeySelector = ({
   const [open, setOpen] = useState(false);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
-  const { sorting, setSorting } = useSortingLogic();
+  const { sortingState, setSorting } = useSortingLogic();
   const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
 
   const handleToggle = (key: string) => {
     const removed = toggleMetricsKey(key);
-    if (removed && sorting[0]?.id === key) {
+    if (removed && sortingState[0]?.id === key) {
       setSorting([]);
     }
   };

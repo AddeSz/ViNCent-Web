@@ -24,7 +24,7 @@ interface ViewContextMenuProps {
   onContextMenuSort: (val: string) => void;
   children: React.ReactNode;
   contextMenuTarget: ContextMenuTarget;
-  sorting: SortingState;
+  sortingState: SortingState;
   canConfirm: boolean;
   confirmRemovals: () => void;
 }
@@ -34,7 +34,7 @@ const ViewContextMenu = ({
   onContextMenuSort,
   children,
   contextMenuTarget,
-  sorting,
+  sortingState,
   canConfirm,
   confirmRemovals,
 }: ViewContextMenuProps) => {
@@ -143,9 +143,9 @@ const ViewContextMenu = ({
                   </span>
                 </span>
 
-                {sorting[0]?.id === contextMenuTarget.data.key && (
+                {sortingState[0]?.id === contextMenuTarget.data.key && (
                   <>
-                    {sorting[0].desc ? (
+                    {sortingState[0].desc ? (
                       <ArrowDown size={14} />
                     ) : (
                       <ArrowUp size={14} />
@@ -228,8 +228,8 @@ const ViewContextMenu = ({
                     </ContextMenuSubTrigger>
                     <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
                       {allNodeCentralityKeys.map((key) => {
-                        const isSorted = sorting[0]?.id === key;
-                        const desc = sorting[0]?.desc;
+                        const isSorted = sortingState[0]?.id === key;
+                        const desc = sortingState[0]?.desc;
                         return (
                           <ContextMenuRadioItem
                             key={key}
@@ -267,8 +267,8 @@ const ViewContextMenu = ({
                     </ContextMenuSubTrigger>
                     <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
                       {allNodeAttributeKeys.map((key) => {
-                        const isSorted = sorting[0]?.id === key;
-                        const desc = sorting[0]?.desc;
+                        const isSorted = sortingState[0]?.id === key;
+                        const desc = sortingState[0]?.desc;
                         return (
                           <ContextMenuRadioItem
                             key={key}
@@ -306,8 +306,8 @@ const ViewContextMenu = ({
                     </ContextMenuSubTrigger>
                     <ContextMenuSubContent className="scrollbar-thin max-h-128 overflow-y-auto">
                       {allNodeCommunityKeys.map((key) => {
-                        const isSorted = sorting[0]?.id === key;
-                        const desc = sorting[0]?.desc;
+                        const isSorted = sortingState[0]?.id === key;
+                        const desc = sortingState[0]?.desc;
                         return (
                           <ContextMenuRadioItem
                             key={key}
@@ -353,9 +353,10 @@ const ViewContextMenu = ({
                   </span>{" "}
                   Communities
                 </span>
-                {sorting[0]?.id === contextMenuTarget.data.algorithmKey && (
+                {sortingState[0]?.id ===
+                  contextMenuTarget.data.algorithmKey && (
                   <>
-                    {sorting[0].desc ? (
+                    {sortingState[0].desc ? (
                       <ArrowDown size={14} />
                     ) : (
                       <ArrowUp size={14} />

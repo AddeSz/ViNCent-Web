@@ -54,7 +54,7 @@ export const useSortingLogic = (
   options?: SortingOptions,
 ) => {
   const setSortKey = useNetworkStore((s) => s.setSortKey);
-  const sorting = useNetworkStore((s) => s.sortingState);
+  const sortingState = useNetworkStore((s) => s.sortingState);
   const setSorting = useNetworkStore((s) => s.setSortingState);
   const defaultDirection = options?.defaultDirection ?? true;
 
@@ -62,7 +62,7 @@ export const useSortingLogic = (
     updater: SortingState | ((old: SortingState) => SortingState),
   ) => {
     const newSorting =
-      typeof updater === "function" ? updater(sorting) : updater;
+      typeof updater === "function" ? updater(sortingState) : updater;
     if (newSorting.length === 0) {
       setSorting([]);
       setSortKey("none");
@@ -79,7 +79,7 @@ export const useSortingLogic = (
       setSortKey("none");
     } else {
       const direction = preserveDirection
-        ? (sorting[0]?.desc ?? defaultDirection)
+        ? (sortingState[0]?.desc ?? defaultDirection)
         : defaultDirection;
       setSorting([{ id: key, desc: direction }]);
       setSortKey(key);
@@ -93,7 +93,7 @@ export const useSortingLogic = (
       return;
     }
 
-    const current = sorting.find((s) => s.id === key);
+    const current = sortingState.find((s) => s.id === key);
     if (!current) {
       setSorting([{ id: key, desc: true }]);
       setSortKey(key);
@@ -107,12 +107,12 @@ export const useSortingLogic = (
   };
 
   const sortedData = useMemo(
-    () => applySorting(data ?? new Map(), sorting),
-    [data, sorting],
+    () => applySorting(data ?? new Map(), sortingState),
+    [data, sortingState],
   );
 
   return {
-    sorting,
+    sortingState,
     setSorting,
     handleSortingChange,
     handleSortKeyChange,

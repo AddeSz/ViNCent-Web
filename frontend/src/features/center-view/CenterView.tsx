@@ -9,6 +9,7 @@ import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { DataChanges, FullData, Network } from "@/types/network";
 import { useRef, useState } from "react";
 import DataTable from "./DataTable/DataTable";
+import { useTableStates } from "./DataTable/hooks/useTableStates";
 import NodeLinkDiagram from "./NodeLinkDiagram/NodeLinkDiagram";
 import RadialChart from "./RadialChart/RadialChart";
 import ViewContextMenu from "./ViewRendering/ViewContextMenu";
@@ -29,7 +30,7 @@ export type ContextMenuTarget = {
 };
 
 interface CenterViewProps {
-  nodeMap: Map<string, FullData>;
+  nodeData: Map<string, FullData>;
   filteredNodeData: Map<string, FullData>;
   edgeData: Map<string, FullData>;
   filteredEdgeData: Map<string, FullData>;
@@ -44,7 +45,7 @@ interface CenterViewProps {
 }
 
 const CenterView = ({
-  nodeMap,
+  nodeData,
   filteredNodeData,
   edgeData,
   filteredEdgeData,
@@ -59,11 +60,16 @@ const CenterView = ({
 }: CenterViewProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [showInfo, setShowInfo] = useState(false);
-  const { sorting, handleSortingChange, handleContextMenuSort, sortedData } =
-    useSortingLogic(nodeMap);
+  const {
+    sortingState,
+    handleSortingChange,
+    handleContextMenuSort,
+    sortedData,
+  } = useSortingLogic(nodeData);
   const [contextMenuTarget, setContextMenuTarget] = useState<ContextMenuTarget>(
     { type: "radial" },
   );
+  const tableStatesManager = useTableStates();
 
   const [isRadialUpdating, setIsRadialUpdating] = useState(false);
   const [isNodeLinkUpdating, setIsNodeLinkUpdating] = useState(false);
@@ -90,7 +96,7 @@ const CenterView = ({
         view={view}
         onContextMenuSort={handleContextMenuSort}
         contextMenuTarget={contextMenuTarget}
-        sorting={sorting}
+        sortingState={sortingState}
         canConfirm={canConfirm}
         confirmRemovals={confirmRemovals}
       >
@@ -113,10 +119,10 @@ const CenterView = ({
           >
             <RadialChart
               dimensions={dimensions}
-              data={sortedData}
-              nodeMap={nodeMap}
+              sortedNodes={sortedData}
+              nodeData={nodeData}
+              edgeData={filteredEdgeData}
               nodeChanges={nodeChanges}
-              edgeMap={filteredEdgeData}
               edgeChanges={edgeChanges}
               isViewActive={view === "radial"}
               handleContextMenu={handleContextMenu}
@@ -135,10 +141,10 @@ const CenterView = ({
               filteredNetwork={filteredNetwork}
               nodeData={filteredNodeData}
               edgeData={filteredEdgeData}
-              handleContextMenu={handleContextMenu}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
               isViewActive={view === "node-link"}
+              handleContextMenu={handleContextMenu}
               onUpdateStateChange={setIsNodeLinkUpdating}
             />
           </div>
@@ -147,12 +153,13 @@ const CenterView = ({
             <div className="absolute inset-0">
               <DataTable
                 key="data-table-component"
-                nodeData={sortedData}
+                sortedNodes={sortedData}
+                nodeData={nodeData}
                 edgeData={edgeData}
-                sorting={sorting}
-                onSortingChange={handleSortingChange}
+                sortingState={sortingState}
                 handleContextMenu={handleContextMenu}
-                nodeMap={nodeMap}
+                onSortingChange={handleSortingChange}
+                tableStatesManager={tableStatesManager}
               />
             </div>
           )}

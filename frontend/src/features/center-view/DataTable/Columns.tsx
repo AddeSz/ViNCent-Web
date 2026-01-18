@@ -22,6 +22,31 @@ export interface AttributeRow {
   uniqueValues: number;
 }
 
+const booleanFilterFn = (row: any, columnId: string, filterValue: string) => {
+  const value = row.getValue(columnId) as boolean;
+  const filter = filterValue.toLowerCase().trim();
+
+  if (
+    filter === "true" ||
+    filter === "yes" ||
+    filter === "1" ||
+    filter === "check"
+  ) {
+    return value === true;
+  }
+
+  if (
+    filter === "false" ||
+    filter === "no" ||
+    filter === "0" ||
+    filter === "x"
+  ) {
+    return value === false;
+  }
+
+  return true;
+};
+
 const calculateColumnWidth = (text: string, minWidth = 100, maxWidth = 300) => {
   const estimatedWidth = text.length * 8 + 60;
   return Math.min(Math.max(estimatedWidth, minWidth), maxWidth);
@@ -197,7 +222,79 @@ export const createLabelColumn = <
   },
 });
 
-export const createEdgeNodeColumn = <T extends { id: string }>(
+export const createEdgeSelectColumn = <
+  T extends { id: string },
+>(): ColumnDef<T> => ({
+  id: "select",
+  size: 40,
+  minSize: 40,
+  maxSize: 40,
+  enableResizing: false,
+  header: ({ table }) => {
+    const selectedNodes = useNetworkStore((s) => s.selectedNodes);
+    const toggleNodesSelection = useNetworkStore((s) => s.toggleNodesSelection);
+
+    const allEdgeNodeIds = table.getRowModel().rows.flatMap((row) => {
+      const [source, target] = row.original.id.split("|");
+      return [source, target];
+    });
+
+    const allSelected =
+      allEdgeNodeIds.length > 0 &&
+      allEdgeNodeIds.every((id) => selectedNodes.has(id));
+
+    const someSelected =
+      !allSelected && allEdgeNodeIds.some((id) => selectedNodes.has(id));
+
+    const toggleAll = () => {
+      toggleNodesSelection(allEdgeNodeIds);
+    };
+
+    return (
+      <div className="flex shrink-0 items-center justify-center">
+        <Checkbox
+          id="select-all-edges"
+          checked={allSelected || (someSelected && "indeterminate")}
+          onCheckedChange={toggleAll}
+          aria-label="Select all edges"
+          className="cursor-pointer"
+        />
+      </div>
+    );
+  },
+  cell: ({ row }) => {
+    const selectedNodes = useNetworkStore((s) => s.selectedNodes);
+    const toggleNodesSelection = useNetworkStore((s) => s.toggleNodesSelection);
+
+    const [source, target] = row.original.id.split("|");
+    const nodeIds = [source, target];
+
+    const sourceSelected = selectedNodes.has(source);
+    const targetSelected = selectedNodes.has(target);
+    const bothSelected = sourceSelected && targetSelected;
+    const oneSelected = sourceSelected || targetSelected;
+
+    const toggleSelection = () => {
+      toggleNodesSelection(nodeIds);
+    };
+
+    return (
+      <div className="flex shrink-0 items-center justify-center">
+        <Checkbox
+          id={`select-edge-${row.id}`}
+          checked={bothSelected || (oneSelected && "indeterminate")}
+          onCheckedChange={toggleSelection}
+          aria-label="Select edge nodes"
+          className="cursor-pointer"
+        />
+      </div>
+    );
+  },
+  enableSorting: false,
+  enableHiding: false,
+});
+
+export const createEdgeColumn = <T extends { id: string }>(
   nodeMap: Map<string, any>,
   type: "source" | "target",
 ): ColumnDef<T> => ({
@@ -376,6 +473,7 @@ export const createAttributeColumns = () => {
       sortDescFirst: true,
     }),
     columnHelper.accessor("isCentrality", {
+      filterFn: booleanFilterFn,
       header: ({ column, header }) => {
         let SortIcon = ArrowUpDown;
         if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
@@ -417,6 +515,7 @@ export const createAttributeColumns = () => {
       sortDescFirst: true,
     }),
     columnHelper.accessor("isCommunity", {
+      filterFn: booleanFilterFn,
       header: ({ column, header }) => {
         let SortIcon = ArrowUpDown;
         if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
@@ -458,6 +557,7 @@ export const createAttributeColumns = () => {
       sortDescFirst: true,
     }),
     columnHelper.accessor("isNumeric", {
+      filterFn: booleanFilterFn,
       header: ({ column, header }) => {
         let SortIcon = ArrowUpDown;
         if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
@@ -499,6 +599,7 @@ export const createAttributeColumns = () => {
       sortDescFirst: true,
     }),
     columnHelper.accessor("isCategory", {
+      filterFn: booleanFilterFn,
       header: ({ column, header }) => {
         let SortIcon = ArrowUpDown;
         if (column.getIsSorted() === "asc") SortIcon = ArrowUp;

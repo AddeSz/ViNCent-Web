@@ -41,10 +41,10 @@ import calculateBounds from "./utils/calculateBounds";
 
 interface RadialChartProps {
   dimensions: DOMRectReadOnly | null;
-  data: FullData[];
-  nodeMap: Map<string, FullData>;
+  sortedNodes: FullData[];
+  nodeData: Map<string, FullData>;
   nodeChanges: DataChanges;
-  edgeMap: Map<string, FullData>;
+  edgeData: Map<string, FullData>;
   edgeChanges: DataChanges;
   isViewActive: boolean;
   handleContextMenu: (target: ContextType, data?: any) => void;
@@ -53,10 +53,10 @@ interface RadialChartProps {
 
 const RadialChart = ({
   dimensions,
-  data,
-  nodeMap,
+  sortedNodes,
+  nodeData,
   nodeChanges,
-  edgeMap,
+  edgeData,
   edgeChanges,
   isViewActive,
   handleContextMenu,
@@ -108,7 +108,7 @@ const RadialChart = ({
     enabledNodeCentralityKeys,
     enabledNodeCommunityKeys,
   } = useKeys();
-  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(nodeMap);
+  const { onNodeHover, showTooltip, hideTooltip } = useTooltip(nodeData);
   const interactionProps: InteractionProps = useMemo(
     () => ({
       onNodeHover: onNodeHover,
@@ -121,7 +121,7 @@ const RadialChart = ({
 
   const { chartData, xScale, angleMap, yScale, getKeyIndex, outerArcsWidth } =
     useRadialChartData({
-      data,
+      data: sortedNodes,
       enabledCentralityKeys: enabledNodeCentralityKeys,
       enabledAttributeKeys: enabledNodeAttributeKeys,
       enabledCommunityKeys: enabledNodeCommunityKeys,
@@ -191,7 +191,7 @@ const RadialChart = ({
 
       await drawLinksCanvas(
         svgGroup,
-        edgeMap,
+        edgeData,
         xScale,
         selectedNodes,
         edgeRenderingMode,
@@ -228,7 +228,7 @@ const RadialChart = ({
 
       drawLabels(
         svgGroup,
-        nodeMap,
+        nodeData,
         xScale,
         outerRadius,
         fontSize,
@@ -243,7 +243,7 @@ const RadialChart = ({
 
       const outerLayerData = drawOuterLayersCanvas(
         svgGroup,
-        nodeMap,
+        nodeData,
         selectedCommunity,
         xScale,
         outerRadius,
@@ -276,7 +276,7 @@ const RadialChart = ({
       requestAnimationFrame(() => {
         updateLabelStyles(
           svgGroup,
-          nodeMap,
+          nodeData,
           selectedNodes,
           hoveredNode,
           zoomLevel,
@@ -285,7 +285,7 @@ const RadialChart = ({
           hoveredCommunity,
         );
         updateBoundsHighlight(
-          nodeMap,
+          nodeData,
           selectedNodes,
           hoveredNode,
           hoveredCommunity,
@@ -317,7 +317,7 @@ const RadialChart = ({
 
     const outerLayerData = drawOuterLayersCanvas(
       svgGroup,
-      nodeMap,
+      nodeData,
       selectedCommunity,
       xScale,
       outerRadius,
@@ -328,7 +328,7 @@ const RadialChart = ({
 
     drawLabels(
       svgGroup,
-      nodeMap,
+      nodeData,
       xScale,
       outerRadius,
       fontSize,
@@ -373,7 +373,7 @@ const RadialChart = ({
       redrawOuterLayerOnZoom(currentZoomLevel);
       updateLabelStyles(
         svgGroup,
-        nodeMap,
+        nodeData,
         selectedNodes,
         hoveredNode,
         currentZoomLevel,
@@ -410,7 +410,7 @@ const RadialChart = ({
       requestAnimationFrame(() => {
         updateLabelStyles(
           svgGroup,
-          nodeMap,
+          nodeData,
           state.selectedNodes,
           state.hoveredNode,
           getClosestZoomLevel(getCurrentTransform().k),
@@ -419,7 +419,7 @@ const RadialChart = ({
           state.hoveredCommunity,
         );
         updateBoundsHighlight(
-          nodeMap,
+          nodeData,
           state.selectedNodes,
           state.hoveredNode,
           state.hoveredCommunity,
@@ -440,7 +440,7 @@ const RadialChart = ({
     const svg = d3.select(svgRef.current);
     updateLabels(
       svg,
-      nodeMap,
+      nodeData,
       fontSize,
       maxLabelWidth,
       truncateLabels,
@@ -449,7 +449,7 @@ const RadialChart = ({
     );
     updateLabelStyles(
       svg.select<SVGGElement>("g.zoom-group"),
-      nodeMap,
+      nodeData,
       selectedNodes,
       hoveredNode,
       getClosestZoomLevel(getCurrentTransform().k),
@@ -485,7 +485,7 @@ const RadialChart = ({
 
       await drawLinksCanvas(
         svgGroup,
-        edgeMap,
+        edgeData,
         xScale,
         selectedNodes,
         edgeRenderingMode,
@@ -509,12 +509,12 @@ const RadialChart = ({
   }, [fdebSettings, edgeRenderingMode]);
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !isDrawReady) return;
     const svgGroup = d3
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
     drawSelectionBrush(svgGroup, outerRadius, xScale, isViewActive);
-  }, [isViewActive, xScale, outerRadius]);
+  }, [isDrawReady, isViewActive, xScale, outerRadius]);
 
   const showSpinner =
     !dimensions?.width || !dimensions?.height || !isCanvasReady;
@@ -546,7 +546,7 @@ const RadialChart = ({
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full"
         />
-        <ChartTooltip dataMap={nodeMap} />
+        <ChartTooltip dataMap={nodeData} />
       </div>
     </>
   );

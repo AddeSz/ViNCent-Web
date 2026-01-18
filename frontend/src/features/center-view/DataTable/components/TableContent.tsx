@@ -9,16 +9,20 @@ import {
 import { cn } from "@/utils/shadcnutils";
 import { flexRender, type Table } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface TableContentProps<T extends Record<string, any>> {
   table: Table<T>;
   columnsLength: number;
+  scrollPosition: number;
+  onScrollChange: (position: number) => void;
 }
 
 const TableContent = <T extends Record<string, any>>({
   table,
   columnsLength,
+  scrollPosition,
+  onScrollChange,
 }: TableContentProps<T>) => {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -29,11 +33,26 @@ const TableContent = <T extends Record<string, any>>({
     overscan: 10,
   });
 
+  useEffect(() => {
+    if (parentRef.current && scrollPosition > 0) {
+      parentRef.current.scrollTop = scrollPosition;
+    }
+  }, [scrollPosition]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    onScrollChange(scrollTop);
+  };
+
   const virtualRows = rowVirtualizer.getVirtualItems();
   const totalSize = rowVirtualizer.getTotalSize();
 
   return (
-    <div ref={parentRef} className="scrollbar-thin flex-1 overflow-auto border">
+    <div
+      ref={parentRef}
+      className="scrollbar-thin flex-1 overflow-auto border"
+      onScroll={handleScroll}
+    >
       <TableComponent style={{ width: "100%", tableLayout: "fixed" }}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -138,7 +157,7 @@ const TableContent = <T extends Record<string, any>>({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={columnsLength} className="h-20 text-center">
+              <TableCell colSpan={columnsLength} className="h-10 text-center">
                 No results.
               </TableCell>
             </TableRow>

@@ -3,6 +3,12 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
@@ -10,6 +16,7 @@ import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue, getNodeId } from "@/utils/utils";
+import { HelpCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Barchart from "./barchart/Barchart";
 import { createBinnedData } from "./components/createBinnedData";
@@ -26,9 +33,14 @@ export interface ChartDimensions {
 interface ChartFilteringProps {
   nodeData: Map<string, FullData>;
   edgeData: Map<string, FullData>;
+  descriptions: Record<string, string> | undefined;
 }
 
-const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
+const ChartFiltering = ({
+  nodeData,
+  edgeData,
+  descriptions,
+}: ChartFilteringProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const dimensions = useResizeObserver(containerRef);
@@ -197,13 +209,27 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
 
     return (
       <div key={key} className="h-full w-full rounded border bg-card pb-1">
-        <div className="flex items-center justify-between gap-1 px-2 py-1">
-          <p
-            className="min-w-7.5 flex-1 truncate text-sm"
-            title={formatKeyLabel(key)}
-          >
-            {formatKeyLabel(key)}
-          </p>
+        <div className="flex items-center justify-between gap-1 py-1 pr-2 pl-1">
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            {descriptions?.[key] && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="size-4 shrink-0 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">{descriptions[key]}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            <p
+              className="min-w-0 -translate-y-px truncate text-sm"
+              title={formatKeyLabel(key)}
+            >
+              {formatKeyLabel(key)}
+            </p>
+          </div>
 
           <Button
             variant="outline"
@@ -251,13 +277,27 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
 
     return (
       <div key={key} className="h-full w-full rounded border bg-card pb-1">
-        <div className="flex items-center justify-between gap-1 px-2 py-1">
-          <p
-            className="min-w-7.5 flex-1 truncate text-sm"
-            title={formatKeyLabel(key)}
-          >
-            {formatKeyLabel(key)}
-          </p>
+        <div className="flex items-center justify-between gap-1 py-1 pr-2 pl-1">
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            {descriptions?.[key] && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="size-4 shrink-0 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">{descriptions[key]}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            <p
+              className="min-w-0 -translate-y-px truncate text-sm"
+              title={formatKeyLabel(key)}
+            >
+              {formatKeyLabel(key)}
+            </p>
+          </div>
 
           <Button
             variant="outline"

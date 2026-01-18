@@ -61,7 +61,6 @@ const App = () => {
   };
 
   const isNotReady = status === "idle" || status === "error";
-
   return (
     <div className="flex h-full">
       <PanelGroup direction="horizontal" className="flex">
@@ -138,7 +137,7 @@ const App = () => {
 
           {status === "ready" && (
             <CenterView
-              nodeMap={nodeData}
+              nodeData={nodeData}
               filteredNodeData={filteredNodeData}
               edgeData={edgeData}
               filteredEdgeData={filteredEdgeData}
@@ -166,6 +165,7 @@ const App = () => {
                 <ChartFiltering
                   nodeData={filteredNodeData}
                   edgeData={filteredEdgeData}
+                  descriptions={fileUploaderState.optionsData?.descriptions}
                 />
               </div>
             </Panel>

@@ -24,23 +24,23 @@ import { useState } from "react";
 const SortingSelector = () => {
   const [open, setOpen] = useState(false);
   const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
-  const { sorting, setSorting, handleSortKeyChange } = useSortingLogic();
+  const { sortingState, setSorting, handleSortKeyChange } = useSortingLogic();
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
 
-  const sortKey = sorting[0]?.id || "none";
+  const sortKey = sortingState[0]?.id || "none";
   const keys = [
     "none",
     "label",
     ...enabledNodeKeys,
     ...enabledNodeCommunityKeys,
   ];
-  const isDisabled = sorting.length === 0;
-  const currentDirection = sorting[0]?.desc ? "desc" : "asc";
+  const isDisabled = sortingState.length === 0;
+  const currentDirection = sortingState[0]?.desc ? "desc" : "asc";
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
 
   const toggleDirection = () => {
-    if (sorting.length > 0) {
-      setSorting([{ id: sorting[0].id, desc: !sorting[0].desc }]);
+    if (sortingState.length > 0) {
+      setSorting([{ id: sortingState[0].id, desc: !sortingState[0].desc }]);
     }
   };
 
