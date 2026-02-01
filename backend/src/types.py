@@ -96,6 +96,7 @@ class AttributeMetadata(TypedDict, total=False):
     isCommunity: bool
     isNumeric: bool
     isCategory: bool
+    isBoolean: bool
     type: str
     range: Optional[AttributeRange]
     

@@ -22,7 +22,7 @@ interface VisualizationStore {
   clearData: () => void;
 }
 
-//Custom with colors from color brewer and kellys. Should be quite distinct
+//Custom with colors from color brewer and the color alphabet. Should be quite distinct
 const distinctColors = [
   "#e6194b",
   "#3cb44b",
@@ -51,6 +51,15 @@ const distinctColors = [
   "#74b9ff",
   "#DCD300",
 ];
+
+function generateColors(n: number): string[] {
+  const goldenAngle = 137.508;
+  return Array.from({ length: n }, (_, i) => {
+    const hue = (i * goldenAngle) % 360;
+    const lightness = i % 2 === 0 ? 45 : 60;
+    return `hsl(${hue}, 70%, ${lightness}%)`;
+  });
+}
 
 export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
   centralityColors: new Map(),
@@ -115,22 +124,37 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       [...d3.schemeSet1, "#8B4513"] as string[],
     ];
 
-    let paletteCounters = [0, 0, 0];
+    let [category10Counter, pairedCounter, set1Counter] = [0, 0, 0];
 
     categoricalKeys.forEach((key, attributeIndex) => {
       const info = metricsInfo.get(key);
       if (info) {
-        const paletteIndex = attributeIndex % 3;
-        const palette = palettes[paletteIndex];
-        const startIndex = paletteCounters[paletteIndex];
+        const numValues = info.values.size;
 
-        Array.from(info.values).forEach((value, valueIndex) => {
-          const colorIndex = (startIndex + valueIndex) % palette.length;
-          const color = palette[colorIndex];
-          categoryColors.set(`${key}:${value}`, color);
-        });
+        if (numValues > 10) {
+          const valuesArray = Array.from(info.values);
+          const distinctColors = generateColors(numValues);
+          valuesArray.forEach((value, valueIndex) => {
+            categoryColors.set(`${key}:${value}`, distinctColors[valueIndex]);
+          });
+        } else {
+          const paletteIndex = attributeIndex % 3;
+          const palette = palettes[paletteIndex];
 
-        paletteCounters[paletteIndex] += info.values.size;
+          let startIndex = 0;
+          if (paletteIndex === 0) startIndex = category10Counter;
+          else if (paletteIndex === 1) startIndex = pairedCounter;
+          else startIndex = set1Counter;
+
+          Array.from(info.values).forEach((value, valueIndex) => {
+            const colorIndex = (startIndex + valueIndex) % palette.length;
+            categoryColors.set(`${key}:${value}`, palette[colorIndex]);
+          });
+
+          if (paletteIndex === 0) category10Counter += numValues;
+          else if (paletteIndex === 1) pairedCounter += numValues;
+          else set1Counter += numValues;
+        }
       }
     });
 
@@ -140,9 +164,9 @@ export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
       categoryColors,
       communityColors,
       categoryCounter: categoricalKeys.length,
-      category10Counter: paletteCounters[0],
-      pairedCounter: paletteCounters[1],
-      set1Counter: paletteCounters[2],
+      category10Counter,
+      pairedCounter,
+      set1Counter,
     });
   },
 

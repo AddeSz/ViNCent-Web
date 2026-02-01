@@ -21,7 +21,7 @@ export function formatValue(x: any): string {
       x = 0;
     }
 
-    if (Math.abs(x) >= 1000) {
+    if (Math.abs(x) >= 10000) {
       return Intl.NumberFormat("en", {
         notation: "compact",
         maximumFractionDigits: 2,
@@ -41,6 +41,7 @@ export function formatValue(x: any): string {
 
     return Intl.NumberFormat("en", {
       maximumFractionDigits: 2,
+      useGrouping: false,
     }).format(x);
   }
 

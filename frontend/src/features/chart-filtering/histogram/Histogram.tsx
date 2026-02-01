@@ -1,4 +1,5 @@
 import { type BrushRange } from "@/stores/useMetricsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData } from "@/types/network";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef } from "react";
@@ -47,26 +48,44 @@ const Histogram = ({
   } = dimensions;
 
   const color = getColorForMetric(dataKey);
+  const setBarHoveredNodes = useNetworkStore((s) => s.setBarHoveredNodes);
 
   const barWidth = chartWidth / binnedData.bins.length;
   const canRenderBars = barWidth >= MIN_BAR_WIDTH;
 
-  const filteredBinCounts = useMemo(() => {
-    if (!filteredData) return null;
-
-    const counts = new Array<number>(binnedData.bins.length).fill(0);
-
-    for (const [_, data] of filteredData.entries()) {
-      const value = data[dataKey];
-      if (typeof value === "number") {
-        const binIndex = binnedData.valueToBinIndex.get(value);
-        if (binIndex !== undefined && !disabledValues.has(binIndex)) {
-          counts[binIndex]++;
-        }
-      }
+  const { filteredBinCounts, nodeIdsInBin } = useMemo(() => {
+    if (!filteredData) {
+      return {
+        filteredBinCounts: null,
+        nodeIdsInBin: new Map<number, Set<string>>(),
+      };
     }
 
-    return counts;
+    const counts = new Array<number>(binnedData.bins.length).fill(0);
+    const binToNodeIds = new Map<number, Set<string>>();
+
+    for (const [nodeId, data] of filteredData.entries()) {
+      const value = data[dataKey];
+
+      if (typeof value !== "number") continue;
+
+      const binIndex = binnedData.valueToBinIndex.get(value);
+      if (binIndex === undefined || disabledValues.has(binIndex)) continue;
+
+      counts[binIndex]++;
+
+      let set = binToNodeIds.get(binIndex);
+      if (!set) {
+        set = new Set();
+        binToNodeIds.set(binIndex, set);
+      }
+      set.add(nodeId);
+    }
+
+    return {
+      filteredBinCounts: counts,
+      nodeIdsInBin: binToNodeIds,
+    };
   }, [binnedData, filteredData, disabledValues]);
 
   const { yScale, yTicks, xTicks, getBinPosition } = useHistogramScales(
@@ -108,6 +127,15 @@ const Histogram = ({
       binnedData.bins.length - 1,
     );
     return binIndex;
+  };
+
+  const handleBinHover = (binIndex: number | null) => {
+    if (binIndex === null) {
+      setBarHoveredNodes(new Set());
+    } else {
+      const nodeIds = nodeIdsInBin.get(binIndex) || new Set();
+      setBarHoveredNodes(nodeIds);
+    }
   };
 
   if (!canRenderBars) {
@@ -156,6 +184,7 @@ const Histogram = ({
             dataKey={dataKey}
             disabledValues={disabledValues}
             filteredData={filteredData}
+            onBinHover={handleBinHover}
           />
 
           {/* interaction layer, didnt need to be its own component... */}

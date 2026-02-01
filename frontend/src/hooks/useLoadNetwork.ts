@@ -19,6 +19,7 @@ export interface NetworkResponse {
     edges: Record<string, AttributeInfo>;
   };
   communities: Record<number, Record<string, Record<string, number>>>;
+  timesteps: number[];
   graph_type: "directed" | "undirected";
 }
 
@@ -36,6 +37,7 @@ export const useLoadNetwork = () => {
       centralities,
       metrics_info,
       graph_type,
+      timesteps,
       communities,
     } = data;
     console.log(data);
@@ -54,6 +56,7 @@ export const useLoadNetwork = () => {
       centralities!,
       allMetricsInfo,
       communities,
+      timesteps,
     );
 
     const metricsInfo = useMetricsStore.getState().metricsInfo;

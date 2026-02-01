@@ -60,6 +60,7 @@ interface MetricsStore {
     centralities: Record<number, CentralityData>,
     metricsInfo: Record<string, AttributeInfo>,
     communities: Record<number, Record<string, Record<string, number>>>,
+    timesteps: number[],
   ) => void;
 
   applyDeltaAndSetTimestep: (timestep: number) => void;
@@ -215,6 +216,7 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     centralities,
     metricsInfo,
     communities,
+    timesteps,
   ) => {
     const deltasMap = new Map(
       Object.entries(deltas).map(([k, v]) => [Number(k), v]),
@@ -226,8 +228,6 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     const communitiesMap = new Map(
       Object.entries(communities).map(([k, v]) => [Number(k), v]),
     );
-
-    const timesteps = Array.from(deltasMap.keys()).sort((a, b) => a - b);
 
     const unifiedInfo = new Map<string, AttributeInfo>();
     Object.entries(metricsInfo).forEach(([key, info]) => {
@@ -593,6 +593,10 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
     }
 
     const vizStore = useVisualizationStore.getState();
+
+    if (info.isBoolean && value !== undefined && value !== null) {
+      return value === true || value === "true" ? "#1AFF1A" : "#D35FB7";
+    }
 
     if (info.isCommunity && value !== undefined && value !== null) {
       return vizStore.getOrAssignCommunityColor(key, value);

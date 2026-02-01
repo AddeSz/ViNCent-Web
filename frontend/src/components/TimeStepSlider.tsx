@@ -12,22 +12,27 @@ export const TimestepSlider = () => {
 
   if (timesteps.length <= 1 || currentTimestep === null) return null;
 
-  const min = Math.min(...timesteps);
-  const max = Math.max(...timesteps);
-  const current = currentTimestep;
+  const currentIndex = timesteps.indexOf(currentTimestep);
+  const minIndex = 0;
+  const maxIndex = timesteps.length - 1;
 
   const handlePrevious = () => {
-    if (current > min && !isUpdating) {
+    if (currentIndex > minIndex && !isUpdating) {
       setIsUpdating(true);
-      setTimestep(current - 1);
+      setTimestep(timesteps[currentIndex - 1]);
     }
   };
 
   const handleNext = () => {
-    if (current < max && !isUpdating) {
+    if (currentIndex < maxIndex && !isUpdating) {
       setIsUpdating(true);
-      setTimestep(current + 1);
+      setTimestep(timesteps[currentIndex + 1]);
     }
+  };
+
+  const handleSliderChange = (value: number[]) => {
+    const index = value[0];
+    setTimestep(timesteps[index]);
   };
 
   useEffect(() => {
@@ -39,28 +44,28 @@ export const TimestepSlider = () => {
 
   return (
     <div className="space-y-2 pb-0">
-      <h2 className="mb-0 cursor-default">Timestep: {current}</h2>
+      <h2 className="mb-0 cursor-default">Timestep: {currentTimestep}</h2>
       <div className="flex gap-1 pb-0">
         <Button
           variant="outline"
           size="icon"
           className="h-8 w-8 cursor-pointer"
           onClick={handlePrevious}
-          disabled={current <= min || isUpdating}
+          disabled={currentIndex <= minIndex || isUpdating}
         >
           <ChevronLeft className="h-3 w-3" />
         </Button>
         <div className="flex-1 space-y-1 pt-3">
           <Slider
-            value={[current]}
-            onValueChange={(value) => setTimestep(value[0])}
-            min={min}
-            max={max}
+            value={[currentIndex]}
+            onValueChange={handleSliderChange}
+            min={minIndex}
+            max={maxIndex}
             step={1}
           />
           <div className="flex justify-between px-1 text-xs text-muted-foreground">
-            <span>{min}</span>
-            <span>{max}</span>
+            <span>{timesteps[minIndex]}</span>
+            <span>{timesteps[maxIndex]}</span>
           </div>
         </div>
         <Button
@@ -68,7 +73,7 @@ export const TimestepSlider = () => {
           size="icon"
           onClick={handleNext}
           className="h-8 w-8 cursor-pointer"
-          disabled={current >= max || isUpdating}
+          disabled={currentIndex >= maxIndex || isUpdating}
         >
           <ChevronRight className="h-3 w-3" />
         </Button>

@@ -63,21 +63,17 @@ const DataTable = ({
     [nodeData],
   );
 
-  const attributesData = useMemo(
+  const attributesData = useMemo<AttributeRow[]>(
     () =>
       Array.from(metricsInfo.entries()).map(([key, info]) => ({
+        ...info,
         id: key,
-        key,
-        isNumeric: info.isNumeric || false,
-        isCategory: info.isCategory || false,
-        isCommunity: info.isCommunity || false,
-        isCentrality: info.isCentrality || false,
-        range: info.range
+        rangeLabel: info.range
           ? `${formatValue(info.range.min)} - ${formatValue(info.range.max)}`
           : "N/A",
         minValue: info.range?.min ?? null,
         maxValue: info.range?.max ?? null,
-        uniqueValues: info.values?.size ?? 0,
+        uniqueValues: info.values.size,
       })),
     [metricsInfo],
   );

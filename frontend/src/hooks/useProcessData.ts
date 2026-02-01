@@ -4,7 +4,7 @@ import type { DataChanges, FullData } from "@/types/network";
 import { getNodeId } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 
-export const useProcessedData = (
+export const useProcessData = (
   nodeMap: Map<string, FullData>,
   edgeMap: Map<string, FullData>,
   changes: DataChanges,

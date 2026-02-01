@@ -15,6 +15,7 @@ interface HistogramBarsProps {
   dataKey: string;
   disabledValues: Set<number | string>;
   filteredData: Map<string, FullData>;
+  onBinHover: (binIndex: number | null) => void;
 }
 
 export const HistogramBars = ({
@@ -29,6 +30,7 @@ export const HistogramBars = ({
   dataKey,
   disabledValues,
   filteredData,
+  onBinHover,
 }: HistogramBarsProps) => {
   const hoveredNode = useNetworkStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
@@ -49,7 +51,11 @@ export const HistogramBars = ({
         const startPos = x + 1;
         const binWidth = Math.max(1, width - 2);
         return (
-          <g key={i}>
+          <g
+            key={i}
+            onMouseEnter={() => onBinHover(i)}
+            onMouseLeave={() => onBinHover(null)}
+          >
             <rect
               x={startPos}
               y={yScale(bin.values.length)}

@@ -8,8 +8,8 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FileUploader from "./components/file-uploader/FileUploader";
 import { useFileUploaderState } from "./components/file-uploader/useFileUploaderState";
 import ViewSettings from "./features/view-settings/ViewSettings";
-import { useFilteredData } from "./hooks/useFilteredData";
-import { useProcessedData } from "./hooks/useProcessedData";
+import { useFilterData } from "./hooks/useFilterData";
+import { useProcessData } from "./hooks/useProcessData";
 import { useValidateSettings } from "./hooks/useValidateSettings";
 import { useNetworkStore } from "./stores/useNetworkStore";
 
@@ -26,7 +26,7 @@ const App = () => {
 
   const fileUploaderState = useFileUploaderState();
 
-  const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilteredData();
+  const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilterData();
   const {
     nodeData,
     edgeData,
@@ -35,7 +35,7 @@ const App = () => {
     filteredNetwork,
     confirmRemovals,
     canConfirm,
-  } = useProcessedData(nodeMap, edgeMap, nodeChanges, edgeChanges);
+  } = useProcessData(nodeMap, edgeMap, nodeChanges, edgeChanges);
 
   useValidateSettings();
   const currentDataset = useNetworkStore((s) => s.currentDataset);
@@ -174,7 +174,7 @@ const App = () => {
               className={`h-2 transition-colors ${draggingBars["right-vert"] ? "bg-ring" : "bg-border"}`}
             />
             <Panel defaultSize={30} minSize={10}>
-              <div className="scrollbar-thin h-full w-full overflow-y-auto p-2">
+              <div className="scrollbar-thin h-full w-full overflow-y-auto">
                 <Legend nodeData={nodeData} />
               </div>
             </Panel>

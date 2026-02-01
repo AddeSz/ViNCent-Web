@@ -13,7 +13,8 @@ export type AttributeInfo = {
   isCategory: boolean;
   isCommunity: boolean;
   isNumeric: boolean;
-  isCentrality?: boolean;
+  isCentrality: boolean;
+  isBoolean: boolean;
   range?: { min: number; max: number };
 };
 

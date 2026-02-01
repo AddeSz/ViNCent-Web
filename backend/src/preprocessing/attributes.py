@@ -108,6 +108,20 @@ def prefix_edge_attrs(
     
     return prefixed_edge_base, prefixed_edge_changes
 
+
+def is_boolean_like(value: Any) -> bool:
+    if isinstance(value, bool):
+        return True
+    
+    if isinstance(value, int) and value in (0, 1):
+        return True
+    
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        return normalized in ("true", "false", "yes", "no", "1", "0")
+    
+    return False
+
 # Used in the frontend as it defines the attribute types and values. 
 def collect_attribute_data(
     base_state: NetworkData,
@@ -183,6 +197,7 @@ def collect_attribute_data(
                     "isCommunity": key in community_keys,
                     "isNumeric": False,
                     "isCategory": False,
+                    "isBoolean": False,
                     "type": "string",
                     "range": None
                 }
@@ -191,7 +206,7 @@ def collect_attribute_data(
             
             all_numbers = all(isinstance(v, (int, float)) for v in non_none_values)
             all_strings = all(isinstance(v, str) for v in non_none_values)
-            all_booleans = all(isinstance(v, bool) for v in non_none_values)
+            all_boolean= all(is_boolean_like(v) for v in non_none_values)
             
             is_community = key in community_keys
             
@@ -202,12 +217,14 @@ def collect_attribute_data(
                 "isCommunity": is_community,
                 "isNumeric": False,
                 "isCategory": False,
+                "isBoolean": False,
                 "type": "string",
                 "range": None
             }
             
-            if all_booleans:
+            if all_boolean:
                 info["type"] = "boolean"
+                info["isBoolean"] = True
                 info["isCategory"] = True
             elif all_numbers:
                 info["type"] = "number"
@@ -219,11 +236,11 @@ def collect_attribute_data(
                     info["isCategory"] = True
             elif all_strings:
                 info["type"] = "string"
-                if len(set(non_none_values)) <= 10:
+                if len(set(non_none_values)) <= 15:
                     info["isCategory"] = True
             else:
                 info["type"] = "string"
-                if len(set(map(str, non_none_values))) <= 10:
+                if len(set(map(str, non_none_values))) <= 15:
                     info["isCategory"] = True
             
             metadata[key] = info

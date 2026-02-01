@@ -6,21 +6,17 @@ import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff } from "lucide-react";
 
+import type { AttributeInfo } from "@/types/network";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Check, X } from "lucide-react";
 
-export interface AttributeRow {
+export type AttributeRow = AttributeInfo & {
   id: string;
-  key: string;
-  isNumeric: boolean;
-  isCategory: boolean;
-  isCommunity: boolean;
-  isCentrality: boolean;
-  range: string;
+  rangeLabel: string;
   minValue: number | null;
   maxValue: number | null;
   uniqueValues: number;
-}
+};
 
 const booleanFilterFn = (row: any, columnId: string, filterValue: string) => {
   const value = row.getValue(columnId) as boolean;
@@ -413,9 +409,9 @@ export const createDataColumns = <T extends Record<string, any>>(
           <div
             className="truncate px-2 text-left font-medium"
             style={{ color }}
-            title={value as string}
+            title={String(value)}
           >
-            {value as string | number}
+            {formatValue(value)}
           </div>
         );
       },
@@ -640,11 +636,55 @@ export const createAttributeColumns = () => {
       maxSize: 180,
       sortDescFirst: true,
     }),
-    columnHelper.accessor("range", {
+    columnHelper.accessor("isBoolean", {
+      filterFn: booleanFilterFn,
       header: ({ column, header }) => {
         let SortIcon = ArrowUpDown;
         if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
         if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+
+        return (
+          <div className="relative flex items-center">
+            <Button
+              variant="ghost"
+              onClick={column.getToggleSortingHandler()}
+              className="flex w-full items-center justify-center gap-1 rounded-none py-3"
+              size="none"
+              title="Boolean"
+            >
+              <SortIcon className="h-4 w-4 shrink-0" />
+              <div className="truncate text-sm font-medium">Boolean</div>
+            </Button>
+            <div
+              onMouseDown={header.getResizeHandler()}
+              onTouchStart={header.getResizeHandler()}
+              className={`absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none bg-border opacity-0 transition-opacity select-none hover:opacity-100 ${
+                header.column.getIsResizing() ? "bg-primary opacity-100" : ""
+              }`}
+            />
+          </div>
+        );
+      },
+      cell: (info) => (
+        <div className="flex items-center justify-center">
+          {info.getValue() ? (
+            <Check className="h-4 w-4 text-green-600" />
+          ) : (
+            <X className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+      ),
+      size: 100,
+      minSize: 80,
+      maxSize: 150,
+      sortDescFirst: true,
+    }),
+    columnHelper.accessor("rangeLabel", {
+      header: ({ column, header }) => {
+        let SortIcon = ArrowUpDown;
+        if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
+        if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
+
         return (
           <div className="relative flex items-center">
             <Button
@@ -670,7 +710,7 @@ export const createAttributeColumns = () => {
       cell: (info) => (
         <div
           className="truncate px-2 text-left text-sm text-muted-foreground"
-          title={info.getValue()}
+          title={`${info.getValue()}`}
         >
           {info.getValue()}
         </div>
@@ -690,7 +730,7 @@ export const createAttributeColumns = () => {
             <Button
               variant="ghost"
               onClick={column.getToggleSortingHandler()}
-              className="flex w-full items-center justify-center gap-1 rounded-none py-3"
+              className="flex w-full items-center justify-start gap-1 rounded-none py-3"
               size="none"
               title="Unique Values"
             >
@@ -715,7 +755,7 @@ export const createAttributeColumns = () => {
           {info.getValue()}
         </div>
       ),
-      size: 140,
+      size: 135,
       minSize: 100,
       maxSize: 200,
       sortDescFirst: true,

@@ -291,10 +291,7 @@ const ChartFiltering = ({
                 </Tooltip>
               </TooltipProvider>
             )}
-            <p
-              className="min-w-0 -translate-y-px truncate text-sm"
-              title={formatKeyLabel(key)}
-            >
+            <p className="min-w-0 truncate text-sm" title={formatKeyLabel(key)}>
               {formatKeyLabel(key)}
             </p>
           </div>

@@ -14,10 +14,10 @@ from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
                      CENTRALITY_PERFORMANCE, CENTRALITY_REQUIREMENTS,
                      COMMUNITY_CATEGORIES, COMMUNITY_DESCRIPTIONS,
                      COMMUNITY_PERFORMANCE, COMMUNITY_REQUIREMENTS)
+from .datasets_registry import list_datasets
 from .parsers import parse_network_file
 from .preprocessing import process_network
 from .types import CentralityType
-from .datasets_registry import list_datasets
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -110,8 +110,8 @@ async def get_options():
             detail=f"Failed to fetch options: {str(e)}"
         )
         
-@app.post("/validate-network")
-async def validate_network(
+@app.post("/process-network")
+async def process_network_api(
     file: UploadFile = File(...),
     centralities: str = Form(default="[]"),
     communities: str = Form(default="[]")

@@ -29,14 +29,13 @@ export const useZoom = (scaleExtent: [number, number] = [0.3, 6]) => {
         .zoom<SVGSVGElement, unknown>()
         .filter((event) => {
           const target = event.target as HTMLElement;
+
+          if (event.type === "dblclick") return false;
+
           if (event.type === "wheel") return true;
           if ("button" in event && event.button === 2) return false;
           if (target.classList.contains("arc-canvas")) return true;
-
           if (target.closest(".labels-group")) return false;
-
-          if (event.type === "dblclick" && target.closest(".node"))
-            return false;
 
           return true;
         })
@@ -44,7 +43,6 @@ export const useZoom = (scaleExtent: [number, number] = [0.3, 6]) => {
         .on("zoom", (event) => {
           svgGroup.attr("transform", event.transform);
           transformRef.current = event.transform;
-
           if (onZoomRef.current) {
             onZoomRef.current(event.transform.k);
           }
@@ -65,11 +63,13 @@ export const useZoom = (scaleExtent: [number, number] = [0.3, 6]) => {
       if (!zoomRef.current) return;
       const svgElement = svgRef?.current;
       if (!svgElement) return;
+
       const svgSelection = d3.select<SVGSVGElement, unknown>(svgElement);
       svgSelection
         .transition()
         .duration(750)
         .call(zoomRef.current.transform, d3.zoomIdentity);
+
       transformRef.current = d3.zoomIdentity;
       if (onZoomReset) {
         onZoomReset();

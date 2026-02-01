@@ -66,7 +66,7 @@ const matchesAllFilters = (
   });
 };
 
-export const useFilteredData = (): {
+export const useFilterData = (): {
   nodeMap: Map<string, FullData>;
   edgeMap: Map<string, FullData>;
   nodeChanges: DataChanges;

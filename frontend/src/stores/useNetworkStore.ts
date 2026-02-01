@@ -8,6 +8,7 @@ interface NetworkStore {
   edgeMap: Map<string, Edge>;
   selectedNodes: Set<string>;
   hoveredNode: null | string;
+  barHoveredNodes: Set<string>;
   hoveredCommunity: { key: string; id: number } | null;
   sortKey: string;
   sortingState: SortingState;
@@ -28,6 +29,7 @@ interface NetworkStore {
   toggleNodesSelection: (ids: string[]) => void;
   setHoveredNode: (node: string | null) => void;
   setHoveredCommunity: (key: string | null, id: number | null) => void;
+  setBarHoveredNodes: (nodes: Set<string>) => void;
 
   setSortKey: (key: string) => void;
   setSortingState: (sorting: SortingState) => void;
@@ -55,6 +57,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   linkCountMap: new Map<string, number>(),
   selectedNodes: new Set<string>(),
   hoveredNode: null,
+  barHoveredNodes: new Set<string>(),
   hoveredCommunity: null,
   sortKey: "none",
   sortingState: [],
@@ -126,6 +129,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     set({
       hoveredCommunity: key == null || id == null ? null : { key, id },
     }),
+  setBarHoveredNodes: (nodes) => set({ barHoveredNodes: nodes }),
 
   setSortKey: (key: string) => set({ sortKey: key }),
   setSortingState: (sorting: SortingState) => set({ sortingState: sorting }),

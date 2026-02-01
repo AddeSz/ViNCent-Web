@@ -1,6 +1,7 @@
 import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData } from "@/types/network";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useEffect, useMemo, useState } from "react";
@@ -14,7 +15,12 @@ const Legend = ({ nodeData }: LegendProps) => {
   const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
   const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
   const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
-
+  const communitiesInArcs = useSettingsStore(
+    (s) => s.radialSettings.communitiesInArcs,
+  );
+  const selectedCommunity = useSettingsStore(
+    (s) => s.displaySettings.selectedCommunity,
+  );
   const [lastHoveredNode, setLastHoveredNode] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,11 +32,27 @@ const Legend = ({ nodeData }: LegendProps) => {
   const displayNode = hoveredNode || lastHoveredNode;
   const data = displayNode ? nodeData.get(displayNode) : null;
 
+  const communityKeysToUse = useMemo(() => {
+    if (!enabledNodeCommunityKeys.length) return [];
+
+    if (communitiesInArcs) {
+      return enabledNodeCommunityKeys;
+    }
+
+    if (selectedCommunity !== "none") {
+      return enabledNodeCommunityKeys.filter(
+        (key) => key === selectedCommunity,
+      );
+    }
+
+    return [];
+  }, [enabledNodeCommunityKeys, communitiesInArcs, selectedCommunity]);
+
   const nodeMetrics = useMemo(() => {
     if (!displayNode) return [];
 
     const isRemoved = data?.removed ?? false;
-    return [...enabledNodeKeys, ...enabledNodeCommunityKeys].map((key) => {
+    return [...enabledNodeKeys, ...communityKeysToUse].map((key) => {
       const info = metricsInfo.get(key);
       const value = data?.[key];
 
@@ -76,8 +98,8 @@ const Legend = ({ nodeData }: LegendProps) => {
   }
 
   return (
-    <div className="h-auto space-y-1">
-      <div className="border-b pb-1">
+    <div className="h-auto space-y-0.5 px-2 pt-0.5 pb-2">
+      <div className="border-b">
         <div className="text-sm font-semibold text-foreground">
           Node Details:
           <span className="mt-1 text-sm text-muted-foreground">
@@ -96,7 +118,7 @@ const Legend = ({ nodeData }: LegendProps) => {
           )}
         </div>
       </div>
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         {nodeMetrics.map(
           ({
             key,
@@ -106,7 +128,7 @@ const Legend = ({ nodeData }: LegendProps) => {
             isNumeric,
             formattedValue,
           }) => (
-            <div key={key} className="flex items-center gap-1 py-1">
+            <div key={key} className="flex items-center gap-1">
               <div
                 className="h-4 w-4 shrink-0 rounded-full"
                 style={{ backgroundColor: color }}
@@ -148,9 +170,6 @@ const Legend = ({ nodeData }: LegendProps) => {
           ),
         )}
       </div>
-      <p className="text-xs text-muted-foreground">
-        Last updated: {new Date().toLocaleTimeString()}
-      </p>
     </div>
   );
 };

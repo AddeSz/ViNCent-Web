@@ -36,8 +36,8 @@ export const api = {
     return response.json();
   },
 
-  async validateNetwork(formData: FormData) {
-    const response = await fetch(`${API_BASE_URL}/validate-network`, {
+  async processNetwork(formData: FormData) {
+    const response = await fetch(`${API_BASE_URL}/process-network`, {
       method: "POST",
       body: formData,
     });
