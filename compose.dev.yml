@@ -1,0 +1,83 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    restart: unless-stopped
+    networks:
+      - network
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+      args:
+        BACKEND_PORT: ${BACKEND_PORT}
+        ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    image: vincent/backend:dev
+    container_name: backend-dev
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - network
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/precomputed:/app/precomputed
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+        VITE_PORT: ${VITE_PORT}
+        VITE_GENERATE_SOURCEMAP: true
+    container_name: frontend-dev
+    image: vincent/frontend:dev
+    ports:
+      - "${VITE_PORT}:${VITE_PORT}"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - network
+    volumes:
+      - ./frontend/src:/app/src
+
+  celery_worker:
+    image: vincent/backend:dev
+    command: celery -A src.worker worker --loglevel=info
+    container_name: celery-dev
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_started
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - network
+    volumes:
+      - ./backend/src:/app/src
+
+networks:
+  network:
+    driver: bridge
+
+volumes:
+  redis_data:

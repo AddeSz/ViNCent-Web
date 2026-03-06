@@ -7,3 +7,5 @@ scipy
 python-multipart
 python-igraph
 leidenalg
+celery
+redis

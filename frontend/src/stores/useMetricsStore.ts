@@ -9,7 +9,9 @@ import type {
   Node,
   TimestepDelta,
 } from "@/types/network";
+import { getNodeId } from "@/utils/utils";
 import { create } from "zustand";
+import { useNetworkStore } from "./useNetworkStore";
 
 export interface BrushRange {
   range: [number, number];
@@ -64,6 +66,7 @@ interface MetricsStore {
   ) => void;
 
   applyDeltaAndSetTimestep: (timestep: number) => void;
+  recomputeMetrics: (hiddenNodes: Set<string>) => void;
 
   setEnabledMetricsKeys: (keys: string[]) => void;
   setEnabledEdgeMetricsKeys: (keys: string[]) => void;
@@ -84,7 +87,7 @@ interface MetricsStore {
   clearData: () => void;
 }
 
-const computeCurrentMetricsInfo = (
+const computeMetricsValues = (
   metricsData: Map<string, Attributes>,
 ): Map<
   string,
@@ -119,6 +122,82 @@ const computeCurrentMetricsInfo = (
   });
 
   return currentInfo;
+};
+
+const computeCurrentMetricsInfo = (
+  currentNodes: Map<string, Node>,
+  currentEdges: Map<string, Edge>,
+  metricsInfo: Map<string, AttributeInfo>,
+  currentCommunities: Record<string, Record<string, number>> | null,
+  hiddenNodeIds: Set<string> = new Set(),
+): Map<string, AttributeInfo> => {
+  const visibleNodeMetrics = new Map<string, Attributes>();
+  const visibleEdgeMetrics = new Map<string, Attributes>();
+
+  currentNodes.forEach((node, nodeId) => {
+    if (!hiddenNodeIds.has(nodeId) && node.attributes) {
+      visibleNodeMetrics.set(nodeId, { ...node.attributes });
+    }
+  });
+
+  currentEdges.forEach((edge, edgeId) => {
+    if (
+      !hiddenNodeIds.has(getNodeId(edge.source)) &&
+      !hiddenNodeIds.has(getNodeId(edge.target)) &&
+      edge.attributes
+    ) {
+      visibleEdgeMetrics.set(edgeId, { ...edge.attributes });
+    }
+  });
+
+  const currentNodeInfo = computeMetricsValues(visibleNodeMetrics);
+  const currentEdgeInfo = computeMetricsValues(visibleEdgeMetrics);
+  const currentMetricsInfo = new Map<string, AttributeInfo>();
+
+  currentNodeInfo.forEach((current, key) => {
+    const global = metricsInfo.get(key);
+    if (global) {
+      currentMetricsInfo.set(key, {
+        ...global,
+        values: current.values,
+        range: current.range,
+      });
+    }
+  });
+
+  currentEdgeInfo.forEach((current, key) => {
+    const global = metricsInfo.get(key);
+    if (global) {
+      currentMetricsInfo.set(key, {
+        ...global,
+        values: current.values,
+        range: current.range,
+      });
+    }
+  });
+
+  if (currentCommunities) {
+    Object.keys(currentCommunities).forEach((communityKey) => {
+      const global = metricsInfo.get(communityKey);
+      if (global && global.isCommunity) {
+        const communityValues = new Set<AttributeValue>();
+        Object.entries(currentCommunities[communityKey]).forEach(
+          ([nodeId, value]) => {
+            if (!hiddenNodeIds.has(nodeId)) {
+              communityValues.add(value);
+            }
+          },
+        );
+
+        currentMetricsInfo.set(communityKey, {
+          ...global,
+          values: communityValues,
+        });
+      }
+    });
+  }
+
+  return currentMetricsInfo;
 };
 
 function applyDelta(
@@ -352,64 +431,15 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       );
     }
 
-    const currentNodeMetrics = new Map<string, Attributes>();
-    const currentEdgeMetrics = new Map<string, Attributes>();
+    const hiddenNodes = useNetworkStore.getState().hiddenNodes;
 
-    currentNodes.forEach((node) => {
-      if (node.attributes) {
-        currentNodeMetrics.set(node.id, { ...node.attributes });
-      }
-    });
-
-    currentEdges.forEach((edge) => {
-      if (edge.attributes) {
-        currentEdgeMetrics.set(edge.id, { ...edge.attributes });
-      }
-    });
-
-    const currentNodeInfo = computeCurrentMetricsInfo(currentNodeMetrics);
-    const currentEdgeInfo = computeCurrentMetricsInfo(currentEdgeMetrics);
-
-    const currentMetricsInfo = new Map<string, AttributeInfo>();
-
-    currentNodeInfo.forEach((current, key) => {
-      const global = metricsInfo.get(key);
-      if (global) {
-        currentMetricsInfo.set(key, {
-          ...global,
-          values: current.values,
-          range: current.range,
-        });
-      }
-    });
-
-    currentEdgeInfo.forEach((current, key) => {
-      const global = metricsInfo.get(key);
-      if (global) {
-        currentMetricsInfo.set(key, {
-          ...global,
-          values: current.values,
-          range: current.range,
-        });
-      }
-    });
-
-    if (currentCommunities) {
-      Object.keys(currentCommunities).forEach((communityKey) => {
-        const global = metricsInfo.get(communityKey);
-        if (global && global.isCommunity) {
-          const communityValues = new Set<AttributeValue>();
-          Object.values(currentCommunities[communityKey]).forEach((value) => {
-            communityValues.add(value);
-          });
-
-          currentMetricsInfo.set(communityKey, {
-            ...global,
-            values: communityValues,
-          });
-        }
-      });
-    }
+    const currentMetricsInfo = computeCurrentMetricsInfo(
+      currentNodes,
+      currentEdges,
+      metricsInfo,
+      currentCommunities,
+      hiddenNodes,
+    );
 
     const nodeMetricsKeys = Array.from(
       new Set(
@@ -462,6 +492,21 @@ export const useMetricsStore = create<MetricsStore>((set, get) => ({
       currentMetricsInfo,
       currentCommunities,
     });
+  },
+
+  recomputeMetrics: (hiddenNodeIds) => {
+    const { currentNodes, currentEdges, metricsInfo, currentCommunities } =
+      get();
+
+    const currentMetricsInfo = computeCurrentMetricsInfo(
+      currentNodes,
+      currentEdges,
+      metricsInfo,
+      currentCommunities,
+      hiddenNodeIds,
+    );
+
+    set({ currentMetricsInfo });
   },
 
   setEnabledMetricsKeys: (keys) => {

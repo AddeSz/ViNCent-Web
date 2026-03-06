@@ -232,15 +232,15 @@ def collect_attribute_data(
                 num_values = [float(v) for v in non_none_values]
                 info["range"] = {"min": min(num_values), "max": max(num_values)}
                 unique_values = set(num_values)
-                if is_community or (all(v.is_integer() for v in num_values) and len(unique_values) <= 10):
+                if is_community or (all(v.is_integer() for v in num_values) and len(unique_values) <= 20):
                     info["isCategory"] = True
             elif all_strings:
                 info["type"] = "string"
-                if len(set(non_none_values)) <= 15:
+                if len(set(non_none_values)) <= 20:
                     info["isCategory"] = True
             else:
                 info["type"] = "string"
-                if len(set(map(str, non_none_values))) <= 15:
+                if len(set(map(str, non_none_values))) <= 20:
                     info["isCategory"] = True
             
             metadata[key] = info

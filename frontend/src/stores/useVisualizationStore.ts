@@ -53,7 +53,7 @@ const distinctColors = [
 ];
 
 function generateColors(n: number): string[] {
-  const goldenAngle = 137.508;
+  const goldenAngle = 167.508;
   return Array.from({ length: n }, (_, i) => {
     const hue = (i * goldenAngle) % 360;
     const lightness = i % 2 === 0 ? 45 : 60;

@@ -1,6 +1,7 @@
 import type { Edge, Network, Node } from "@/types/network";
 import type { SortingState } from "@tanstack/react-table";
 import { create } from "zustand";
+import { useMetricsStore } from "./useMetricsStore";
 
 interface NetworkStore {
   network: Network;
@@ -143,6 +144,9 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     set((state) => {
       const next = new Set(state.hiddenNodes);
       next.add(id);
+
+      useMetricsStore.getState().recomputeMetrics(next);
+
       return { hiddenNodes: next };
     }),
 
@@ -150,10 +154,16 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     set((state) => {
       const next = new Set(state.hiddenNodes);
       next.delete(id);
+
+      useMetricsStore.getState().recomputeMetrics(next);
+
       return { hiddenNodes: next };
     }),
 
-  restoreAllNodes: () => set({ hiddenNodes: new Set() }),
+  restoreAllNodes: () => {
+    useMetricsStore.getState().recomputeMetrics(new Set());
+    set({ hiddenNodes: new Set() });
+  },
 
   hideSelection: () => {
     const { selectedNodes } = get();
@@ -162,6 +172,9 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     set((state) => {
       const next = new Set(state.hiddenNodes);
       selectedNodes.forEach((id) => next.add(id));
+
+      useMetricsStore.getState().recomputeMetrics(next);
+
       return { hiddenNodes: next, selectedNodes: new Set<string>() };
     });
   },

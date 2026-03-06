@@ -4,6 +4,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
+from celery.result import AsyncResult
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -18,6 +19,7 @@ from .datasets_registry import list_datasets
 from .parsers import parse_network_file
 from .preprocessing import process_network
 from .types import CentralityType
+from .worker import celery_app, random_number
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -317,3 +319,17 @@ async def get_dataset(
             status_code=500,
             detail=f"Failed to fetch dataset: {str(e)}"
         )
+
+@app.get("/test-celery")
+async def test_celery():
+    task = random_number.delay(100) # type: ignore
+    return {"task_id": task.id, "status": "submitted"}
+
+@app.get("/task-result/{task_id}")
+async def get_task_result(task_id: str):
+    result = AsyncResult(task_id, app=celery_app)
+    return {
+        "task_id": task_id,
+        "status": result.state,
+        "result": result.get() if result.ready() else None
+    }
