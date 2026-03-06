@@ -1,8 +1,6 @@
 # Adrian Szuter - Master Thesis 2025
 
-# Overview
-
-# Installation
+## Installation
 
 > **Mac/Linux users:** Replace `copy` with `cp` and `venv\Scripts\activate` with `source venv/bin/activate` where applicable.
 
@@ -11,15 +9,15 @@ This project can be run in two ways:
 1. **Manual Setup** - using Node.js and Python directly on your machine
 2. **Containerized Setup** - using Docker or Podman
 
-## Setup
+### Project Initialization
 
-### 1. Clone the repository
+#### 1. Clone the repository
 
 ```bash
 git clone https://gitlab.liu.se/ivis/theses/adrian-szuter-master-thesis-2025.git
 ```
 
-### 2. Configure environment variables
+#### 2. Configure environment variables
 
 Copy the example env file:
 
@@ -44,14 +42,12 @@ Environment variables injected at runtime override those set during build.
 
 ---
 
-## Option 1: Manual Setup
+### Option 1: Manual Setup
 
-### Requirements
+#### Requirements
 
 - **Node.js** v18+
 - **Python** 3.x+
-
-### Steps
 
 #### 1. Backend setup
 
@@ -71,7 +67,7 @@ Install the required dependencies **with:**
 pip install -r requirements.txt
 ```
 
-#### 3. Frontend setup
+#### 2. Frontend setup
 
 If you followed step 2, **Run:**
 
@@ -80,7 +76,7 @@ cd ../frontend
 npm install
 ```
 
-#### 4. Run the project
+#### 3. Run the project
 
 You need to run the frontend and backend in separate terminals.
 
@@ -96,14 +92,14 @@ Run this command in the terminal for the frontend folder:
 npm start
 ```
 
-## Option 2: Containerized Setup
+---
 
-### Requirements
+### Option 2: Containerized Setup
+
+#### Requirements
 
 - **Docker** or **Podman** (replace docker commands with podman)
 - **Docker/Podman Compose** (usually part of docker/podman)
-
-### Steps
 
 #### 1. Build and Run
 
@@ -111,19 +107,13 @@ npm start
 docker compose -f compose.dev.yml up --build
 ```
 
-**NOTE:** If you have already built the project and made no changes, use:
+> **NOTE:** If you have already built the project and made no changes, use:
+>
+> ```bash
+> docker compose -f compose.dev.yml up
+> ```
 
-```bash
-docker compose -f compose.dev.yml up
-```
-
-#### 3. Open the app in your browser
-
-- Frontend: http://localhost:3000 (default)
-
-- Backend: http://localhost:8000 (default)
-
-#### 4. Clean up
+#### 2. Clean up
 
 Run **CTRL+C** in the terminal and then:
 
@@ -133,25 +123,47 @@ docker compose -f compose.dev.yml down
 
 in order to exit and clean up the containers.
 
-## Opening the App
+---
+
+### Opening the App
 
 Once either setup is running, open your browser at:
 
 - Frontend: http://localhost:3000 (default)
 - Backend: http://localhost:8000 (default)
 
-# Usage
+---
 
-You can download and view the Demo of the tool.
+## Usage
+
+A demo video (`ViNCent_Web_Demo.mp4`) is included in this repository. You can open it with any standard media player to see the tool in action.
+
+Simply download or clone the repo, then play the video to get a quick overview of how the tool works.
 
 ## Authors and acknowledgment
 
-Show your appreciation to those who have contributed to the project.
+I would like to thank everyone who participated in the interviews for their time and insights, which helped shape the final version of the system. I am especially grateful to my supervisor, Prof. Dr. Andreas Kerren, and my examiner, Dr. Kostiantyn Kucher, for their invaluable feedback and guidance throughout this work, which helped refine the direction of the research and implementation and significantly improved its quality.
 
 ## License
 
-For open source projects, say how it is licensed.
+MIT License
 
-## Project status
+Copyright (c) 2026 Adrian Szuter
 
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
