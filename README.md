@@ -15,7 +15,7 @@ The centerpiece is a **circular radial-bar diagram** where each node is represen
 
 Built with **React / TypeScript / D3.js** and **Python / FastAPI / NetworkX**.
 
-![ViNCent 2.0 Interface](screenshot.png)
+![ViNCent 2.0 Interface](screenshot.PNG)
 
 ## Installation
 
