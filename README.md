@@ -1,5 +1,22 @@
 # Adrian Szuter - Master Thesis 2025
 
+**ViNCent 2.0** is a web-based tool for interactive visualization and analysis of multivariate and temporal networks. It is a modern reimplementation of the original [ViNCent](https://ep.liu.se/konferensartikel.aspx?series=&issue=81&Article_No=12) system, rebuilt from Java/Prefuse into a full client-server web application.
+
+The centerpiece is a **circular radial-bar diagram** where each node is represented as a stacked bar encoding multiple centrality measures and attributes simultaneously, coordinated with a **node-link diagram** and **data table view**.
+
+**Highlights:**
+
+- 25 centrality measures + 8 community detection algorithms
+- Multivariate support for arbitrary categorical and numerical node attributes
+- Temporal network navigation with foresighted layouts and visual change indicators
+- Histogram and bar chart filtering, synchronized across all views
+- Force-Directed Edge Bundling (FDEB) for dense networks
+- Supports GraphML, CSV, MTX, adjacency matrix, and custom JSON formats
+
+Built with **React / TypeScript / D3.js** and **Python / FastAPI / NetworkX**.
+
+![ViNCent 2.0 Interface](screenshot.png)
+
 ## Installation
 
 > **Mac/Linux users:** Replace `copy` with `cp` and `venv\Scripts\activate` with `source venv/bin/activate` where applicable.
