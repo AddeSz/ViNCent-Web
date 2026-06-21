@@ -52,7 +52,6 @@ CELERY_BROKER_URL=redis://redis:6379/0     # Connection used by Celery to send t
 CELERY_BACKEND_URL=redis://redis:6379/0    # Connection used by Celery to store task results
 VITE_BACKEND_URL=http://localhost:8000     # Backend URL used by the frontend
 VITE_PORT=3000                             # Port for the frontend service
-VITE_GENERATE_SOURCEMAP=false              # Disable frontend source map generation for faster builds
 ```
 
 Environment variables injected at runtime override those set during build.
@@ -121,13 +120,13 @@ npm start
 #### 1. Build and Run
 
 ```bash
-docker compose -f compose.dev.yml up --build
+docker compose -f compose.yml -f compose.dev.yml up --build
 ```
 
 > **NOTE:** If you have already built the project and made no changes, use:
 >
 > ```bash
-> docker compose -f compose.dev.yml up
+> docker compose -f compose.yml -f compose.dev.yml up
 > ```
 
 #### 2. Clean up
@@ -135,10 +134,20 @@ docker compose -f compose.dev.yml up --build
 Run **CTRL+C** in the terminal and then:
 
 ```bash
-docker compose -f compose.dev.yml down
+docker compose -f compose.yml -f compose.dev.yml down
 ```
 
 in order to exit and clean up the containers.
+
+---
+
+### Production
+
+To run the production configuration instead:
+
+```bash
+docker compose -f compose.yml -f compose.prod.yml up --build
+```
 
 ---
 

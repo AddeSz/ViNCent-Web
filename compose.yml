@@ -1,125 +1,68 @@
-# services:
-#   redis:
-#     image: redis:7-alpine
-#     container_name: redis
-#     restart: unless-stopped
-#     networks:
-#       - network
-#     volumes:
-#       - redis_data:/data
-#     command: redis-server --save 60 1 --loglevel warning
-#     healthcheck:
-#       test: ["CMD", "redis-cli", "ping"]
-#       interval: 30s
-#       timeout: 10s
-#       retries: 5
-#       start_period: 30s
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - network
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
-#   celery_worker:
-#     build: ./backend
-#     command: celery -A src.worker worker --loglevel=info
-#     container_name: celery-worker
-#     env_file: .env
-#     depends_on:
-#       redis:
-#         condition: service_healthy
-#     restart: unless-stopped
-#     networks:
-#       - network
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_PORT: ${BACKEND_PORT}
+        ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    container_name: backend
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - network
+    volumes:
+      - ./backend/precomputed:/app/precomputed
 
-#   backend:
-#     build:
-#       context: ./backend
-#       dockerfile: Dockerfile
-#       target: production
-#       args:
-#         BACKEND_PORT: ${BACKEND_PORT}
-#         ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
-#     container_name: backend
-#     image: vincent/backend
-#     ports:
-#       - "${BACKEND_PORT}:${BACKEND_PORT}"
-#     depends_on:
-#       redis:
-#         condition: service_healthy
-#     restart: unless-stopped
-#     networks:
-#       - network
-#     volumes:
-#       - ./backend/precomputed:/app/precomputed
-#     profiles: ["prod"]
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+        VITE_PORT: ${VITE_PORT}
+    container_name: frontend
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - network
 
-#   backend-dev:
-#     build:
-#       context: ./backend
-#       dockerfile: Dockerfile
-#       target: development
-#       args:
-#         BACKEND_PORT: ${BACKEND_PORT}
-#         ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
-#     container_name: backend-dev
-#     image: vincent/backend:dev
-#     ports:
-#       - "${BACKEND_PORT}:${BACKEND_PORT}"
-#     depends_on:
-#       redis:
-#         condition: service_healthy
-#     restart: unless-stopped
-#     networks:
-#       - network
-#     volumes:
-#       - ./backend/src:/app/src
-#       - ./backend/precomputed:/app/precomputed
-#     profiles: ["dev"]
+  celery_worker:
+    command: celery -A src.worker worker --loglevel=info
+    container_name: celery-worker
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - network
 
-#   frontend:
-#     build:
-#       context: ./frontend
-#       dockerfile: Dockerfile
-#       target: production
-#       args:
-#         VITE_BACKEND_URL: ${VITE_BACKEND_URL}
-#         VITE_PORT: ${VITE_PORT}
-#         VITE_GENERATE_SOURCEMAP: ${VITE_GENERATE_SOURCEMAP:-false}
-#     container_name: frontend
-#     image: vincent/frontend
-#     ports:
-#       - "${VITE_PORT}:${VITE_PORT}"
-#     depends_on:
-#       - backend
-#     restart: unless-stopped
-#     networks:
-#       - network
-#     environment:
-#       VITE_BACKEND_URL: ${VITE_BACKEND_URL}
-#       VITE_PORT: ${VITE_PORT}
-#     profiles: ["prod"]
+networks:
+  network:
+    driver: bridge
 
-#   frontend-dev:
-#     build:
-#       context: ./frontend
-#       dockerfile: Dockerfile
-#       target: development
-#       args:
-#         VITE_BACKEND_URL: ${VITE_BACKEND_URL}
-#         VITE_PORT: ${VITE_PORT}
-#         VITE_GENERATE_SOURCEMAP: true
-#     container_name: frontend-dev
-#     image: vincent/frontend:dev
-#     ports:
-#       - "${VITE_PORT}:${VITE_PORT}"
-#     depends_on:
-#       - backend-dev
-#     restart: unless-stopped
-#     networks:
-#       - network
-#     volumes:
-#       - ./frontend/src:/app/src
-#     profiles: ["dev"]
-
-# networks:
-#   network:
-#     driver: bridge
-
-# volumes:
-#   redis_data:
+volumes:
+  redis_data:
