@@ -19,12 +19,12 @@ Built with **React / TypeScript / D3.js** and **Python / FastAPI / NetworkX**.
 
 ## Installation
 
-> **Mac/Linux users:** Replace `copy` with `cp` and `venv\Scripts\activate` with `source venv/bin/activate` where applicable.
+This project runs via Docker (or Podman) Compose. There is no manual/non-containerized setup, since the backend depends on Redis and a Celery worker process in addition to the API itself.
 
-This project can be run in two ways:
+### Requirements
 
-1. **Manual Setup** - using Node.js and Python directly on your machine
-2. **Containerized Setup** - using Docker or Podman
+- **Docker** or **Podman** (replace docker commands with podman)
+- **Docker/Podman Compose** (usually part of docker/podman)
 
 ### Project Initialization
 
@@ -42,10 +42,11 @@ Copy the example env file:
 copy .env.example .env
 ```
 
+> **Mac/Linux users:** use `cp` instead of `copy`.
+
 In the created **.env** file you can set the following environment variables:
 
 ```bash
-COMPOSE_PROJECT_NAME=vincent               # Name of the docker compose container
 BACKEND_PORT=8000                          # Port for the backend service
 ALLOWED_ORIGINS=http://localhost:3000,*    # Allowed origins (CORS) (comma separated list with frontend URLs)
 CELERY_BROKER_URL=redis://redis:6379/0     # Connection used by Celery to send tasks
@@ -58,64 +59,7 @@ Environment variables injected at runtime override those set during build.
 
 ---
 
-### Option 1: Manual Setup
-
-#### Requirements
-
-- **Node.js** v18+
-- **Python** 3.x+
-
-#### 1. Backend setup
-
-Create and activate a virtual environment:
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate
-```
-
-Make sure the virtual enviornment is active.
-
-Install the required dependencies **with:**
-
-```bash
-pip install -r requirements.txt
-```
-
-#### 2. Frontend setup
-
-If you followed step 2, **Run:**
-
-```bash
-cd ../frontend
-npm install
-```
-
-#### 3. Run the project
-
-You need to run the frontend and backend in separate terminals.
-
-Run this command in the terminal for the backend folder:
-
-```bash
-python run-dev.py
-```
-
-Run this command in the terminal for the frontend folder:
-
-```bash
-npm start
-```
-
----
-
-### Option 2: Containerized Setup
-
-#### Requirements
-
-- **Docker** or **Podman** (replace docker commands with podman)
-- **Docker/Podman Compose** (usually part of docker/podman)
+### Development
 
 #### 1. Build and Run
 
@@ -172,24 +116,4 @@ I would like to thank everyone who participated in the interviews for their time
 
 ## License
 
-MIT License
-
-Copyright (c) 2026 Adrian Szuter
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

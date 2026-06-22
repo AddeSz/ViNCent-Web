@@ -1,33 +1,25 @@
 FROM python:3.11-slim AS base
-
 WORKDIR /app
 ENV PYTHONPATH=/app
 
 ARG BACKEND_PORT
 ENV BACKEND_PORT=${BACKEND_PORT}
-
 ARG ALLOWED_ORIGINS
 ENV ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
-
 ARG CELERY_BROKER_URL
 ENV CELERY_BROKER_URL=${CELERY_BROKER_URL}
-
 ARG CELERY_BACKEND_URL
 ENV CELERY_BACKEND_URL=${CELERY_BACKEND_URL}
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-FROM base AS development
-
 COPY src ./src
-COPY run-dev.py .
+COPY data ./data
+COPY run.py .
 
-CMD ["python", "run-dev.py"]
+FROM base AS development
+CMD ["python", "run.py", "--reload"]
 
 FROM base AS production
-
-COPY src ./src
-COPY run-prod.py .
-
-CMD ["python", "run-prod.py"]
+CMD ["python", "run.py"]

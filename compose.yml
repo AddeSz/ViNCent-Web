@@ -1,3 +1,5 @@
+name: vincent
+
 services:
   redis:
     image: redis:7-alpine
@@ -31,7 +33,7 @@ services:
     networks:
       - network
     volumes:
-      - ./backend/precomputed:/app/precomputed
+      - ./backend/data/computed:/app/data/computed
 
   frontend:
     build:

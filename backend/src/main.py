@@ -1,21 +1,19 @@
 import json
 import logging
 import os
-from contextlib import asynccontextmanager
 from typing import Optional
 
 from celery.result import AsyncResult
+from data.registry import get_computed_data, list_datasets
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .cache_utils import CACHE_DIR, CACHE_ENABLED, get_precomputed_data
 from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
                      CENTRALITY_CATEGORIES, CENTRALITY_DESCRIPTIONS,
                      CENTRALITY_PERFORMANCE, CENTRALITY_REQUIREMENTS,
                      COMMUNITY_CATEGORIES, COMMUNITY_DESCRIPTIONS,
                      COMMUNITY_PERFORMANCE, COMMUNITY_REQUIREMENTS)
-from .datasets_registry import list_datasets
 from .parsers import parse_network_file
 from .preprocessing import process_network
 from .types import CentralityType
@@ -28,19 +26,7 @@ logging.basicConfig(
 logging.getLogger("python_multipart.multipart").setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    if CACHE_ENABLED:
-        try:
-            CACHE_DIR.mkdir(parents=True, exist_ok=True)
-            logger.info(f"Cache directory initialized at {CACHE_DIR}")
-        except Exception as e:
-            logger.error(f"Failed to create cache directory: {e}")
-    
-    yield
-
-
-app = FastAPI(title="Centrality API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Centrality API", version="1.0.0")
 allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
 app.add_middleware(
@@ -50,7 +36,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.get("/get-options")
 async def get_options():
@@ -202,7 +187,7 @@ def filter_metrics_info(
     return filtered
 
 
-def filter_precomputed_data(
+def filter_computed_data(
     data: dict,
     centralities: list[str] | None,
     communities: list[str] | None,
@@ -287,12 +272,12 @@ async def get_dataset(
     ),
 ):
     try:
-        data = get_precomputed_data(dataset_id)
+        data = get_computed_data(dataset_id)
 
         if data is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Dataset '{dataset_id}' not found in precomputed cache"
+                detail=f"Dataset '{dataset_id}' not found in computed data"
             )
 
         centralities_list = centralities.split(",") if centralities else None
@@ -303,7 +288,7 @@ async def get_dataset(
             f"centralities: {centralities_list}, communities: {communities_list}"
         )
 
-        data = filter_precomputed_data(
+        data = filter_computed_data(
             data,
             centralities_list,
             communities_list,

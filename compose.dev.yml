@@ -11,7 +11,7 @@ services:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
       - ./backend/src:/app/src
-      - ./backend/precomputed:/app/precomputed
+      - ./backend/data:/app/data
 
   frontend:
     build:
@@ -30,3 +30,4 @@ services:
     container_name: celery-dev
     volumes:
       - ./backend/src:/app/src
+      - ./backend/data:/app/data
