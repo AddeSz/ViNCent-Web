@@ -159,7 +159,7 @@ const FileUploader = ({
       let networkData;
 
       if (dataSource === "dataset") {
-        networkData = await api.getPrecomputedDataset(
+        networkData = await api.getDataset(
           selectedDataset,
           centralitiesArray,
           communitiesArray,

@@ -14,7 +14,7 @@ export const api = {
     return response.json();
   },
 
-  async getPrecomputedDataset(
+  async getDataset(
     datasetId: string,
     centralities?: string[],
     communities?: string[],
