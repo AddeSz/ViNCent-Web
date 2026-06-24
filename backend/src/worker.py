@@ -1,14 +1,12 @@
 import logging
 import os
-import random
-import time
+from typing import cast
 
-from celery import Celery
+from celery import Celery, Task
 
-from .config import ALL_COMMUNITY_ALGORITHMS
 from .parsers import parse_network_file
 from .preprocessing import process_network
-from .types import CentralityType
+from .types import CentralityType, CommunityType
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -31,45 +29,52 @@ celery_app.conf.update(
 
 #Test setup for tasks, future work.
 @celery_app.task(bind=True)
-def process_network_task(self, file_content: bytes, file_extension: str, centralities: list, communities: list):
+def _process_network_task(self, file_content: bytes, file_extension: str, centralities: list, communities: list):
     try:
         self.update_state(state="PROCESSING", meta={"status": "Parsing file..."})
         
         data = parse_network_file(file_content, file_extension)
-        
-        self.update_state(state="PROCESSING", meta={"status": "Processing network..."})
-        
-        selected_centralities = []
-        if centralities:
-            selected_centralities = [
-                CentralityType(c) for c in centralities
-                if c in [ct.value for ct in CentralityType]
-            ]
-        
-        selected_communities = []
-        if communities:
-            selected_communities = [
-                algo for algo in communities
-                if algo in [a.value for a in ALL_COMMUNITY_ALGORITHMS]
-            ]
-        
+        selected_centralities = [CentralityType(c) for c in (centralities or [])]
+        selected_communities = [CommunityType(c) for c in (communities or [])]
+
         self.update_state(state="PROCESSING", meta={"status": "Calculating metrics..."})
         
+        progress_callback = make_progress_callback(self)
+
         processed = process_network(
-            data, 
+            data,
             selected_centralities,
-            selected_communities
+            selected_communities,
+            progress_callback=progress_callback,
         )
         
         return processed
         
     except Exception as e:
         logger.error(f"Error processing network in Celery task: {e}", exc_info=True)
-        self.update_state(state="FAILURE", meta={"error": str(e)})
+        self.update_state(
+            state="FAILURE",
+            meta={
+                "exc_type": type(e).__name__,
+                "exc_message": str(e),
+            }
+        )
         raise
 
+# celery lacks type stubs, @task returns a task at runtime, but pylance sees a plain function
+# cast restores .delay() and .apply_async() for type checking and this does not affect runtime
+process_network_task = cast(Task, _process_network_task)
 
-@celery_app.task
-def random_number(max_value: int):
-    time.sleep(5)
-    return random.randint(0, max_value)
+def make_progress_callback(task):
+    def callback(name: str, metric_index: int, metric_total: int, timestep_index: int, timestep_total: int):
+        task.update_state(
+            state="PROGRESS",
+            meta={
+                "metric": name,
+                "metric_index": metric_index,
+                "metric_total": metric_total,
+                "timestep_index": timestep_index,
+                "timestep_total": timestep_total,
+            }
+        )
+    return callback

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union, cast
 
 import networkx as nx
 
-from ..types import CentralityType
+from ..types import CentralityType, ProgressCallback
 
 logger = logging.getLogger(__name__)
 
@@ -85,28 +85,41 @@ class CentralityCalculator:
     
     def calculate_centralities(
         self, 
-        centralities: List[CentralityType]
+        centralities: List[CentralityType],
+        progress_callback: Optional[ProgressCallback] = None,
+        timestep_index: int = 1,
+        timestep_total: int = 1,
     ) -> Dict[str, Union[Dict[str, float], Dict[tuple, float]]]:
         results: Dict[str, Union[Dict[str, float], Dict[tuple, float]]] = {}
         
         logger.info(f"Starting calculation of {len(centralities)} centrality metrics")
         total_start_time = time.time()
         
-        calculated_count = 0
-        skipped_count = 0
-        
+        runnable: List[CentralityType] = []
         for centrality in centralities:
             if centrality not in self.centrality_handlers:
                 logger.warning(f"Unknown centrality type: {centrality.value}")
-                skipped_count += 1
                 continue
-            
             skip_reason = self._check_requirements(centrality)
             if skip_reason:
                 logger.info(f"Skipping {centrality.value}: {skip_reason}")
-                skipped_count += 1
                 continue
-            
+            runnable.append(centrality)
+
+        metric_total = len(runnable)
+        calculated_count = 0
+        skipped_count = 0
+        
+        for metric_index, centrality in enumerate(runnable, start=1):
+            if progress_callback:
+                progress_callback(
+                    centrality.value,
+                    metric_index,
+                    metric_total,
+                    timestep_index,
+                    timestep_total,
+                )
+
             try:
                 start_time = time.time()
                 result = self.centrality_handlers[centrality]()
@@ -341,11 +354,19 @@ class CentralityCalculator:
 
 def calculate_selected_centralities(
     G: Union[nx.Graph, nx.DiGraph],
-    centralities: List[CentralityType]
+    centralities: List[CentralityType],
+    progress_callback: Optional[ProgressCallback] = None,
+    timestep_index: int = 1,
+    timestep_total: int = 1,
 ) -> tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, float]]]:
 
     calculator = CentralityCalculator(G)
-    raw_results = calculator.calculate_centralities(centralities)
+    raw_results = calculator.calculate_centralities(
+        centralities,
+        progress_callback=progress_callback,
+        timestep_index=timestep_index,
+        timestep_total=timestep_total,
+    )
 
     node_results: Dict[str, Dict[str, float]] = {}
     edge_results: Dict[str, Dict[str, float]] = {}

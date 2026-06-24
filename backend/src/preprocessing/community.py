@@ -7,7 +7,7 @@ import leidenalg
 import networkx as nx
 from networkx.algorithms import community
 
-from ..types import CommunityType
+from ..types import CommunityType, ProgressCallback
 
 logger = logging.getLogger(__name__)
 
@@ -45,28 +45,41 @@ class Community:
     
     def calculate_communities(
         self, 
-        algorithms: List[CommunityType]
+        algorithms: List[CommunityType],
+        progress_callback: Optional[ProgressCallback] = None,
+        timestep_index: int = 1,
+        timestep_total: int = 1,
     ) -> Dict[str, Dict[str, int]]:
         results: Dict[str, Dict[str, int]] = {}
         
         logger.info(f"Starting detection of {len(algorithms)} community algorithms")
         total_start_time = time.time()
-        
-        detected_count = 0
-        skipped_count = 0
-        
+
+        runnable: List[CommunityType] = []
         for algorithm in algorithms:
             if algorithm not in self.community_handlers:
                 logger.warning(f"Unknown community algorithm: {algorithm}")
-                skipped_count += 1
                 continue
-            
             skip_reason = self._check_requirements(algorithm)
             if skip_reason:
                 logger.info(f"Skipping {algorithm}: {skip_reason}")
-                skipped_count += 1
                 continue
-            
+            runnable.append(algorithm)
+
+        algorithm_total = len(runnable)
+        detected_count = 0
+        skipped_count = 0
+        
+        for algorithm_index, algorithm in enumerate(runnable, start=1):
+            if progress_callback:
+                progress_callback(
+                    algorithm.value,
+                    algorithm_index,
+                    algorithm_total,
+                    timestep_index,
+                    timestep_total,
+                )
+
             try:
                 start_time = time.time()
                 result = self.community_handlers[algorithm]()
@@ -252,8 +265,16 @@ class Community:
 
 def calculate_selected_communities(
     G: Union[nx.Graph, nx.DiGraph],
-    algorithms: List[CommunityType]
+    algorithms: List[CommunityType],
+    progress_callback: Optional[ProgressCallback] = None,
+    timestep_index: int = 1,
+    timestep_total: int = 1,
 ) -> Dict[str, Dict[str, int]]:
     
     detector = Community(G)
-    return detector.calculate_communities(algorithms)
+    return detector.calculate_communities(
+        algorithms,
+        progress_callback=progress_callback,
+        timestep_index=timestep_index,
+        timestep_total=timestep_total,
+    )

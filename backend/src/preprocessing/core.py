@@ -1,11 +1,11 @@
 import logging
 import math
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 from ..config import ALL_CENTRALITIES
 from ..types import (CentralityType, CommunityType, Edge, EdgesDict,
                      NetworkData, Node, NodesDict, ProcessedNetworkResult,
-                     TimestepDelta)
+                     ProgressCallback, TimestepDelta)
 from .attributes import collect_attribute_data
 from .centrality import calculate_selected_centralities
 from .community import calculate_selected_communities
@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 def process_network(
     data: NetworkData,
     centralities: List[CentralityType] | None = None,
-    community_algorithms: List[CommunityType] | None = None
+    community_algorithms: List[CommunityType] | None = None,
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> ProcessedNetworkResult:
 
     if centralities is None:
@@ -56,11 +57,13 @@ def process_network(
         centralities = [CentralityType.DEGREE]
     
     result, node_centrality_keys, edge_centrality_keys = calculate_centralities(
-        result, directed, centralities
+        result, directed, centralities, progress_callback=progress_callback
     )
     
     if community_algorithms:
-        result = calculate_communities(result, directed, community_algorithms)
+        result = calculate_communities(
+            result, directed, community_algorithms, progress_callback=progress_callback
+        )
     
     centralities_data = result.get("centralities", {})
     communities_data = result.get("communities", {})
@@ -97,7 +100,8 @@ def _check_for_attributes(nodes: List[Node], edges: List[Edge]) -> bool:
 def calculate_centralities(
     result: ProcessedNetworkResult,
     directed: bool,
-    selected_centralities: List[CentralityType]
+    selected_centralities: List[CentralityType],
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> tuple[ProcessedNetworkResult, Set[str], Set[str]]:
     base_state = result["base_state"]
     deltas = result["deltas"]
@@ -111,9 +115,12 @@ def calculate_centralities(
     current_nodes: NodesDict = {node["id"]: node for node in base_state["nodes"]}
     current_edges: EdgesDict = {edge["id"]: edge for edge in base_state["edges"]}
     
-    logger.info(f"Calculating {len(selected_centralities)} centrality types across {len(timesteps)} timesteps")
+    sorted_timesteps = sorted(timesteps)
+    timestep_total = len(sorted_timesteps)
     
-    for timestep in sorted(timesteps):
+    logger.info(f"Calculating {len(selected_centralities)} centrality types across {timestep_total} timesteps")
+    
+    for timestep_index, timestep in enumerate(sorted_timesteps, start=1):
         delta = deltas[timestep]
         
         _apply_delta_to_state(current_nodes, current_edges, delta)
@@ -126,7 +133,11 @@ def calculate_centralities(
             
         G = create_networkx_graph(network, directed)
         node_results, edge_results = calculate_selected_centralities(
-            G, selected_centralities
+            G,
+            selected_centralities,
+            progress_callback=progress_callback,
+            timestep_index=timestep_index,
+            timestep_total=timestep_total,
         )
         
         all_node_centrality_keys.update(
@@ -167,11 +178,13 @@ def calculate_centralities(
     
     return result, all_node_centrality_keys, all_edge_centrality_keys
 
-# Builds entire snapshots of communites
+
+# Builds entire snapshots of communities
 def calculate_communities(
     result: ProcessedNetworkResult,
     directed: bool,
-    selected_algorithms: List[CommunityType]
+    selected_algorithms: List[CommunityType],
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> ProcessedNetworkResult:
     base_state = result["base_state"]
     deltas = result["deltas"]
@@ -182,9 +195,12 @@ def calculate_communities(
     current_nodes: NodesDict = {node["id"]: node for node in base_state["nodes"]}
     current_edges: EdgesDict = {edge["id"]: edge for edge in base_state["edges"]}
     
-    logger.info(f"Detecting communities using {len(selected_algorithms)} algorithms across {len(timesteps)} timesteps")
+    sorted_timesteps = sorted(timesteps)
+    timestep_total = len(sorted_timesteps)
     
-    for timestep in sorted(timesteps):
+    logger.info(f"Detecting communities using {len(selected_algorithms)} algorithms across {timestep_total} timesteps")
+    
+    for timestep_index, timestep in enumerate(sorted_timesteps, start=1):
         delta = deltas[timestep]
         
         _apply_delta_to_state(current_nodes, current_edges, delta)
@@ -197,13 +213,20 @@ def calculate_communities(
             
         G = create_networkx_graph(network, directed)
         
-        community_results = calculate_selected_communities(G, selected_algorithms)
+        community_results = calculate_selected_communities(
+            G,
+            selected_algorithms,
+            progress_callback=progress_callback,
+            timestep_index=timestep_index,
+            timestep_total=timestep_total,
+        )
         
         communities[timestep] = community_results
     
     result["communities"] = communities
     
     return result
+
 
 # Allows us to traverse the changes in the network for each timestep 
 def _apply_delta_to_state(

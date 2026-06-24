@@ -171,7 +171,9 @@ const FileUploader = ({
         formData.append("centralities", JSON.stringify(centralitiesArray));
         formData.append("communities", JSON.stringify(communitiesArray));
 
-        networkData = await api.processNetwork(formData);
+        networkData = await api.processNetworkAsyncAndWait(formData, {
+          onProgress: (status) => console.log(status),
+        });
         setCurrentDataset(selectedFile!.name);
       }
 

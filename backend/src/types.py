@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Any, Dict, List, NotRequired, Optional, TypedDict, Union
+from typing import (Any, Callable, Dict, List, NotRequired, Optional,
+                    TypeAlias, TypedDict, Union)
 
 
 # These are the ones found in NetWorkX (those that are relevant)
@@ -125,3 +126,7 @@ class ProcessedNetworkResult(TypedDict):
     centralities: NotRequired[Dict[int | float, Dict[str, Dict[str, Dict[str, float]]]]]
     graph_type: NotRequired[str]
     communities:  NotRequired[Dict[int | float, Dict[str, Dict[str, int]]]]
+    
+    
+# (algorithm_name, item_index, item_total, timestep_index, timestep_total)
+ProgressCallback: TypeAlias = Callable[[str, int, int, int, int], None]

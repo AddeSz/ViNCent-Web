@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Optional
 
+from celery.app.task import Task
 from celery.result import AsyncResult
 from data.registry import get_computed_data, list_datasets
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
@@ -16,8 +17,8 @@ from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
                      COMMUNITY_PERFORMANCE, COMMUNITY_REQUIREMENTS)
 from .parsers import parse_network_file
 from .preprocessing import process_network
-from .types import CentralityType
-from .worker import celery_app, random_number
+from .types import CentralityType, CommunityType
+from .worker import celery_app, process_network_task
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -305,16 +306,73 @@ async def get_dataset(
             detail=f"Failed to fetch dataset: {str(e)}"
         )
 
-@app.get("/test-celery")
-async def test_celery():
-    task = random_number.delay(100) # type: ignore
-    return {"task_id": task.id, "status": "submitted"}
+# Testing task queue
+@app.post("/process-network-async")
+async def process_network_async_api(
+    file: UploadFile = File(...),
+    centralities: str = Form(default="[]"),
+    communities: str = Form(default="[]")
+):
+    try:
+        content = await file.read()
+        if not file.filename:
+            raise HTTPException(
+                status_code=400,
+                detail="No filename provided"
+            )
+
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
+
+        selected_centralities = []
+        try:
+            centralities_list = json.loads(centralities)
+            if centralities_list:
+                selected_centralities = [
+                    c for c in centralities_list
+                    if c in [ct.value for ct in CentralityType]
+                ]
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Failed to parse centralities, defaulting to empty: {e}")
+            selected_centralities = []
+
+        selected_communities = []
+        try:
+            communities_list = json.loads(communities)
+            if communities_list:
+                selected_communities = [
+                    CommunityType(algo) for algo in communities_list
+                    if algo in [a.value for a in ALL_COMMUNITY_ALGORITHMS]
+                ]
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Failed to parse communities, defaulting to empty: {e}")
+            selected_communities = []
+
+        task = process_network_task.delay(
+            content, file_extension, selected_centralities, selected_communities
+        )
+
+        return {"task_id": task.id, "status": "submitted"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting network processing task: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to submit processing task: {str(e)}"
+        )
 
 @app.get("/task-result/{task_id}")
 async def get_task_result(task_id: str):
     result = AsyncResult(task_id, app=celery_app)
-    return {
-        "task_id": task_id,
-        "status": result.state,
-        "result": result.get() if result.ready() else None
-    }
+    response = {"task_id": task_id, "status": result.state, "result": None}
+
+    if result.state == "FAILURE":
+        response["error"] = str(result.info)
+    elif result.state in ("PROCESSING", "PROGRESS"):
+        # result.info holds whatever dict was passed to update_state(meta=...) just using as metadata for now
+        response["meta"] = result.info
+    elif result.ready():
+        response["result"] = result.get()
+
+    return response
