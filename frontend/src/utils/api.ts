@@ -71,28 +71,30 @@ export const api = {
     options?: {
       onProgress?: (status: Record<string, unknown>) => void;
       intervalMs?: number;
-      timeoutMs?: number;
+      stallTimeoutMs?: number;
     },
   ) {
     const intervalMs = options?.intervalMs ?? 1000;
-    const timeoutMs = options?.timeoutMs ?? 5 * 60 * 1000;
+    const stallTimeoutMs = options?.stallTimeoutMs ?? 2 * 60 * 1000;
 
     const { task_id } = await this.processNetworkAsync(formData);
-    const startedAt = Date.now();
+    let lastProgressAt = Date.now();
 
     while (true) {
       const status = await this.getTaskResult(task_id);
+
+      if (status.status === "PROGRESS" || status.status === "PROCESSING") {
+        lastProgressAt = Date.now();
+      }
       options?.onProgress?.(status);
 
-      if (status.status === "SUCCESS") {
-        return status.result;
-      }
+      if (status.status === "SUCCESS") return status.result;
       if (status.status === "FAILURE") {
         throw new Error(
           (status.error as string) ?? "Network processing failed",
         );
       }
-      if (Date.now() - startedAt > timeoutMs) {
+      if (Date.now() - lastProgressAt > stallTimeoutMs) {
         throw new Error(`Timed out waiting for task ${task_id} to complete`);
       }
 
