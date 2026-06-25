@@ -8,10 +8,6 @@ from .parsers import parse_network_file
 from .preprocessing import process_network
 from .types import CentralityType, CommunityType
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="[%(levelname)s] %(name)s: %(message)s"
-)
 logger = logging.getLogger(__name__)
 
 celery_app = Celery(
