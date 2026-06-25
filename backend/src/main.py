@@ -3,9 +3,7 @@ import logging
 import os
 from typing import Optional
 
-from celery.app.task import Task
 from celery.result import AsyncResult
-from data.registry import get_computed_data, list_datasets
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,6 +15,7 @@ from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
                      COMMUNITY_PERFORMANCE, COMMUNITY_REQUIREMENTS)
 from .parsers import parse_network_file
 from .preprocessing import process_network
+from .registry import get_computed_data, list_datasets
 from .types import CentralityType, CommunityType
 from .worker import celery_app, process_network_task
 
@@ -81,13 +80,10 @@ async def get_options():
             }
         }
         
-        datasets = list_datasets()
-        dataset_ids = [d["id"] for d in datasets]
-        
         options_data = {
             "centralities": centralities_data,
             "communities": communities_data,
-            "datasets": dataset_ids
+            "datasets": list_datasets()
         }
         
         return JSONResponse(content=options_data)
