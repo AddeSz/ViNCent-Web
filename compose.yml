@@ -50,7 +50,7 @@ services:
       - network
 
   celery_worker:
-    command: celery -A src.worker worker --loglevel=info
+    command: sh -c "celery -A src.worker worker --loglevel=info --concurrency=${CELERY_CONCURRENCY:-4}"
     container_name: celery-worker
     env_file: .env
     depends_on:

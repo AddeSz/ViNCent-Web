@@ -68,14 +68,13 @@ export const api = {
 
   async processNetworkAsyncAndWait(
     formData: FormData,
-    options?: {
-      onProgress?: (status: Record<string, unknown>) => void;
-      intervalMs?: number;
-      stallTimeoutMs?: number;
-    },
+    onProgress?: (status: Record<string, unknown>) => void,
   ) {
-    const intervalMs = options?.intervalMs ?? 1000;
-    const stallTimeoutMs = options?.stallTimeoutMs ?? 2 * 60 * 1000;
+    // Poll slower while pending (queue position updates infrequently),
+    // faster once processing/progress (updates are meaningful, wait is shorter).
+    const PENDING_INTERVAL_MS = 4000;
+    const ACTIVE_INTERVAL_MS = 2000;
+    const STALL_TIMEOUT_MS = 2 * 60 * 1000;
 
     const { task_id } = await this.processNetworkAsync(formData);
     let lastProgressAt = Date.now();
@@ -83,10 +82,14 @@ export const api = {
     while (true) {
       const status = await this.getTaskResult(task_id);
 
-      if (status.status === "PROGRESS" || status.status === "PROCESSING") {
+      if (
+        status.status === "PROGRESS" ||
+        status.status === "PROCESSING" ||
+        (status.status === "PENDING" && status.meta?.queue_position != null)
+      ) {
         lastProgressAt = Date.now();
       }
-      options?.onProgress?.(status);
+      onProgress?.(status);
 
       if (status.status === "SUCCESS") return status.result;
       if (status.status === "FAILURE") {
@@ -94,11 +97,13 @@ export const api = {
           (status.error as string) ?? "Network processing failed",
         );
       }
-      if (Date.now() - lastProgressAt > stallTimeoutMs) {
+      if (Date.now() - lastProgressAt > STALL_TIMEOUT_MS) {
         throw new Error(`Timed out waiting for task ${task_id} to complete`);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+      const nextIntervalMs =
+        status.status === "PENDING" ? PENDING_INTERVAL_MS : ACTIVE_INTERVAL_MS;
+      await new Promise((resolve) => setTimeout(resolve, nextIntervalMs));
     }
   },
 };

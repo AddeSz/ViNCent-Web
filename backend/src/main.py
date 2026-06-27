@@ -17,7 +17,7 @@ from .parsers import parse_network_file
 from .preprocessing import process_network
 from .registry import get_computed_data, list_datasets
 from .types import CentralityType, CommunityType
-from .worker import celery_app, process_network_task
+from .worker import celery_app, get_queue_position, process_network_task
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -365,8 +365,13 @@ async def get_task_result(task_id: str):
 
     if result.state == "FAILURE":
         response["error"] = str(result.info)
+    elif result.state == "PENDING":
+        position, queue_length = get_queue_position(task_id)
+        response["meta"] = {
+            "queue_position": position,
+            "queue_length": queue_length,
+        }
     elif result.state in ("PROCESSING", "PROGRESS"):
-        # result.info holds whatever dict was passed to update_state(meta=...) just using as metadata for now
         response["meta"] = result.info
     elif result.ready():
         response["result"] = result.get()
