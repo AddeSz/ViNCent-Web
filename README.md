@@ -1,6 +1,6 @@
 # Adrian Szuter - Master Thesis 2025
 
-**ViNCent 2.0** is a web-based tool for interactive visualization and analysis of multivariate and temporal networks. It is a modern reimplementation of the original [ViNCent](https://ep.liu.se/konferensartikel.aspx?series=&issue=81&Article_No=12) system, rebuilt from Java/Prefuse into a full client-server web application.
+**ViNCent Web** is a web-based tool for interactive visualization and analysis of multivariate and temporal networks. It is a modern reimplementation of the original [ViNCent](https://ep.liu.se/konferensartikel.aspx?series=&issue=81&Article_No=12) system, rebuilt from Java/Prefuse into a full client-server web application.
 
 The centerpiece is a **circular radial-bar diagram** where each node is represented as a stacked bar encoding multiple centrality measures and attributes simultaneously, coordinated with a **node-link diagram** and **data table view**.
 
@@ -15,7 +15,7 @@ The centerpiece is a **circular radial-bar diagram** where each node is represen
 
 Built with **React / TypeScript / D3.js** and **Python / FastAPI / NetworkX**.
 
-![ViNCent 2.0 Interface](screenshot.PNG)
+![ViNCent Web Interface](screenshot.PNG)
 
 ## Installation
 
@@ -51,6 +51,7 @@ BACKEND_PORT=8000                          # Port for the backend service
 ALLOWED_ORIGINS=http://localhost:3000,*    # Allowed origins (CORS) (comma separated list with frontend URLs)
 CELERY_BROKER_URL=redis://redis:6379/0     # Connection used by Celery to send tasks
 CELERY_BACKEND_URL=redis://redis:6379/0    # Connection used by Celery to store task results
+CELERY_CONCURRENCY=4                       # Number of worker processes spawned by Celery
 VITE_BACKEND_URL=http://localhost:8000     # Backend URL used by the frontend
 VITE_PORT=3000                             # Port for the frontend service
 ```
