@@ -1,7 +1,36 @@
 import { getProjectEnvVariables } from "@/shared/projectEnvVariables";
+import type { ProcessNetworkResponse } from "@/types/network";
 
 const env = getProjectEnvVariables();
 const API_BASE_URL = env.envVariables.VITE_BACKEND_URL;
+
+export interface TaskProgress {
+  stage: "parsing" | "calculating" | null;
+  metric: string | null;
+  metric_index: number | null;
+  metric_total: number | null;
+  timestep_index: number | null;
+  timestep_total: number | null;
+}
+
+export interface TaskQueueInfo {
+  position: number | null;
+  length: number;
+}
+
+export interface TaskError {
+  type: string;
+  message: string;
+}
+
+export interface TaskStatus {
+  task_id: string;
+  status: "PENDING" | "PROGRESS" | "SUCCESS" | "FAILURE";
+  queue?: TaskQueueInfo;
+  progress?: TaskProgress;
+  error?: TaskError;
+  result?: ProcessNetworkResponse;
+}
 
 export const api = {
   baseUrl: API_BASE_URL,
@@ -45,7 +74,7 @@ export const api = {
     return await response.json();
   },
 
-  async processNetworkAsync(formData: FormData) {
+  async submitAsyncProcess(formData: FormData) {
     const response = await fetch(`${API_BASE_URL}/process-network-async`, {
       method: "POST",
       body: formData,
@@ -53,49 +82,45 @@ export const api = {
     if (!response.ok) {
       throw new Error(`API request failed: ${response.statusText}`);
     }
-    // { task_id: string, status: string } for now
-    return await response.json();
+    return (await response.json()) as { task_id: string; status: string };
   },
 
-  async getTaskResult(taskId: string) {
-    const response = await fetch(`${API_BASE_URL}/task-result/${taskId}`);
+  async getProcessingTask(taskId: string): Promise<TaskStatus> {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch task result: ${taskId}`);
+      throw new Error(`Failed to fetch network processing task: ${taskId}`);
     }
-    // { task_id, status, result?, meta?, error? } for now
     return await response.json();
   },
 
-  async processNetworkAsyncAndWait(
+  async processNetworkAsync(
     formData: FormData,
-    onProgress?: (status: Record<string, unknown>) => void,
+    onProgress?: (status: TaskStatus) => void,
   ) {
     // Poll slower while pending (queue position updates infrequently),
-    // faster once processing/progress (updates are meaningful, wait is shorter).
+    // faster once  progress is being reported (updates are meaningful, wait is shorter). tbd if worth it
     const PENDING_INTERVAL_MS = 4000;
     const ACTIVE_INTERVAL_MS = 2000;
     const STALL_TIMEOUT_MS = 2 * 60 * 1000;
 
-    const { task_id } = await this.processNetworkAsync(formData);
+    const { task_id } = await this.submitAsyncProcess(formData);
     let lastProgressAt = Date.now();
 
     while (true) {
-      const status = await this.getTaskResult(task_id);
+      const status = await this.getProcessingTask(task_id);
 
       if (
         status.status === "PROGRESS" ||
-        status.status === "PROCESSING" ||
-        (status.status === "PENDING" && status.meta?.queue_position != null)
+        (status.status === "PENDING" && status.queue?.position != null)
       ) {
         lastProgressAt = Date.now();
       }
+
       onProgress?.(status);
 
       if (status.status === "SUCCESS") return status.result;
       if (status.status === "FAILURE") {
-        throw new Error(
-          (status.error as string) ?? "Network processing failed",
-        );
+        throw new Error(status.error?.message ?? "Network processing failed");
       }
       if (Date.now() - lastProgressAt > STALL_TIMEOUT_MS) {
         throw new Error(`Timed out waiting for task ${task_id} to complete`);

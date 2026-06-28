@@ -100,14 +100,28 @@ def get_queue_position(
 @celery_app.task(bind=True)
 def _process_network_task(self, file_content: bytes, file_extension: str, centralities: list, communities: list):
     try:
-        self.update_state(state="PROCESSING", meta={"status": "Parsing file..."})
-        
+        self.update_state(state="PROGRESS", meta={
+            "stage": "parsing",
+            "metric": None,
+            "metric_index": None,
+            "metric_total": None,
+            "timestep_index": None,
+            "timestep_total": None,
+        })
+
         data = parse_network_file(file_content, file_extension)
         selected_centralities = [CentralityType(c) for c in (centralities or [])]
         selected_communities = [CommunityType(c) for c in (communities or [])]
 
-        self.update_state(state="PROCESSING", meta={"status": "Calculating metrics..."})
-        
+        self.update_state(state="PROGRESS", meta={
+            "stage": "calculating",
+            "metric": None,
+            "metric_index": None,
+            "metric_total": None,
+            "timestep_index": None,
+            "timestep_total": None,
+        })
+
         progress_callback = make_progress_callback(self)
 
         processed = process_network(
@@ -116,18 +130,11 @@ def _process_network_task(self, file_content: bytes, file_extension: str, centra
             selected_communities,
             progress_callback=progress_callback,
         )
-        
+
         return processed
-        
+
     except Exception as e:
         logger.error(f"Error processing network in Celery task: {e}", exc_info=True)
-        self.update_state(
-            state="FAILURE",
-            meta={
-                "exc_type": type(e).__name__,
-                "exc_message": str(e),
-            }
-        )
         raise
 
 def make_progress_callback(task):
@@ -135,6 +142,7 @@ def make_progress_callback(task):
         task.update_state(
             state="PROGRESS",
             meta={
+                "stage": "calculating",
                 "metric": name,
                 "metric_index": metric_index,
                 "metric_total": metric_total,

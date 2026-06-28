@@ -2,26 +2,7 @@ import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type {
-  AttributeInfo,
-  CentralityData,
-  Network,
-  TimestepDelta,
-} from "@/types/network";
-
-export interface NetworkResponse {
-  network: Network;
-  base_state: Network;
-  deltas: Record<number, TimestepDelta>;
-  centralities: Record<number, CentralityData>;
-  metrics_info: {
-    nodes: Record<string, AttributeInfo>;
-    edges: Record<string, AttributeInfo>;
-  };
-  communities: Record<number, Record<string, Record<string, number>>>;
-  timesteps: number[];
-  graph_type: "directed" | "undirected";
-}
+import type { ProcessNetworkResponse } from "@/types/network";
 
 export const useLoadNetwork = () => {
   const setNetwork = useNetworkStore((s) => s.setNetwork);
@@ -29,7 +10,7 @@ export const useLoadNetwork = () => {
   const clearVisualizationData = useVisualizationStore((s) => s.clearData);
   const clearMetricsData = useMetricsStore((s) => s.clearData);
 
-  const loadNetwork = async (data: NetworkResponse) => {
+  const loadNetwork = async (data: ProcessNetworkResponse) => {
     const {
       network,
       base_state,

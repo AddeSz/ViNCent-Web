@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Optional
 
+from celery import states
 from celery.result import AsyncResult
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -358,22 +359,39 @@ async def process_network_async_api(
             detail=f"Failed to submit processing task: {str(e)}"
         )
 
-@app.get("/task-result/{task_id}")
-async def get_task_result(task_id: str):
+@app.get("/tasks/{task_id}")
+async def get_task_status(task_id: str):
     result = AsyncResult(task_id, app=celery_app)
-    response = {"task_id": task_id, "status": result.state, "result": None}
+    state = result.state
 
-    if result.state == "FAILURE":
-        response["error"] = str(result.info)
-    elif result.state == "PENDING":
+    response = {"task_id": task_id, "status": state}
+
+    if state == states.PENDING:
         position, queue_length = get_queue_position(task_id)
-        response["meta"] = {
-            "queue_position": position,
-            "queue_length": queue_length,
+        response["queue"] = {
+            "position": position,
+            "length": queue_length,
         }
-    elif result.state in ("PROCESSING", "PROGRESS"):
-        response["meta"] = result.info
-    elif result.ready():
-        response["result"] = result.get()
+
+    elif state == "PROGRESS":
+        info = result.info if isinstance(result.info, dict) else {}
+        response["progress"] = {
+            "stage": info.get("stage"),
+            "metric": info.get("metric"),
+            "metric_index": info.get("metric_index"),
+            "metric_total": info.get("metric_total"),
+            "timestep_index": info.get("timestep_index"),
+            "timestep_total": info.get("timestep_total"),
+        }
+
+    elif state == states.FAILURE:
+        exc = result.info
+        response["error"] = {
+            "type": type(exc).__name__ if exc else "Unknown",
+            "message": str(exc) if exc else "Task failed with no error details",
+        }
+
+    elif state == states.SUCCESS:
+        response["result"] = result.result
 
     return response

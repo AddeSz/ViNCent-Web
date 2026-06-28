@@ -67,3 +67,17 @@ export type TimestepDelta = {
   edges_removed: string[];
   edges_attr_changed: Record<string, Attributes>;
 };
+
+export interface ProcessNetworkResponse {
+  network: Network;
+  base_state: Network;
+  deltas: Record<number, TimestepDelta>;
+  centralities: Record<number, CentralityData>;
+  metrics_info: {
+    nodes: Record<string, AttributeInfo>;
+    edges: Record<string, AttributeInfo>;
+  };
+  communities: Record<number, Record<string, Record<string, number>>>;
+  timesteps: number[];
+  graph_type: "directed" | "undirected";
+}
