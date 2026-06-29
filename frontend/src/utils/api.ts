@@ -97,16 +97,23 @@ export const api = {
     formData: FormData,
     onProgress?: (status: TaskStatus) => void,
   ) {
-    // Poll slower while pending (queue position updates infrequently),
-    // faster once  progress is being reported (updates are meaningful, wait is shorter). tbd if worth it
-    const PENDING_INTERVAL_MS = 4000;
-    const ACTIVE_INTERVAL_MS = 2000;
+    const POLL_INTERVAL_MS = 2000;
     const STALL_TIMEOUT_MS = 2 * 60 * 1000;
 
     const { task_id } = await this.submitAsyncProcess(formData);
     let lastProgressAt = Date.now();
 
+    let lastStatus: TaskStatus = await this.getProcessingTask(task_id);
+    onProgress?.(lastStatus);
+    if (lastStatus.status === "SUCCESS") return lastStatus.result;
+    if (lastStatus.status === "FAILURE") {
+      throw new Error(lastStatus.error?.message ?? "Network processing failed");
+    }
+
     while (true) {
+      const nextIntervalMs = POLL_INTERVAL_MS;
+      await new Promise((resolve) => setTimeout(resolve, nextIntervalMs));
+
       const status = await this.getProcessingTask(task_id);
 
       if (
@@ -126,9 +133,7 @@ export const api = {
         throw new Error(`Timed out waiting for task ${task_id} to complete`);
       }
 
-      const nextIntervalMs =
-        status.status === "PENDING" ? PENDING_INTERVAL_MS : ACTIVE_INTERVAL_MS;
-      await new Promise((resolve) => setTimeout(resolve, nextIntervalMs));
+      lastStatus = status;
     }
   },
 };

@@ -372,7 +372,15 @@ async def get_task_status(task_id: str):
             "position": position,
             "length": queue_length,
         }
-
+    elif state == states.STARTED:
+        response["progress"] = {
+            "stage": "parsing",
+            "metric": None,
+            "metric_index": None,
+            "metric_total": None,
+            "timestep_index": None,
+            "timestep_total": None,
+        }
     elif state == "PROGRESS":
         info = result.info if isinstance(result.info, dict) else {}
         response["progress"] = {

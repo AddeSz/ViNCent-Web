@@ -1,5 +1,4 @@
 import Legend from "@/components/Legend";
-import { Spinner } from "@/components/ui/spinner";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
@@ -7,21 +6,26 @@ import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FileUploader from "./components/file-uploader/FileUploader";
 import { useFileUploaderState } from "./components/file-uploader/useFileUploaderState";
+import { ProcessingProgress } from "./components/ProcessingProgress";
 import ViewSettings from "./features/view-settings/ViewSettings";
 import { useFilterData } from "./hooks/useFilterData";
 import { useProcessData } from "./hooks/useProcessData";
 import { useValidateSettings } from "./hooks/useValidateSettings";
 import { useNetworkStore } from "./stores/useNetworkStore";
+import type { TaskStatus } from "./utils/api";
 
 const VIEW_KEY = "center-view-mode";
 export type ViewType = "radial" | "node-link" | "data-table";
 
-type LoadStatus = "idle" | "loading" | "error" | "ready";
+type AppState =
+  | { phase: "idle" }
+  | { phase: "loading"; task: TaskStatus | null }
+  | { phase: "error"; message: string }
+  | { phase: "ready" };
 
 const App = () => {
   const { view, setView, isViewLoaded } = useViewPersistence(VIEW_KEY);
-  const [status, setStatus] = useState<LoadStatus>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [appState, setAppState] = useState<AppState>({ phase: "idle" });
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
 
   const fileUploaderState = useFileUploaderState();
@@ -41,26 +45,26 @@ const App = () => {
   const currentDataset = useNetworkStore((s) => s.currentDataset);
   const directed = useNetworkStore((s) => s.directed);
 
-  const handleLoadingStart = () => {
-    setStatus("loading");
-    setError(null);
-  };
+  const handleLoadingStart = () =>
+    setAppState({ phase: "loading", task: null });
+
+  const handleProgress = (task: TaskStatus) =>
+    setAppState({ phase: "loading", task });
 
   const handleLoadingComplete = () => {
-    setStatus("ready");
+    setAppState({ phase: "ready" });
     fileUploaderState.clearDataSelection();
   };
 
-  const handleLoadingError = (errorMessage: string) => {
-    setError(errorMessage);
-    setStatus("error");
-  };
+  const handleLoadingError = (message: string) =>
+    setAppState({ phase: "error", message });
 
   const handleDragging = (id: string) => (isDragging: boolean) => {
     setDraggingBars((prev) => ({ ...prev, [id]: isDragging }));
   };
 
-  const isNotReady = status === "idle" || status === "error";
+  const isNotReady = appState.phase === "idle" || appState.phase === "error";
+
   return (
     <div className="flex h-full">
       <PanelGroup direction="horizontal" className="flex">
@@ -77,6 +81,7 @@ const App = () => {
                     onLoadingStart={handleLoadingStart}
                     onLoadingComplete={handleLoadingComplete}
                     onLoadingError={handleLoadingError}
+                    onProgress={handleProgress}
                     fileUploaderState={fileUploaderState}
                   />
                 </div>
@@ -103,24 +108,21 @@ const App = () => {
         />
 
         <Panel defaultSize={65} minSize={50}>
-          {status === "loading" && (
-            <div className="flex h-full flex-col items-center justify-center gap-2">
-              <Spinner className="size-10" />
-              <p className="text-center text-sm text-muted-foreground">
-                Processing dataset and calculating centrality values...
-              </p>
-            </div>
+          {appState.phase === "loading" && (
+            <ProcessingProgress task={appState.task} />
           )}
 
           {isNotReady && (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p
                 className={`text-center ${
-                  status === "error" ? "text-red-500" : "text-muted-foreground"
+                  appState.phase === "error"
+                    ? "text-red-500"
+                    : "text-muted-foreground"
                 }`}
               >
-                {status === "error"
-                  ? error
+                {appState.phase === "error"
+                  ? appState.message
                   : "No data loaded. Select or import a dataset to begin."}
               </p>
 
@@ -129,13 +131,14 @@ const App = () => {
                   onLoadingStart={handleLoadingStart}
                   onLoadingComplete={handleLoadingComplete}
                   onLoadingError={handleLoadingError}
+                  onProgress={handleProgress}
                   fileUploaderState={fileUploaderState}
                 />
               </div>
             </div>
           )}
 
-          {status === "ready" && (
+          {appState.phase === "ready" && (
             <CenterView
               nodeData={nodeData}
               filteredNodeData={filteredNodeData}

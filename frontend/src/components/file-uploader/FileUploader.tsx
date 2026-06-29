@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { useLoadNetwork } from "@/hooks/useLoadNetwork";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import type { TaskStatus } from "@/utils/api";
 import api from "@/utils/api";
 import { useRef, useState } from "react";
 import DataSourceInput from "./DataSourceInput";
@@ -36,6 +37,7 @@ interface FileUploaderProps {
   onLoadingStart: () => void;
   onLoadingComplete: () => void;
   onLoadingError: (error: string) => void;
+  onProgress?: (status: TaskStatus) => void;
   fileUploaderState: FileUploaderState;
 }
 
@@ -43,6 +45,7 @@ const FileUploader = ({
   onLoadingStart,
   onLoadingComplete,
   onLoadingError,
+  onProgress,
   fileUploaderState,
 }: FileUploaderProps) => {
   const {
@@ -171,9 +174,9 @@ const FileUploader = ({
         formData.append("centralities", JSON.stringify(centralitiesArray));
         formData.append("communities", JSON.stringify(communitiesArray));
 
-        networkData = await api.processNetworkAsync(formData, (status) =>
-          console.log(status),
-        );
+        networkData = await api.processNetworkAsync(formData, (status) => {
+          onProgress?.(status);
+        });
         setCurrentDataset(selectedFile!.name);
       }
 
