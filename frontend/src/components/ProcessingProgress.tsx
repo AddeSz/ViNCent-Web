@@ -1,5 +1,6 @@
 import { Spinner } from "@/components/ui/spinner";
 import type { TaskStatus } from "@/utils/api";
+import { formatKeyLabel } from "@/utils/utils";
 
 interface Props {
   task: TaskStatus | null;
@@ -19,7 +20,7 @@ function getMessage(task: TaskStatus | null): string {
     if (p.stage === "parsing") return "Parsing network file...";
 
     const metricPart = p.metric
-      ? `${p.metric}${p.metric_index != null && p.metric_total != null ? ` (${p.metric_index}/${p.metric_total})` : ""}`
+      ? `${formatKeyLabel(p.metric)}${p.metric_index != null && p.metric_total != null ? ` (${p.metric_index}/${p.metric_total})` : ""}`
       : "metrics";
     const timestepPart =
       p.timestep_index != null &&
