@@ -1,5 +1,5 @@
 import type { ScaleType, SizeMode } from "@/stores/useSettingsStore";
-import type { Edge, FullData, Node } from "@/types/network";
+import type { Edge, FullData, Node } from "@/types";
 import type { InteractionProps } from "../Tooltips/useTooltip";
 
 export const calculateNodeSizes = (

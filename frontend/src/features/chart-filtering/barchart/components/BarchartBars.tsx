@@ -1,5 +1,5 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 
 interface BarchartBarsProps {
   categories: string[];

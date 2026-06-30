@@ -2,7 +2,7 @@ import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useVisualizationStore } from "@/stores/useVisualizationStore";
-import type { ProcessNetworkResponse } from "@/types/network";
+import type { ProcessNetworkResponse } from "@/types";
 
 export const useLoadNetwork = () => {
   const setNetwork = useNetworkStore((s) => s.setNetwork);

@@ -1,5 +1,5 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { DataChanges } from "@/types/network";
+import type { DataChanges } from "@/types";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 import type { InteractionProps } from "../Tooltips/useTooltip";

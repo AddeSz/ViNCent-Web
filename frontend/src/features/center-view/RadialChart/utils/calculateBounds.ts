@@ -1,4 +1,4 @@
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 
 type GroupBounds = {
   id: string;

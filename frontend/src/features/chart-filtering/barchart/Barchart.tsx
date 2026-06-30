@@ -1,4 +1,4 @@
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";

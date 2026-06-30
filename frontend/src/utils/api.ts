@@ -1,5 +1,5 @@
 import { getProjectEnvVariables } from "@/shared/projectEnvVariables";
-import type { ProcessNetworkResponse } from "@/types/network";
+import type { ProcessNetworkResponse } from "@/types";
 
 const env = getProjectEnvVariables();
 const API_BASE_URL = env.envVariables.VITE_BACKEND_URL;

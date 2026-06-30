@@ -1,16 +1,10 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type {
-    DataChanges,
-    Edge,
-    FullData,
-    Network,
-    Node,
-} from "@/types/network";
+import type { DataChanges, Edge, FullData, Network, Node } from "@/types";
 import {
-    getLinkStyle,
-    handleHighlight,
-    highlightNodeColor,
+  getLinkStyle,
+  handleHighlight,
+  highlightNodeColor,
 } from "@/utils/ColorHelper";
 import { getNodeId } from "@/utils/utils";
 import * as d3 from "d3";

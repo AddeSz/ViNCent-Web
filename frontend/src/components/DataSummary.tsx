@@ -1,5 +1,5 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { type Network } from "@/types/network";
+import { type Network } from "@/types";
 import { getNodeId } from "@/utils/utils";
 import { useMemo } from "react";
 

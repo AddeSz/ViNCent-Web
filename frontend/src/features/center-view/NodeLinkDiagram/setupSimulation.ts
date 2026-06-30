@@ -1,4 +1,4 @@
-import type { Edge, Node } from "@/types/network";
+import type { Edge, Node } from "@/types";
 import type { DragBehavior, Simulation } from "d3";
 import * as d3 from "d3";
 

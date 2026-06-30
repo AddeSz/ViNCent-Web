@@ -1,5 +1,5 @@
 import { type EdgeRenderingMode } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData } from "@/types/network";
+import type { DataChanges, FullData } from "@/types";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import { type ForceEdgeBundlingOptions } from "@/utils/ForceEdgeBundling";
 import * as d3 from "d3";

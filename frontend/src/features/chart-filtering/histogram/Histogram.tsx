@@ -1,6 +1,6 @@
 import { type BrushRange } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef } from "react";
 import type { ChartDimensions } from "../ChartFiltering";

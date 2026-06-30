@@ -1,5 +1,5 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
 import { formatValue, truncateText } from "@/utils/utils";
 import * as d3 from "d3";

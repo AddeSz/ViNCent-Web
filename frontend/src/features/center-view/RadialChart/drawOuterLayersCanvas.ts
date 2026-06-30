@@ -1,5 +1,5 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import type { DataChanges, FullData } from "@/types/network";
+import type { DataChanges, FullData } from "@/types";
 import * as d3 from "d3";
 
 export interface CommunitySegment {

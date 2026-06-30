@@ -1,4 +1,4 @@
-import type { Edge, FullData } from "@/types/network";
+import type { Edge, FullData } from "@/types";
 import {
   ForceEdgeBundling,
   type ForceEdgeBundlingOptions,

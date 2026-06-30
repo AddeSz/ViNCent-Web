@@ -1,4 +1,4 @@
-import type { DataChanges } from "@/types/network";
+import type { DataChanges } from "@/types";
 import { create } from "zustand";
 
 export interface TooltipState {

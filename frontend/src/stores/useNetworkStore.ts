@@ -1,4 +1,4 @@
-import type { Edge, Network, Node } from "@/types/network";
+import type { Edge, Network, Node } from "@/types";
 import type { SortingState } from "@tanstack/react-table";
 import { create } from "zustand";
 import { useMetricsStore } from "./useMetricsStore";

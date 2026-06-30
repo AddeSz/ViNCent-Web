@@ -6,7 +6,7 @@ import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff } from "lucide-react";
 
-import type { AttributeInfo } from "@/types/network";
+import type { AttributeInfo } from "@/types";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Check, X } from "lucide-react";
 

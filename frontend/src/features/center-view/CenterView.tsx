@@ -6,7 +6,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import type { DataChanges, FullData, Network } from "@/types/network";
+import type { DataChanges, FullData, Network } from "@/types";
 import { useRef, useState } from "react";
 import DataTable from "./DataTable/DataTable";
 import { useTableStates } from "./DataTable/hooks/useTableStates";

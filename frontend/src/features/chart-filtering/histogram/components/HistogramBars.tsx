@@ -1,5 +1,5 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { type ScaleLinear } from "d3";
 import type { BinnedData } from "../../components/createBinnedData";
 

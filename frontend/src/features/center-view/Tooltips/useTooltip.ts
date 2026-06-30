@@ -1,7 +1,7 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useTooltipStore, type TooltipState } from "@/stores/useTooltipStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import throttle from "lodash.throttle";
 import { useCallback, useEffect, useRef } from "react";
 import type { ContextType } from "../CenterView";

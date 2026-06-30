@@ -1,5 +1,5 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import type { AttributeInfo, FullData } from "@/types/network";
+import type { AttributeInfo, FullData } from "@/types";
 import * as d3 from "d3";
 import {
   getClosestZoomLevel,

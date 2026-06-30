@@ -8,7 +8,7 @@ import type {
   Network,
   Node,
   TimestepDelta,
-} from "@/types/network";
+} from "@/types";
 import { getNodeId } from "@/utils/utils";
 import { create } from "zustand";
 import { useNetworkStore } from "./useNetworkStore";

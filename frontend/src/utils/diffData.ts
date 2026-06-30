@@ -1,4 +1,4 @@
-import type { DataChanges, FullData } from "@/types/network";
+import type { DataChanges, FullData } from "@/types";
 
 export const diffData = (
   prevMap: Map<string, FullData>,

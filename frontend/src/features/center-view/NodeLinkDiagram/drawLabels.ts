@@ -1,4 +1,4 @@
-import type { FullData, Node } from "@/types/network";
+import type { FullData, Node } from "@/types";
 import { highlightLabelColor } from "@/utils/ColorHelper";
 import { formatValue, truncateText } from "@/utils/utils";
 import * as d3 from "d3";

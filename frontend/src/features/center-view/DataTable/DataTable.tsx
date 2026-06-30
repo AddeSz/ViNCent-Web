@@ -2,7 +2,7 @@ import type { ContextType } from "@/features/center-view/CenterView";
 import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { formatValue } from "@/utils/utils";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";

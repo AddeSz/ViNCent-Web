@@ -1,4 +1,4 @@
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { calculateBandwidth, calculateGapProportion } from "@/utils/utils";
 import * as d3 from "d3";
 import { useMemo } from "react";

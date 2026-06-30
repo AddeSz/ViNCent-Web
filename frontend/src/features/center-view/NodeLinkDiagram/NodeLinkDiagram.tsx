@@ -11,13 +11,7 @@ import {
 } from "@/features/center-view/hooks/useZoom";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type {
-  DataChanges,
-  Edge,
-  FullData,
-  Network,
-  Node,
-} from "@/types/network";
+import type { DataChanges, Edge, FullData, Network, Node } from "@/types";
 import type { Simulation } from "d3";
 import * as d3 from "d3";
 import { useEffect, useMemo, useRef, useState } from "react";

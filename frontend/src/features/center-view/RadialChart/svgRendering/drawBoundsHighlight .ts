@@ -1,4 +1,4 @@
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { highlightBoundsColor } from "@/utils/ColorHelper";
 import { arc } from "d3";
 import type { BoundsResult } from "../utils/calculateBounds";

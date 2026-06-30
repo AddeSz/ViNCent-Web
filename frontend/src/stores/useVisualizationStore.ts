@@ -1,4 +1,4 @@
-import type { AttributeInfo, AttributeValue } from "@/types/network";
+import type { AttributeInfo, AttributeValue } from "@/types";
 import * as d3 from "d3";
 import { create } from "zustand";
 

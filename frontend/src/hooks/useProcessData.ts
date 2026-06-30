@@ -1,6 +1,6 @@
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData } from "@/types/network";
+import type { DataChanges, FullData } from "@/types";
 import { getNodeId } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 

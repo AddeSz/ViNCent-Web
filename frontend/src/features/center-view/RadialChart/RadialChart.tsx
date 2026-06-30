@@ -9,7 +9,7 @@ import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData } from "@/types/network";
+import type { DataChanges, FullData } from "@/types";
 import * as d3 from "d3";
 import throttle from "lodash.throttle";
 import { useEffect, useMemo, useRef, useState } from "react";

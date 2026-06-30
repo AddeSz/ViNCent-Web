@@ -1,4 +1,4 @@
-import type { DataChanges } from "@/types/network";
+import type { DataChanges } from "@/types";
 import * as d3 from "d3";
 import type { InteractionProps } from "../../Tooltips/useTooltip";
 

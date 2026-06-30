@@ -1,5 +1,5 @@
 import { type EdgeRenderingMode } from "@/stores/useSettingsStore";
-import type { Edge, FullData } from "@/types/network";
+import type { Edge, FullData } from "@/types";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import {
   ForceEdgeBundling,

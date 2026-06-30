@@ -1,5 +1,5 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import * as d3 from "d3";
 import type { BoundsResult } from "./utils/calculateBounds";
 

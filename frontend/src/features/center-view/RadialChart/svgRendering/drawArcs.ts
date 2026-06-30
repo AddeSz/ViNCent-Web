@@ -1,5 +1,5 @@
 import { useMetricsStore } from "@/stores/useMetricsStore";
-import type { AttributeInfo } from "@/types/network";
+import type { AttributeInfo } from "@/types";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 import type { InteractionProps } from "../../Tooltips/useTooltip";

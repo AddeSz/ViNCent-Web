@@ -14,7 +14,7 @@ import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { formatKeyLabel, formatValue, getNodeId } from "@/utils/utils";
 import { HelpCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";

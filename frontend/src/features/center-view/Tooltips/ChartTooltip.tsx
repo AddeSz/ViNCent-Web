@@ -2,7 +2,7 @@ import { useKeys } from "@/hooks/useKeys";
 import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useTooltipStore } from "@/stores/useTooltipStore";
-import type { FullData } from "@/types/network";
+import type { FullData } from "@/types";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo, type JSX } from "react";
 
