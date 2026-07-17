@@ -12,6 +12,7 @@ export default tseslint.config(
       js.configs.recommended,
       ...tseslint.configs.recommended,
       react.configs.flat.recommended,
+      react.configs.flat["jsx-runtime"],
     ],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
