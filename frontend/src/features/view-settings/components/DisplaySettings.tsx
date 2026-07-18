@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
@@ -13,7 +13,7 @@ import { useState } from "react";
 const DisplaySettings = () => {
   const { displaySettings, setDisplaySettings } = useSettingsStore();
   const { previewChanges, showForeshadowing, stickyHover } = displaySettings;
-  const timesteps = useMetricsStore((s) => s.timesteps);
+  const timesteps = useNetworkStore((s) => s.timesteps);
   const [isOpen, setIsOpen] = useState(true);
 
   return (

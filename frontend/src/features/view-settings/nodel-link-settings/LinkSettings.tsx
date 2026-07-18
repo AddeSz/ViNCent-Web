@@ -26,8 +26,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { ScaleType } from "@/stores/useSettingsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { formatKeyLabel } from "@/utils/utils";
@@ -42,8 +43,8 @@ interface LinkSettingsProps {
 const LinkSettings = ({ isOpen, setIsOpen }: LinkSettingsProps) => {
   const settings = useSettingsStore((s) => s.nodeLinkSettings);
   const setSettings = useSettingsStore((s) => s.setNodeLinkSettings);
-  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const metricsInfo = useCurrentMetricsInfo();
+  const getColorForMetric = useGetColorForMetric();
   const { enabledEdgeKeys } = useKeys();
   const [linkOpen, setLinkOpen] = useState(false);
 

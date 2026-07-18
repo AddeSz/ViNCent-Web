@@ -1,4 +1,4 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
 import type { FullData } from "@/types";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
 import { formatValue, truncateText } from "@/utils/utils";
@@ -224,9 +224,9 @@ export const updateLabelStyles = (
   outerArcsWidth: number,
   showLabels: boolean,
   hoveredCommunity: { key: string; id: number } | null,
+  getColorForMetric: GetColorForMetric,
   animate: boolean = false,
 ) => {
-  const getColorForMetric = useMetricsStore.getState().getColorForMetric;
   const showAll = showLabels && shouldShowAllLabels(zoomLevel, outerArcsWidth);
 
   const linkedToHoveredIds = hoveredNode

@@ -1,4 +1,4 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import * as d3 from "d3";
 
 const drawSelectionBrush = (
@@ -255,7 +255,7 @@ const drawSelectionBrush = (
       }
       const selectedIds = getSelectedIds(start, end);
 
-      useNetworkStore.getState().toggleNodesSelection(selectedIds);
+      useInteractionStore.getState().toggleNodesSelection(selectedIds);
 
       setTimeout(clearBrushSelection, 50);
     });

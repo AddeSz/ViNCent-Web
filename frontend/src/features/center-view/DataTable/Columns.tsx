@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, EyeOff } from "lucide-react";
 
+import type { GetColorForMetric } from "@/hooks/useGetColorForMetric";
+import { useFilterStore } from "@/stores/useFilterStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { AttributeInfo } from "@/types";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Check, X } from "lucide-react";
@@ -99,9 +100,9 @@ export const createHiddenColumn = <
   maxSize: 40,
   enableResizing: false,
   header: ({ table }) => {
-    const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
-    const hideNode = useNetworkStore((s) => s.hideNode);
-    const restoreNode = useNetworkStore((s) => s.restoreNode);
+    const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
+    const hideNode = useFilterStore((s) => s.hideNode);
+    const restoreNode = useFilterStore((s) => s.restoreNode);
 
     const allRows = table.getRowModel().rows;
     const allHidden = allRows.every((row) => hiddenNodes.has(row.original.id));
@@ -137,9 +138,9 @@ export const createHiddenColumn = <
   },
   cell: ({ row }) => {
     const nodeId = row.original.id;
-    const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
-    const hideNode = useNetworkStore((s) => s.hideNode);
-    const restoreNode = useNetworkStore((s) => s.restoreNode);
+    const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
+    const hideNode = useFilterStore((s) => s.hideNode);
+    const restoreNode = useFilterStore((s) => s.restoreNode);
 
     const isHidden = hiddenNodes.has(nodeId);
 
@@ -227,8 +228,10 @@ export const createEdgeSelectColumn = <
   maxSize: 40,
   enableResizing: false,
   header: ({ table }) => {
-    const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-    const toggleNodesSelection = useNetworkStore((s) => s.toggleNodesSelection);
+    const selectedNodes = useInteractionStore((s) => s.selectedNodes);
+    const toggleNodesSelection = useInteractionStore(
+      (s) => s.toggleNodesSelection,
+    );
 
     const allEdgeNodeIds = table.getRowModel().rows.flatMap((row) => {
       const [source, target] = row.original.id.split("|");
@@ -259,8 +262,10 @@ export const createEdgeSelectColumn = <
     );
   },
   cell: ({ row }) => {
-    const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-    const toggleNodesSelection = useNetworkStore((s) => s.toggleNodesSelection);
+    const selectedNodes = useInteractionStore((s) => s.selectedNodes);
+    const toggleNodesSelection = useInteractionStore(
+      (s) => s.toggleNodesSelection,
+    );
 
     const [source, target] = row.original.id.split("|");
     const nodeIds = [source, target];
@@ -347,11 +352,15 @@ export const createEdgeColumn = <T extends { id: string }>(
 
 export const createDataColumns = <T extends Record<string, any>>(
   keys: string[],
+  getColorForMetric: GetColorForMetric,
+  metricsInfo: Map<string, AttributeInfo>,
 ): ColumnDef<T>[] =>
   keys.map((key) => {
     const formattedLabel = formatKeyLabel(key);
     const calculatedSize = calculateColumnWidth(formattedLabel);
-
+    const info = metricsInfo.get(key);
+    const isPerValueColored =
+      info?.isCommunity || info?.isCategory || info?.isBoolean;
     return {
       id: key,
       accessorFn: (row) => row[key as keyof T],
@@ -367,7 +376,7 @@ export const createDataColumns = <T extends Record<string, any>>(
         return stringValue.includes(stringFilter);
       },
       header: ({ column, header }) => {
-        const color = useMetricsStore.getState().getColorForMetric(key);
+        const color = getColorForMetric(key);
         let SortIcon = ArrowUpDown;
         if (column.getIsSorted() === "asc") SortIcon = ArrowUp;
         if (column.getIsSorted() === "desc") SortIcon = ArrowDown;
@@ -398,13 +407,9 @@ export const createDataColumns = <T extends Record<string, any>>(
       },
       cell: ({ row }) => {
         const value = row.getValue(key);
-        const headerColor = useMetricsStore.getState().getColorForMetric(key);
-        const color =
-          !headerColor || headerColor === "var(--muted-foreground)"
-            ? useMetricsStore
-                .getState()
-                .getColorForMetric(key, value as string | number)
-            : undefined;
+        const color = isPerValueColored
+          ? getColorForMetric(key, value as string | number)
+          : undefined;
         return (
           <div
             className="truncate px-2 text-left font-medium"
@@ -420,7 +425,9 @@ export const createDataColumns = <T extends Record<string, any>>(
 
 const columnHelper = createColumnHelper<AttributeRow>();
 
-export const createAttributeColumns = () => {
+export const createAttributeColumns = (
+  getColorForMetric: GetColorForMetric,
+) => {
   return [
     columnHelper.accessor("key", {
       header: ({ column, header }) => {
@@ -451,7 +458,7 @@ export const createAttributeColumns = () => {
       },
       cell: (info) => {
         const key = info.getValue() as string;
-        const color = useMetricsStore.getState().getColorForMetric(key);
+        const color = getColorForMetric(key);
 
         return (
           <div

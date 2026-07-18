@@ -1,4 +1,4 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { FullData } from "@/types";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
@@ -53,9 +53,9 @@ export const useSortingLogic = (
   data?: Map<string, FullData>,
   options?: SortingOptions,
 ) => {
-  const setSortKey = useNetworkStore((s) => s.setSortKey);
-  const sortingState = useNetworkStore((s) => s.sortingState);
-  const setSorting = useNetworkStore((s) => s.setSortingState);
+  const setSortKey = useInteractionStore((s) => s.setSortKey);
+  const sortingState = useInteractionStore((s) => s.sortingState);
+  const setSorting = useInteractionStore((s) => s.setSortingState);
   const defaultDirection = options?.defaultDirection ?? true;
 
   const handleSortingChange = (

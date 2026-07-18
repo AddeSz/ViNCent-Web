@@ -2,7 +2,7 @@ import type { AttributeInfo, AttributeValue } from "@/types";
 import * as d3 from "d3";
 import { create } from "zustand";
 
-interface VisualizationStore {
+interface ColorStore {
   centralityColors: Map<string, string>;
   attributeColors: Map<string, string>;
   categoryColors: Map<string, string>;
@@ -61,7 +61,7 @@ function generateColors(n: number): string[] {
   });
 }
 
-export const useVisualizationStore = create<VisualizationStore>((set, get) => ({
+export const useColorStore = create<ColorStore>((set, get) => ({
   centralityColors: new Map(),
   attributeColors: new Map(),
   categoryColors: new Map(),

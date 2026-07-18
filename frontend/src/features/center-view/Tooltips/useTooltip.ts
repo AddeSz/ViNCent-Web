@@ -1,6 +1,8 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import {
+  useInteractionStore,
+  type TooltipState,
+} from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { useTooltipStore, type TooltipState } from "@/stores/useTooltipStore";
 import type { FullData } from "@/types";
 import throttle from "lodash.throttle";
 import { useCallback, useEffect, useRef } from "react";
@@ -14,9 +16,9 @@ export interface InteractionProps {
 }
 
 export const useTooltip = (dataMap?: Map<string, FullData>) => {
-  const showTooltip = useTooltipStore((s) => s.showTooltip);
-  const hideTooltip = useTooltipStore((s) => s.hideTooltip);
-  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
+  const showTooltip = useInteractionStore((s) => s.showTooltip);
+  const hideTooltip = useInteractionStore((s) => s.hideTooltip);
+  const setHoveredNode = useInteractionStore((s) => s.setHoveredNode);
   const stickyHover = useSettingsStore((s) => s.displaySettings.stickyHover);
   const currentHoveredKey = useRef<string | null>(null);
   const stickyHoverRef = useRef(stickyHover);

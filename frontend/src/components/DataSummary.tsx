@@ -1,3 +1,4 @@
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { type Network } from "@/types";
 import { getNodeId } from "@/utils/utils";
@@ -8,7 +9,7 @@ interface DataSummaryProps {
 }
 
 const DataSummary = ({ filteredNetwork }: DataSummaryProps) => {
-  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
+  const selectedNodes = useInteractionStore((s) => s.selectedNodes);
   const network = useNetworkStore((s) => s.network);
 
   const { selectedNodesCount, selectedLinksCount } = useMemo(() => {

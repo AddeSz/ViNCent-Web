@@ -1,4 +1,4 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import type { AttributeInfo } from "@/types";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
@@ -13,7 +13,7 @@ const drawArcs = (
   interactionProps: InteractionProps,
   getKeyIndex: (key: string) => number,
 ): void => {
-  const { getColorForMetric } = useMetricsStore.getState();
+  const getColorForMetric = useGetColorForMetric();
   const { onNodeHover, onContextMenu, onTooltipShow, onTooltipHide } =
     interactionProps;
   const g = svg

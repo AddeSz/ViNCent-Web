@@ -1,4 +1,4 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { Node } from "@/types";
 import * as d3 from "d3";
 
@@ -201,7 +201,7 @@ const drawSelectionBrush = (
       const selectedIds = getSelectedIds(lassoPoints);
 
       if (selectedIds.length > 0) {
-        useNetworkStore.getState().toggleNodesSelection(selectedIds);
+        useInteractionStore.getState().toggleNodesSelection(selectedIds);
       }
 
       setTimeout(clearLassoSelection, 50);

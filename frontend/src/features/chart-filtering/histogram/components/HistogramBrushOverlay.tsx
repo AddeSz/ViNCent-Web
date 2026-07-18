@@ -1,4 +1,4 @@
-import type { BrushRange } from "@/stores/useMetricsStore";
+import type { BrushRange } from "@/stores/useFilterStore";
 
 interface HistogramBrushOverlayProps {
   brushRange: BrushRange | null;

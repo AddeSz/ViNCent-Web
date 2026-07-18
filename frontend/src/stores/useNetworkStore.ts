@@ -1,187 +1,241 @@
-import type { Edge, Network, Node } from "@/types";
-import type { SortingState } from "@tanstack/react-table";
+import type {
+  AttributeInfo,
+  CentralityData,
+  Edge,
+  Network,
+  Node,
+  TimestepDelta,
+} from "@/types";
 import { create } from "zustand";
-import { useMetricsStore } from "./useMetricsStore";
+
+interface LoadDatasetParams {
+  network: Network;
+  graphType: string;
+  baseState: Network;
+  deltas: Record<number, TimestepDelta>;
+  centralities: Record<number, CentralityData>;
+  allMetricsInfo: Record<string, AttributeInfo>;
+  communities: Record<number, Record<string, Record<string, number>>>;
+  timesteps: number[];
+}
 
 interface NetworkStore {
   network: Network;
   nodeMap: Map<string, Node>;
   edgeMap: Map<string, Edge>;
-  selectedNodes: Set<string>;
-  hoveredNode: null | string;
-  barHoveredNodes: Set<string>;
-  hoveredCommunity: { key: string; id: number } | null;
-  sortKey: string;
-  sortingState: SortingState;
+  baseState: Network | null;
+  deltas: Map<number, TimestepDelta>;
+  centralities: Map<number, CentralityData>;
+  communities: Map<number, Record<string, Record<string, number>>>;
+  metricsInfo: Map<string, AttributeInfo>;
+  timesteps: number[];
   directed: boolean | null;
-
-  resetRadialZoomFlag: Boolean;
-  resetNodeLinkZoomFlag: Boolean;
-  hiddenNodes: Set<string>;
   currentDataset: string | null;
 
-  restartSimulationFlag: boolean;
-  setRestartSimulationFlag: (flag: boolean) => void;
+  currentTimestep: number;
+  currentNodes: Map<string, Node>;
+  currentEdges: Map<string, Edge>;
+  currentCommunities: Record<string, Record<string, number>> | null;
 
-  setNetwork: (data: Network, graphType: string) => void;
-  selectNode: (id: string, multi?: boolean) => void;
-  deselectNode: (id: string) => void;
-  toggleNodeSelection: (id: string) => void;
-  toggleNodesSelection: (ids: string[]) => void;
-  setHoveredNode: (node: string | null) => void;
-  setHoveredCommunity: (key: string | null, id: number | null) => void;
-  setBarHoveredNodes: (nodes: Set<string>) => void;
-
-  setSortKey: (key: string) => void;
-  setSortingState: (sorting: SortingState) => void;
-
-  resetRadialZoom: () => void;
-  resetNodeLinkZoom: () => void;
-
-  hideNode: (id: string) => void;
-  restoreNode: (id: string) => void;
-  restoreAllNodes: () => void;
-  hideSelection: () => void;
-
+  loadDataset: (params: LoadDatasetParams) => void;
+  setTimestep: (timestep: number) => void;
   setCurrentDataset: (dataset: string) => void;
 
-  clearSelection: () => void;
-  clearData: () => void;
-
   isNetworkEmpty: () => boolean;
+  clearData: () => void;
+}
+
+function applyDelta(
+  currentNodes: Map<string, Node>,
+  currentEdges: Map<string, Edge>,
+  delta: TimestepDelta,
+) {
+  delta.nodes_added.forEach((node) => {
+    currentNodes.set(node.id, { ...node });
+  });
+
+  delta.nodes_removed.forEach((nodeId) => {
+    currentNodes.delete(nodeId);
+  });
+
+  Object.entries(delta.nodes_attr_changed).forEach(([nodeId, attrChanges]) => {
+    const node = currentNodes.get(nodeId);
+    if (node) {
+      node.attributes = { ...node.attributes, ...attrChanges };
+      if ("label" in attrChanges) {
+        node.label = attrChanges._label as string;
+      }
+    }
+  });
+
+  delta.edges_added.forEach((edge) => {
+    currentEdges.set(edge.id, { ...edge });
+  });
+
+  delta.edges_removed.forEach((edgeId) => {
+    currentEdges.delete(edgeId);
+  });
+
+  Object.entries(delta.edges_attr_changed).forEach(([edgeId, attrChanges]) => {
+    const edge = currentEdges.get(edgeId);
+    if (edge) {
+      edge.attributes = { ...edge.attributes, ...attrChanges };
+    }
+  });
 }
 
 export const useNetworkStore = create<NetworkStore>((set, get) => ({
   network: { nodes: [], edges: [] },
-  nodeMap: new Map<string, Node>(),
-  edgeMap: new Map<string, Edge>(),
-  linkCountMap: new Map<string, number>(),
-  selectedNodes: new Set<string>(),
-  hoveredNode: null,
-  barHoveredNodes: new Set<string>(),
-  hoveredCommunity: null,
-  sortKey: "none",
-  sortingState: [],
+  nodeMap: new Map(),
+  edgeMap: new Map(),
+  baseState: null,
+  deltas: new Map(),
+  centralities: new Map(),
+  communities: new Map(),
+  metricsInfo: new Map(),
+  timesteps: [],
   directed: null,
-
-  resetRadialZoomFlag: false,
-  resetNodeLinkZoomFlag: false,
-  hiddenNodes: new Set<string>(),
   currentDataset: null,
-  restartSimulationFlag: false,
 
-  setNetwork: (data, graphType) => {
-    const nodeMap = new Map<string, Node>(data.nodes.map((n) => [n.id, n]));
-    const edgeMap = new Map<string, Edge>(data.edges.map((e) => [e.id, e]));
-    let directed = true;
-    if (graphType === "undirected") {
-      directed = false;
-    }
+  currentTimestep: 0,
+  currentNodes: new Map(),
+  currentEdges: new Map(),
+  currentCommunities: null,
+
+  loadDataset: ({
+    network,
+    graphType,
+    baseState,
+    deltas,
+    centralities,
+    allMetricsInfo,
+    communities,
+    timesteps,
+  }) => {
+    const nodeMap = new Map<string, Node>(network.nodes.map((n) => [n.id, n]));
+    const edgeMap = new Map<string, Edge>(network.edges.map((e) => [e.id, e]));
+    const directed = graphType !== "undirected";
+
+    const deltasMap = new Map(
+      Object.entries(deltas).map(([k, v]) => [Number(k), v]),
+    );
+    const centralitiesMap = new Map(
+      Object.entries(centralities).map(([k, v]) => [Number(k), v]),
+    );
+    const communitiesMap = new Map(
+      Object.entries(communities).map(([k, v]) => [Number(k), v]),
+    );
+    const metricsInfoMap = new Map<string, AttributeInfo>(
+      Object.entries(allMetricsInfo).map(([key, info]) => [
+        key,
+        { ...info, values: new Set(info.values) },
+      ]),
+    );
+
     set({
-      network: data,
+      network,
       nodeMap,
       edgeMap,
       directed,
+      baseState,
+      deltas: deltasMap,
+      centralities: centralitiesMap,
+      communities: communitiesMap,
+      metricsInfo: metricsInfoMap,
+      timesteps,
     });
-  },
 
-  selectNode: (id, multi = false) => {
-    const current = get().selectedNodes;
-    const next = multi ? new Set<string>(current) : new Set<string>();
-    next.add(id);
-    set({ selectedNodes: next });
-  },
-
-  deselectNode: (id) => {
-    const current = get().selectedNodes;
-    const next = new Set<string>(current);
-    next.delete(id);
-    set({ selectedNodes: next });
-  },
-
-  toggleNodeSelection: (id) => {
-    const current = get().selectedNodes;
-    const next = new Set<string>(current);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
+    if (timesteps.length > 0) {
+      get().setTimestep(Math.min(...timesteps));
     }
-    set({ selectedNodes: next });
   },
 
-  toggleNodesSelection: (ids: string[]) => {
-    const { selectedNodes } = get();
-    const allSelected = ids.every((id) => selectedNodes.has(id));
+  setTimestep: (timestep) => {
+    const { baseState, deltas, centralities, communities, metricsInfo } = get();
 
-    set((state) => {
-      const next = new Set(state.selectedNodes);
-      if (allSelected) {
-        ids.forEach((id) => next.delete(id));
-      } else {
-        ids.forEach((id) => next.add(id));
+    if (!baseState) {
+      set({ currentTimestep: timestep });
+      return;
+    }
+
+    const currentNodes = new Map(
+      baseState.nodes.map((node) => [node.id, { ...node }]),
+    );
+    const currentEdges = new Map(
+      baseState.edges.map((edge) => [edge.id, { ...edge }]),
+    );
+
+    const sortedTimesteps = Array.from(deltas.keys())
+      .sort((a, b) => a - b)
+      .filter((t) => t <= timestep);
+
+    for (const t of sortedTimesteps) {
+      const delta = deltas.get(t)!;
+      applyDelta(currentNodes, currentEdges, delta);
+    }
+
+    const allCentralityKeys = Array.from(metricsInfo.values())
+      .filter((info) => info.isCentrality)
+      .map((info) => info.key);
+
+    currentNodes.forEach((node) => {
+      if (node.attributes) {
+        allCentralityKeys.forEach((key) => delete node.attributes![key]);
       }
-      return { selectedNodes: next };
     });
-  },
+    currentEdges.forEach((edge) => {
+      if (edge.attributes) {
+        allCentralityKeys.forEach((key) => delete edge.attributes![key]);
+      }
+    });
 
-  setHoveredNode: (node) => set({ hoveredNode: node }),
-  setHoveredCommunity: (key, id) =>
+    const currentCentralities = centralities.get(timestep);
+    if (currentCentralities) {
+      Object.entries(currentCentralities.nodes).forEach(([nodeId, cents]) => {
+        const node = currentNodes.get(nodeId);
+        if (node) {
+          if (!node.attributes) node.attributes = {};
+          Object.entries(cents).forEach(([key, value]) => {
+            node.attributes![key] = value;
+          });
+        }
+      });
+
+      Object.entries(currentCentralities.edges).forEach(([edgeId, cents]) => {
+        const edge = currentEdges.get(edgeId);
+        if (edge) {
+          if (!edge.attributes) edge.attributes = {};
+          Object.entries(cents).forEach(([key, value]) => {
+            edge.attributes![key] = value;
+          });
+        }
+      });
+    }
+
+    const currentCommunities = communities.get(timestep) || null;
+    if (currentCommunities) {
+      Object.entries(currentCommunities).forEach(
+        ([communityKey, nodeAssignments]) => {
+          Object.entries(nodeAssignments).forEach(([nodeId, value]) => {
+            const node = currentNodes.get(nodeId);
+            if (node) {
+              if (!node.attributes) node.attributes = {};
+              node.attributes[communityKey] = value;
+            }
+          });
+        },
+      );
+    }
+
     set({
-      hoveredCommunity: key == null || id == null ? null : { key, id },
-    }),
-  setBarHoveredNodes: (nodes) => set({ barHoveredNodes: nodes }),
-
-  setSortKey: (key: string) => set({ sortKey: key }),
-  setSortingState: (sorting: SortingState) => set({ sortingState: sorting }),
-
-  resetRadialZoom: () => set({ resetRadialZoomFlag: true }),
-  resetNodeLinkZoom: () => set({ resetNodeLinkZoomFlag: true }),
-
-  setCurrentDataset: (dataset: string) => set({ currentDataset: dataset }),
-
-  hideNode: (id) =>
-    set((state) => {
-      const next = new Set(state.hiddenNodes);
-      next.add(id);
-
-      useMetricsStore.getState().recomputeMetrics(next);
-
-      return { hiddenNodes: next };
-    }),
-
-  restoreNode: (id) =>
-    set((state) => {
-      const next = new Set(state.hiddenNodes);
-      next.delete(id);
-
-      useMetricsStore.getState().recomputeMetrics(next);
-
-      return { hiddenNodes: next };
-    }),
-
-  restoreAllNodes: () => {
-    useMetricsStore.getState().recomputeMetrics(new Set());
-    set({ hiddenNodes: new Set() });
-  },
-
-  hideSelection: () => {
-    const { selectedNodes } = get();
-    if (selectedNodes.size === 0) return;
-
-    set((state) => {
-      const next = new Set(state.hiddenNodes);
-      selectedNodes.forEach((id) => next.add(id));
-
-      useMetricsStore.getState().recomputeMetrics(next);
-
-      return { hiddenNodes: next, selectedNodes: new Set<string>() };
+      currentTimestep: timestep,
+      currentNodes,
+      currentEdges,
+      currentCommunities,
     });
   },
 
-  clearSelection: () => set({ selectedNodes: new Set<string>() }),
-
-  setRestartSimulationFlag: (flag) => set({ restartSimulationFlag: flag }),
+  setCurrentDataset: (dataset) => set({ currentDataset: dataset }),
 
   isNetworkEmpty: () => {
     const { network } = get();
@@ -193,16 +247,17 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       network: { nodes: [], edges: [] },
       nodeMap: new Map(),
       edgeMap: new Map(),
-      selectedNodes: new Set<string>(),
-      hoveredNode: null,
-      hoveredCommunity: null,
-      sortKey: "none",
-      sortingState: [],
-      currentDataset: null,
+      baseState: null,
+      deltas: new Map(),
+      centralities: new Map(),
+      communities: new Map(),
+      metricsInfo: new Map(),
+      timesteps: [],
       directed: null,
-      resetRadialZoomFlag: false,
-      resetNodeLinkZoomFlag: false,
-      hiddenNodes: new Set<string>(),
-      restartSimulationFlag: false,
+      currentDataset: null,
+      currentTimestep: 0,
+      currentNodes: new Map(),
+      currentEdges: new Map(),
+      currentCommunities: null,
     }),
 }));

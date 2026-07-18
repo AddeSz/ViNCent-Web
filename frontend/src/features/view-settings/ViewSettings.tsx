@@ -7,7 +7,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
@@ -32,7 +32,7 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
 
   const { resetRadialSettings, resetNodeLinkSettings, resetDisplaySettings } =
     useSettingsStore();
-  const timesteps = useMetricsStore((s) => s.timesteps);
+  const timesteps = useNetworkStore((s) => s.timesteps);
   const {
     allEdgeKeys,
     allNodeAttributeKeys,
@@ -107,6 +107,7 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
                 ...enabledNodeCentralityKeys,
                 ...enabledNodeAttributeKeys,
               ]}
+              type="node"
             />
           )}
           {allNodeCommunityKeys.length > 0 && (
@@ -115,6 +116,7 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
               description="Toggle Communities"
               options={allNodeCommunityKeys}
               enabledKeys={enabledNodeCommunityKeys}
+              type="community"
             />
           )}
           {allEdgeKeys.length > 0 && (
@@ -123,6 +125,7 @@ const ViewSettings = ({ view }: ViewSettingsProps) => {
               description="Toggle Edge Attributes"
               options={allEdgeKeys}
               enabledKeys={enabledEdgeKeys}
+              type="edge"
             />
           )}
         </CollapsibleContent>

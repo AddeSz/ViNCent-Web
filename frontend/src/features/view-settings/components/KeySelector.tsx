@@ -13,8 +13,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { Check, ChevronDown } from "lucide-react";
@@ -25,6 +26,7 @@ interface KeySelectorProps {
   description?: string;
   options: string[];
   enabledKeys: string[];
+  type: string;
 }
 
 const KeySelector = ({
@@ -32,15 +34,16 @@ const KeySelector = ({
   description,
   options,
   enabledKeys,
+  type,
 }: KeySelectorProps) => {
   const [open, setOpen] = useState(false);
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const getColorForMetric = useGetColorForMetric();
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());
   const { sortingState, setSorting } = useSortingLogic();
-  const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
+  const toggleMetricsKey = useFilterStore((s) => s.toggleMetricsKey);
 
   const handleToggle = (key: string) => {
-    const removed = toggleMetricsKey(key);
+    const removed = toggleMetricsKey(key, type === "edge");
     if (removed && sortingState[0]?.id === key) {
       setSorting([]);
     }

@@ -12,16 +12,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { ChevronsUpDown, EyeOff, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 const NodeSelector = () => {
   const [open, setOpen] = useState(false);
-  const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
+  const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
   const nodeMap = useNetworkStore((s) => s.nodeMap);
-  const restoreNode = useNetworkStore((s) => s.restoreNode);
-  const restoreAllNodes = useNetworkStore((s) => s.restoreAllNodes);
+  const restoreNode = useFilterStore((s) => s.restoreNode);
+  const restoreAllNodes = useFilterStore((s) => s.restoreAllNodes);
 
   const hiddenNodesList = useMemo(() => {
     return Array.from(hiddenNodes)

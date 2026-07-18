@@ -1,4 +1,4 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
 import type { DataChanges, FullData } from "@/types";
 import * as d3 from "d3";
 
@@ -55,6 +55,7 @@ export function drawOuterLayersCanvas(
   outerArcsWidth: number,
   nodeChanges: DataChanges,
   zoomFactor: number,
+  getColorForMetric: GetColorForMetric,
 ): CommunitiesData {
   const segmentWidth = 25;
   const innerRadiusSegment = outerRadius + outerArcsWidth;
@@ -72,7 +73,12 @@ export function drawOuterLayersCanvas(
   const canvasSize = Math.ceil(requiredRadius * 2);
   const center = Math.floor(canvasSize / 2);
 
-  const segments = processCommunitySegments(nodeMap, selectedAlgorithm, x);
+  const segments = processCommunitySegments(
+    nodeMap,
+    selectedAlgorithm,
+    x,
+    getColorForMetric,
+  );
   const totalCommunities =
     selectedAlgorithm === "none"
       ? 0
@@ -143,12 +149,11 @@ function processCommunitySegments(
   nodeMap: Map<string, FullData>,
   selectedAlgorithm: string,
   x: d3.ScaleBand<string>,
+  getColorForMetric: GetColorForMetric,
 ): CommunitySegment[] {
   if (selectedAlgorithm === "none") {
     return [];
   }
-
-  const getColorForMetric = useMetricsStore.getState().getColorForMetric;
   const communityGroups = new Map<number, string[]>();
   const domain = x.domain();
 

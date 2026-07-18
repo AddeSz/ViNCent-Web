@@ -1,5 +1,5 @@
-import { type BrushRange } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import type { BrushRange } from "@/stores/useFilterStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { FullData } from "@/types";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef } from "react";
@@ -48,7 +48,7 @@ const Histogram = ({
   } = dimensions;
 
   const color = getColorForMetric(dataKey);
-  const setBarHoveredNodes = useNetworkStore((s) => s.setBarHoveredNodes);
+  const setBarHoveredNodes = useInteractionStore((s) => s.setBarHoveredNodes);
 
   const barWidth = chartWidth / binnedData.bins.length;
   const canRenderBars = barWidth >= MIN_BAR_WIDTH;

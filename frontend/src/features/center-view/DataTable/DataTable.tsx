@@ -1,7 +1,8 @@
 import type { ContextType } from "@/features/center-view/CenterView";
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { FullData } from "@/types";
 import { formatValue } from "@/utils/utils";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
@@ -45,10 +46,10 @@ const DataTable = ({
   handleContextMenu,
   tableStatesManager,
 }: DataTableProps) => {
-  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
-  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-  const { enabledNodeKeys, enabledNodeCommunityKeys, enabledEdgeKeys } =
-    useKeys();
+  const metricsInfo = useCurrentMetricsInfo();
+  const getColorForMetric = useGetColorForMetric();
+  const selectedNodes = useInteractionStore((s) => s.selectedNodes);
+  const { enabledNodeKeys, enabledEdgeKeys } = useKeys();
 
   const { tableStates, updateTableState, activeTableType, setActiveTableType } =
     tableStatesManager;
@@ -82,10 +83,11 @@ const DataTable = ({
     const selectColumn = createSelectColumn<FullData>();
     const hiddenColumn = createHiddenColumn<FullData>();
     const labelColumn = createLabelColumn<FullData>();
-    const dataColumns = createDataColumns<FullData>([
-      ...enabledNodeKeys,
-      ...enabledNodeCommunityKeys,
-    ]);
+    const dataColumns = createDataColumns<FullData>(
+      enabledNodeKeys,
+      getColorForMetric,
+      metricsInfo,
+    );
 
     return [
       selectColumn,
@@ -105,13 +107,17 @@ const DataTable = ({
         enableGlobalFilter: false,
       },
     ];
-  }, [enabledNodeKeys, enabledNodeCommunityKeys]);
+  }, [enabledNodeKeys]);
 
   const edgesColumns = useMemo(() => {
     const selectColumn = createEdgeSelectColumn<FullData>();
     const sourceColumn = createEdgeColumn<FullData>(nodeData, "source");
     const targetColumn = createEdgeColumn<FullData>(nodeData, "target");
-    const dataColumns = createDataColumns<FullData>(enabledEdgeKeys);
+    const dataColumns = createDataColumns<FullData>(
+      enabledEdgeKeys,
+      getColorForMetric,
+      metricsInfo,
+    );
     return [
       selectColumn,
       sourceColumn,
@@ -133,7 +139,7 @@ const DataTable = ({
   }, [enabledEdgeKeys, nodeData]);
 
   const attributesColumns = useMemo(() => {
-    const baseColumns = createAttributeColumns();
+    const baseColumns = createAttributeColumns(getColorForMetric);
     return [
       ...baseColumns,
       {
@@ -185,7 +191,7 @@ const DataTable = ({
     const newSelection =
       typeof updater === "function" ? updater(nodeRowSelection) : updater;
     const newSelectedIds = new Set(Object.keys(newSelection));
-    useNetworkStore.setState({ selectedNodes: newSelectedIds });
+    useInteractionStore.setState({ selectedNodes: newSelectedIds });
   };
 
   const nodesTable = useDataTable({

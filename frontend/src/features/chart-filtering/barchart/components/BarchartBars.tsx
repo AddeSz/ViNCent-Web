@@ -1,4 +1,4 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { FullData } from "@/types";
 
 interface BarchartBarsProps {
@@ -38,7 +38,7 @@ const BarchartBars = ({
   disabledValues,
   onDisabledValuesChange,
 }: BarchartBarsProps) => {
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+  const hoveredNode = useInteractionStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
   const hoveredValue = node?.[dataKey];
 

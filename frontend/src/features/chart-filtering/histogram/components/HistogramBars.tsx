@@ -1,4 +1,4 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { FullData } from "@/types";
 import { type ScaleLinear } from "d3";
 import type { BinnedData } from "../../components/createBinnedData";
@@ -32,7 +32,7 @@ export const HistogramBars = ({
   filteredData,
   onBinHover,
 }: HistogramBarsProps) => {
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+  const hoveredNode = useInteractionStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
   const hoveredValue = node?.[dataKey];
   const hoveredBinIndex = binnedData.valueToBinIndex.get(hoveredValue) ?? null;

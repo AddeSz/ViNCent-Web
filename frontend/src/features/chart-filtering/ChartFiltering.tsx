@@ -9,10 +9,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { FullData } from "@/types";
 import { formatKeyLabel, formatValue, getNodeId } from "@/utils/utils";
@@ -42,7 +44,7 @@ const ChartFiltering = ({
   descriptions,
 }: ChartFilteringProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const getColorForMetric = useGetColorForMetric();
   const dimensions = useResizeObserver(containerRef);
   const width = useDebouncedValue(dimensions?.width ?? 0, 10);
 
@@ -59,30 +61,26 @@ const ChartFiltering = ({
     chartHeight,
   };
 
-  const {
-    enabledNodeKeys: nodeKeys,
-    enabledEdgeKeys,
-    enabledNodeCommunityKeys,
-  } = useKeys();
+  const { enabledNodeKeys, enabledEdgeKeys } = useKeys();
   const [globalBinCount, setGlobalBinCount] = useState(16);
   const [useIndividualBinCounts, setUseIndividualBinCounts] = useState(false);
   const [binCountsByKey, setBinCountsByKey] = useState<Record<string, number>>(
     {},
   );
-  const currentNodes = useMetricsStore((s) => s.currentNodes);
-  const currentEdges = useMetricsStore((s) => s.currentEdges);
-  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
-  const selectedCategories = useMetricsStore((s) => s.selectedCategories);
-  const setSelectedCategories = useMetricsStore((s) => s.setSelectedCategories);
-  const brushRanges = useMetricsStore((s) => s.brushRanges);
-  const setBrushRange = useMetricsStore((s) => s.setBrushRange);
-  const clearBrushRange = useMetricsStore((s) => s.clearBrushRange);
-  const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
-  const setBinnedData = useMetricsStore((s) => s.setBinnedData);
-  const disabledValues = useMetricsStore((s) => s.disabledValues);
-  const setDisabledValues = useMetricsStore((s) => s.setDisabledValues);
-  const clearDisabledValues = useMetricsStore((s) => s.clearDisabledValues);
-  const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
+  const currentNodes = useNetworkStore((s) => s.currentNodes);
+  const currentEdges = useNetworkStore((s) => s.currentEdges);
+  const metricsInfo = useCurrentMetricsInfo();
+  const selectedCategories = useFilterStore((s) => s.selectedCategories);
+  const setSelectedCategories = useFilterStore((s) => s.setSelectedCategories);
+  const brushRanges = useFilterStore((s) => s.brushRanges);
+  const setBrushRange = useFilterStore((s) => s.setBrushRange);
+  const clearBrushRange = useFilterStore((s) => s.clearBrushRange);
+  const binnedDataByKey = useFilterStore((s) => s.binnedDataByKey);
+  const setBinnedData = useFilterStore((s) => s.setBinnedData);
+  const disabledValues = useFilterStore((s) => s.disabledValues);
+  const setDisabledValues = useFilterStore((s) => s.setDisabledValues);
+  const clearDisabledValues = useFilterStore((s) => s.clearDisabledValues);
+  const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
 
   const getBinCount = (key: string) => {
     if (useIndividualBinCounts) {
@@ -94,11 +92,6 @@ const ChartFiltering = ({
   const setBinCountForKey = (key: string, count: number) => {
     setBinCountsByKey((prev) => ({ ...prev, [key]: count }));
   };
-
-  const enabledNodeKeys = useMemo(
-    () => [...nodeKeys, ...enabledNodeCommunityKeys],
-    [nodeKeys, enabledNodeCommunityKeys],
-  );
 
   const fullNodeData = useMemo(() => {
     return Array.from(currentNodes.values())

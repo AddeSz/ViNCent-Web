@@ -26,8 +26,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
 import type { ScaleType } from "@/stores/useSettingsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { formatKeyLabel } from "@/utils/utils";
@@ -46,8 +47,8 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
   const selectedCommunity = useSettingsStore(
     (s) => s.displaySettings.selectedCommunity,
   );
-  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const metricsInfo = useCurrentMetricsInfo();
+  const getColorForMetric = useGetColorForMetric();
   const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
   const [open, setOpen] = useState(false);
 

@@ -1,4 +1,4 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { DataChanges } from "@/types";
 import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
@@ -245,7 +245,8 @@ function setupInteractions(
     }
     return null;
   }
-  const setHoveredCommunity = useNetworkStore.getState().setHoveredCommunity;
+  const setHoveredCommunity =
+    useInteractionStore.getState().setHoveredCommunity;
   canvas
     .on("mousemove", function (event) {
       if (!interactionCache) return;

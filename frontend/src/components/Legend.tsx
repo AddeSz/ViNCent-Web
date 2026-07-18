@@ -1,6 +1,7 @@
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { FullData } from "@/types";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
@@ -11,10 +12,14 @@ interface LegendProps {
 }
 
 const Legend = ({ nodeData }: LegendProps) => {
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
-  const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
+  const hoveredNode = useInteractionStore((s) => s.hoveredNode);
+  const getColorForMetric = useGetColorForMetric();
+  const metricsInfo = useCurrentMetricsInfo();
+  const {
+    enabledNodeCentralityKeys,
+    enabledNodeAttributeKeys,
+    enabledNodeCommunityKeys,
+  } = useKeys();
   const communitiesInArcs = useSettingsStore(
     (s) => s.radialSettings.communitiesInArcs,
   );
@@ -52,7 +57,11 @@ const Legend = ({ nodeData }: LegendProps) => {
     if (!displayNode) return [];
 
     const isRemoved = data?.removed ?? false;
-    return [...enabledNodeKeys, ...communityKeysToUse].map((key) => {
+    return [
+      ...enabledNodeCentralityKeys,
+      ...enabledNodeAttributeKeys,
+      ...communityKeysToUse,
+    ].map((key) => {
       const info = metricsInfo.get(key);
       const value = data?.[key];
 
@@ -85,7 +94,14 @@ const Legend = ({ nodeData }: LegendProps) => {
         formattedValue: isRemoved ? "N/A" : formattedValue,
       };
     });
-  }, [displayNode, enabledNodeKeys, nodeData, metricsInfo]);
+  }, [
+    displayNode,
+    enabledNodeAttributeKeys,
+    enabledNodeCentralityKeys,
+    communityKeysToUse,
+    nodeData,
+    metricsInfo,
+  ]);
 
   if (!displayNode) {
     return (

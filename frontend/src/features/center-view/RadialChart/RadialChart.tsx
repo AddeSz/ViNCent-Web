@@ -5,9 +5,10 @@ import {
   useZoom,
 } from "@/features/center-view/hooks/useZoom";
 import { useRadialChartData } from "@/features/center-view/RadialChart/utils/useRadialChartData";
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { DataChanges, FullData } from "@/types";
 import * as d3 from "d3";
@@ -67,11 +68,14 @@ const RadialChart = ({
   const [currentZoomLevel, setCurrentZoomLevel] = useState(1);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const [isDrawReady, setIsDrawReady] = useState(false);
-  const attributeInfo = useMetricsStore((s) => s.currentMetricsInfo);
-  const resetZoomFlag = useNetworkStore((s) => s.resetRadialZoomFlag);
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-  const hoveredCommunity = useNetworkStore((s) => s.hoveredCommunity);
+
+  const attributeInfo = useCurrentMetricsInfo();
+  const getColorForMetric = useGetColorForMetric();
+  const resetZoomFlag = useInteractionStore((s) => s.resetRadialZoomFlag);
+  const hoveredNode = useInteractionStore((s) => s.hoveredNode);
+  const selectedNodes = useInteractionStore((s) => s.selectedNodes);
+  const hoveredCommunity = useInteractionStore((s) => s.hoveredCommunity);
+
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.3, 6]);
   const {
     selectedCommunity,
@@ -159,7 +163,7 @@ const RadialChart = ({
   useEffect(() => {
     if (resetZoomFlag) {
       resetZoom(svgRef);
-      useNetworkStore.setState({ resetRadialZoomFlag: false });
+      useInteractionStore.setState({ resetRadialZoomFlag: false });
     }
   }, [resetZoomFlag]);
 
@@ -215,6 +219,7 @@ const RadialChart = ({
         getKeyIndex,
         outerRadius,
         outerArcsWidth,
+        getColorForMetric,
       );
 
       drawBoundsCanvas(
@@ -250,6 +255,7 @@ const RadialChart = ({
         outerArcsWidth,
         nodeChanges,
         zoomLevel,
+        getColorForMetric,
       );
       const {
         segments,
@@ -283,12 +289,14 @@ const RadialChart = ({
           outerArcsWidth,
           showLabels,
           hoveredCommunity,
+          getColorForMetric,
         );
         updateBoundsHighlight(
           nodeData,
           selectedNodes,
           hoveredNode,
           hoveredCommunity,
+          getColorForMetric,
         );
         updateLinkHighlightCanvas(svgGroup, selectedNodes, hoveredNode);
 
@@ -324,6 +332,7 @@ const RadialChart = ({
       outerArcsWidth,
       nodeChanges,
       zoomLevel,
+      getColorForMetric,
     );
 
     drawLabels(
@@ -358,8 +367,8 @@ const RadialChart = ({
 
     if (svgGroup.empty()) return;
 
-    const hoveredNode = useNetworkStore.getState().hoveredNode;
-    const hoveredCommunity = useNetworkStore.getState().hoveredCommunity;
+    const hoveredNode = useInteractionStore.getState().hoveredNode;
+    const hoveredCommunity = useInteractionStore.getState().hoveredCommunity;
 
     requestAnimationFrame(() => {
       redrawArcsCanvasOnZoom(
@@ -380,6 +389,7 @@ const RadialChart = ({
         outerArcsWidth,
         showLabels,
         hoveredCommunity,
+        getColorForMetric,
         true,
       );
     });
@@ -387,11 +397,12 @@ const RadialChart = ({
 
   useEffect(() => {
     if (!isDrawReady) return;
-    let previousHoveredNode = useNetworkStore.getState().hoveredNode;
-    let previousHoveredCommunity = useNetworkStore.getState().hoveredCommunity;
-    let previousSelectedNodes = useNetworkStore.getState().selectedNodes;
+    let previousHoveredNode = useInteractionStore.getState().hoveredNode;
+    let previousHoveredCommunity =
+      useInteractionStore.getState().hoveredCommunity;
+    let previousSelectedNodes = useInteractionStore.getState().selectedNodes;
 
-    const unsubscribe = useNetworkStore.subscribe((state) => {
+    const unsubscribe = useInteractionStore.subscribe((state) => {
       if (
         state.hoveredNode === previousHoveredNode &&
         state.hoveredCommunity === previousHoveredCommunity &&
@@ -417,12 +428,14 @@ const RadialChart = ({
           outerArcsWidth,
           showLabels,
           state.hoveredCommunity,
+          getColorForMetric,
         );
         updateBoundsHighlight(
           nodeData,
           state.selectedNodes,
           state.hoveredNode,
           state.hoveredCommunity,
+          getColorForMetric,
         );
         updateLinkHighlightCanvas(
           svgGroup,
@@ -456,6 +469,7 @@ const RadialChart = ({
       outerArcsWidth,
       showLabels,
       hoveredCommunity,
+      getColorForMetric,
     );
   }, [
     fontSize,
@@ -479,8 +493,8 @@ const RadialChart = ({
         .select(svgRef.current)
         .select<SVGGElement>("g.zoom-group");
 
-      const hoveredNode = useNetworkStore.getState().hoveredNode;
-      const selectedNodes = useNetworkStore.getState().selectedNodes;
+      const hoveredNode = useInteractionStore.getState().hoveredNode;
+      const selectedNodes = useInteractionStore.getState().selectedNodes;
       const zoomLevel = getClosestZoomLevel(getCurrentTransform().k);
 
       await drawLinksCanvas(

@@ -11,9 +11,10 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import type { ContextMenuTarget } from "@/features/center-view/CenterView";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useFilterStore } from "@/stores/useFilterStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import { handleHighlight } from "@/utils/ColorHelper";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
@@ -38,21 +39,22 @@ const ViewContextMenu = ({
   canConfirm,
   confirmRemovals,
 }: ViewContextMenuProps) => {
-  const clearSelection = useNetworkStore((s) => s.clearSelection);
-  const resetRadialZoom = useNetworkStore((s) => s.resetRadialZoom);
-  const resetNodeLinkZoom = useNetworkStore((s) => s.resetNodeLinkZoom);
-  const setHoveredNode = useNetworkStore((s) => s.setHoveredNode);
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
+  const clearSelection = useInteractionStore((s) => s.clearSelection);
+  const resetRadialZoom = useInteractionStore((s) => s.resetRadialZoom);
+  const resetNodeLinkZoom = useInteractionStore((s) => s.resetNodeLinkZoom);
+  const setHoveredNode = useInteractionStore((s) => s.setHoveredNode);
+  const hoveredNode = useInteractionStore((s) => s.hoveredNode);
+  const sortKey = useInteractionStore((s) => s.sortKey);
+  const selectedNodes = useInteractionStore((s) => s.selectedNodes);
+  const hideNode = useFilterStore((s) => s.hideNode);
+  const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
+  const toggleMetricsKey = useFilterStore((s) => s.toggleMetricsKey);
+  const hideSelection = useFilterStore((s) => s.hideSelection);
+  const restoreAllNodes = useFilterStore((s) => s.restoreAllNodes);
+
+  const getColorForMetric = useGetColorForMetric();
   const { allNodeCentralityKeys, allNodeAttributeKeys, allNodeCommunityKeys } =
     useKeys();
-  const sortKey = useNetworkStore((s) => s.sortKey);
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-  const hideNode = useNetworkStore((s) => s.hideNode);
-  const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
-  const hiddenCount = hiddenNodes.size;
-  const toggleMetricsKey = useMetricsStore((s) => s.toggleMetricsKey);
-  const hideSelection = useNetworkStore((s) => s.hideSelection);
 
   const handleResetZoom = () => {
     if (view === "radial") {
@@ -62,6 +64,7 @@ const ViewContextMenu = ({
     }
   };
 
+  const hiddenCount = hiddenNodes.size;
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
@@ -157,7 +160,7 @@ const ViewContextMenu = ({
             <ContextMenuItem
               onSelect={() => {
                 const key = contextMenuTarget.data.key;
-                toggleMetricsKey(key);
+                toggleMetricsKey(key, false);
               }}
               className="cursor-pointer"
             >
@@ -383,7 +386,7 @@ const ViewContextMenu = ({
           contextMenuTarget.type === "data-table") &&
           hiddenCount > 0 && (
             <ContextMenuItem
-              onSelect={() => useNetworkStore.getState().restoreAllNodes()}
+              onSelect={() => restoreAllNodes()}
               className="cursor-pointer"
             >
               Restore Hidden Nodes ({hiddenCount})

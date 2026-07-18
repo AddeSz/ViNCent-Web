@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { ChevronDown } from "lucide-react";
@@ -20,7 +21,7 @@ import { useState } from "react";
 
 const CommunitySettings = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const currentCommunities = useMetricsStore((s) => s.currentCommunities);
+  const currentCommunities = useNetworkStore((s) => s.currentCommunities);
   const communitiesInArcs = useSettingsStore(
     (s) => s.radialSettings.communitiesInArcs,
   );
@@ -29,7 +30,7 @@ const CommunitySettings = () => {
   );
   const setRadialSettings = useSettingsStore((s) => s.setRadialSettings);
   const setDisplaySettings = useSettingsStore((s) => s.setDisplaySettings);
-  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
+  const metricsInfo = useCurrentMetricsInfo();
 
   const communityOptions = currentCommunities
     ? Object.keys(currentCommunities)

@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { formatKeyLabel } from "@/utils/utils";
 import { type Table } from "@tanstack/react-table";
 import { useState } from "react";
@@ -30,7 +30,7 @@ const TableControls = <T,>({
     ? "label"
     : (filterableColumns[0]?.id ?? "");
 
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const getColorForMetric = useGetColorForMetric();
   const [selectedColumn, setSelectedColumn] = useState(defaultColumn);
   const [visibilityFilter, setLocalVisibilityFilter] = useState<
     "all" | "hidden" | "visible" | "selected"

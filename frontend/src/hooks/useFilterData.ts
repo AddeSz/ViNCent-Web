@@ -1,10 +1,11 @@
 import type { BinnedData } from "@/features/chart-filtering/components/createBinnedData";
-import { useMetricsStore, type BrushRange } from "@/stores/useMetricsStore";
+import { useFilterStore, type BrushRange } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { AttributeInfo, Attributes, DataChanges, FullData } from "@/types";
 import { diffData } from "@/utils/diffData";
 import { useMemo, useRef } from "react";
+import { useKeys } from "./useKeys";
 
 const emptyChanges: DataChanges = { added: {}, removed: {}, updated: {} };
 
@@ -69,20 +70,16 @@ export const useFilterData = (): {
 } => {
   const nodeData = useNetworkStore((s) => s.nodeMap);
   const edgeData = useNetworkStore((s) => s.edgeMap);
-  const currentNodes = useMetricsStore((s) => s.currentNodes);
-  const currentEdges = useMetricsStore((s) => s.currentEdges);
-  const enabledNodeMetricsKeys = useMetricsStore(
-    (s) => s.enabledNodeMetricsKeys,
-  );
-  const brushRanges = useMetricsStore((s) => s.brushRanges);
-  const selectedCategories = useMetricsStore((s) => s.selectedCategories);
-  const binnedDataByKey = useMetricsStore((s) => s.binnedDataByKey);
-  const disabledValues = useMetricsStore((s) => s.disabledValues);
-  const metricsInfo = useMetricsStore((s) => s.metricsInfo);
+  const currentNodes = useNetworkStore((s) => s.currentNodes);
+  const currentEdges = useNetworkStore((s) => s.currentEdges);
+  const metricsInfo = useNetworkStore((s) => s.metricsInfo);
 
-  const enabledEdgeMetricsKeys = useMetricsStore(
-    (s) => s.enabledEdgeMetricsKeys,
-  );
+  const brushRanges = useFilterStore((s) => s.brushRanges);
+  const selectedCategories = useFilterStore((s) => s.selectedCategories);
+  const binnedDataByKey = useFilterStore((s) => s.binnedDataByKey);
+  const disabledValues = useFilterStore((s) => s.disabledValues);
+
+  const { enabledEdgeKeys, enabledNodeKeys } = useKeys();
 
   const previewChanges = useSettingsStore(
     (s) => s.displaySettings.previewChanges,
@@ -124,7 +121,7 @@ export const useFilterData = (): {
 
       const matchesFilters = matchesAllFilters(
         metrics,
-        enabledNodeMetricsKeys,
+        enabledNodeKeys,
         brushRanges,
         disabledValues,
         selectedCategories,
@@ -135,7 +132,7 @@ export const useFilterData = (): {
       if (!matchesFilters) return;
 
       const filteredMetrics: Record<string, any> = {};
-      for (const key of enabledNodeMetricsKeys) {
+      for (const key of enabledNodeKeys) {
         if (key in metrics) {
           filteredMetrics[key] = metrics[key];
         } else {
@@ -167,7 +164,7 @@ export const useFilterData = (): {
 
       const matchesFilters = matchesAllFilters(
         metrics,
-        enabledEdgeMetricsKeys,
+        enabledEdgeKeys,
         brushRanges,
         disabledValues,
         selectedCategories,
@@ -178,7 +175,7 @@ export const useFilterData = (): {
       if (!matchesFilters) return;
 
       const filteredMetrics: Record<string, any> = {};
-      for (const key of enabledEdgeMetricsKeys) {
+      for (const key of enabledEdgeKeys) {
         if (key in metrics) {
           filteredMetrics[key] = metrics[key];
         } else {
@@ -312,14 +309,14 @@ export const useFilterData = (): {
     edgeData,
     currentNodes,
     currentEdges,
-    enabledNodeMetricsKeys,
+    enabledNodeKeys,
     brushRanges,
     disabledValues,
     binnedDataByKey,
     selectedCategories,
     previewChanges,
     showForeshadowing,
-    enabledEdgeMetricsKeys,
+    enabledEdgeKeys,
     metricsInfo,
   ]);
 };

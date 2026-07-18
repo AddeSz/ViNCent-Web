@@ -7,7 +7,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { ChevronDown } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface PhysicsSettingsProps {
 const PhysicsSettings = ({ isOpen, setIsOpen }: PhysicsSettingsProps) => {
   const settings = useSettingsStore((s) => s.nodeLinkSettings);
   const setSettings = useSettingsStore((s) => s.setNodeLinkSettings);
-  const setRestartFlag = useNetworkStore((s) => s.setRestartSimulationFlag);
+  const setRestartFlag = useInteractionStore((s) => s.setRestartSimulationFlag);
 
   const handleRestart = () => {
     setRestartFlag(true);

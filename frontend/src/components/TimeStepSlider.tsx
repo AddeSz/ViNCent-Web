@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const TimestepSlider = () => {
-  const timesteps = useMetricsStore((s) => s.timesteps);
-  const currentTimestep = useMetricsStore((s) => s.currentTimestep);
-  const setTimestep = useMetricsStore((s) => s.setTimestep);
+  const timesteps = useNetworkStore((s) => s.timesteps);
+  const currentTimestep = useNetworkStore((s) => s.currentTimestep);
+  const setTimestep = useNetworkStore((s) => s.setTimestep);
   const [isUpdating, setIsUpdating] = useState(false);
 
   if (timesteps.length <= 1 || currentTimestep === null) return null;

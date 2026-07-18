@@ -14,8 +14,8 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import SortingSelector from "@/features/view-settings/components/SortingSelector";
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { ChevronDown } from "lucide-react";
@@ -45,7 +45,7 @@ const LayoutSettings = ({ isOpen, setIsOpen }: LayoutSettingsProps) => {
 
   const outerRadiusMin = innerRadius + 200;
 
-  const metricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
+  const metricsInfo = useCurrentMetricsInfo();
 
   const getCommunityCount = (communityName: string) => {
     if (!metricsInfo.get(communityName)) return 0;

@@ -1,4 +1,4 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import type { GetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { DataChanges, Edge, FullData, Network, Node } from "@/types";
 import {
@@ -51,9 +51,9 @@ const getNodeStyle = (
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
   selectedCommunity: string,
+  getColorForMetric: GetColorForMetric,
 ) => {
   const { displaySettings } = useSettingsStore.getState();
-  const getColorForMetric = useMetricsStore.getState().getColorForMetric;
   const removed = nodeChanges.removed[node.id] ? true : false;
   const added = nodeChanges.added[node.id] ? true : false;
 
@@ -168,6 +168,7 @@ const applyNodeStyle = (
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
   selectedCommunity: string,
+  getColorForMetric: GetColorForMetric,
   animated: boolean = true,
 ) => {
   selection.each(function (d) {
@@ -178,6 +179,7 @@ const applyNodeStyle = (
       hoveredNode,
       nodeData,
       selectedCommunity,
+      getColorForMetric,
     );
     const size = nodeSizes.get(d.id)!;
 
@@ -209,6 +211,7 @@ const updateNodes = (
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
   selectedCommunity: string,
+  getColorForMetric: GetColorForMetric,
   onTooltipUpdate?: (nodeId: string, x: number, y: number) => void,
   onDragStateChange?: (isDragging: boolean) => void,
 ) => {
@@ -250,6 +253,7 @@ const updateNodes = (
     hoveredNode,
     nodeData,
     selectedCommunity,
+    getColorForMetric,
     true,
   );
 
@@ -322,6 +326,7 @@ export const updateStyle = (
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
   selectedCommunity: string,
+  getColorForMetric: GetColorForMetric,
 ) => {
   const nodeSelection = svg.selectAll<SVGCircleElement, Node>("circle.node");
   applyNodeStyle(
@@ -332,6 +337,7 @@ export const updateStyle = (
     hoveredNode,
     nodeData,
     selectedCommunity,
+    getColorForMetric,
     false,
   );
 
@@ -369,6 +375,7 @@ const updateGraph = (
   hoveredNode: string | null,
   nodeData: Map<string, FullData>,
   selectedCommunity: string,
+  getColorForMetric: GetColorForMetric,
   onTooltipUpdate?: (nodeId: string, x: number, y: number) => void,
   onDragStateChange?: (isDragging: boolean) => void,
 ) => {
@@ -396,6 +403,7 @@ const updateGraph = (
     hoveredNode,
     nodeData,
     selectedCommunity,
+    getColorForMetric,
     onTooltipUpdate,
     onDragStateChange,
   );

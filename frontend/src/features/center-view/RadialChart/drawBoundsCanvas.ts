@@ -1,4 +1,4 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
 import type { FullData } from "@/types";
 import * as d3 from "d3";
 import type { BoundsResult } from "./utils/calculateBounds";
@@ -88,9 +88,9 @@ export function updateBoundsHighlight(
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   hoveredCommunity: { key: string; id: number } | null,
+  getColorForMetric: GetColorForMetric,
 ): void {
   if (!boundsCache) return;
-  const getColorForMetric = useMetricsStore.getState().getColorForMetric;
 
   const {
     bounds,

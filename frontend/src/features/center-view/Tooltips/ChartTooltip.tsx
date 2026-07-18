@@ -1,7 +1,9 @@
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { useTooltipStore } from "@/stores/useTooltipStore";
 import type { FullData } from "@/types";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo, type JSX } from "react";
@@ -11,15 +13,14 @@ interface ChartTooltipProps {
 }
 
 const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
-  const tooltip = useTooltipStore((s) => s.tooltip);
+  const tooltip = useInteractionStore((s) => s.tooltip);
   const { allNodeKeys } = useKeys();
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const communities = useMetricsStore((s) => s.currentCommunities);
+  const getColorForMetric = useGetColorForMetric();
+  const communities = useNetworkStore((s) => s.currentCommunities);
   const selectedCommunity = useSettingsStore(
     (s) => s.displaySettings.selectedCommunity,
   );
-
-  const currentMetricsInfo = useMetricsStore((s) => s.currentMetricsInfo);
+  const currentMetricsInfo = useCurrentMetricsInfo();
 
   const communityStats = useMemo(() => {
     const currentCommunities = communities?.[selectedCommunity];

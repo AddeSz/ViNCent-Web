@@ -2,13 +2,11 @@ import { Spinner } from "@/components/ui/spinner";
 import type { ContextType } from "@/features/center-view/CenterView";
 import ChartTooltip from "@/features/center-view/Tooltips/ChartTooltip";
 import {
-  useTooltip,
-  type InteractionProps,
-} from "@/features/center-view/Tooltips/useTooltip";
-import {
   getClosestZoomLevel,
   useZoom,
 } from "@/features/center-view/hooks/useZoom";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { DataChanges, Edge, FullData, Network, Node } from "@/types";
@@ -16,6 +14,7 @@ import type { Simulation } from "d3";
 import * as d3 from "d3";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { useTooltip, type InteractionProps } from "../Tooltips/useTooltip";
 import drawLabels, { updateLabels, updateLabelStyles } from "./drawLabels";
 import drawSelectionBrush from "./drawSelectionBrush";
 import {
@@ -61,15 +60,18 @@ const NodeLinkDiagram = ({
   const isDraggingRef = useRef(false);
   const { setupZoom, resetZoom, getCurrentTransform } = useZoom([0.1, 6]);
   const networkData = useNetworkStore.getState().network;
-  const resetZoomFlag = useNetworkStore((s) => s.resetNodeLinkZoomFlag);
+  const resetZoomFlag = useInteractionStore((s) => s.resetNodeLinkZoomFlag);
   const prevZoomLevelRef = useRef(currentZoomLevel);
   const { onNodeHover, showTooltip, hideTooltip } = useTooltip(nodeData);
-  const restartSimulationFlag = useNetworkStore((s) => s.restartSimulationFlag);
-  const hoveredNode = useNetworkStore((s) => s.hoveredNode);
-  const selectedNodes = useNetworkStore((s) => s.selectedNodes);
-  const setRestartSimulationFlag = useNetworkStore(
+  const restartSimulationFlag = useInteractionStore(
+    (s) => s.restartSimulationFlag,
+  );
+  const hoveredNode = useInteractionStore((s) => s.hoveredNode);
+  const selectedNodes = useInteractionStore((s) => s.selectedNodes);
+  const setRestartSimulationFlag = useInteractionStore(
     (s) => s.setRestartSimulationFlag,
   );
+  const getColorForMetric = useGetColorForMetric();
   const {
     displayLabel,
     selectedCommunity,
@@ -192,8 +194,8 @@ const NodeLinkDiagram = ({
     svgGroup.append("g").attr("class", "links-group");
     svgGroup.append("g").attr("class", "nodes-group");
 
-    const hoveredNode = useNetworkStore.getState().hoveredNode;
-    const selectedNodes = useNetworkStore.getState().selectedNodes;
+    const hoveredNode = useInteractionStore.getState().hoveredNode;
+    const selectedNodes = useInteractionStore.getState().selectedNodes;
 
     simulationRef.current = createSimulation(
       networkData.nodes,
@@ -244,6 +246,7 @@ const NodeLinkDiagram = ({
         hoveredNode,
         nodeData,
         selectedCommunity,
+        getColorForMetric,
         (nodeId, x, y) => showTooltip({ type: "node", nodeId, x, y }),
         handleDragStateChange,
       );
@@ -318,8 +321,8 @@ const NodeLinkDiagram = ({
     let frameId: number;
 
     const svg = d3.select(svgRef.current);
-    const hoveredNode = useNetworkStore.getState().hoveredNode;
-    const selectedNodes = useNetworkStore.getState().selectedNodes;
+    const hoveredNode = useInteractionStore.getState().hoveredNode;
+    const selectedNodes = useInteractionStore.getState().selectedNodes;
 
     const runUpdate = () => {
       updateGraph(
@@ -334,6 +337,7 @@ const NodeLinkDiagram = ({
         hoveredNode,
         nodeData,
         selectedCommunity,
+        getColorForMetric,
         (nodeId, x, y) => showTooltip({ type: "node", nodeId, x, y }),
         handleDragStateChange,
       );
@@ -381,13 +385,14 @@ const NodeLinkDiagram = ({
       hoveredNode,
       nodeData,
       selectedCommunity,
+      getColorForMetric,
     );
   }, [hoveredNode, selectedNodes]);
 
   useEffect(() => {
     if (resetZoomFlag) {
       resetZoom(svgRef);
-      useNetworkStore.setState({ resetNodeLinkZoomFlag: false });
+      useInteractionStore.setState({ resetNodeLinkZoomFlag: false });
     }
   }, [resetZoomFlag]);
 

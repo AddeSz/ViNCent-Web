@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { formatKeyLabel } from "@/utils/utils";
 import { type Table } from "@tanstack/react-table";
 import { Check, ChevronDown, X } from "lucide-react";
@@ -35,7 +35,7 @@ const TableSearch = <T,>({
   onSearchValueChange,
 }: TableSearchProps<T>) => {
   const [open, setOpen] = useState(false);
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const getColorForMetric = useGetColorForMetric();
 
   const filterableColumns = table
     .getAllColumns()
@@ -114,7 +114,7 @@ const TableSearch = <T,>({
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0" align="start">
+        <PopoverContent className="w-50 p-0" align="start">
           <Command>
             <CommandInput placeholder="Search columns..." className="h-9" />
             <CommandEmpty>No columns found.</CommandEmpty>

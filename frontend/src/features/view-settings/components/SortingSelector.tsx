@@ -13,9 +13,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
-import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { ArrowDown, ArrowUp, Check, ChevronDown } from "lucide-react";
@@ -23,17 +23,12 @@ import { useState } from "react";
 
 const SortingSelector = () => {
   const [open, setOpen] = useState(false);
-  const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
+  const { enabledNodeKeys } = useKeys();
   const { sortingState, setSorting, handleSortKeyChange } = useSortingLogic();
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
+  const getColorForMetric = useGetColorForMetric();
 
   const sortKey = sortingState[0]?.id || "none";
-  const keys = [
-    "none",
-    "label",
-    ...enabledNodeKeys,
-    ...enabledNodeCommunityKeys,
-  ];
+  const keys = ["none", "label", ...enabledNodeKeys];
   const isDisabled = sortingState.length === 0;
   const currentDirection = sortingState[0]?.desc ? "desc" : "asc";
   const isEmpty = useNetworkStore((s) => s.isNetworkEmpty());

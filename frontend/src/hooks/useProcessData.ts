@@ -1,3 +1,4 @@
+import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { DataChanges, FullData } from "@/types";
@@ -14,7 +15,7 @@ export const useProcessData = (
     (s) => s.displaySettings.previewChanges,
   );
   const networkData = useNetworkStore((s) => s.network);
-  const hiddenNodes = useNetworkStore((s) => s.hiddenNodes);
+  const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
   const [acceptedRemovals, setAcceptedRemovals] = useState<Set<string>>(
     new Set(),
   );

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { DataChanges, FullData, Network } from "@/types";
 import { useRef, useState } from "react";
 import DataTable from "./DataTable/DataTable";
@@ -76,7 +76,7 @@ const CenterView = ({
   const isUpdating = isRadialUpdating || isNodeLinkUpdating;
   const nodeLinkUpdating =
     view === "node-link" ? isNodeLinkUpdating : isUpdating;
-  const timesteps = useMetricsStore((s) => s.timesteps);
+  const timesteps = useNetworkStore((s) => s.timesteps);
 
   const handleContextMenu = (target: ContextType, data?: any) => {
     setContextMenuTarget((prev) => {

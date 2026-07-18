@@ -1,4 +1,4 @@
-import { useMetricsStore } from "@/stores/useMetricsStore";
+import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
 import type { AttributeInfo, FullData } from "@/types";
 import * as d3 from "d3";
 import {
@@ -47,9 +47,9 @@ const drawArcsCanvas = (
   getKeyIndex: (key: string) => number,
   outerRadius: number,
   outerArcsWidth: number,
+  getColorForMetric: GetColorForMetric,
   initialZoomFactor: number = 1,
 ): ProcessedArc[] => {
-  const { getColorForMetric } = useMetricsStore.getState();
   const requiredRadius = outerRadius + 40 + outerArcsWidth;
   const canvasSize = Math.ceil(requiredRadius * 2);
   const center = Math.floor(canvasSize / 2);

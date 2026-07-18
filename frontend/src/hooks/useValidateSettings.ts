@@ -6,11 +6,7 @@ export const useValidateSettings = () => {
   const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
   const { displaySettings, setDisplaySettings } = useSettingsStore();
 
-  const validLabelKeys = [
-    "label",
-    ...enabledNodeKeys,
-    ...enabledNodeCommunityKeys,
-  ];
+  const validLabelKeys = ["label", ...enabledNodeKeys];
   const validCommunityKeys = ["none", ...enabledNodeCommunityKeys];
 
   useEffect(() => {

@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import { useMetricsStore } from "@/stores/useMetricsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { Check, ChevronDown } from "lucide-react";
@@ -54,13 +54,9 @@ const LabelSettings = ({
     settingsType === "radialSettings" ? setRadialSettings : setNodeLinkSettings;
   const { fontSize, showLabels } = settings;
 
-  const { enabledNodeKeys, enabledNodeCommunityKeys } = useKeys();
-  const getColorForMetric = useMetricsStore((s) => s.getColorForMetric);
-  const enabledKeys = [
-    "label",
-    ...enabledNodeKeys,
-    ...enabledNodeCommunityKeys,
-  ];
+  const { enabledNodeKeys } = useKeys();
+  const getColorForMetric = useGetColorForMetric();
+  const enabledKeys = ["label", ...enabledNodeKeys];
 
   const currentLabel = displaySettings.displayLabel || "label";
 

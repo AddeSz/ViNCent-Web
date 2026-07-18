@@ -1,11 +1,11 @@
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 
 export const handleHighlight = (id: string, multi: boolean) => {
   if (multi) {
-    useNetworkStore.getState().toggleNodeSelection(id);
+    useInteractionStore.getState().toggleNodeSelection(id);
   } else {
-    useNetworkStore.getState().selectNode(id, false);
+    useInteractionStore.getState().selectNode(id, false);
   }
 };
 
