@@ -1,230 +1,276 @@
+from dataclasses import dataclass
+from typing import Any, List
+
 from .types import CentralityType, CommunityType
 
-ALL_CENTRALITIES = [
-    CentralityType.DEGREE,
-    CentralityType.IN_DEGREE,
-    CentralityType.OUT_DEGREE,
-    CentralityType.BETWEENNESS,
-    CentralityType.CLOSENESS,
-    CentralityType.EIGENVECTOR,
-    CentralityType.PAGERANK,
-    CentralityType.KATZ,
-    CentralityType.HARMONIC,
 
-    CentralityType.LOAD,
-    CentralityType.EDGE_BETWEENNESS,
-    CentralityType.EDGE_LOAD,
-    CentralityType.CURRENT_FLOW_BETWEENNESS,
-    CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
-    CentralityType.INFORMATION_CENTRALITY,
-    CentralityType.COMMUNICABILITY_BETWEENNESS,
+@dataclass(frozen=True, slots=True)
+class CentralityInfo:
+    name: CentralityType
+    category: str
+    requirement: str | None = None
+    performance: str | None = None
+    description: str | None = None
 
-    CentralityType.SUBGRAPH,
-    # CentralityType.SUBGRAPH_CENTRALITY_EXP,
-    CentralityType.LAPLACIAN,
-    CentralityType.SECOND_ORDER,
 
-    CentralityType.PERCOLATION,
+@dataclass(frozen=True, slots=True)
+class CommunityInfo:
+    name: CommunityType
+    category: str
+    requirement: str | None = None
+    performance: str | None = None
+    description: str | None = None
 
-    CentralityType.VOTERANK,
-    CentralityType.EDGE_DISPERSION,
 
-    CentralityType.LOCAL_REACHING,
-    # CentralityType.GLOBAL_REACHING,
-
-    CentralityType.TROPHIC_LEVEL,
-    CentralityType.EDGE_TROPHIC_DIFFERENCES,
-    # CentralityType.TROPHIC_INCOHERENCE,
+CENTRALITIES_META: List[CentralityInfo] = [
+    CentralityInfo(
+        name=CentralityType.DEGREE,
+        category="node_importance_centralities",
+        performance="Fast",
+        description="Total number of direct connections a node has",
+    ),
+    CentralityInfo(
+        name=CentralityType.IN_DEGREE,
+        category="node_importance_centralities",
+        requirement="Directed graphs only",
+        performance="Fast",
+        description="Number of directed edges pointing into a node",
+    ),
+    CentralityInfo(
+        name=CentralityType.OUT_DEGREE,
+        category="node_importance_centralities",
+        requirement="Directed graphs only",
+        performance="Fast",
+        description="Number of directed edges originating from a node",
+    ),
+    CentralityInfo(
+        name=CentralityType.BETWEENNESS,
+        category="distance_flow_centralities",
+        performance="Slow",
+        description="Fraction of all shortest paths between node pairs that pass through this node",
+    ),
+    CentralityInfo(
+        name=CentralityType.CLOSENESS,
+        category="distance_flow_centralities",
+        performance="Moderate",
+        description="Inverse of average shortest path distance to all other nodes",
+    ),
+    CentralityInfo(
+        name=CentralityType.EIGENVECTOR,
+        category="node_importance_centralities",
+        requirement="Connected graphs only (strongly connected if directed)",
+        performance="Fast",
+        description="Measures node importance by the importance of its neighbors",
+    ),
+    CentralityInfo(
+        name=CentralityType.PAGERANK,
+        category="node_importance_centralities",
+        performance="Fast",
+        description="Probability of reaching a node through random walks with damping",
+    ),
+    CentralityInfo(
+        name=CentralityType.KATZ,
+        category="node_importance_centralities",
+        performance="Fast",
+        description="Captures influence through all possible paths with exponential decay by distance",
+    ),
+    CentralityInfo(
+        name=CentralityType.HARMONIC,
+        category="distance_flow_centralities",
+        performance="Moderate",
+        description="Sum of inverse distances to all nodes, robust for disconnected graphs",
+    ),
+    CentralityInfo(
+        name=CentralityType.LOAD,
+        category="distance_flow_centralities",
+        performance="Slow",
+        description="Expected communication load on a node assuming shortest-path routing",
+    ),
+    CentralityInfo(
+        name=CentralityType.EDGE_BETWEENNESS,
+        category="edge_based_centralities",
+        performance="Moderate",
+        description="Fraction of shortest paths between all node pairs that traverse this edge",
+    ),
+    CentralityInfo(
+        name=CentralityType.EDGE_LOAD,
+        category="edge_based_centralities",
+        performance="Slow",
+        description="Expected communication traffic volume passing through an edge",
+    ),
+    CentralityInfo(
+        name=CentralityType.CURRENT_FLOW_BETWEENNESS,
+        category="network_structure_centralities",
+        requirement="Connected undirected graphs only",
+        performance="Slow",
+        description="Models network as electrical circuit, measures current through node",
+    ),
+    CentralityInfo(
+        name=CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
+        category="edge_based_centralities",
+        requirement="Connected undirected graphs only",
+        performance="Slow",
+        description="Electrical current through edge in resistive network model",
+    ),
+    CentralityInfo(
+        name=CentralityType.INFORMATION_CENTRALITY,
+        category="distance_flow_centralities",
+        requirement="Connected undirected graphs only",
+        performance="Moderate",
+        description="Measures node importance in information transmission across the network",
+    ),
+    CentralityInfo(
+        name=CentralityType.COMMUNICABILITY_BETWEENNESS,
+        category="network_structure_centralities",
+        requirement="Connected undirected graphs only",
+        performance="Very slow",
+        description="Measures node's role in facilitating communication across the entire network",
+    ),
+    CentralityInfo(
+        name=CentralityType.SUBGRAPH,
+        category="network_structure_centralities",
+        requirement="Undirected graphs only",
+        performance="Fast",
+        description="Weighted count of closed walks of all lengths passing through the node",
+    ),
+    # CentralityType.SUBGRAPH_CENTRALITY_EXP: disabled
+    CentralityInfo(
+        name=CentralityType.LAPLACIAN,
+        category="network_structure_centralities",
+        performance="Very slow",
+        description="Spectral centrality derived from eigenvalues of the graph Laplacian matrix",
+    ),
+    CentralityInfo(
+        name=CentralityType.SECOND_ORDER,
+        category="network_structure_centralities",
+        requirement="Connected undirected graphs only",
+        performance="Very slow",
+        description="Considers extended neighborhood structure beyond immediate connections",
+    ),
+    CentralityInfo(
+        name=CentralityType.PERCOLATION,
+        category="node_importance_centralities",
+        performance="Slow",
+        description="Measures how node removal affects network connectivity and fragmentation",
+    ),
+    CentralityInfo(
+        name=CentralityType.VOTERANK,
+        category="node_importance_centralities",
+        performance="Moderate",
+        description="Identifies influential spreaders using iterative voting and suppression",
+    ),
+    CentralityInfo(
+        name=CentralityType.EDGE_DISPERSION,
+        category="edge_based_centralities",
+        performance="Fast",
+        description="Measures how well an edge connects nodes from different network regions",
+    ),
+    CentralityInfo(
+        name=CentralityType.LOCAL_REACHING,
+        category="distance_flow_centralities",
+        requirement="Directed graphs only",
+        performance="Fast",
+        description="Proportion of nodes reachable from this node within a limited number of steps",
+    ),
+    # CentralityType.GLOBAL_REACHING: disabled
+    CentralityInfo(
+        name=CentralityType.TROPHIC_LEVEL,
+        category="hierarchy_based_centralities",
+        requirement="Directed acyclic graphs (DAG) only",
+        performance="Fast",
+        description="Node's vertical position in directed acyclic hierarchical structure",
+    ),
+    CentralityInfo(
+        name=CentralityType.EDGE_TROPHIC_DIFFERENCES,
+        category="edge_based_centralities",
+        requirement="Directed acyclic graphs (DAG) only",
+        performance="Fast",
+        description="Difference in hierarchical levels between nodes connected by edge",
+    ),
+    # CentralityType.TROPHIC_INCOHERENCE: disabled
 ]
 
 
-CENTRALITY_CATEGORIES = {
-    "node_importance_centralites": [
-        CentralityType.DEGREE,
-        CentralityType.IN_DEGREE,
-        CentralityType.OUT_DEGREE,
-        CentralityType.EIGENVECTOR,
-        CentralityType.KATZ,
-        CentralityType.PAGERANK,
-        CentralityType.PERCOLATION,
-        CentralityType.VOTERANK,
-    ],
-    "distance_flow_centralites": [
-        CentralityType.CLOSENESS,
-        CentralityType.HARMONIC,
-        CentralityType.BETWEENNESS,
-        CentralityType.LOAD,
-        CentralityType.INFORMATION_CENTRALITY,
-        CentralityType.LOCAL_REACHING,
-        # CentralityType.GLOBAL_REACHING,
-    ],
-    "network_structure_centralites": [
-        CentralityType.SUBGRAPH,
-        # CentralityType.SUBGRAPH_CENTRALITY_EXP,
-        CentralityType.COMMUNICABILITY_BETWEENNESS,
-        CentralityType.CURRENT_FLOW_BETWEENNESS,
-        CentralityType.LAPLACIAN,
-        CentralityType.SECOND_ORDER,
-    ],
-        "hierarchy_based_centralites": [
-        CentralityType.TROPHIC_LEVEL,
-        # CentralityType.TROPHIC_INCOHERENCE,
-    ],
-    "edge_based_centralites": [
-        CentralityType.EDGE_BETWEENNESS,
-        CentralityType.EDGE_LOAD,
-        CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
-        CentralityType.EDGE_DISPERSION,
-        CentralityType.EDGE_TROPHIC_DIFFERENCES,
-    ],
-}
-
-CENTRALITY_REQUIREMENTS = {
-    CentralityType.IN_DEGREE: "Directed graphs only",
-    CentralityType.OUT_DEGREE: "Directed graphs only",
-    CentralityType.LOCAL_REACHING: "Directed graphs only",
-    
-    CentralityType.SUBGRAPH: "Undirected graphs only",
-    CentralityType.SECOND_ORDER: "Connected undirected graphs only",
-    CentralityType.INFORMATION_CENTRALITY: "Connected undirected graphs only",
-    CentralityType.CURRENT_FLOW_BETWEENNESS: "Connected undirected graphs only",
-    CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS: "Connected undirected graphs only",
-    CentralityType.COMMUNICABILITY_BETWEENNESS: "Connected undirected graphs only",
-    
-    CentralityType.TROPHIC_LEVEL: "Directed acyclic graphs (DAG) only",
-    CentralityType.EDGE_TROPHIC_DIFFERENCES: "Directed acyclic graphs (DAG) only",
-    
-    CentralityType.EIGENVECTOR: "Connected graphs only (strongly connected if directed)",
-}
-    # CentralityType.GLOBAL_REACHING: "Directed graphs only",
-    # CentralityType.SUBGRAPH_CENTRALITY_EXP: "Undirected graphs only",
-    # CentralityType.TROPHIC_INCOHERENCE: "Directed acyclic graphs (DAG) only",
-
-CENTRALITY_PERFORMANCE = {
-    CentralityType.LAPLACIAN: "Very slow",
-    CentralityType.SECOND_ORDER: "Very slow",
-    CentralityType.COMMUNICABILITY_BETWEENNESS: "Very slow",
-
-    CentralityType.CURRENT_FLOW_BETWEENNESS: "Slow",
-    CentralityType.PERCOLATION: "Slow", 
-    CentralityType.BETWEENNESS: "Slow", 
-    CentralityType.EDGE_LOAD: "Slow", 
-    CentralityType.LOAD: "Slow",
-    CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS: "Slow",
-    
-    CentralityType.EDGE_BETWEENNESS: "Moderate",
-    CentralityType.INFORMATION_CENTRALITY: "Moderate",
-    CentralityType.VOTERANK: "Moderate",
-    CentralityType.HARMONIC: "Moderate",
-    CentralityType.CLOSENESS: "Moderate",
-    
-    CentralityType.SUBGRAPH: "Fast",
-    CentralityType.KATZ: "Fast",
-    CentralityType.EIGENVECTOR: "Fast",
-    CentralityType.PAGERANK: "Fast",
-    CentralityType.EDGE_DISPERSION: "Fast",
-    CentralityType.DEGREE: "Fast",
-    CentralityType.IN_DEGREE: "Fast",
-    CentralityType.OUT_DEGREE: "Fast",
-    CentralityType.LOCAL_REACHING: "Fast",
-    CentralityType.TROPHIC_LEVEL: "Fast",
-    CentralityType.EDGE_TROPHIC_DIFFERENCES: "Fast",
-}
-    # CentralityType.SUBGRAPH_CENTRALITY_EXP: "Fast",
-    # CentralityType.TROPHIC_INCOHERENCE: "Fast",
-    # CentralityType.GLOBAL_REACHING: "Fast",
-  
-CENTRALITY_DESCRIPTIONS = {
-    CentralityType.DEGREE: "Total number of direct connections a node has",
-    CentralityType.IN_DEGREE: "Number of directed edges pointing into a node",
-    CentralityType.OUT_DEGREE: "Number of directed edges originating from a node",
-    CentralityType.EIGENVECTOR: "Measures node importance by the importance of its neighbors",
-    CentralityType.KATZ: "Captures influence through all possible paths with exponential decay by distance",
-    CentralityType.PAGERANK: "Probability of reaching a node through random walks with damping",
-    CentralityType.PERCOLATION: "Measures how node removal affects network connectivity and fragmentation",
-    CentralityType.VOTERANK: "Identifies influential spreaders using iterative voting and suppression",
-    
-    CentralityType.CLOSENESS: "Inverse of average shortest path distance to all other nodes",
-    CentralityType.HARMONIC: "Sum of inverse distances to all nodes, robust for disconnected graphs",
-    CentralityType.BETWEENNESS: "Fraction of all shortest paths between node pairs that pass through this node",
-    CentralityType.LOAD: "Expected communication load on a node assuming shortest-path routing",
-    CentralityType.INFORMATION_CENTRALITY: "Measures node importance in information transmission across the network",
-    CentralityType.LOCAL_REACHING: "Proportion of nodes reachable from this node within a limited number of steps",
-    
-    CentralityType.SUBGRAPH: "Weighted count of closed walks of all lengths passing through the node",
-    CentralityType.COMMUNICABILITY_BETWEENNESS: "Measures node's role in facilitating communication across the entire network",
-    CentralityType.CURRENT_FLOW_BETWEENNESS: "Models network as electrical circuit, measures current through node",
-    CentralityType.LAPLACIAN: "Spectral centrality derived from eigenvalues of the graph Laplacian matrix",
-    CentralityType.SECOND_ORDER: "Considers extended neighborhood structure beyond immediate connections",
-    
-    CentralityType.EDGE_BETWEENNESS: "Fraction of shortest paths between all node pairs that traverse this edge",
-    CentralityType.EDGE_LOAD: "Expected communication traffic volume passing through an edge",
-    CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS: "Electrical current through edge in resistive network model",
-    CentralityType.EDGE_DISPERSION: "Measures how well an edge connects nodes from different network regions",
-    CentralityType.EDGE_TROPHIC_DIFFERENCES: "Difference in hierarchical levels between nodes connected by edge",
-    
-    CentralityType.TROPHIC_LEVEL: "Node's vertical position in directed acyclic hierarchical structure",
-    # CentralityType.TROPHIC_INCOHERENCE: "Measure of hierarchy disorder",
-    # CentralityType.GLOBAL_REACHING: "Global reachability measure for directed graphs",
-    # CentralityType.SUBGRAPH_CENTRALITY_EXP: "Subgraph centrality using matrix exponential",
-}  
-    
-ALL_COMMUNITY_ALGORITHMS = [
-    CommunityType.LOUVAIN,
-    CommunityType.LEIDEN,
-    CommunityType.GREEDY_MODULARITY,
-    CommunityType.LABEL_PROPAGATION,
-    CommunityType.ASYN_LPABASE,
-    CommunityType.GIRVAN_NEWMAN,
-    CommunityType.KERNIGHAN_LIN,
-    CommunityType.ASYN_FLUIDC,
+COMMUNITIES_META: List[CommunityInfo] = [
+    CommunityInfo(
+        name=CommunityType.LOUVAIN,
+        category="community_detection",
+        performance="Fast",
+        description="Fast modularity optimization through hierarchical agglomeration and refinement passes",
+    ),
+    CommunityInfo(
+        name=CommunityType.LEIDEN,
+        category="community_detection",
+        performance="Fast",
+        description="Improved Louvain variant that guarantees well-connected communities and better partitions",
+    ),
+    CommunityInfo(
+        name=CommunityType.GREEDY_MODULARITY,
+        category="community_detection",
+        performance="Moderate",
+        description="Agglomerative hierarchical clustering that greedily maximizes modularity at each step",
+    ),
+    CommunityInfo(
+        name=CommunityType.LABEL_PROPAGATION,
+        category="community_detection",
+        performance="Fast",
+        description="Nodes iteratively adopt the most common community label among their neighbors",
+    ),
+    CommunityInfo(
+        name=CommunityType.ASYN_LPABASE,
+        category="community_detection",
+        performance="Fast",
+        description="Asynchronous label propagation with random node update ordering",
+    ),
+    CommunityInfo(
+        name=CommunityType.GIRVAN_NEWMAN,
+        category="community_detection",
+        performance="Very slow",
+        description="Divisive hierarchical method that iteratively removes edges with highest betweenness",
+    ),
+    CommunityInfo(
+        name=CommunityType.KERNIGHAN_LIN,
+        category="community_detection",
+        performance="Moderate",
+        description="Bisection algorithm that swaps vertices between two groups to minimize cut size",
+    ),
+    CommunityInfo(
+        name=CommunityType.ASYN_FLUIDC,
+        category="community_detection",
+        requirement="Connected graphs only",
+        performance="Fast",
+        description="Fluid communities algorithm using density-based propagation to find k communities",
+    ),
 ]
 
-COMMUNITY_CATEGORIES = {
-    "modularity_based": [
-        CommunityType.LOUVAIN,
-        CommunityType.LEIDEN,
-        CommunityType.GREEDY_MODULARITY,
-    ],
-    "label_propagation": [
-        CommunityType.LABEL_PROPAGATION,
-        CommunityType.ASYN_LPABASE,
-    ],
-    "hierarchical": [
-        CommunityType.GIRVAN_NEWMAN,
-    ],
-    "fluid_based": [
-        CommunityType.ASYN_FLUIDC,
-    ],
-    "bisection": [
-        CommunityType.KERNIGHAN_LIN,
-    ],
-}
+CENTRALITY_CATEGORY_ORDER: List[str] = [
+    "node_importance_centralities",
+    "distance_flow_centralities",
+    "network_structure_centralities",
+    "hierarchy_based_centralities",
+    "edge_based_centralities",
+]
 
-COMMUNITY_REQUIREMENTS = {
-    CommunityType.ASYN_FLUIDC: "Connected graphs only",
-}
+COMMUNITY_CATEGORY_ORDER: List[str] = [
+    # "modularity_based",
+    # "label_propagation",
+    # "hierarchical",
+    # "bisection",
+    # "fluid_based",
+    "community_detection"
+]
 
-COMMUNITY_PERFORMANCE = {
-    CommunityType.GIRVAN_NEWMAN: "Very slow",
-    
-    CommunityType.KERNIGHAN_LIN: "Moderate",
-    CommunityType.GREEDY_MODULARITY: "Moderate",
-    
-    CommunityType.LOUVAIN: "Fast",
-    CommunityType.LEIDEN: "Fast",
-    CommunityType.LABEL_PROPAGATION: "Fast",
-    CommunityType.ASYN_LPABASE: "Fast",
-    CommunityType.ASYN_FLUIDC: "Fast",
-}
 
-COMMUNITY_DESCRIPTIONS = {
-    CommunityType.LOUVAIN: "Fast modularity optimization through hierarchical agglomeration and refinement passes",
-    CommunityType.LEIDEN: "Improved Louvain variant that guarantees well-connected communities and better partitions",
-    CommunityType.LABEL_PROPAGATION: "Nodes iteratively adopt the most common community label among their neighbors",
-    CommunityType.GREEDY_MODULARITY: "Agglomerative hierarchical clustering that greedily maximizes modularity at each step",
-    CommunityType.GIRVAN_NEWMAN: "Divisive hierarchical method that iteratively removes edges with highest betweenness",
-    CommunityType.KERNIGHAN_LIN: "Bisection algorithm that swaps vertices between two groups to minimize cut size",
-    CommunityType.ASYN_LPABASE: "Asynchronous label propagation with random node update ordering",
-    CommunityType.ASYN_FLUIDC: "Fluid communities algorithm using density-based propagation to find k communities",
-}
+def _ordered_by_category(items: List[Any], order: List[str]) -> List[Any]:
+    used = {item.category for item in items}
+    missing = used - set(order)
+    assert not missing, f"Categories present in data but missing from display order: {missing}"
+
+    order_index = {cat: i for i, cat in enumerate(order)}
+    return sorted(items, key=lambda item: order_index[item.category])
+
+CENTRALITIES: List[CentralityType] = [c.name for c in CENTRALITIES_META]
+COMMUNITIES: List[CommunityType] = [c.name for c in COMMUNITIES_META]
+
+CENTRALITIES_META = _ordered_by_category(CENTRALITIES_META, CENTRALITY_CATEGORY_ORDER)
+COMMUNITIES_META = _ordered_by_category(COMMUNITIES_META, COMMUNITY_CATEGORY_ORDER)

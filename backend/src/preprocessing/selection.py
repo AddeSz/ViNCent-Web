@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Optional, Set
 
-from ..config import ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS
+from ..config import CENTRALITIES, COMMUNITIES
 
-ALL_CENTRALITY_KEYS: Set[str] = {c.value for c in ALL_CENTRALITIES}
-ALL_COMMUNITY_KEYS: Set[str] = {a.value for a in ALL_COMMUNITY_ALGORITHMS}
+CENTRALITY_KEYS: Set[str] = {c.value for c in CENTRALITIES}
+COMMUNITY_KEYS: Set[str] = {a.value for a in COMMUNITIES}
 
 
 def _filter_entity_metrics(
@@ -65,7 +65,7 @@ def filter_metrics_info(
 
     filtered = {}
     for key, value in metrics.items():
-        is_selectable = key in ALL_CENTRALITY_KEYS or key in ALL_COMMUNITY_KEYS
+        is_selectable = key in CENTRALITY_KEYS or key in COMMUNITY_KEYS
         if not is_selectable or key in selected:
             filtered[key] = value
     return filtered

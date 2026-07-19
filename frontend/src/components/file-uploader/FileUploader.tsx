@@ -9,7 +9,7 @@ import {
 import { useLoadNetwork } from "@/hooks/useLoadNetwork";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import type { TaskStatus } from "@/utils/api";
-import api from "@/utils/api";
+import api, { mergeOptionsData } from "@/utils/api";
 import { useRef, useState } from "react";
 import DataSourceInput from "./DataSourceInput";
 import OptionsSelector from "./OptionsSelector";
@@ -24,14 +24,6 @@ const SUPPORTED_EXTENSIONS = [
   "csv",
   "tsv",
 ];
-
-export interface OptionsDataBackend {
-  all: string[];
-  categories: Record<string, string[]>;
-  requirements: Record<string, string>;
-  performance: Record<string, string>;
-  descriptions: Record<string, string>;
-}
 
 interface FileUploaderProps {
   onLoadingStart: () => void;
@@ -83,31 +75,11 @@ const FileUploader = ({
       setOptionsError(null);
       try {
         const options = await api.fetchOptions();
-
         setAvailableDatasets(options.datasets || []);
 
-        const combinedData: OptionsDataBackend = {
-          all: [...options.centralities.all, ...options.communities.all],
-          categories: {
-            ...options.centralities.categories,
-            community_detection: options.communities.all,
-          },
-          requirements: {
-            ...options.centralities.requirements,
-            ...options.communities.requirements,
-          },
-          performance: {
-            ...options.centralities.performance,
-            ...options.communities.performance,
-          },
-          descriptions: {
-            ...options.centralities.descriptions,
-            ...options.communities.descriptions,
-          },
-        };
-
+        const combinedData = mergeOptionsData(options);
         setOptionsData(combinedData);
-        setSelectedOptions(new Set(combinedData.all));
+        setSelectedOptions(new Set(combinedData.allOptionNames));
       } catch (error) {
         setOptionsError(
           error instanceof Error ? error.message : "Server Error",
@@ -150,7 +122,7 @@ const FileUploader = ({
 
     if (optionsData) {
       optionsArray.forEach((option) => {
-        if (optionsData.categories.community_detection?.includes(option)) {
+        if (optionsData.communityKeys.has(option)) {
           communitiesArray.push(option);
         } else {
           centralitiesArray.push(option);

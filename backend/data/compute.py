@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 
-from src.config import ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS
+from src.config import CENTRALITIES, COMMUNITIES
 from src.parsers import parse_network_file
 from src.preprocessing import process_network
 
@@ -80,8 +80,8 @@ def compute_all_datasets():
 
             processed = process_network(
                 data,
-                centralities=list(ALL_CENTRALITIES),
-                community_algorithms=list(ALL_COMMUNITY_ALGORITHMS)
+                centralities=list(CENTRALITIES),
+                community_algorithms=list(COMMUNITIES)
             )
 
             output_path = COMPUTED_DIR / f"{dataset_id}.json"

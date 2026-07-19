@@ -1,10 +1,9 @@
-import api from "@/utils/api";
+import api, { mergeOptionsData, type OptionsData } from "@/utils/api";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import type { OptionsDataBackend } from "./FileUploader";
 
 export interface FileUploaderState {
-  optionsData: OptionsDataBackend | null;
-  setOptionsData: (value: OptionsDataBackend | null) => void;
+  optionsData: OptionsData | null;
+  setOptionsData: (value: OptionsData | null) => void;
   availableDatasets: string[];
   setAvailableDatasets: (value: string[]) => void;
   selectedOptions: Set<string>;
@@ -21,9 +20,7 @@ export interface FileUploaderState {
 }
 
 export const useFileUploaderState = (): FileUploaderState => {
-  const [optionsData, setOptionsData] = useState<OptionsDataBackend | null>(
-    null,
-  );
+  const [optionsData, setOptionsData] = useState<OptionsData | null>(null);
   const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<Set<string>>(
     new Set(),
@@ -39,31 +36,11 @@ export const useFileUploaderState = (): FileUploaderState => {
     const prefetchOptions = async () => {
       try {
         const options = await api.fetchOptions();
-
         setAvailableDatasets(options.datasets || []);
 
-        const combinedData: OptionsDataBackend = {
-          all: [...options.centralities.all, ...options.communities.all],
-          categories: {
-            ...options.centralities.categories,
-            community_detection: options.communities.all,
-          },
-          requirements: {
-            ...options.centralities.requirements,
-            ...options.communities.requirements,
-          },
-          performance: {
-            ...options.centralities.performance,
-            ...options.communities.performance,
-          },
-          descriptions: {
-            ...options.centralities.descriptions,
-            ...options.communities.descriptions,
-          },
-        };
-
+        const combinedData = mergeOptionsData(options);
         setOptionsData(combinedData);
-        setSelectedOptions(new Set(combinedData.all));
+        setSelectedOptions(new Set(combinedData.allOptionNames));
       } catch (error) {
         console.error("Failed to prefetch options:", error);
       }

@@ -2,7 +2,7 @@ import logging
 import math
 from typing import Dict, List, Optional, Set
 
-from ..config import ALL_CENTRALITIES
+from ..config import CENTRALITIES
 from ..types import (CentralityType, CommunityType, Edge, EdgesDict,
                      NetworkData, Node, NodesDict, ProcessedNetworkResult,
                      ProgressCallback, TimestepDelta)
@@ -25,11 +25,11 @@ def process_network(
     data: NetworkData,
     centralities: List[CentralityType] | None = None,
     community_algorithms: List[CommunityType] | None = None,
-    progress_callback: Optional[ProgressCallback] = None,
+    progress_callback: ProgressCallback | None = None,
 ) -> ProcessedNetworkResult:
 
     if centralities is None:
-        centralities = ALL_CENTRALITIES
+        centralities = CENTRALITIES
     
     nodes = data.get("nodes", [])
     edges = data.get("edges", [])
@@ -101,7 +101,7 @@ def calculate_centralities(
     result: ProcessedNetworkResult,
     directed: bool,
     selected_centralities: List[CentralityType],
-    progress_callback: Optional[ProgressCallback] = None,
+    progress_callback: ProgressCallback | None = None,
 ) -> tuple[ProcessedNetworkResult, Set[str], Set[str]]:
     base_state = result["base_state"]
     deltas = result["deltas"]
@@ -184,7 +184,7 @@ def calculate_communities(
     result: ProcessedNetworkResult,
     directed: bool,
     selected_algorithms: List[CommunityType],
-    progress_callback: Optional[ProgressCallback] = None,
+    progress_callback: ProgressCallback | None = None,
 ) -> ProcessedNetworkResult:
     base_state = result["base_state"]
     deltas = result["deltas"]

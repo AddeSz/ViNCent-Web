@@ -1,3 +1,4 @@
+import type { OptionsData } from "@/utils/api";
 import { Timer } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -6,11 +7,10 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { Spinner } from "../ui/spinner";
-import type { OptionsDataBackend } from "./FileUploader";
 import OptionsCategory from "./OptionsCategory";
 
 interface OptionsSelectorProps {
-  optionsData: OptionsDataBackend | null;
+  optionsData: OptionsData | null;
   isLoading: boolean;
   error: string | null;
   selectedOptions: Set<string>;
@@ -52,18 +52,18 @@ const OptionsSelector = ({
     });
   };
 
-  const selectAllInCategory = (option: string[]) => {
+  const selectAllInCategory = (names: string[]) => {
     setSelectedOptions((prev) => {
       const newSet = new Set(prev);
-      option.forEach((m) => newSet.add(m));
+      names.forEach((n) => newSet.add(n));
       return newSet;
     });
   };
 
-  const deselectAllInCategory = (option: string[]) => {
+  const deselectAllInCategory = (names: string[]) => {
     setSelectedOptions((prev) => {
       const newSet = new Set(prev);
-      option.forEach((m) => newSet.delete(m));
+      names.forEach((n) => newSet.delete(n));
       return newSet;
     });
   };
@@ -91,7 +91,8 @@ const OptionsSelector = ({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  optionsData && setSelectedOptions(new Set(optionsData.all))
+                  optionsData &&
+                  setSelectedOptions(new Set(optionsData.allOptionNames))
                 }
                 className="h-7 text-xs"
                 disabled={isLoading || !optionsData}
@@ -136,7 +137,6 @@ const OptionsSelector = ({
                   options={options}
                   selectedOptions={selectedOptions}
                   expandedCategories={expandedCategories}
-                  optionsData={optionsData}
                   toggleCategory={toggleCategory}
                   selectAllInCategory={selectAllInCategory}
                   deselectAllInCategory={deselectAllInCategory}
@@ -153,7 +153,8 @@ const OptionsSelector = ({
 
         {optionsData && (
           <p className="text-xs text-muted-foreground">
-            {selectedOptions.size} of {optionsData.all.length} selected
+            {selectedOptions.size} of {optionsData.allOptionNames.length}
+            selected
           </p>
         )}
       </div>

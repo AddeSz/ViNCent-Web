@@ -4,7 +4,7 @@ import type { ProcessNetworkResponse } from "@/types";
 const env = getProjectEnvVariables();
 const API_BASE_URL = env.envVariables.VITE_BACKEND_URL;
 
-export interface TaskProgress {
+interface TaskProgress {
   stage: "parsing" | "calculating" | null;
   metric: string | null;
   metric_index: number | null;
@@ -13,30 +13,64 @@ export interface TaskProgress {
   timestep_total: number | null;
 }
 
-export interface TaskQueueInfo {
-  position: number | null;
-  length: number;
-}
-
-export interface TaskError {
-  type: string;
-  message: string;
-}
-
 export interface TaskStatus {
   task_id: string;
   status: "PENDING" | "PROGRESS" | "SUCCESS" | "FAILURE";
-  queue?: TaskQueueInfo;
+  queue?: {
+    position: number | null;
+    length: number;
+  };
   progress?: TaskProgress;
-  error?: TaskError;
+  error?: {
+    type: string;
+    message: string;
+  };
   result?: ProcessNetworkResponse;
+}
+
+export interface OptionMeta {
+  name: string;
+  category: string;
+  requirement: string | null;
+  performance: string | null;
+  description: string | null;
+}
+
+interface OptionsResponse {
+  centralities: OptionMeta[];
+  communities: OptionMeta[];
+  datasets: string[];
+}
+
+export interface OptionsData {
+  categories: Record<string, OptionMeta[]>;
+  allOptionNames: string[];
+  communityKeys: Set<string>;
+}
+
+export function mergeOptionsData(options: OptionsResponse): OptionsData {
+  const combined = [...options.centralities, ...options.communities];
+
+  const categories: Record<string, OptionMeta[]> = {};
+  for (const option of combined) {
+    (categories[option.category] ??= []).push(option);
+  }
+
+  const allOptionNames = combined.map((option) => option.name);
+
+  return {
+    categories,
+    allOptionNames,
+    communityKeys: new Set(options.communities.map((option) => option.name)),
+  };
 }
 
 export const api = {
   baseUrl: API_BASE_URL,
 
-  async fetchOptions() {
+  async fetchOptions(): Promise<OptionsResponse> {
     const response = await fetch(`${API_BASE_URL}/get-options`);
+
     if (!response.ok) {
       throw new Error("Failed to fetch options");
     }

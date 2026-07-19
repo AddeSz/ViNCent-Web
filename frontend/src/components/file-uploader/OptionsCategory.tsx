@@ -1,3 +1,4 @@
+import type { OptionMeta } from "@/utils/api";
 import { formatKeyLabel } from "@/utils/utils";
 import { ChevronDown, Timer } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
@@ -7,17 +8,15 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { Label } from "../ui/label";
-import type { OptionsDataBackend } from "./FileUploader";
 
 interface OptionsCategoryProps {
   category: string;
-  options: string[];
+  options: OptionMeta[];
   selectedOptions: Set<string>;
   expandedCategories: Set<string>;
-  optionsData: OptionsDataBackend;
   toggleCategory: (category: string) => void;
-  selectAllInCategory: (options: string[]) => void;
-  deselectAllInCategory: (options: string[]) => void;
+  selectAllInCategory: (names: string[]) => void;
+  deselectAllInCategory: (names: string[]) => void;
   toggleOption: (option: string) => void;
 }
 
@@ -26,16 +25,20 @@ const OptionsCategory = ({
   options,
   selectedOptions,
   expandedCategories,
-  optionsData,
   toggleCategory,
   selectAllInCategory,
   deselectAllInCategory,
   toggleOption,
 }: OptionsCategoryProps) => {
   const isExpanded = expandedCategories.has(category);
+  const names = options.map((option) => option.name);
 
-  const isFullySelected = options.every((m) => selectedOptions.has(m));
-  const selectedCount = options.filter((m) => selectedOptions.has(m)).length;
+  const isFullySelected = options.every((option) =>
+    selectedOptions.has(option.name),
+  );
+  const selectedCount = options.filter((option) =>
+    selectedOptions.has(option.name),
+  ).length;
   const isPartiallySelected =
     selectedCount > 0 && selectedCount < options.length;
 
@@ -45,12 +48,14 @@ const OptionsCategory = ({
       : `${selectedCount}/${options.length}`;
 
   const getCategoryPerformance = (): string | null => {
-    const selectedInCategory = options.filter((m) => selectedOptions.has(m));
+    const selectedInCategory = options.filter((option) =>
+      selectedOptions.has(option.name),
+    );
     if (selectedInCategory.length === 0) return null;
 
     const performanceLevels = selectedInCategory
-      .map((m) => optionsData?.performance[m])
-      .filter(Boolean);
+      .map((option) => option.performance)
+      .filter((p): p is string => Boolean(p));
 
     if (performanceLevels.includes("Very slow")) return "Very slow";
     if (performanceLevels.includes("Slow")) return "Slow";
@@ -92,9 +97,9 @@ const OptionsCategory = ({
             }
             onCheckedChange={(checked) => {
               if (checked) {
-                selectAllInCategory(options);
+                selectAllInCategory(names);
               } else {
-                deselectAllInCategory(options);
+                deselectAllInCategory(names);
               }
             }}
             onClick={(e) => e.stopPropagation()}
@@ -122,54 +127,49 @@ const OptionsCategory = ({
         </div>
       </div>
       <CollapsibleContent className="mt-1 min-w-0 space-y-1 overflow-hidden">
-        {options.map((option) => {
-          const requirement = optionsData.requirements[option];
-          const performance = optionsData.performance[option];
-          const description = optionsData.descriptions?.[option];
-          return (
-            <div
-              key={option}
-              className="flex items-center space-x-2 rounded py-0.5 pl-6 hover:bg-accent/50"
+        {options.map((option) => (
+          <div
+            key={option.name}
+            className="flex items-center space-x-2 rounded py-0.5 pl-6 hover:bg-accent/50"
+          >
+            <Checkbox
+              id={option.name}
+              checked={selectedOptions.has(option.name)}
+              onCheckedChange={() => toggleOption(option.name)}
+              className="shrink-0"
+            />
+            <Label
+              htmlFor={option.name}
+              className="min-w-0 flex-1 cursor-pointer text-xs"
             >
-              <Checkbox
-                id={option}
-                checked={selectedOptions.has(option)}
-                onCheckedChange={() => toggleOption(option)}
-                className="shrink-0"
-              />
-              <Label
-                htmlFor={option}
-                className="min-w-0 flex-1 cursor-pointer text-xs"
-              >
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1">
-                    <span>{formatKeyLabel(option)}</span>
-                    {requirement && (
-                      <span className="text-[10px] text-muted-foreground italic">
-                        ({requirement})
-                      </span>
-                    )}
-                  </div>
-                  {description && (
-                    <span className="text-[10px] text-muted-foreground">
-                      {description}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1">
+                  <span>{formatKeyLabel(option.name)}</span>
+                  {option.requirement && (
+                    <span className="text-[10px] text-muted-foreground italic">
+                      ({option.requirement})
                     </span>
                   )}
                 </div>
-              </Label>
-              {performance && (
-                <span
-                  className={`ml-auto flex shrink-0 items-center space-x-1 pr-2 text-[10px] italic ${performanceColor(
-                    performance,
-                  )}`}
-                >
-                  <Timer className="h-3 w-3 shrink-0" />
-                  <span>{performance}</span>
-                </span>
-              )}
-            </div>
-          );
-        })}
+                {option.description && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {option.description}
+                  </span>
+                )}
+              </div>
+            </Label>
+            {option.performance && (
+              <span
+                className={`ml-auto flex shrink-0 items-center space-x-1 pr-2 text-[10px] italic ${performanceColor(
+                  option.performance,
+                )}`}
+              >
+                <Timer className="h-3 w-3 shrink-0" />
+                <span>{option.performance}</span>
+              </span>
+            )}
+          </div>
+        ))}
       </CollapsibleContent>
     </Collapsible>
   );

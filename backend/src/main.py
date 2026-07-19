@@ -1,7 +1,9 @@
 import json
 import logging
 import os
-from typing import Optional
+from dataclasses import asdict
+from enum import Enum
+from typing import List, Optional, TypeVar
 
 from celery import states
 from celery.result import AsyncResult
@@ -9,15 +11,11 @@ from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
-                     CENTRALITY_CATEGORIES, CENTRALITY_DESCRIPTIONS,
-                     CENTRALITY_PERFORMANCE, CENTRALITY_REQUIREMENTS,
-                     COMMUNITY_CATEGORIES, COMMUNITY_DESCRIPTIONS,
-                     COMMUNITY_PERFORMANCE, COMMUNITY_REQUIREMENTS)
+from .config import (CENTRALITIES, CENTRALITIES_META, COMMUNITIES,
+                     COMMUNITIES_META)
 from .parsers import parse_network_file
 from .preprocessing import filter_computed_data, process_network
 from .registry import get_computed_data, list_datasets
-from .types import CentralityType, CommunityType
 from .worker import celery_app, get_queue_position, process_network_task
 
 logging.basicConfig(
@@ -38,63 +36,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+E = TypeVar("E", bound=Enum)
+
+
+def parse_selected(raw: str, allowed: List[E], field_name: str) -> List[E]:
+    try:
+        values = json.loads(raw)
+    except json.JSONDecodeError:
+        logger.warning(f"Failed to parse {field_name} as JSON, defaulting to empty")
+        return []
+
+    if not isinstance(values, list):
+        logger.warning(f"{field_name} was not a JSON list, defaulting to empty")
+        return []
+
+    allowed_by_value = {member.value: member for member in allowed}
+    return [allowed_by_value[v] for v in values if v in allowed_by_value]
+
 @app.get("/get-options")
 async def get_options():
     try:
-        centralities_data = {
-            "all": [c.value for c in ALL_CENTRALITIES],
-            "categories": {
-                category: [c.value for c in centralities]
-                for category, centralities in CENTRALITY_CATEGORIES.items()
-            },
-            "requirements": {
-                centrality_type.value: requirement_text
-                for centrality_type, requirement_text in CENTRALITY_REQUIREMENTS.items()
-            },
-            "performance": {
-                centrality_type.value: warning_text
-                for centrality_type, warning_text in CENTRALITY_PERFORMANCE.items()
-            },
-            "descriptions": {
-                centrality_type.value: desc
-                for centrality_type, desc in CENTRALITY_DESCRIPTIONS.items()
-            }
-        }
-        
-        communities_data = {
-            "all": [algo.value for algo in ALL_COMMUNITY_ALGORITHMS],
-            "categories": {
-                category: [algo.value for algo in algorithms]
-                for category, algorithms in COMMUNITY_CATEGORIES.items()
-            },
-            "requirements": {
-                algo.value: requirement_text
-                for algo, requirement_text in COMMUNITY_REQUIREMENTS.items()
-            },
-            "performance": {
-                algo.value: warning_text
-                for algo, warning_text in COMMUNITY_PERFORMANCE.items()
-            },
-            "descriptions": {
-                algo.value: desc
-                for algo, desc in COMMUNITY_DESCRIPTIONS.items()
-            }
-        }
-        
-        options_data = {
-            "centralities": centralities_data,
-            "communities": communities_data,
-            "datasets": list_datasets()
-        }
-        
-        return JSONResponse(content=options_data)
+        return JSONResponse(content={
+            "centralities": [asdict(c) for c in CENTRALITIES_META],
+            "communities": [asdict(c) for c in COMMUNITIES_META],
+            "datasets": list_datasets(),
+        })
     except Exception as e:
         logger.error(f"Error fetching options: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch options: {str(e)}"
-        )
-        
+        raise HTTPException(status_code=500, detail=f"Failed to fetch options: {str(e)}")
+
+
 @app.post("/process-network")
 async def process_network_api(
     file: UploadFile = File(...),
@@ -104,57 +75,23 @@ async def process_network_api(
     try:
         content = await file.read()
         if not file.filename:
-            raise HTTPException(
-                status_code=400,
-                detail="No filename provided"
-            )
-            
-        file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
-        
-        data = parse_network_file(content, file_extension)
-        
-        selected_centralities = []
-        try:
-            centralities_list = json.loads(centralities)
-            if centralities_list:
-                selected_centralities = [
-                    CentralityType(c) for c in centralities_list
-                    if c in [ct.value for ct in CentralityType]
-                ]
-            else:
-                selected_centralities = []
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.warning(f"Failed to parse centralities, defaulting to empty: {e}")
-            selected_centralities = []
-        
-        selected_communities = []
-        try:
-            communities_list = json.loads(communities)
-            if communities_list:
-                selected_communities = [
-                    algo for algo in communities_list
-                    if algo in [a.value for a in ALL_COMMUNITY_ALGORITHMS]
-                ]
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.warning(f"Failed to parse communities, defaulting to empty: {e}")
-            selected_communities = []
-        
-        processed = process_network(
-            data, 
-            selected_centralities,
-            selected_communities
-        )
+            raise HTTPException(status_code=400, detail="No filename provided")
 
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
+        data = parse_network_file(content, file_extension)
+
+        selected_centralities = parse_selected(centralities, CENTRALITIES, "centralities")
+        selected_communities = parse_selected(communities, COMMUNITIES, "communities")
+
+        processed = process_network(data, selected_centralities, selected_communities)
         return JSONResponse(content=processed)
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Unexpected error in validate_network: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Failed to process network: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to process network: {str(e)}")
+
 
 @app.get("/dataset/{dataset_id}")
 async def get_dataset(
@@ -200,7 +137,7 @@ async def get_dataset(
             detail=f"Failed to fetch dataset: {str(e)}"
         )
 
-# Testing task queue
+
 @app.post("/process-network-async")
 async def process_network_async_api(
     file: UploadFile = File(...),
@@ -210,41 +147,16 @@ async def process_network_async_api(
     try:
         content = await file.read()
         if not file.filename:
-            raise HTTPException(
-                status_code=400,
-                detail="No filename provided"
-            )
+            raise HTTPException(status_code=400, detail="No filename provided")
 
         file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
 
-        selected_centralities = []
-        try:
-            centralities_list = json.loads(centralities)
-            if centralities_list:
-                selected_centralities = [
-                    c for c in centralities_list
-                    if c in [ct.value for ct in CentralityType]
-                ]
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.warning(f"Failed to parse centralities, defaulting to empty: {e}")
-            selected_centralities = []
-
-        selected_communities = []
-        try:
-            communities_list = json.loads(communities)
-            if communities_list:
-                selected_communities = [
-                    CommunityType(algo) for algo in communities_list
-                    if algo in [a.value for a in ALL_COMMUNITY_ALGORITHMS]
-                ]
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.warning(f"Failed to parse communities, defaulting to empty: {e}")
-            selected_communities = []
+        selected_centralities = parse_selected(centralities, CENTRALITIES, "centralities")
+        selected_communities = parse_selected(communities, COMMUNITIES, "communities")
 
         task = process_network_task.delay(
             content, file_extension, selected_centralities, selected_communities
         )
-
         return {"task_id": task.id, "status": "submitted"}
 
     except HTTPException:
@@ -255,6 +167,7 @@ async def process_network_async_api(
             status_code=500,
             detail=f"Failed to submit processing task: {str(e)}"
         )
+
 
 @app.get("/tasks/{task_id}")
 async def get_task_status(task_id: str):
