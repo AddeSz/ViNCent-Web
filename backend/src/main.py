@@ -15,7 +15,7 @@ from .config import (ALL_CENTRALITIES, ALL_COMMUNITY_ALGORITHMS,
                      COMMUNITY_CATEGORIES, COMMUNITY_DESCRIPTIONS,
                      COMMUNITY_PERFORMANCE, COMMUNITY_REQUIREMENTS)
 from .parsers import parse_network_file
-from .preprocessing import process_network
+from .preprocessing import filter_computed_data, process_network
 from .registry import get_computed_data, list_datasets
 from .types import CentralityType, CommunityType
 from .worker import celery_app, get_queue_position, process_network_task
@@ -155,109 +155,6 @@ async def process_network_api(
             status_code=500, 
             detail=f"Failed to process network: {str(e)}"
         )
-
-def filter_metrics_info(
-    metrics: dict,
-    selected_centralities: list[str] | None,
-    selected_communities: list[str] | None,
-) -> dict:
-    selected_centralities = selected_centralities or []
-    selected_communities = selected_communities or []
-
-    all_selected = set(selected_centralities + selected_communities)
-
-    all_centrality_keys = {c.value for c in ALL_CENTRALITIES}
-    all_community_keys = {a.value for a in ALL_COMMUNITY_ALGORITHMS}
-
-    filtered = {}
-
-    for key, value in metrics.items():
-        is_centrality = key in all_centrality_keys
-        is_community = key in all_community_keys
-
-        if not is_centrality and not is_community:
-            filtered[key] = value
-            continue
-
-        if key in all_selected:
-            filtered[key] = value
-
-    return filtered
-
-
-def filter_computed_data(
-    data: dict,
-    centralities: list[str] | None,
-    communities: list[str] | None,
-) -> dict:
-    filtered_data = data.copy()
-
-    if "centralities" in filtered_data:
-        filtered_centralities = {}
-
-        for timestep, timestep_data in filtered_data["centralities"].items():
-            filtered_timestep = {}
-
-            if "nodes" in timestep_data:
-                if centralities:
-                    filtered_nodes = {}
-                    for node_id, node_data in timestep_data["nodes"].items():
-                        filtered_node = {
-                            k: v for k, v in node_data.items() if k in centralities
-                        }
-                        if filtered_node:
-                            filtered_nodes[node_id] = filtered_node
-                    filtered_timestep["nodes"] = filtered_nodes
-                else:
-                    filtered_timestep["nodes"] = {}
-
-            if "edges" in timestep_data:
-                if centralities:
-                    filtered_edges = {}
-                    for edge_id, edge_data in timestep_data["edges"].items():
-                        filtered_edge = {
-                            k: v for k, v in edge_data.items() if k in centralities
-                        }
-                        if filtered_edge:
-                            filtered_edges[edge_id] = filtered_edge
-                    filtered_timestep["edges"] = filtered_edges
-                else:
-                    filtered_timestep["edges"] = {}
-
-            filtered_centralities[timestep] = filtered_timestep
-
-        filtered_data["centralities"] = filtered_centralities
-
-    if "communities" in filtered_data:
-        filtered_communities = {}
-
-        for timestep, timestep_data in filtered_data["communities"].items():
-            if communities:
-                filtered_communities[timestep] = {
-                    k: v for k, v in timestep_data.items() if k in communities
-                }
-            else:
-                filtered_communities[timestep] = {}
-
-        filtered_data["communities"] = filtered_communities
-
-    if "metrics_info" in filtered_data:
-        if "nodes" in filtered_data["metrics_info"]:
-            filtered_data["metrics_info"]["nodes"] = filter_metrics_info(
-                filtered_data["metrics_info"]["nodes"],
-                centralities,
-                communities,
-            )
-
-        if "edges" in filtered_data["metrics_info"]:
-            filtered_data["metrics_info"]["edges"] = filter_metrics_info(
-                filtered_data["metrics_info"]["edges"],
-                centralities,
-                communities,
-            )
-            
-    return filtered_data
-
 
 @app.get("/dataset/{dataset_id}")
 async def get_dataset(
