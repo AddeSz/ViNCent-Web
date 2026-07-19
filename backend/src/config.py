@@ -1,34 +1,37 @@
 from .types import CentralityType, CommunityType
 
 ALL_CENTRALITIES = [
-    CentralityType.COMMUNICABILITY_BETWEENNESS,
-    CentralityType.SECOND_ORDER,
-    CentralityType.LAPLACIAN,
-
-    CentralityType.CURRENT_FLOW_BETWEENNESS,
-    CentralityType.PERCOLATION,
-    CentralityType.BETWEENNESS,
-    CentralityType.EDGE_LOAD,
-    CentralityType.LOAD,
-    CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
-
-    CentralityType.EDGE_BETWEENNESS,
-    CentralityType.INFORMATION_CENTRALITY,
-    CentralityType.VOTERANK,
-    CentralityType.HARMONIC,
-    CentralityType.CLOSENESS,
-
-    CentralityType.SUBGRAPH,
-    # CentralityType.SUBGRAPH_CENTRALITY_EXP,
-    CentralityType.KATZ,
-    CentralityType.EIGENVECTOR,
-    CentralityType.PAGERANK,
-    CentralityType.EDGE_DISPERSION,
     CentralityType.DEGREE,
     CentralityType.IN_DEGREE,
     CentralityType.OUT_DEGREE,
+    CentralityType.BETWEENNESS,
+    CentralityType.CLOSENESS,
+    CentralityType.EIGENVECTOR,
+    CentralityType.PAGERANK,
+    CentralityType.KATZ,
+    CentralityType.HARMONIC,
+
+    CentralityType.LOAD,
+    CentralityType.EDGE_BETWEENNESS,
+    CentralityType.EDGE_LOAD,
+    CentralityType.CURRENT_FLOW_BETWEENNESS,
+    CentralityType.EDGE_CURRENT_FLOW_BETWEENNESS,
+    CentralityType.INFORMATION_CENTRALITY,
+    CentralityType.COMMUNICABILITY_BETWEENNESS,
+
+    CentralityType.SUBGRAPH,
+    # CentralityType.SUBGRAPH_CENTRALITY_EXP,
+    CentralityType.LAPLACIAN,
+    CentralityType.SECOND_ORDER,
+
+    CentralityType.PERCOLATION,
+
+    CentralityType.VOTERANK,
+    CentralityType.EDGE_DISPERSION,
+
     CentralityType.LOCAL_REACHING,
     # CentralityType.GLOBAL_REACHING,
+
     CentralityType.TROPHIC_LEVEL,
     CentralityType.EDGE_TROPHIC_DIFFERENCES,
     # CentralityType.TROPHIC_INCOHERENCE,
@@ -167,13 +170,13 @@ CENTRALITY_DESCRIPTIONS = {
 }  
     
 ALL_COMMUNITY_ALGORITHMS = [
-    CommunityType.GIRVAN_NEWMAN,
-    CommunityType.KERNIGHAN_LIN,
-    CommunityType.GREEDY_MODULARITY,
     CommunityType.LOUVAIN,
     CommunityType.LEIDEN,
+    CommunityType.GREEDY_MODULARITY,
     CommunityType.LABEL_PROPAGATION,
     CommunityType.ASYN_LPABASE,
+    CommunityType.GIRVAN_NEWMAN,
+    CommunityType.KERNIGHAN_LIN,
     CommunityType.ASYN_FLUIDC,
 ]
 
