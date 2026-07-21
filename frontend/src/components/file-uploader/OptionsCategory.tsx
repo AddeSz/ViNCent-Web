@@ -1,4 +1,4 @@
-import type { OptionMeta } from "@/utils/api";
+import type { OptionMeta } from "@/api";
 import { formatKeyLabel } from "@/utils/utils";
 import { ChevronDown, Timer } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";

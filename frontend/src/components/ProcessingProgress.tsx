@@ -1,5 +1,5 @@
+import type { TaskStatus } from "@/api";
 import { Spinner } from "@/components/ui/spinner";
-import type { TaskStatus } from "@/utils/api";
 import { formatKeyLabel } from "@/utils/utils";
 
 interface Props {

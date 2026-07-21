@@ -1,3 +1,5 @@
+import type { TaskStatus } from "@/api";
+import api from "@/api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,8 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { useLoadNetwork } from "@/hooks/useLoadNetwork";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { TaskStatus } from "@/utils/api";
-import api, { mergeOptionsData } from "@/utils/api";
+import { useOptionsStore } from "@/stores/useOptionsStore";
 import { useRef, useState } from "react";
 import DataSourceInput from "./DataSourceInput";
 import OptionsSelector from "./OptionsSelector";
@@ -41,10 +42,6 @@ const FileUploader = ({
   fileUploaderState,
 }: FileUploaderProps) => {
   const {
-    optionsData,
-    setOptionsData,
-    availableDatasets,
-    setAvailableDatasets,
     selectedOptions,
     setSelectedOptions,
     expandedCategories,
@@ -56,6 +53,9 @@ const FileUploader = ({
     selectedFile,
     setSelectedFile,
   } = fileUploaderState;
+  const optionsData = useOptionsStore((s) => s.optionsData);
+  const optionsError = useOptionsStore((s) => s.error);
+  const fetchOptions = useOptionsStore((s) => s.fetchOptions);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const setCurrentDataset = useNetworkStore((s) => s.setCurrentDataset);
@@ -64,30 +64,9 @@ const FileUploader = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
-  const [optionsError, setOptionsError] = useState<string | null>(null);
-
   const handleLoadDataClick = async () => {
     setIsDialogOpen(true);
-
-    if (!optionsData) {
-      setIsLoadingOptions(true);
-      setOptionsError(null);
-      try {
-        const options = await api.fetchOptions();
-        setAvailableDatasets(options.datasets || []);
-
-        const combinedData = mergeOptionsData(options);
-        setOptionsData(combinedData);
-        setSelectedOptions(new Set(combinedData.allOptionNames));
-      } catch (error) {
-        setOptionsError(
-          error instanceof Error ? error.message : "Server Error",
-        );
-      } finally {
-        setIsLoadingOptions(false);
-      }
-    }
+    fetchOptions();
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,7 +144,6 @@ const FileUploader = ({
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setFileError(null);
-    setOptionsError(null);
   };
 
   const handleClearFile = () => {
@@ -207,7 +185,6 @@ const FileUploader = ({
             <DataSourceInput
               dataSource={dataSource}
               setDataSource={setDataSource}
-              datasets={availableDatasets}
               selectedDataset={selectedDataset}
               setSelectedDataset={setSelectedDataset}
               fileInputRef={fileInputRef}
@@ -218,9 +195,6 @@ const FileUploader = ({
             />
 
             <OptionsSelector
-              optionsData={optionsData}
-              isLoading={isLoadingOptions}
-              error={optionsError}
               selectedOptions={selectedOptions}
               setSelectedOptions={setSelectedOptions}
               expandedCategories={expandedCategories}

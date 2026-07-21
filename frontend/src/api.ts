@@ -36,33 +36,10 @@ export interface OptionMeta {
   description: string | null;
 }
 
-interface OptionsResponse {
+export interface OptionsResponse {
   centralities: OptionMeta[];
   communities: OptionMeta[];
   datasets: string[];
-}
-
-export interface OptionsData {
-  categories: Record<string, OptionMeta[]>;
-  allOptionNames: string[];
-  communityKeys: Set<string>;
-}
-
-export function mergeOptionsData(options: OptionsResponse): OptionsData {
-  const combined = [...options.centralities, ...options.communities];
-
-  const categories: Record<string, OptionMeta[]> = {};
-  for (const option of combined) {
-    (categories[option.category] ??= []).push(option);
-  }
-
-  const allOptionNames = combined.map((option) => option.name);
-
-  return {
-    categories,
-    allOptionNames,
-    communityKeys: new Set(options.communities.map((option) => option.name)),
-  };
 }
 
 export const api = {

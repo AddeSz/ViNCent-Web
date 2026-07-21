@@ -1,4 +1,4 @@
-import type { OptionsData } from "@/utils/api";
+import { useOptionsStore } from "@/stores/useOptionsStore";
 import { Timer } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -10,9 +10,6 @@ import { Spinner } from "../ui/spinner";
 import OptionsCategory from "./OptionsCategory";
 
 interface OptionsSelectorProps {
-  optionsData: OptionsData | null;
-  isLoading: boolean;
-  error: string | null;
   selectedOptions: Set<string>;
   setSelectedOptions: React.Dispatch<React.SetStateAction<Set<string>>>;
   expandedCategories: Set<string>;
@@ -20,14 +17,14 @@ interface OptionsSelectorProps {
 }
 
 const OptionsSelector = ({
-  optionsData,
-  isLoading = false,
-  error = null,
   selectedOptions,
   setSelectedOptions,
   expandedCategories,
   setExpandedCategories,
 }: OptionsSelectorProps) => {
+  const optionsData = useOptionsStore((s) => s.optionsData);
+  const isLoading = useOptionsStore((s) => s.isLoading);
+  const error = useOptionsStore((s) => s.error);
   const toggleOption = (option: string) => {
     setSelectedOptions((prev) => {
       const newSet = new Set(prev);

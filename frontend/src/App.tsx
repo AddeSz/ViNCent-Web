@@ -2,8 +2,9 @@ import Legend from "@/components/Legend";
 import CenterView from "@/features/center-view/CenterView";
 import { useViewPersistence } from "@/features/center-view/ViewRendering/useViewPersistence";
 import ChartFiltering from "@/features/chart-filtering/ChartFiltering";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import type { TaskStatus } from "./api";
 import FileUploader from "./components/file-uploader/FileUploader";
 import { useFileUploaderState } from "./components/file-uploader/useFileUploaderState";
 import { ProcessingProgress } from "./components/ProcessingProgress";
@@ -12,7 +13,7 @@ import { useFilterData } from "./hooks/useFilterData";
 import { useProcessData } from "./hooks/useProcessData";
 import { useValidateSettings } from "./hooks/useValidateSettings";
 import { useNetworkStore } from "./stores/useNetworkStore";
-import type { TaskStatus } from "./utils/api";
+import { useOptionsStore } from "./stores/useOptionsStore";
 
 const VIEW_KEY = "center-view-mode";
 export type ViewType = "radial" | "node-link" | "data-table";
@@ -27,6 +28,11 @@ const App = () => {
   const { view, setView, isViewLoaded } = useViewPersistence(VIEW_KEY);
   const [appState, setAppState] = useState<AppState>({ phase: "idle" });
   const [draggingBars, setDraggingBars] = useState<Record<string, boolean>>({});
+
+  const fetchOptions = useOptionsStore((s) => s.fetchOptions);
+  useEffect(() => {
+    fetchOptions();
+  }, [fetchOptions]);
 
   const fileUploaderState = useFileUploaderState();
 
@@ -168,7 +174,6 @@ const App = () => {
                 <ChartFiltering
                   nodeData={visibleNodeData}
                   edgeData={visibleEdgeData}
-                  descriptions={fileUploaderState.optionsData?.descriptions}
                 />
               </div>
             </Panel>

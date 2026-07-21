@@ -1,11 +1,13 @@
-import api, { mergeOptionsData, type OptionsData } from "@/utils/api";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useOptionsStore } from "@/stores/useOptionsStore";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 export interface FileUploaderState {
-  optionsData: OptionsData | null;
-  setOptionsData: (value: OptionsData | null) => void;
-  availableDatasets: string[];
-  setAvailableDatasets: (value: string[]) => void;
   selectedOptions: Set<string>;
   setSelectedOptions: Dispatch<SetStateAction<Set<string>>>;
   expandedCategories: Set<string>;
@@ -20,8 +22,6 @@ export interface FileUploaderState {
 }
 
 export const useFileUploaderState = (): FileUploaderState => {
-  const [optionsData, setOptionsData] = useState<OptionsData | null>(null);
-  const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<Set<string>>(
     new Set(),
   );
@@ -32,22 +32,15 @@ export const useFileUploaderState = (): FileUploaderState => {
   const [selectedDataset, setSelectedDataset] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const optionsData = useOptionsStore((s) => s.optionsData);
+  const hasInitializedOptions = useRef(false);
+
   useEffect(() => {
-    const prefetchOptions = async () => {
-      try {
-        const options = await api.fetchOptions();
-        setAvailableDatasets(options.datasets || []);
-
-        const combinedData = mergeOptionsData(options);
-        setOptionsData(combinedData);
-        setSelectedOptions(new Set(combinedData.allOptionNames));
-      } catch (error) {
-        console.error("Failed to prefetch options:", error);
-      }
-    };
-
-    prefetchOptions();
-  }, []);
+    if (optionsData && !hasInitializedOptions.current) {
+      hasInitializedOptions.current = true;
+      setSelectedOptions(new Set(optionsData.allOptionNames));
+    }
+  }, [optionsData]);
 
   const clearDataSelection = () => {
     setDataSource("dataset");
@@ -56,10 +49,6 @@ export const useFileUploaderState = (): FileUploaderState => {
   };
 
   return {
-    optionsData,
-    setOptionsData,
-    availableDatasets,
-    setAvailableDatasets,
     selectedOptions,
     setSelectedOptions,
     expandedCategories,

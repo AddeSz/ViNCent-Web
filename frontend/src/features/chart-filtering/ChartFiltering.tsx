@@ -16,6 +16,7 @@ import { useKeys } from "@/hooks/useKeys";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useOptionsStore } from "@/stores/useOptionsStore";
 import type { FullData } from "@/types";
 import { formatKeyLabel, formatValue, getNodeId } from "@/utils/utils";
 import { HelpCircle } from "lucide-react";
@@ -35,14 +36,9 @@ export interface ChartDimensions {
 interface ChartFilteringProps {
   nodeData: Map<string, FullData>;
   edgeData: Map<string, FullData>;
-  descriptions: Record<string, string> | undefined;
 }
 
-const ChartFiltering = ({
-  nodeData,
-  edgeData,
-  descriptions,
-}: ChartFilteringProps) => {
+const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const getColorForMetric = useGetColorForMetric();
   const dimensions = useResizeObserver(containerRef);
@@ -67,6 +63,7 @@ const ChartFiltering = ({
   const [binCountsByKey, setBinCountsByKey] = useState<Record<string, number>>(
     {},
   );
+  const descriptions = useOptionsStore((s) => s.optionDescriptions);
   const currentNodes = useNetworkStore((s) => s.currentNodes);
   const currentEdges = useNetworkStore((s) => s.currentEdges);
   const metricsInfo = useCurrentMetricsInfo();
