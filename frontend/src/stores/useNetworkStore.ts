@@ -21,8 +21,8 @@ interface LoadDatasetParams {
 
 interface NetworkStore {
   network: Network;
-  nodeMap: Map<string, Node>;
-  edgeMap: Map<string, Edge>;
+  allNodesById: Map<string, Node>;
+  allEdgesById: Map<string, Edge>;
   baseState: Network | null;
   deltas: Map<number, TimestepDelta>;
   centralities: Map<number, CentralityData>;
@@ -86,8 +86,8 @@ function applyDelta(
 
 export const useNetworkStore = create<NetworkStore>((set, get) => ({
   network: { nodes: [], edges: [] },
-  nodeMap: new Map(),
-  edgeMap: new Map(),
+  allNodesById: new Map(),
+  allEdgesById: new Map(),
   baseState: null,
   deltas: new Map(),
   centralities: new Map(),
@@ -112,8 +112,12 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     communities,
     timesteps,
   }) => {
-    const nodeMap = new Map<string, Node>(network.nodes.map((n) => [n.id, n]));
-    const edgeMap = new Map<string, Edge>(network.edges.map((e) => [e.id, e]));
+    const allNodesById = new Map<string, Node>(
+      network.nodes.map((n) => [n.id, n]),
+    );
+    const allEdgesById = new Map<string, Edge>(
+      network.edges.map((e) => [e.id, e]),
+    );
     const directed = graphType !== "undirected";
 
     const deltasMap = new Map(
@@ -134,8 +138,8 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
 
     set({
       network,
-      nodeMap,
-      edgeMap,
+      allNodesById,
+      allEdgesById,
       directed,
       baseState,
       deltas: deltasMap,
@@ -245,8 +249,8 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   clearData: () =>
     set({
       network: { nodes: [], edges: [] },
-      nodeMap: new Map(),
-      edgeMap: new Map(),
+      allNodesById: new Map<string, Node>(),
+      allEdgesById: new Map<string, Edge>(),
       baseState: null,
       deltas: new Map(),
       centralities: new Map(),

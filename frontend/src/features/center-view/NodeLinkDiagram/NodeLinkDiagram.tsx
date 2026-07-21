@@ -30,7 +30,7 @@ import updateGraph, { updateStyle } from "./updateGraph";
 
 interface NodeLinkDiagramProps {
   dimensions: DOMRectReadOnly | null;
-  filteredNetwork: Network;
+  renderableNetwork: Network;
   nodeData: Map<string, FullData>;
   edgeData: Map<string, FullData>;
   handleContextMenu: (target: ContextType, data?: any) => void;
@@ -42,7 +42,7 @@ interface NodeLinkDiagramProps {
 
 const NodeLinkDiagram = ({
   dimensions,
-  filteredNetwork,
+  renderableNetwork,
   nodeData,
   edgeData,
   handleContextMenu,
@@ -237,7 +237,7 @@ const NodeLinkDiagram = ({
       updateGraph(
         svg,
         simulationRef.current,
-        filteredNetwork,
+        renderableNetwork,
         selectedNodes,
         nodeChanges,
         edgeChanges,
@@ -250,7 +250,7 @@ const NodeLinkDiagram = ({
         (nodeId, x, y) => showTooltip({ type: "node", nodeId, x, y }),
         handleDragStateChange,
       );
-      drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
+      drawSelectionBrush(svgGroup, renderableNetwork.nodes, isViewActive);
       setupNodeEvents(svg, interactionProps, isDraggingRef);
     }
 
@@ -328,7 +328,7 @@ const NodeLinkDiagram = ({
       updateGraph(
         svg,
         simulationRef.current!,
-        filteredNetwork,
+        renderableNetwork,
         selectedNodes,
         nodeChanges,
         edgeChanges,
@@ -369,7 +369,7 @@ const NodeLinkDiagram = ({
       .select(svgRef.current)
       .select<SVGGElement>("g.zoom-group");
 
-    drawSelectionBrush(svgGroup, filteredNetwork.nodes, isViewActive);
+    drawSelectionBrush(svgGroup, renderableNetwork.nodes, isViewActive);
   }, [isViewActive]);
 
   useEffect(() => {

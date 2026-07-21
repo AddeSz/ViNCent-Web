@@ -5,10 +5,10 @@ import { getNodeId } from "@/utils/utils";
 import { useMemo } from "react";
 
 interface DataSummaryProps {
-  filteredNetwork: Network;
+  renderableNetwork: Network;
 }
 
-const DataSummary = ({ filteredNetwork }: DataSummaryProps) => {
+const DataSummary = ({ renderableNetwork }: DataSummaryProps) => {
   const selectedNodes = useInteractionStore((s) => s.selectedNodes);
   const network = useNetworkStore((s) => s.network);
 
@@ -20,13 +20,13 @@ const DataSummary = ({ filteredNetwork }: DataSummaryProps) => {
     let nodesCount = 0;
     const uniqueLinks = new Set<string>();
 
-    for (const node of filteredNetwork.nodes) {
+    for (const node of renderableNetwork.nodes) {
       if (selectedNodes.has(node.id)) {
         nodesCount++;
       }
     }
 
-    for (const link of filteredNetwork.edges) {
+    for (const link of renderableNetwork.edges) {
       const sourceId = getNodeId(link.source);
       const targetId = getNodeId(link.target);
 
@@ -39,16 +39,16 @@ const DataSummary = ({ filteredNetwork }: DataSummaryProps) => {
       selectedNodesCount: nodesCount,
       selectedLinksCount: uniqueLinks.size,
     };
-  }, [selectedNodes, filteredNetwork]);
+  }, [selectedNodes, renderableNetwork]);
 
   if (network.nodes.length === 0) return null;
   return (
     <div className="pointer-events-none mt-2 cursor-default text-sm text-gray-300">
       <p>
-        Visible Nodes: {filteredNetwork.nodes.length} / {network.nodes.length}
+        Visible Nodes: {renderableNetwork.nodes.length} / {network.nodes.length}
       </p>
       <p>
-        Visible Links: {filteredNetwork.edges.length} / {network.edges.length}
+        Visible Links: {renderableNetwork.edges.length} / {network.edges.length}
       </p>
       <p>
         Selected: {selectedNodesCount} nodes, {selectedLinksCount} links

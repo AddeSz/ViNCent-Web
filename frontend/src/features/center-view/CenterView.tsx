@@ -31,10 +31,10 @@ export type ContextMenuTarget = {
 
 interface CenterViewProps {
   nodeData: Map<string, FullData>;
-  filteredNodeData: Map<string, FullData>;
   edgeData: Map<string, FullData>;
-  filteredEdgeData: Map<string, FullData>;
-  filteredNetwork: Network;
+  visibleNodeData: Map<string, FullData>;
+  visibleEdgeData: Map<string, FullData>;
+  renderableNetwork: Network;
   nodeChanges: DataChanges;
   edgeChanges: DataChanges;
   canConfirm: boolean;
@@ -46,10 +46,10 @@ interface CenterViewProps {
 
 const CenterView = ({
   nodeData,
-  filteredNodeData,
+  visibleNodeData,
   edgeData,
-  filteredEdgeData,
-  filteredNetwork,
+  visibleEdgeData,
+  renderableNetwork,
   nodeChanges,
   edgeChanges,
   canConfirm,
@@ -121,7 +121,7 @@ const CenterView = ({
               dimensions={dimensions}
               sortedNodes={sortedData}
               nodeData={nodeData}
-              edgeData={filteredEdgeData}
+              edgeData={visibleEdgeData}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
               isViewActive={view === "radial"}
@@ -138,9 +138,9 @@ const CenterView = ({
           >
             <NodeLinkDiagram
               dimensions={dimensions}
-              filteredNetwork={filteredNetwork}
-              nodeData={filteredNodeData}
-              edgeData={filteredEdgeData}
+              renderableNetwork={renderableNetwork}
+              nodeData={visibleNodeData}
+              edgeData={visibleEdgeData}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
               isViewActive={view === "node-link"}
@@ -166,7 +166,7 @@ const CenterView = ({
           {view !== "data-table" && (
             <>
               <div className="pointer-events-none absolute bottom-2 left-2">
-                <DataSummary filteredNetwork={filteredNetwork} />
+                <DataSummary renderableNetwork={renderableNetwork} />
               </div>
               {canConfirm && !nodeLinkUpdating && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">

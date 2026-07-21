@@ -20,19 +20,19 @@ import { useEffect, useMemo, useState } from "react";
 const NodeSelector = () => {
   const [open, setOpen] = useState(false);
   const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
-  const nodeMap = useNetworkStore((s) => s.nodeMap);
+  const allNodesById = useNetworkStore((s) => s.allNodesById);
   const restoreNode = useFilterStore((s) => s.restoreNode);
   const restoreAllNodes = useFilterStore((s) => s.restoreAllNodes);
 
   const hiddenNodesList = useMemo(() => {
     return Array.from(hiddenNodes)
       .map((id) => {
-        const node = nodeMap.get(id);
+        const node = allNodesById.get(id);
         return node ? { id, label: node.label || id } : null;
       })
       .filter((n) => n !== null)
       .sort((a, b) => a!.label.localeCompare(b!.label));
-  }, [hiddenNodes, nodeMap]);
+  }, [hiddenNodes, allNodesById]);
 
   const isDisabled = hiddenNodes.size === 0;
 

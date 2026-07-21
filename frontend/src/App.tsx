@@ -30,16 +30,16 @@ const App = () => {
 
   const fileUploaderState = useFileUploaderState();
 
-  const { nodeMap, edgeMap, nodeChanges, edgeChanges } = useFilterData();
+  const { nodeData, edgeData, nodeChanges, edgeChanges } = useFilterData();
   const {
-    nodeData,
-    edgeData,
-    filteredNodeData,
-    filteredEdgeData,
-    filteredNetwork,
+    fullNodeData,
+    fullEdgeData,
+    visibleNodeData,
+    visibleEdgeData,
+    renderableNetwork,
     confirmRemovals,
     canConfirm,
-  } = useProcessData(nodeMap, edgeMap, nodeChanges, edgeChanges);
+  } = useProcessData(nodeData, edgeData, nodeChanges, edgeChanges);
 
   useValidateSettings();
   const currentDataset = useNetworkStore((s) => s.currentDataset);
@@ -140,11 +140,11 @@ const App = () => {
 
           {appState.phase === "ready" && (
             <CenterView
-              nodeData={nodeData}
-              filteredNodeData={filteredNodeData}
-              edgeData={edgeData}
-              filteredEdgeData={filteredEdgeData}
-              filteredNetwork={filteredNetwork}
+              nodeData={fullNodeData}
+              edgeData={fullEdgeData}
+              visibleNodeData={visibleNodeData}
+              visibleEdgeData={visibleEdgeData}
+              renderableNetwork={renderableNetwork}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
               canConfirm={canConfirm}
@@ -166,8 +166,8 @@ const App = () => {
             <Panel defaultSize={70} minSize={10}>
               <div className="h-full w-full">
                 <ChartFiltering
-                  nodeData={filteredNodeData}
-                  edgeData={filteredEdgeData}
+                  nodeData={visibleNodeData}
+                  edgeData={visibleEdgeData}
                   descriptions={fileUploaderState.optionsData?.descriptions}
                 />
               </div>

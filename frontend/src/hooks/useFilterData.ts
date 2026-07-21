@@ -63,13 +63,13 @@ const matchesAllFilters = (
 };
 
 export const useFilterData = (): {
-  nodeMap: Map<string, FullData>;
-  edgeMap: Map<string, FullData>;
+  nodeData: Map<string, FullData>;
+  edgeData: Map<string, FullData>;
   nodeChanges: DataChanges;
   edgeChanges: DataChanges;
 } => {
-  const nodeData = useNetworkStore((s) => s.nodeMap);
-  const edgeData = useNetworkStore((s) => s.edgeMap);
+  const allNodesById = useNetworkStore((s) => s.allNodesById);
+  const allEdgesById = useNetworkStore((s) => s.allEdgesById);
   const currentNodes = useNetworkStore((s) => s.currentNodes);
   const currentEdges = useNetworkStore((s) => s.currentEdges);
   const metricsInfo = useNetworkStore((s) => s.metricsInfo);
@@ -88,32 +88,32 @@ export const useFilterData = (): {
     (s) => s.displaySettings.showForeshadowing,
   );
 
-  const prevNodeMapRef = useRef<Map<string, FullData> | null>(null);
+  const prevPassingNodeDataRef = useRef<Map<string, FullData> | null>(null);
   const prevChangesRef = useRef<DataChanges>(emptyChanges);
-  const prevEdgeMapRef = useRef<Map<string, FullData> | null>(null);
+  const prevPassingEdgeDataRef = useRef<Map<string, FullData> | null>(null);
   const prevEdgeChangesRef = useRef<DataChanges>(emptyChanges);
 
-  const prevNodeDataRef = useRef(nodeData);
-  if (nodeData !== prevNodeDataRef.current) {
-    prevNodeDataRef.current = nodeData;
-    prevNodeMapRef.current = null;
+  const prevAllNodesByIdRef = useRef(allNodesById);
+  if (allNodesById !== prevAllNodesByIdRef.current) {
+    prevAllNodesByIdRef.current = allNodesById;
+    prevPassingNodeDataRef.current = null;
     prevChangesRef.current = emptyChanges;
-    prevEdgeMapRef.current = null;
+    prevPassingEdgeDataRef.current = null;
     prevEdgeChangesRef.current = emptyChanges;
   }
 
-  const prevEdgeDataRef = useRef(edgeData);
-  if (edgeData !== prevEdgeDataRef.current) {
-    prevEdgeDataRef.current = edgeData;
-    prevNodeMapRef.current = null;
+  const prevAllEdgesByIdRef = useRef(allEdgesById);
+  if (allEdgesById !== prevAllEdgesByIdRef.current) {
+    prevAllEdgesByIdRef.current = allEdgesById;
+    prevPassingNodeDataRef.current = null;
     prevChangesRef.current = emptyChanges;
-    prevEdgeMapRef.current = null;
+    prevPassingEdgeDataRef.current = null;
     prevEdgeChangesRef.current = emptyChanges;
   }
 
   return useMemo(() => {
     let i = 0;
-    const currentMap = new Map<string, FullData>();
+    const passingNodeData = new Map<string, FullData>();
 
     currentNodes.forEach((node, id) => {
       i++;
@@ -140,7 +140,7 @@ export const useFilterData = (): {
         }
       }
 
-      currentMap.set(id, {
+      passingNodeData.set(id, {
         id: node.id,
         label: node.label,
         ...filteredMetrics,
@@ -151,11 +151,11 @@ export const useFilterData = (): {
     });
 
     i = 0;
-    const validEdgeMap = new Map<string, FullData>();
+    const passingEdgeData = new Map<string, FullData>();
     currentEdges.forEach((edge, edgeId) => {
       const [source, target] = edgeId.split("|");
 
-      if (!currentMap.has(source) || !currentMap.has(target)) {
+      if (!passingNodeData.has(source) || !passingNodeData.has(target)) {
         return;
       }
 
@@ -183,7 +183,7 @@ export const useFilterData = (): {
         }
       }
 
-      validEdgeMap.set(edgeId, {
+      passingEdgeData.set(edgeId, {
         id: edgeId,
         ...filteredMetrics,
         pendingRemoval: false,
@@ -192,8 +192,8 @@ export const useFilterData = (): {
       });
     });
 
-    const prevMap = prevNodeMapRef.current || new Map();
-    const nodeChanges = diffData(prevMap, currentMap);
+    const prevPassingNodeData = prevPassingNodeDataRef.current || new Map();
+    const nodeChanges = diffData(prevPassingNodeData, passingNodeData);
 
     const hasChanges =
       Object.keys(nodeChanges.added || {}).length > 0 ||
@@ -201,7 +201,7 @@ export const useFilterData = (): {
       Object.keys(nodeChanges.updated || {}).length > 0;
 
     if (hasChanges) {
-      prevNodeMapRef.current = new Map(currentMap);
+      prevPassingNodeDataRef.current = new Map(passingNodeData);
       prevChangesRef.current = nodeChanges;
     }
 
@@ -209,8 +209,8 @@ export const useFilterData = (): {
       ? nodeChanges
       : prevChangesRef.current || emptyChanges;
 
-    const prevEdgeMap = prevEdgeMapRef.current || new Map();
-    const edgeChanges = diffData(prevEdgeMap, validEdgeMap);
+    const prevPassingEdgeData = prevPassingEdgeDataRef.current || new Map();
+    const edgeChanges = diffData(prevPassingEdgeData, passingEdgeData);
 
     const hasEdgeChanges =
       Object.keys(edgeChanges.added || {}).length > 0 ||
@@ -218,7 +218,7 @@ export const useFilterData = (): {
       Object.keys(edgeChanges.updated || {}).length > 0;
 
     if (hasEdgeChanges) {
-      prevEdgeMapRef.current = new Map(validEdgeMap);
+      prevPassingEdgeDataRef.current = new Map(passingEdgeData);
       prevEdgeChangesRef.current = edgeChanges;
     }
 
@@ -229,23 +229,23 @@ export const useFilterData = (): {
     const removedNodeSet = new Set(
       Object.keys(activeNodeChanges.removed ?? {}),
     );
-    const filteredNodes = new Map<string, FullData>();
-    const baseNodeSource = showForeshadowing ? nodeData : currentNodes;
+    const nodeData = new Map<string, FullData>();
+    const baseNodeSource = showForeshadowing ? allNodesById : currentNodes;
 
-    for (const id of nodeData.keys()) {
-      if (currentMap.has(id)) {
-        filteredNodes.set(id, currentMap.get(id)!);
+    for (const id of allNodesById.keys()) {
+      if (passingNodeData.has(id)) {
+        nodeData.set(id, passingNodeData.get(id)!);
       } else if (baseNodeSource.has(id)) {
         const baseNode = baseNodeSource.get(id)!;
 
         if (previewChanges && removedNodeSet.has(id)) {
-          filteredNodes.set(id, {
+          nodeData.set(id, {
             ...activeNodeChanges.removed[id],
             pendingRemoval: true,
             removed: false,
           });
         } else {
-          filteredNodes.set(id, {
+          nodeData.set(id, {
             id,
             label: baseNode.label,
             pendingRemoval: false,
@@ -253,7 +253,7 @@ export const useFilterData = (): {
           });
         }
       } else if (previewChanges && removedNodeSet.has(id)) {
-        filteredNodes.set(id, {
+        nodeData.set(id, {
           ...activeNodeChanges.removed[id],
           pendingRemoval: true,
           removed: false,
@@ -264,20 +264,20 @@ export const useFilterData = (): {
     const removedEdgeSet = new Set(
       Object.keys(activeEdgeChanges.removed ?? {}),
     );
-    const filteredEdges = new Map<string, FullData>();
+    const edgeData = new Map<string, FullData>();
 
     for (const edgeId of currentEdges.keys()) {
-      if (validEdgeMap.has(edgeId)) {
-        filteredEdges.set(edgeId, validEdgeMap.get(edgeId)!);
+      if (passingEdgeData.has(edgeId)) {
+        edgeData.set(edgeId, passingEdgeData.get(edgeId)!);
       } else {
         if (previewChanges && removedEdgeSet.has(edgeId)) {
-          filteredEdges.set(edgeId, {
+          edgeData.set(edgeId, {
             ...activeEdgeChanges.removed[edgeId],
             pendingRemoval: true,
             removed: false,
           });
         } else {
-          filteredEdges.set(edgeId, {
+          edgeData.set(edgeId, {
             id: edgeId,
             pendingRemoval: false,
             removed: true,
@@ -288,8 +288,8 @@ export const useFilterData = (): {
 
     if (previewChanges) {
       for (const edgeId of removedEdgeSet) {
-        if (!filteredEdges.has(edgeId)) {
-          filteredEdges.set(edgeId, {
+        if (!edgeData.has(edgeId)) {
+          edgeData.set(edgeId, {
             ...activeEdgeChanges.removed[edgeId],
             pendingRemoval: true,
             removed: false,
@@ -299,14 +299,14 @@ export const useFilterData = (): {
     }
 
     return {
-      nodeMap: filteredNodes,
-      edgeMap: filteredEdges,
+      nodeData,
+      edgeData,
       nodeChanges: activeNodeChanges,
       edgeChanges: activeEdgeChanges,
     };
   }, [
-    nodeData,
-    edgeData,
+    allNodesById,
+    allEdgesById,
     currentNodes,
     currentEdges,
     enabledNodeKeys,
