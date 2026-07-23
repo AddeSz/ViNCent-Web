@@ -1,3 +1,13 @@
+/******************************************************************************
+ * DEPRECATED CODE
+ *
+ * Legacy implementation retained for potential future requirements.
+ *
+ * WARNING: NOT UPDATED
+ *
+ * This module is not actively maintained. Do not add new features here.
+ ******************************************************************************/
+
 import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import type { AttributeInfo } from "@/types";
 import { handleHighlight } from "@/utils/ColorHelper";

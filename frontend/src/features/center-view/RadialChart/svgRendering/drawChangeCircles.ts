@@ -1,3 +1,13 @@
+/******************************************************************************
+ * DEPRECATED CODE
+ *
+ * Legacy implementation retained for potential future requirements.
+ *
+ * WARNING: NOT UPDATED
+ *
+ * This module is not actively maintained. Do not add new features here.
+ ******************************************************************************/
+
 import type { DataChanges } from "@/types";
 import * as d3 from "d3";
 import type { InteractionProps } from "../../Tooltips/useTooltip";

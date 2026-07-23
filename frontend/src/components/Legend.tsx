@@ -3,12 +3,12 @@ import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
 import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { FullData } from "@/types";
+import type { ViewNode } from "@/types";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useEffect, useMemo, useState } from "react";
 
 interface LegendProps {
-  nodeData: Map<string, FullData>;
+  nodeData: Map<string, ViewNode>;
 }
 
 const Legend = ({ nodeData }: LegendProps) => {
@@ -56,14 +56,14 @@ const Legend = ({ nodeData }: LegendProps) => {
   const nodeMetrics = useMemo(() => {
     if (!displayNode) return [];
 
-    const isRemoved = data?.removed ?? false;
+    const isRemoved = data?.flags.removed ?? false;
     return [
       ...enabledNodeCentralityKeys,
       ...enabledNodeAttributeKeys,
       ...communityKeysToUse,
     ].map((key) => {
       const info = metricsInfo.get(key);
-      const value = data?.[key];
+      const value = data?.attributes[key];
 
       let proportion = 0;
       let percentage = "";
@@ -119,15 +119,14 @@ const Legend = ({ nodeData }: LegendProps) => {
         <div className="text-sm font-semibold text-foreground">
           Node Details:
           <span className="mt-1 text-sm text-muted-foreground">
-            {" "}
             {data?.label || data?.id}
-          </span>{" "}
-          {data?.removed && (
+          </span>
+          {data?.flags.removed && (
             <span className="text-xs text-muted-foreground italic">
               (Removed Node)
             </span>
           )}
-          {data?.pendingRemoval && (
+          {data?.flags.pendingRemoval && (
             <span className="text-xs text-muted-foreground italic">
               (Pending Removal)
             </span>

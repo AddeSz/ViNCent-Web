@@ -1,5 +1,5 @@
 import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
-import type { FullData } from "@/types";
+import type { ViewNode } from "@/types";
 import * as d3 from "d3";
 import type { BoundsResult } from "./utils/calculateBounds";
 
@@ -84,7 +84,7 @@ export function drawBoundsCanvas(
 }
 
 export function updateBoundsHighlight(
-  nodeData: Map<string, FullData>,
+  nodeData: Map<string, ViewNode>,
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   hoveredCommunity: { key: string; id: number } | null,
@@ -108,7 +108,7 @@ export function updateBoundsHighlight(
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
-    if (node?.linked && !node?.removed) {
+    if (node?.linked && !node?.flags.removed) {
       node.linked.forEach((id) => linkedToSelectedIds.add(id));
     }
   });
@@ -136,7 +136,7 @@ export function updateBoundsHighlight(
 
     if (hoveredCommunity) {
       const node = nodeData.get(bound.id);
-      const communityId = node?.[hoveredCommunity.key];
+      const communityId = node?.attributes[hoveredCommunity.key];
       if (communityId === hoveredCommunity.id) {
         shouldHighlight = true;
         stroke = getColorForMetric(hoveredCommunity.key, communityId);

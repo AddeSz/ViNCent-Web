@@ -39,6 +39,8 @@ export const useLoadNetwork = () => {
     useColorStore
       .getState()
       .initializeColors(useNetworkStore.getState().metricsInfo);
+
+    useFilterStore.getState().initializeBrushRanges(allMetricsInfo);
   };
 
   const clearAllData = () => {

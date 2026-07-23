@@ -1,5 +1,5 @@
 import { useInteractionStore } from "@/stores/useInteractionStore";
-import type { FullData } from "@/types";
+import type { ViewEdge, ViewNode } from "@/types";
 
 interface BarchartBarsProps {
   categories: string[];
@@ -15,7 +15,7 @@ interface BarchartBarsProps {
   setHoverCategory: (category: string | null) => void;
   onBarClick: (category: string) => void;
   dataKey: string;
-  filteredData: Map<string, FullData>;
+  filteredData: Map<string, ViewNode | ViewEdge>;
   disabledValues: Set<number | string>;
   onDisabledValuesChange: (values: Set<number | string>) => void;
 }
@@ -40,7 +40,7 @@ const BarchartBars = ({
 }: BarchartBarsProps) => {
   const hoveredNode = useInteractionStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
-  const hoveredValue = node?.[dataKey];
+  const hoveredValue = node?.attributes[dataKey];
 
   return (
     <>

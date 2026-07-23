@@ -1,12 +1,9 @@
 import type { SimulationLinkDatum, SimulationNodeDatum } from "d3-force";
 
-export type AttributeValue = string | number | boolean | Record<string, any>;
+export type AttributeValue = string | number | boolean;
 export type Attributes = Record<string, AttributeValue>;
-export type AttributeRecord = {
-  id: string;
-  attributes: Attributes;
-};
-export type AttributeInfo = {
+
+export interface AttributeInfo {
   key: string;
   type: "string" | "number" | "boolean";
   values: Set<AttributeValue>;
@@ -15,49 +12,69 @@ export type AttributeInfo = {
   isNumeric: boolean;
   isCentrality: boolean;
   isBoolean: boolean;
-  range?: { min: number; max: number };
-};
+  range: { min: number; max: number } | null;
+}
 
-export type Node = SimulationNodeDatum & {
+export interface GraphElement {
   id: string;
   label?: string;
-  attributes?: Attributes;
-};
+  attributes: Attributes;
+}
 
-export type Edge = SimulationLinkDatum<Node> & {
-  id: string;
-  source: string | Node;
-  target: string | Node;
+export interface Node extends GraphElement {}
+
+export interface Edge extends GraphElement {
+  source: string;
+  target: string;
   weight?: number;
-  attributes?: Attributes;
-};
-
-export type FullData = Record<string, any> & {
-  id: string;
-  pendingRemoval?: boolean;
-  removed?: boolean;
-  hidden?: boolean;
-  linked?: Set<string>;
-};
+}
 
 export type Network = {
   nodes: Node[];
   edges: Edge[];
 };
 
-export type DataChanges = {
-  added: Record<string, FullData>;
-  removed: Record<string, FullData>;
-  updated: Record<
-    string,
-    Record<string, { before: FullData; after: FullData }>
-  >;
+export interface ViewFlags {
+  removed: boolean;
+  pendingRemoval: boolean;
+  hidden: boolean;
+}
+
+export interface ViewNode extends Node {
+  flags: ViewFlags;
+  linked: Set<string>;
+}
+
+export interface ViewEdge extends Edge {
+  flags: ViewFlags;
+}
+
+export type ViewNetwork = {
+  nodes: ViewNode[];
+  edges: ViewEdge[];
 };
 
-export interface CentralityData {
-  nodes: Record<string, Record<string, number>>;
-  edges: Record<string, Record<string, number>>;
+export interface ForceNode extends SimulationNodeDatum {
+  id: string;
+  data: Node;
 }
+
+// NOTE: ForceEdge.source/target start as string ids (matching Edge.source/target)
+// but are mutated in place by d3 into resolved ForceNode objects once the
+// simulation initializes. Use getNodeId() or edge.data.source/target to safely read the id.
+export interface ForceEdge extends SimulationLinkDatum<ForceNode> {
+  id: string;
+  data: Edge;
+}
+
+export type DataChanges = {
+  added: Record<string, ViewNode | ViewEdge>;
+  removed: Record<string, ViewNode | ViewEdge>;
+  updated: Record<
+    string,
+    Record<string, { before: AttributeValue; after: AttributeValue }>
+  >;
+};
 
 export type TimestepDelta = {
   nodes_added: Node[];
@@ -67,6 +84,11 @@ export type TimestepDelta = {
   edges_removed: string[];
   edges_attr_changed: Record<string, Attributes>;
 };
+
+export interface CentralityData {
+  nodes: Record<string, Record<string, number>>;
+  edges: Record<string, Record<string, number>>;
+}
 
 export interface ProcessNetworkResponse {
   network: Network;

@@ -1,5 +1,5 @@
 import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
-import type { FullData } from "@/types";
+import type { ViewNode } from "@/types";
 import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
 import { formatValue, truncateText } from "@/utils/utils";
 import * as d3 from "d3";
@@ -12,7 +12,7 @@ const shouldShowAllLabels = (zoomLevel: number, radius: number): boolean => {
 };
 
 const getDisplayText = (
-  node: FullData | undefined,
+  node: ViewNode | undefined,
   nodeId: string,
   displayLabel: string,
 ): string => {
@@ -20,7 +20,7 @@ const getDisplayText = (
     return node?.label ?? nodeId;
   }
 
-  const value = node?.[displayLabel as keyof FullData];
+  const value = node?.attributes[displayLabel];
 
   if (value !== undefined && value !== null) {
     return String(formatValue(value));
@@ -31,7 +31,7 @@ const getDisplayText = (
 
 const drawLabels = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  nodeMap: Map<string, FullData>,
+  nodeMap: Map<string, ViewNode>,
   x: d3.ScaleBand<string>,
   outerRadius: number,
   fontSize: number,
@@ -183,7 +183,7 @@ export default drawLabels;
 
 export const updateLabels = (
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-  nodeMap: Map<string, FullData>,
+  nodeMap: Map<string, ViewNode>,
   fontSize: number,
   labelWidth: number,
   truncateLabels: boolean,
@@ -217,7 +217,7 @@ export const updateLabels = (
 
 export const updateLabelStyles = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  nodeData: Map<string, FullData>,
+  nodeData: Map<string, ViewNode>,
   selectedNodes: Set<string>,
   hoveredNode: string | null,
   zoomLevel: number,
@@ -236,7 +236,7 @@ export const updateLabelStyles = (
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
-    if (node?.linked && !node?.removed && !node?.hidden) {
+    if (node?.linked && !node?.flags.removed && !node?.flags.hidden) {
       node.linked.forEach((id) => linkedToSelectedIds.add(id));
     }
   });
@@ -250,7 +250,7 @@ export const updateLabelStyles = (
       let isInHoveredCommunity = false;
       if (hoveredCommunity) {
         const node = nodeData.get(d);
-        const communityId = node?.[hoveredCommunity.key];
+        const communityId = node?.attributes[hoveredCommunity.key];
         isInHoveredCommunity = communityId === hoveredCommunity.id;
       }
 
@@ -288,7 +288,7 @@ export const updateLabelStyles = (
 
       if (hoveredCommunity) {
         const node = nodeData.get(d);
-        const communityId = node?.[hoveredCommunity.key];
+        const communityId = node?.attributes[hoveredCommunity.key];
         if (communityId === hoveredCommunity.id) {
           fillColor = getColorForMetric(hoveredCommunity.key, communityId);
           fontWeight = "700";

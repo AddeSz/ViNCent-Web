@@ -1,6 +1,6 @@
 import type { BrushRange } from "@/stores/useFilterStore";
 import { useInteractionStore } from "@/stores/useInteractionStore";
-import type { FullData } from "@/types";
+import type { ViewEdge, ViewNode } from "@/types";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
@@ -14,7 +14,7 @@ import { useHistogramScales } from "./components/useHistogramScales";
 
 interface HistogramProps {
   binnedData: BinnedData;
-  filteredData: Map<string, FullData>;
+  filteredData: Map<string, ViewNode | ViewEdge>;
   dimensions: ChartDimensions;
   dataKey: string;
   getColorForMetric: (key: string) => string;
@@ -65,7 +65,7 @@ const Histogram = ({
     const binToNodeIds = new Map<number, Set<string>>();
 
     for (const [nodeId, data] of filteredData.entries()) {
-      const value = data[dataKey];
+      const value = data.attributes[dataKey];
 
       if (typeof value !== "number") continue;
 

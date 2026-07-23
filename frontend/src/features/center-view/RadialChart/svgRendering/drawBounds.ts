@@ -1,3 +1,13 @@
+/******************************************************************************
+ * DEPRECATED CODE
+ *
+ * Legacy implementation retained for potential future requirements.
+ *
+ * WARNING: NOT UPDATED
+ *
+ * This module is not actively maintained. Do not add new features here.
+ ******************************************************************************/
+
 import type { FullData } from "@/types";
 import { highlightBoundsColor } from "@/utils/ColorHelper";
 import { arc } from "d3-shape";

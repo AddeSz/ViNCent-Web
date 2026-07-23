@@ -10,7 +10,7 @@ import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
 import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData } from "@/types";
+import type { DataChanges, ViewEdge, ViewNode } from "@/types";
 import * as d3 from "d3";
 import throttle from "lodash.throttle";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -42,10 +42,10 @@ import calculateBounds from "./utils/calculateBounds";
 
 interface RadialChartProps {
   dimensions: DOMRectReadOnly | null;
-  sortedNodes: FullData[];
-  nodeData: Map<string, FullData>;
+  sortedNodes: ViewNode[];
+  nodeData: Map<string, ViewNode>;
   nodeChanges: DataChanges;
-  edgeData: Map<string, FullData>;
+  edgeData: Map<string, ViewEdge>;
   edgeChanges: DataChanges;
   isViewActive: boolean;
   handleContextMenu: (target: ContextType, data?: any) => void;

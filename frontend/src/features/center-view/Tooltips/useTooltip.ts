@@ -3,7 +3,7 @@ import {
   type TooltipState,
 } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { FullData } from "@/types";
+import type { ViewNode } from "@/types";
 import throttle from "lodash.throttle";
 import { useCallback, useEffect, useRef } from "react";
 import type { ContextType } from "../CenterView";
@@ -15,7 +15,7 @@ export interface InteractionProps {
   onContextMenu: (target: ContextType, data?: any) => void;
 }
 
-export const useTooltip = (dataMap?: Map<string, FullData>) => {
+export const useTooltip = (dataMap?: Map<string, ViewNode>) => {
   const showTooltip = useInteractionStore((s) => s.showTooltip);
   const hideTooltip = useInteractionStore((s) => s.hideTooltip);
   const setHoveredNode = useInteractionStore((s) => s.setHoveredNode);

@@ -36,16 +36,23 @@ const App = () => {
 
   const fileUploaderState = useFileUploaderState();
 
-  const { nodeData, edgeData, nodeChanges, edgeChanges } = useFilterData();
+  const { flaggedNodeData, flaggedEdgeData, nodeChanges, edgeChanges } =
+    useFilterData();
+
   const {
-    fullNodeData,
-    fullEdgeData,
+    viewNodeData,
+    viewEdgeData,
     visibleNodeData,
     visibleEdgeData,
     renderableNetwork,
     confirmRemovals,
     canConfirm,
-  } = useProcessData(nodeData, edgeData, nodeChanges, edgeChanges);
+  } = useProcessData(
+    flaggedNodeData,
+    flaggedEdgeData,
+    nodeChanges,
+    edgeChanges,
+  );
 
   useValidateSettings();
   const currentDataset = useNetworkStore((s) => s.currentDataset);
@@ -146,8 +153,8 @@ const App = () => {
 
           {appState.phase === "ready" && (
             <CenterView
-              nodeData={fullNodeData}
-              edgeData={fullEdgeData}
+              nodeData={viewNodeData}
+              edgeData={viewEdgeData}
               visibleNodeData={visibleNodeData}
               visibleEdgeData={visibleEdgeData}
               renderableNetwork={renderableNetwork}
@@ -183,7 +190,7 @@ const App = () => {
             />
             <Panel defaultSize={30} minSize={10}>
               <div className="scrollbar-thin h-full w-full overflow-y-auto">
-                <Legend nodeData={nodeData} />
+                <Legend nodeData={flaggedNodeData} />
               </div>
             </Panel>
           </PanelGroup>

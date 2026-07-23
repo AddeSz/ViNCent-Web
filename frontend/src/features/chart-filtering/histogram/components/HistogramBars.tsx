@@ -1,5 +1,5 @@
 import { useInteractionStore } from "@/stores/useInteractionStore";
-import type { FullData } from "@/types";
+import type { ViewEdge, ViewNode } from "@/types";
 import { type ScaleLinear } from "d3";
 import type { BinnedData } from "../../components/createBinnedData";
 
@@ -14,7 +14,7 @@ interface HistogramBarsProps {
   filteredBinCounts: number[] | null;
   dataKey: string;
   disabledValues: Set<number | string>;
-  filteredData: Map<string, FullData>;
+  filteredData: Map<string, ViewNode | ViewEdge>;
   onBinHover: (binIndex: number | null) => void;
 }
 
@@ -34,8 +34,12 @@ export const HistogramBars = ({
 }: HistogramBarsProps) => {
   const hoveredNode = useInteractionStore((s) => s.hoveredNode);
   const node = hoveredNode ? filteredData.get(hoveredNode) : null;
-  const hoveredValue = node?.[dataKey];
-  const hoveredBinIndex = binnedData.valueToBinIndex.get(hoveredValue) ?? null;
+  const hoveredValue = node?.attributes[dataKey];
+
+  const hoveredBinIndex =
+    typeof hoveredValue === "number"
+      ? (binnedData.valueToBinIndex.get(hoveredValue) ?? null)
+      : null;
 
   return (
     <>

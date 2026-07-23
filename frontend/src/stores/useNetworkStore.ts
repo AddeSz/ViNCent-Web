@@ -20,7 +20,7 @@ interface LoadDatasetParams {
 }
 
 interface NetworkStore {
-  network: Network;
+  fullNetwork: Network;
   allNodesById: Map<string, Node>;
   allEdgesById: Map<string, Edge>;
   baseState: Network | null;
@@ -85,7 +85,7 @@ function applyDelta(
 }
 
 export const useNetworkStore = create<NetworkStore>((set, get) => ({
-  network: { nodes: [], edges: [] },
+  fullNetwork: { nodes: [], edges: [] },
   allNodesById: new Map(),
   allEdgesById: new Map(),
   baseState: null,
@@ -137,7 +137,7 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     );
 
     set({
-      network,
+      fullNetwork: network,
       allNodesById,
       allEdgesById,
       directed,
@@ -242,13 +242,13 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   setCurrentDataset: (dataset) => set({ currentDataset: dataset }),
 
   isNetworkEmpty: () => {
-    const { network } = get();
-    return network.nodes.length === 0 && network.edges.length === 0;
+    const { fullNetwork } = get();
+    return fullNetwork.nodes.length === 0 && fullNetwork.edges.length === 0;
   },
 
   clearData: () =>
     set({
-      network: { nodes: [], edges: [] },
+      fullNetwork: { nodes: [], edges: [] },
       allNodesById: new Map<string, Node>(),
       allEdgesById: new Map<string, Edge>(),
       baseState: null,

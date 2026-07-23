@@ -10,7 +10,7 @@ interface DataSummaryProps {
 
 const DataSummary = ({ renderableNetwork }: DataSummaryProps) => {
   const selectedNodes = useInteractionStore((s) => s.selectedNodes);
-  const network = useNetworkStore((s) => s.network);
+  const fullNetwork = useNetworkStore((s) => s.fullNetwork);
 
   const { selectedNodesCount, selectedLinksCount } = useMemo(() => {
     if (!selectedNodes || selectedNodes.size === 0) {
@@ -41,14 +41,16 @@ const DataSummary = ({ renderableNetwork }: DataSummaryProps) => {
     };
   }, [selectedNodes, renderableNetwork]);
 
-  if (network.nodes.length === 0) return null;
+  if (fullNetwork.nodes.length === 0) return null;
   return (
     <div className="pointer-events-none mt-2 cursor-default text-sm text-gray-300">
       <p>
-        Visible Nodes: {renderableNetwork.nodes.length} / {network.nodes.length}
+        Visible Nodes: {renderableNetwork.nodes.length} /{" "}
+        {fullNetwork.nodes.length}
       </p>
       <p>
-        Visible Links: {renderableNetwork.edges.length} / {network.edges.length}
+        Visible Links: {renderableNetwork.edges.length} /{" "}
+        {fullNetwork.edges.length}
       </p>
       <p>
         Selected: {selectedNodesCount} nodes, {selectedLinksCount} links

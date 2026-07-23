@@ -4,12 +4,12 @@ import { useKeys } from "@/hooks/useKeys";
 import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { FullData } from "@/types";
+import type { ViewNode } from "@/types";
 import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { useMemo, type JSX } from "react";
 
 interface ChartTooltipProps {
-  dataMap: Map<string, FullData>;
+  dataMap: Map<string, ViewNode>;
 }
 
 const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
@@ -120,11 +120,15 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         <>
           <div
             className="text-xs font-medium"
-            style={{ color: getColorForMetric(arcKey!, nodeData[arcKey!]) }}
+            style={{
+              color: getColorForMetric(arcKey!, nodeData.attributes[arcKey!]),
+            }}
           >
             {formatKeyLabel(arcKey!)}
           </div>
-          <div className="text-xs">{formatValue(nodeData[arcKey!])}</div>
+          <div className="text-xs">
+            {formatValue(nodeData.attributes[arcKey!])}
+          </div>
           <div className="text-xs text-muted-foreground">
             {nodeData.label ? nodeData.label : nodeId}
           </div>
@@ -135,9 +139,9 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
           <div className="flex-col text-xs text-muted-foreground">
-            <div>Links: {nodeData.linkCount} </div>
+            <div>Links: {nodeData.linked.size} </div>
             {selectedCommunity !== "none" && (
-              <div>Community: {nodeData?.[selectedCommunity]}</div>
+              <div>Community: {nodeData?.attributes[selectedCommunity]}</div>
             )}
           </div>
         </div>
@@ -147,9 +151,9 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
           <div className="flex-col text-xs text-muted-foreground">
-            <div>Links: {nodeData.linkCount} </div>
+            <div>Links: {nodeData.linked.size} </div>
             {selectedCommunity !== "none" && (
-              <div>Community: {nodeData?.[selectedCommunity]}</div>
+              <div>Community: {nodeData?.attributes[selectedCommunity]}</div>
             )}
           </div>
         </div>

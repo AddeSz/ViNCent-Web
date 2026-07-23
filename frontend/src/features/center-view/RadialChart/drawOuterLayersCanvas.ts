@@ -1,5 +1,5 @@
 import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
-import type { DataChanges, FullData } from "@/types";
+import type { DataChanges, ViewNode } from "@/types";
 import * as d3 from "d3";
 
 export interface CommunitySegment {
@@ -48,7 +48,7 @@ let communitiesCache: CommunitiesCanvasCache | null = null;
 
 export function drawOuterLayersCanvas(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  nodeMap: Map<string, FullData>,
+  nodeMap: Map<string, ViewNode>,
   selectedAlgorithm: string,
   x: d3.ScaleBand<string>,
   outerRadius: number,
@@ -146,7 +146,7 @@ export function drawOuterLayersCanvas(
 }
 
 function processCommunitySegments(
-  nodeMap: Map<string, FullData>,
+  nodeMap: Map<string, ViewNode>,
   selectedAlgorithm: string,
   x: d3.ScaleBand<string>,
   getColorForMetric: GetColorForMetric,
@@ -161,7 +161,7 @@ function processCommunitySegments(
     const nodeData = nodeMap.get(nodeId);
     if (!nodeData) continue;
 
-    const community = nodeData[selectedAlgorithm];
+    const community = nodeData.attributes[selectedAlgorithm];
     if (community !== undefined && typeof community === "number") {
       if (!communityGroups.has(community)) {
         communityGroups.set(community, []);

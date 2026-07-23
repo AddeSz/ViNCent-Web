@@ -3,7 +3,7 @@ import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
 import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
 import { useInteractionStore } from "@/stores/useInteractionStore";
-import type { FullData } from "@/types";
+import type { ViewEdge, ViewNode } from "@/types";
 import { formatValue } from "@/utils/utils";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
@@ -26,9 +26,9 @@ import { useTableStates } from "./hooks/useTableStates";
 export type TableType = "nodes" | "edges" | "attributes";
 
 interface DataTableProps {
-  sortedNodes: FullData[];
-  edgeData: Map<string, FullData>;
-  nodeData: Map<string, FullData>;
+  sortedNodes: ViewNode[];
+  edgeData: Map<string, ViewEdge>;
+  nodeData: Map<string, ViewNode>;
   sortingState: SortingState;
   onSortingChange: (
     updater: SortingState | ((old: SortingState) => SortingState),
@@ -60,7 +60,7 @@ const DataTable = ({
   );
 
   const nodeDataArray = useMemo(
-    () => Array.from(nodeData.values()).filter((node) => !node.removed),
+    () => Array.from(nodeData.values()).filter((node) => !node.flags.removed),
     [nodeData],
   );
 
@@ -80,10 +80,10 @@ const DataTable = ({
   );
 
   const nodesColumns = useMemo(() => {
-    const selectColumn = createSelectColumn<FullData>();
-    const hiddenColumn = createHiddenColumn<FullData>();
-    const labelColumn = createLabelColumn<FullData>();
-    const dataColumns = createDataColumns<FullData>(
+    const selectColumn = createSelectColumn<ViewNode>();
+    const hiddenColumn = createHiddenColumn<ViewNode>();
+    const labelColumn = createLabelColumn<ViewNode>();
+    const dataColumns = createDataColumns<ViewNode>(
       enabledNodeKeys,
       getColorForMetric,
       metricsInfo,
@@ -110,10 +110,10 @@ const DataTable = ({
   }, [enabledNodeKeys]);
 
   const edgesColumns = useMemo(() => {
-    const selectColumn = createEdgeSelectColumn<FullData>();
-    const sourceColumn = createEdgeColumn<FullData>(nodeData, "source");
-    const targetColumn = createEdgeColumn<FullData>(nodeData, "target");
-    const dataColumns = createDataColumns<FullData>(
+    const selectColumn = createEdgeSelectColumn<ViewEdge>();
+    const sourceColumn = createEdgeColumn<ViewEdge>(nodeData, "source");
+    const targetColumn = createEdgeColumn<ViewEdge>(nodeData, "target");
+    const dataColumns = createDataColumns<ViewEdge>(
       enabledEdgeKeys,
       getColorForMetric,
       metricsInfo,
@@ -159,11 +159,11 @@ const DataTable = ({
 
   const filteredNodesData = useMemo(() => {
     return sortedNodes.filter((row) => {
-      if (row.removed) return false;
+      if (row.flags.removed) return false;
 
       const visFilter = tableStates.nodes.visibilityFilter;
-      if (visFilter === "hidden") return row.hidden === true;
-      if (visFilter === "visible") return !row.hidden;
+      if (visFilter === "hidden") return row.flags.hidden === true;
+      if (visFilter === "visible") return !row.flags.hidden;
       if (visFilter === "selected") return selectedNodes.has(row.id);
 
       return true;

@@ -87,8 +87,9 @@ const TableContent = <T extends Record<string, any>>({
           {virtualRows.length ? (
             virtualRows.map((virtualRow) => {
               const row = table.getRowModel().rows[virtualRow.index];
-              const pendingRemoval = row.original.pendingRemoval ?? false;
-              const isHidden = row.original.hidden ?? false;
+              const pendingRemoval =
+                row.original.flags?.pendingRemoval ?? false;
+              const isHidden = row.original.flags?.hidden ?? false;
 
               let backgroundColor: string | undefined = undefined;
               let opacity = 1;

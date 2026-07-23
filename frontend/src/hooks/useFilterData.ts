@@ -2,7 +2,13 @@ import type { BinnedData } from "@/features/chart-filtering/components/createBin
 import { useFilterStore, type BrushRange } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { AttributeInfo, Attributes, DataChanges, FullData } from "@/types";
+import type {
+  AttributeInfo,
+  Attributes,
+  DataChanges,
+  ViewEdge,
+  ViewNode,
+} from "@/types";
 import { diffData } from "@/utils/diffData";
 import { useMemo, useRef } from "react";
 import { useKeys } from "./useKeys";
@@ -62,9 +68,11 @@ const matchesAllFilters = (
   });
 };
 
+const noFlags = { removed: false, pendingRemoval: false, hidden: false };
+
 export const useFilterData = (): {
-  nodeData: Map<string, FullData>;
-  edgeData: Map<string, FullData>;
+  flaggedNodeData: Map<string, ViewNode>;
+  flaggedEdgeData: Map<string, ViewEdge>;
   nodeChanges: DataChanges;
   edgeChanges: DataChanges;
 } => {
@@ -88,9 +96,9 @@ export const useFilterData = (): {
     (s) => s.displaySettings.showForeshadowing,
   );
 
-  const prevPassingNodeDataRef = useRef<Map<string, FullData> | null>(null);
+  const prevPassingNodeDataRef = useRef<Map<string, ViewNode> | null>(null);
   const prevChangesRef = useRef<DataChanges>(emptyChanges);
-  const prevPassingEdgeDataRef = useRef<Map<string, FullData> | null>(null);
+  const prevPassingEdgeDataRef = useRef<Map<string, ViewEdge> | null>(null);
   const prevEdgeChangesRef = useRef<DataChanges>(emptyChanges);
 
   const prevAllNodesByIdRef = useRef(allNodesById);
@@ -112,12 +120,10 @@ export const useFilterData = (): {
   }
 
   return useMemo(() => {
-    let i = 0;
-    const passingNodeData = new Map<string, FullData>();
+    const passingNodeData = new Map<string, ViewNode>();
 
     currentNodes.forEach((node, id) => {
-      i++;
-      const metrics = node.attributes || {};
+      const metrics = node.attributes;
 
       const matchesFilters = matchesAllFilters(
         metrics,
@@ -131,36 +137,30 @@ export const useFilterData = (): {
 
       if (!matchesFilters) return;
 
-      const filteredMetrics: Record<string, any> = {};
+      const filteredMetrics: Attributes = {};
       for (const key of enabledNodeKeys) {
-        if (key in metrics) {
-          filteredMetrics[key] = metrics[key];
-        } else {
-          filteredMetrics[key] = null;
-        }
+        filteredMetrics[key] = key in metrics ? metrics[key] : (null as any);
       }
 
       passingNodeData.set(id, {
         id: node.id,
         label: node.label,
-        ...filteredMetrics,
-        pendingRemoval: false,
-        removed: false,
-        index: i - 1,
+        attributes: filteredMetrics,
+        flags: { ...noFlags },
+        linked: new Set(),
       });
     });
 
-    i = 0;
-    const passingEdgeData = new Map<string, FullData>();
+    const passingEdgeData = new Map<string, ViewEdge>();
     currentEdges.forEach((edge, edgeId) => {
-      const [source, target] = edgeId.split("|");
-
-      if (!passingNodeData.has(source) || !passingNodeData.has(target)) {
+      if (
+        !passingNodeData.has(edge.source) ||
+        !passingNodeData.has(edge.target)
+      ) {
         return;
       }
 
-      i++;
-      const metrics = edge.attributes || {};
+      const metrics = edge.attributes;
 
       const matchesFilters = matchesAllFilters(
         metrics,
@@ -174,21 +174,18 @@ export const useFilterData = (): {
 
       if (!matchesFilters) return;
 
-      const filteredMetrics: Record<string, any> = {};
+      const filteredMetrics: Attributes = {};
       for (const key of enabledEdgeKeys) {
-        if (key in metrics) {
-          filteredMetrics[key] = metrics[key];
-        } else {
-          filteredMetrics[key] = null;
-        }
+        filteredMetrics[key] = key in metrics ? metrics[key] : (null as any);
       }
 
       passingEdgeData.set(edgeId, {
-        id: edgeId,
-        ...filteredMetrics,
-        pendingRemoval: false,
-        removed: false,
-        index: i - 1,
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        weight: edge.weight,
+        attributes: filteredMetrics,
+        flags: { ...noFlags },
       });
     });
 
@@ -229,34 +226,35 @@ export const useFilterData = (): {
     const removedNodeSet = new Set(
       Object.keys(activeNodeChanges.removed ?? {}),
     );
-    const nodeData = new Map<string, FullData>();
+    const flaggedNodeData = new Map<string, ViewNode>();
     const baseNodeSource = showForeshadowing ? allNodesById : currentNodes;
 
     for (const id of allNodesById.keys()) {
       if (passingNodeData.has(id)) {
-        nodeData.set(id, passingNodeData.get(id)!);
+        flaggedNodeData.set(id, passingNodeData.get(id)!);
       } else if (baseNodeSource.has(id)) {
         const baseNode = baseNodeSource.get(id)!;
 
         if (previewChanges && removedNodeSet.has(id)) {
-          nodeData.set(id, {
-            ...activeNodeChanges.removed[id],
-            pendingRemoval: true,
-            removed: false,
+          const removedNode = activeNodeChanges.removed[id] as ViewNode;
+          flaggedNodeData.set(id, {
+            ...removedNode,
+            flags: { removed: false, pendingRemoval: true, hidden: false },
           });
         } else {
-          nodeData.set(id, {
+          flaggedNodeData.set(id, {
             id,
             label: baseNode.label,
-            pendingRemoval: false,
-            removed: true,
+            attributes: {},
+            flags: { removed: true, pendingRemoval: false, hidden: false },
+            linked: new Set(),
           });
         }
       } else if (previewChanges && removedNodeSet.has(id)) {
-        nodeData.set(id, {
-          ...activeNodeChanges.removed[id],
-          pendingRemoval: true,
-          removed: false,
+        const removedNode = activeNodeChanges.removed[id] as ViewNode;
+        flaggedNodeData.set(id, {
+          ...removedNode,
+          flags: { removed: false, pendingRemoval: true, hidden: false },
         });
       }
     }
@@ -264,23 +262,27 @@ export const useFilterData = (): {
     const removedEdgeSet = new Set(
       Object.keys(activeEdgeChanges.removed ?? {}),
     );
-    const edgeData = new Map<string, FullData>();
+    const flaggedEdgeData = new Map<string, ViewEdge>();
 
     for (const edgeId of currentEdges.keys()) {
       if (passingEdgeData.has(edgeId)) {
-        edgeData.set(edgeId, passingEdgeData.get(edgeId)!);
+        flaggedEdgeData.set(edgeId, passingEdgeData.get(edgeId)!);
       } else {
         if (previewChanges && removedEdgeSet.has(edgeId)) {
-          edgeData.set(edgeId, {
-            ...activeEdgeChanges.removed[edgeId],
-            pendingRemoval: true,
-            removed: false,
+          const removedEdge = activeEdgeChanges.removed[edgeId] as ViewEdge;
+          flaggedEdgeData.set(edgeId, {
+            ...removedEdge,
+            flags: { removed: false, pendingRemoval: true, hidden: false },
           });
         } else {
-          edgeData.set(edgeId, {
+          const baseEdge = currentEdges.get(edgeId)!;
+          flaggedEdgeData.set(edgeId, {
             id: edgeId,
-            pendingRemoval: false,
-            removed: true,
+            source: baseEdge.source,
+            target: baseEdge.target,
+            weight: baseEdge.weight,
+            attributes: {},
+            flags: { removed: true, pendingRemoval: false, hidden: false },
           });
         }
       }
@@ -288,19 +290,19 @@ export const useFilterData = (): {
 
     if (previewChanges) {
       for (const edgeId of removedEdgeSet) {
-        if (!edgeData.has(edgeId)) {
-          edgeData.set(edgeId, {
-            ...activeEdgeChanges.removed[edgeId],
-            pendingRemoval: true,
-            removed: false,
+        if (!flaggedEdgeData.has(edgeId)) {
+          const removedEdge = activeEdgeChanges.removed[edgeId] as ViewEdge;
+          flaggedEdgeData.set(edgeId, {
+            ...removedEdge,
+            flags: { removed: false, pendingRemoval: true, hidden: false },
           });
         }
       }
     }
 
     return {
-      nodeData,
-      edgeData,
+      flaggedNodeData,
+      flaggedEdgeData,
       nodeChanges: activeNodeChanges,
       edgeChanges: activeEdgeChanges,
     };

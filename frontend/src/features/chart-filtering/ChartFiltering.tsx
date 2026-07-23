@@ -17,7 +17,7 @@ import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useOptionsStore } from "@/stores/useOptionsStore";
-import type { FullData } from "@/types";
+import type { ViewEdge, ViewNode } from "@/types";
 import { formatKeyLabel, formatValue, getNodeId } from "@/utils/utils";
 import { HelpCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -34,8 +34,8 @@ export interface ChartDimensions {
 }
 
 interface ChartFilteringProps {
-  nodeData: Map<string, FullData>;
-  edgeData: Map<string, FullData>;
+  nodeData: Map<string, ViewNode>;
+  edgeData: Map<string, ViewEdge>;
 }
 
 const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
@@ -93,7 +93,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   const fullNodeData = useMemo(() => {
     return Array.from(currentNodes.values())
       .filter((node) => !hiddenNodes.has(node.id))
-      .map((node) => node.attributes || {});
+      .map((node) => node.attributes);
   }, [currentNodes, hiddenNodes]);
 
   const fullEdgeData = useMemo(() => {
@@ -103,13 +103,13 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           !hiddenNodes.has(getNodeId(edge.source)) &&
           !hiddenNodes.has(getNodeId(edge.target)),
       )
-      .map((edge) => edge.attributes || {});
+      .map((edge) => edge.attributes);
   }, [currentEdges, hiddenNodes]);
 
   const filteredNodeData = useMemo(() => {
-    const filtered = new Map<string, FullData>();
+    const filtered = new Map<string, ViewNode>();
     for (const [key, value] of nodeData.entries()) {
-      if (value && !value.pendingRemoval) {
+      if (value && !value.flags.pendingRemoval) {
         filtered.set(key, value);
       }
     }
@@ -117,9 +117,9 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   }, [nodeData]);
 
   const filteredEdgeData = useMemo(() => {
-    const filtered = new Map<string, FullData>();
+    const filtered = new Map<string, ViewEdge>();
     for (const [key, value] of edgeData.entries()) {
-      if (value && !value.pendingRemoval) {
+      if (value && !value.flags.pendingRemoval) {
         filtered.set(key, value);
       }
     }
@@ -260,6 +260,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
 
     const binnedData = binnedDataByKey.get(key);
     if (!binnedData) return null;
+    const brushRangeForKey = brushRanges[key];
 
     const binCount = getBinCount(key);
     const disabledValuesForKey =
@@ -294,7 +295,7 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
             }}
             className="ml-auto flex cursor-pointer px-2 py-0.5 text-xs"
             size="zero"
-            disabled={!(brushRanges[key] || disabledValuesForKey.size > 0)}
+            disabled={!(brushRangeForKey || disabledValuesForKey.size > 0)}
           >
             <p className="block truncate text-xs">Clear</p>
           </Button>
@@ -306,15 +307,15 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
           dimensions={chartDimensions}
           dataKey={key}
           getColorForMetric={getColorForMetric}
-          brushRange={brushRanges[key]}
+          brushRange={brushRangeForKey}
           onBrushChange={(range) => setBrushRange(key, range)}
           disabledValues={disabledValuesForKey}
           onDisabledValuesChange={(values) => setDisabledValues(key, values)}
         />
-        {brushRanges[key] && (
+        {brushRangeForKey && (
           <p className="min-w-7.5 flex-1 truncate pl-2 text-xs text-muted-foreground">
             {(() => {
-              const { range, inclusive } = brushRanges[key]!;
+              const { range, inclusive } = brushRangeForKey!;
               const [min, max] = range;
               const leftBracket = "[";
               const rightBracket = inclusive ? "]" : ")";

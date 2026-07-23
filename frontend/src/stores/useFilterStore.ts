@@ -1,4 +1,5 @@
 import { type BinnedData } from "@/features/chart-filtering/components/createBinnedData";
+import type { AttributeInfo } from "@/types";
 import { create } from "zustand";
 import { useInteractionStore } from "./useInteractionStore";
 
@@ -22,6 +23,7 @@ interface FilterStore {
   restoreAllNodes: () => void;
   hideSelection: () => void;
 
+  initializeBrushRanges: (metrics: Record<string, AttributeInfo>) => void;
   setBrushRange: (key: string, brushRange: BrushRange | null) => void;
   clearBrushRange: (key: string) => void;
 
@@ -82,6 +84,14 @@ export const useFilterStore = create<FilterStore>((set) => ({
     useInteractionStore.getState().clearSelection();
   },
 
+  initializeBrushRanges: (metrics: Record<string, AttributeInfo>) =>
+    set({
+      brushRanges: Object.fromEntries(
+        Object.entries(metrics)
+          .filter(([_, info]) => info.range !== null)
+          .map(([key]) => [key, null]),
+      ),
+    }),
   setBrushRange: (key, brushRange) =>
     set((s) => ({ brushRanges: { ...s.brushRanges, [key]: brushRange } })),
 

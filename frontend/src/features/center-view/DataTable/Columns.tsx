@@ -363,7 +363,7 @@ export const createDataColumns = <T extends Record<string, any>>(
       info?.isCommunity || info?.isCategory || info?.isBoolean;
     return {
       id: key,
-      accessorFn: (row) => row[key as keyof T],
+      accessorFn: (row) => row.attributes?.[key],
       size: calculatedSize,
       minSize: 60,
       maxSize: 400,

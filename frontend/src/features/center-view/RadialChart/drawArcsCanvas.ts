@@ -1,5 +1,5 @@
 import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
-import type { AttributeInfo, FullData } from "@/types";
+import type { AttributeInfo, ViewNode } from "@/types";
 import * as d3 from "d3";
 import {
   getClosestZoomLevel,
@@ -40,7 +40,7 @@ let cachedProcessedArcs: ProcessedArc[] = [];
 
 const drawArcsCanvas = (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  series: d3.Series<FullData, string>[],
+  series: d3.Series<ViewNode, string>[],
   x: d3.ScaleBand<string>,
   y: d3.ScaleLinear<number, number>,
   attributeInfo: Map<string, AttributeInfo>,
@@ -82,8 +82,8 @@ const drawArcsCanvas = (
       const d = layer[i];
       const datum = d.data;
       const id = datum.id;
-      const value = datum[key as keyof FullData];
-      const pendingRemoval = datum.pendingRemoval === true;
+      const value = datum.attributes[key];
+      const pendingRemoval = datum.flags.pendingRemoval === true;
 
       const startAngle = x(id) ?? 0;
       const endAngle = startAngle + x.bandwidth();
@@ -158,7 +158,7 @@ const drawArcsCanvas = (
           value,
           id,
           pendingRemoval,
-          removed: datum.removed,
+          removed: datum.flags.removed,
           0: d[0],
           1: d[1],
         },
@@ -175,7 +175,7 @@ const drawArcsCanvas = (
 
       processedArcs.push(arc);
 
-      if (!datum.removed && value !== null) {
+      if (!datum.flags.removed && value !== null) {
         const colorKey = `${fillColor}_${arcOpacity}`;
         if (!arcsByColor[colorKey]) {
           arcsByColor[colorKey] = [];

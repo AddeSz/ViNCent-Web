@@ -1,5 +1,5 @@
 import { type EdgeRenderingMode } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData } from "@/types";
+import type { DataChanges, ViewEdge } from "@/types";
 import { getLinkStyle } from "@/utils/ColorHelper";
 import { type ForceEdgeBundlingOptions } from "@/utils/ForceEdgeBundling";
 import * as d3 from "d3";
@@ -40,7 +40,7 @@ const calculateStyles = (
 
 const drawLinksCanvas = async (
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  edgeData: Map<string, FullData>,
+  edgeData: Map<string, ViewEdge>,
   x: d3.ScaleBand<string>,
   selectedNodes: Set<string>,
   mode: EdgeRenderingMode,

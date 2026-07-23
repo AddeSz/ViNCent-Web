@@ -1,10 +1,10 @@
-import type { FullData } from "@/types";
+import type { ViewNode } from "@/types";
 import { calculateBandwidth, calculateGapProportion } from "@/utils/utils";
 import * as d3 from "d3";
 import { useMemo } from "react";
 
 interface UseRadialChartDataProps {
-  data: FullData[];
+  data: ViewNode[];
   enabledCentralityKeys: string[];
   enabledAttributeKeys: string[];
   enabledCommunityKeys: string[];
@@ -24,7 +24,10 @@ export const useRadialChartData = ({
   innerRadius,
   outerRadius,
 }: UseRadialChartDataProps) => {
-  const visibleData = useMemo(() => data.filter((d) => !d.hidden), [data]);
+  const visibleData = useMemo(
+    () => data.filter((d) => !d.flags.hidden),
+    [data],
+  );
 
   const chartData = useMemo(() => {
     const allKeys = [
@@ -45,9 +48,12 @@ export const useRadialChartData = ({
         : visibleData;
 
     const series = d3
-      .stack<FullData>()
+      .stack<ViewNode>()
       .keys(keys)
-      .value((d, key) => d[key] ?? 0)(filledData);
+      .value((d, key) => {
+        const value = d.attributes[key];
+        return typeof value === "number" ? value : 0;
+      })(filledData);
 
     return { series };
   }, [

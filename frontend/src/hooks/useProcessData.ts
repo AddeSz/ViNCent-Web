@@ -1,20 +1,19 @@
 import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { DataChanges, FullData } from "@/types";
-import { getNodeId } from "@/utils/utils";
+import type { DataChanges, ViewEdge, ViewNode } from "@/types";
 import { useMemo, useRef, useState } from "react";
 
 export const useProcessData = (
-  nodeData: Map<string, FullData>,
-  edgeData: Map<string, FullData>,
+  flaggedNodeData: Map<string, ViewNode>,
+  flaggedEdgeData: Map<string, ViewEdge>,
   changes: DataChanges,
   edgeChanges: DataChanges,
 ) => {
   const previewChanges = useSettingsStore(
     (s) => s.displaySettings.previewChanges,
   );
-  const networkData = useNetworkStore((s) => s.network);
+  const fullNetwork = useNetworkStore((s) => s.fullNetwork);
   const hiddenNodes = useFilterStore((s) => s.hiddenNodes);
   const [acceptedRemovals, setAcceptedRemovals] = useState<Set<string>>(
     new Set(),
@@ -37,160 +36,152 @@ export const useProcessData = (
   }
 
   const result = useMemo(() => {
-    const processedNodeData = new Map<string, FullData>();
+    const processedNodeData = new Map<string, ViewNode>();
     const activeNodeIds = new Set<string>();
 
-    for (const [id, node] of nodeData) {
-      const isAccepted = node.pendingRemoval && acceptedRemovals.has(node.id!);
+    for (const [id, node] of flaggedNodeData) {
+      const isAccepted =
+        node.flags.pendingRemoval && acceptedRemovals.has(node.id);
 
-      const processedNode = {
-        ...(isAccepted
-          ? {
-              id: node.id,
-              label: node.label,
-              linkCount: node.linkCount,
-              pendingRemoval: false,
-              removed: true,
-            }
-          : node),
-        linkCount: 0,
-        linked: new Set<string>(),
-      };
+      const processedNode: ViewNode = isAccepted
+        ? {
+            id: node.id,
+            label: node.label,
+            attributes: node.attributes,
+            flags: { removed: true, pendingRemoval: false, hidden: false },
+            linked: new Set(),
+          }
+        : { ...node, linked: new Set() };
 
       processedNodeData.set(id, processedNode);
 
-      if (!processedNode.removed) {
-        activeNodeIds.add(processedNode.id!);
+      if (!processedNode.flags.removed) {
+        activeNodeIds.add(processedNode.id);
       }
     }
 
-    const processedEdgeData = new Map<string, FullData>();
+    const processedEdgeData = new Map<string, ViewEdge>();
 
-    for (const [edgeId, edge] of edgeData) {
-      const [s, t] = edgeId.split("|");
+    for (const [edgeId, edge] of flaggedEdgeData) {
       const isAcceptedEdge =
-        edge.pendingRemoval && acceptedEdgeRemovals.has(edgeId);
+        edge.flags.pendingRemoval && acceptedEdgeRemovals.has(edgeId);
 
-      const shouldRemove = !activeNodeIds.has(s) || !activeNodeIds.has(t);
+      const shouldRemove =
+        !activeNodeIds.has(edge.source) || !activeNodeIds.has(edge.target);
 
-      const processedEdge = isAcceptedEdge
-        ? { ...edge, pendingRemoval: false, removed: true }
-        : shouldRemove || edge.removed
+      const processedEdge: ViewEdge = isAcceptedEdge
+        ? {
+            ...edge,
+            flags: { removed: true, pendingRemoval: false, hidden: false },
+          }
+        : shouldRemove || edge.flags.removed
           ? {
               ...edge,
-              pendingRemoval: shouldRemove && !edge.removed,
-              removed: edge.removed || shouldRemove,
+              flags: {
+                ...edge.flags,
+                pendingRemoval: shouldRemove && !edge.flags.removed,
+                removed: edge.flags.removed || shouldRemove,
+              },
             }
           : { ...edge };
 
       processedEdgeData.set(edgeId, processedEdge);
     }
 
-    const renderableNodes = networkData.nodes.filter(
+    const renderableNodes = fullNetwork.nodes.filter(
       (node) => activeNodeIds.has(node.id) && !hiddenNodes.has(node.id),
     );
 
-    const renderableLinks = networkData.edges.filter((link) => {
-      const s = getNodeId(link.source);
-      const t = getNodeId(link.target);
+    const renderableLinks = fullNetwork.edges.filter((link) => {
       const edge = processedEdgeData.get(link.id);
       return (
-        !hiddenNodes.has(s) &&
-        !hiddenNodes.has(t) &&
+        !hiddenNodes.has(link.source) &&
+        !hiddenNodes.has(link.target) &&
         edge &&
-        !edge.removed &&
-        activeNodeIds.has(s) &&
-        activeNodeIds.has(t)
+        !edge.flags.removed &&
+        activeNodeIds.has(link.source) &&
+        activeNodeIds.has(link.target)
       );
     });
 
     const linkCountMap = new Map<string, number>();
     for (const link of renderableLinks) {
-      const s = getNodeId(link.source);
-      const t = getNodeId(link.target);
       const edge = processedEdgeData.get(link.id);
 
-      if (edge && !edge.removed) {
-        const sourceNode = processedNodeData.get(s);
-        const targetNode = processedNodeData.get(t);
+      if (edge && !edge.flags.removed) {
+        const sourceNode = processedNodeData.get(link.source);
+        const targetNode = processedNodeData.get(link.target);
 
         if (
           sourceNode &&
           targetNode &&
-          !sourceNode.removed &&
-          !targetNode.removed &&
-          !hiddenNodes.has(s) &&
-          !hiddenNodes.has(t)
+          !sourceNode.flags.removed &&
+          !targetNode.flags.removed &&
+          !hiddenNodes.has(link.source) &&
+          !hiddenNodes.has(link.target)
         ) {
-          linkCountMap.set(s, (linkCountMap.get(s) || 0) + 1);
-          linkCountMap.set(t, (linkCountMap.get(t) || 0) + 1);
+          linkCountMap.set(
+            link.source,
+            (linkCountMap.get(link.source) || 0) + 1,
+          );
+          linkCountMap.set(
+            link.target,
+            (linkCountMap.get(link.target) || 0) + 1,
+          );
 
-          if (sourceNode.linked && targetNode.linked) {
-            sourceNode.linked.add(t);
-            targetNode.linked.add(s);
-          }
+          sourceNode.linked.add(link.target);
+          targetNode.linked.add(link.source);
         }
       }
     }
 
-    for (const [id, count] of linkCountMap) {
-      const node = processedNodeData.get(id);
-      if (node) {
-        processedNodeData.set(id, {
-          ...node,
-          linkCount: count,
-          linked: new Set(node.linked),
-        });
-      }
-    }
-
-    const fullNodeData = new Map<string, FullData>();
+    const viewNodeData = new Map<string, ViewNode>();
     for (const [id, node] of processedNodeData) {
-      fullNodeData.set(id, {
+      viewNodeData.set(id, {
         ...node,
-        hidden: hiddenNodes.has(id),
+        flags: { ...node.flags, hidden: hiddenNodes.has(id) },
       });
     }
 
-    const fullEdgeData = new Map<string, FullData>();
+    const viewEdgeData = new Map<string, ViewEdge>();
     for (const [edgeId, edge] of processedEdgeData) {
-      const [s, t] = edgeId.split("|");
-      const isHidden = hiddenNodes.has(s) || hiddenNodes.has(t);
+      const isHidden =
+        hiddenNodes.has(edge.source) || hiddenNodes.has(edge.target);
 
-      fullEdgeData.set(edgeId, {
+      viewEdgeData.set(edgeId, {
         ...edge,
-        hidden: isHidden,
+        flags: { ...edge.flags, hidden: isHidden },
       });
     }
 
-    const visibleEdgeData = new Map<string, FullData>();
-    for (const [edgeId, edge] of fullEdgeData) {
-      if (!edge.removed && !edge.hidden) {
+    const visibleEdgeData = new Map<string, ViewEdge>();
+    for (const [edgeId, edge] of viewEdgeData) {
+      if (!edge.flags.removed && !edge.flags.hidden) {
         visibleEdgeData.set(edgeId, edge);
       }
     }
 
-    const visibleNodeData = new Map<string, FullData>();
-    for (const [id, node] of fullNodeData) {
-      if (!node.removed && !node.hidden) {
+    const visibleNodeData = new Map<string, ViewNode>();
+    for (const [id, node] of viewNodeData) {
+      if (!node.flags.removed && !node.flags.hidden) {
         visibleNodeData.set(id, node);
       }
     }
 
     return {
-      fullNodeData,
-      fullEdgeData,
+      viewNodeData,
+      viewEdgeData,
       visibleNodeData,
       visibleEdgeData,
       renderableNetwork: { nodes: renderableNodes, edges: renderableLinks },
     };
   }, [
-    nodeData,
-    edgeData,
+    flaggedNodeData,
+    flaggedEdgeData,
     acceptedRemovals,
     acceptedEdgeRemovals,
     hiddenNodes,
-    networkData,
+    fullNetwork,
   ]);
 
   const confirmRemovals = () => {

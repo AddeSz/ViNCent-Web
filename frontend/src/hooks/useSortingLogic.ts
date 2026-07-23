@@ -1,11 +1,12 @@
 import { useInteractionStore } from "@/stores/useInteractionStore";
-import type { FullData } from "@/types";
+import type { ViewNode } from "@/types";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
 
 function getValueById(obj: any, id: string) {
-  if (obj.hasOwnProperty(id)) return obj[id];
-  return id.split(".").reduce((acc, key) => acc?.[key], obj);
+  if (id === "label") return obj.label ?? obj.id;
+  if (obj.attributes && id in obj.attributes) return obj.attributes[id];
+  return id.split(".").reduce((acc, key) => acc?.[key], obj.attributes ?? obj);
 }
 
 function applySorting<T extends object>(
@@ -45,18 +46,10 @@ function applySorting<T extends object>(
   });
 }
 
-interface SortingOptions {
-  defaultDirection?: boolean;
-}
-
-export const useSortingLogic = (
-  data?: Map<string, FullData>,
-  options?: SortingOptions,
-) => {
+export const useSortingLogic = (data?: Map<string, ViewNode>) => {
   const setSortKey = useInteractionStore((s) => s.setSortKey);
   const sortingState = useInteractionStore((s) => s.sortingState);
   const setSorting = useInteractionStore((s) => s.setSortingState);
-  const defaultDirection = options?.defaultDirection ?? true;
 
   const handleSortingChange = (
     updater: SortingState | ((old: SortingState) => SortingState),
@@ -79,8 +72,8 @@ export const useSortingLogic = (
       setSortKey("none");
     } else {
       const direction = preserveDirection
-        ? (sortingState[0]?.desc ?? defaultDirection)
-        : defaultDirection;
+        ? (sortingState[0]?.desc ?? true)
+        : true;
       setSorting([{ id: key, desc: direction }]);
       setSortKey(key);
     }
@@ -107,7 +100,7 @@ export const useSortingLogic = (
   };
 
   const sortedData = useMemo(
-    () => applySorting(data ?? new Map(), sortingState),
+    () => applySorting(data ?? new Map<string, ViewNode>(), sortingState),
     [data, sortingState],
   );
 

@@ -1,3 +1,13 @@
+/******************************************************************************
+ * DEPRECATED CODE
+ *
+ * Legacy implementation retained for potential future requirements.
+ *
+ * WARNING: NOT UPDATED
+ *
+ * This module is not actively maintained. Do not add new features here.
+ ******************************************************************************/
+
 import { type EdgeRenderingMode } from "@/stores/useSettingsStore";
 import type { Edge, FullData } from "@/types";
 import { getLinkStyle } from "@/utils/ColorHelper";

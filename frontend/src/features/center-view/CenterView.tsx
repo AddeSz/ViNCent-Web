@@ -6,7 +6,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { DataChanges, FullData, Network } from "@/types";
+import type { DataChanges, Network, ViewEdge, ViewNode } from "@/types";
 import { useRef, useState } from "react";
 import DataTable from "./DataTable/DataTable";
 import { useTableStates } from "./DataTable/hooks/useTableStates";
@@ -30,10 +30,10 @@ export type ContextMenuTarget = {
 };
 
 interface CenterViewProps {
-  nodeData: Map<string, FullData>;
-  edgeData: Map<string, FullData>;
-  visibleNodeData: Map<string, FullData>;
-  visibleEdgeData: Map<string, FullData>;
+  nodeData: Map<string, ViewNode>;
+  edgeData: Map<string, ViewEdge>;
+  visibleNodeData: Map<string, ViewNode>;
+  visibleEdgeData: Map<string, ViewEdge>;
   renderableNetwork: Network;
   nodeChanges: DataChanges;
   edgeChanges: DataChanges;

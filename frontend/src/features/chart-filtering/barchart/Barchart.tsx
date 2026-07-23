@@ -1,4 +1,4 @@
-import type { FullData } from "@/types";
+import type { ViewEdge, ViewNode } from "@/types";
 import { formatValue } from "@/utils/utils";
 import { useMemo, useRef, useState } from "react";
 import type { ChartDimensions } from "../ChartFiltering";
@@ -8,7 +8,7 @@ import BarchartBars from "./components/BarchartBars";
 
 interface BarchartProps {
   categoricalValues: string[];
-  filteredData: Map<string, FullData>;
+  filteredData: Map<string, ViewNode | ViewEdge>;
   dimensions: ChartDimensions;
   dataKey: string;
   getColorForMetric: (key: string, value?: string | number) => string;
@@ -60,7 +60,7 @@ const Barchart = ({
     const counts = new Map<string, number>();
 
     for (const [_, data] of filteredData.entries()) {
-      const value = data[dataKey];
+      const value = data.attributes[dataKey];
       if (value != null) {
         const strValue = String(value);
         if (!disabledValues.has(strValue)) {
