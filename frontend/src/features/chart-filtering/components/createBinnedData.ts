@@ -1,10 +1,16 @@
 import * as d3 from "d3";
 
-export interface BinInfo {
+interface BinEntry {
+  id: string;
+  value: number;
+}
+
+interface BinInfo {
   binIndex: number;
   x0: number;
   x1: number;
   values: number[];
+  ids: string[];
 }
 
 export interface BinnedData {
@@ -17,13 +23,14 @@ export interface BinnedData {
 }
 
 export function createBinnedData(
-  values: number[],
+  entries: BinEntry[],
   binCount: number,
 ): BinnedData {
-  if (values.length === 0) {
+  if (entries.length === 0) {
     throw new Error("Cannot create histogram from empty data");
   }
 
+  const values = entries.map((e) => e.value);
   const [rawMin, rawMax] = d3.extent(values) as [number, number];
 
   const EPSILON = 1e-9;
@@ -38,6 +45,7 @@ export function createBinnedData(
         x0: min,
         x1: max,
         values: [...values],
+        ids: entries.map((e) => e.id),
       },
     ];
 
@@ -79,6 +87,7 @@ export function createBinnedData(
       x0: d3Bin.x0 ?? min,
       x1: d3Bin.x1 ?? max,
       values: [...d3Bin],
+      ids: [],
     };
     bins.push(binInfo);
   });
@@ -97,6 +106,16 @@ export function createBinnedData(
     bin.values.forEach((value) => {
       valueToBinIndex.set(value, bin.binIndex);
     });
+  });
+
+  // Second pass: assign each entrys id to its resolved bin. Kept separate
+  // from the values grouping pass above since d3.bin() only returns numbers,
+  // not the id each number came from.
+  entries.forEach(({ id, value }) => {
+    const binIndex = valueToBinIndex.get(value);
+    if (binIndex !== undefined) {
+      bins[binIndex].ids.push(id);
+    }
   });
 
   return {

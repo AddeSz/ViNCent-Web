@@ -6,11 +6,10 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useSortingLogic } from "@/hooks/useSortingLogic";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import type { DataChanges, Network, ViewEdge, ViewNode } from "@/types";
+import type { DataChanges, ViewEdge, ViewNode } from "@/types";
 import { useRef, useState } from "react";
 import DataTable from "./DataTable/DataTable";
 import { useTableStates } from "./DataTable/hooks/useTableStates";
-import NodeLinkDiagram from "./NodeLinkDiagram/NodeLinkDiagram";
 import RadialChart from "./RadialChart/RadialChart";
 import ViewContextMenu from "./ViewRendering/ViewContextMenu";
 import ViewToggle from "./ViewRendering/ViewToggle";
@@ -32,9 +31,6 @@ export type ContextMenuTarget = {
 interface CenterViewProps {
   nodeData: Map<string, ViewNode>;
   edgeData: Map<string, ViewEdge>;
-  visibleNodeData: Map<string, ViewNode>;
-  visibleEdgeData: Map<string, ViewEdge>;
-  renderableNetwork: Network;
   nodeChanges: DataChanges;
   edgeChanges: DataChanges;
   canConfirm: boolean;
@@ -46,10 +42,7 @@ interface CenterViewProps {
 
 const CenterView = ({
   nodeData,
-  visibleNodeData,
   edgeData,
-  visibleEdgeData,
-  renderableNetwork,
   nodeChanges,
   edgeChanges,
   canConfirm,
@@ -121,7 +114,7 @@ const CenterView = ({
               dimensions={dimensions}
               sortedNodes={sortedData}
               nodeData={nodeData}
-              edgeData={visibleEdgeData}
+              edgeData={edgeData}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
               isViewActive={view === "radial"}
@@ -129,6 +122,7 @@ const CenterView = ({
               onUpdateStateChange={setIsRadialUpdating}
             />
           </div>
+
           <div
             className={`absolute inset-0 ${
               view === "node-link"
@@ -136,17 +130,16 @@ const CenterView = ({
                 : "pointer-events-none hidden"
             }`}
           >
-            <NodeLinkDiagram
+            {/* <NodeLinkDiagram
               dimensions={dimensions}
-              renderableNetwork={renderableNetwork}
-              nodeData={visibleNodeData}
-              edgeData={visibleEdgeData}
+              nodeData={nodeData}
+              edgeData={edgeData}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
               isViewActive={view === "node-link"}
               handleContextMenu={handleContextMenu}
               onUpdateStateChange={setIsNodeLinkUpdating}
-            />
+            /> */}
           </div>
 
           {view === "data-table" && (
@@ -166,7 +159,7 @@ const CenterView = ({
           {view !== "data-table" && (
             <>
               <div className="pointer-events-none absolute bottom-2 left-2">
-                <DataSummary renderableNetwork={renderableNetwork} />
+                <DataSummary nodeData={nodeData} edgeData={edgeData} />
               </div>
               {canConfirm && !nodeLinkUpdating && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
@@ -202,30 +195,9 @@ const CenterView = ({
               {showInfo && (
                 <div className="pointer-events-none absolute top-10 right-2">
                   <div className="pointer-events-auto w-48 rounded-lg border bg-background p-2 pt-1.5 shadow-lg">
-                    <div
-                      className="absolute"
-                      style={{
-                        right: "7px",
-                        top: "-5px",
-                        width: 0,
-                        height: 0,
-                        borderLeft: "5px solid transparent",
-                        borderRight: "5px solid transparent",
-                        borderBottom: "5px solid var(--border)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "1px",
-                          left: "-5px",
-                          width: 0,
-                          height: 0,
-                          borderLeft: "5px solid transparent",
-                          borderRight: "5px solid transparent",
-                          borderBottom: "5px solid var(--background)",
-                        }}
-                      />
+                    {/* top right triangle on the tooltip */}
+                    <div className="absolute -top-1.25 right-1.75 h-0 w-0 border-r-[5px] border-b-[5px] border-l-[5px] border-r-transparent border-b-border border-l-transparent">
+                      <div className="absolute top-px -left-1.25 h-0 w-0 border-r-[5px] border-b-[5px] border-l-[5px] border-r-transparent border-b-background border-l-transparent" />
                     </div>
 
                     <div className="flex items-start justify-between">

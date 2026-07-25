@@ -3,6 +3,7 @@ import type { DataChanges, ViewEdge, ViewNode } from "@/types";
 export const diffData = (
   prevMap: Map<string, ViewNode | ViewEdge>,
   currMap: Map<string, ViewNode | ViewEdge>,
+  keys: string[],
 ): DataChanges => {
   const added: DataChanges["added"] = {};
   const removed: DataChanges["removed"] = {};
@@ -18,7 +19,7 @@ export const diffData = (
 
     const elementDiff: Record<string, { before: any; after: any }> = {};
 
-    for (const key of Object.keys(currElement.attributes)) {
+    for (const key of keys) {
       const before = prevElement.attributes[key];
       const after = currElement.attributes[key];
 

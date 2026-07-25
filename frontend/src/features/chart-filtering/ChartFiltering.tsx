@@ -17,8 +17,8 @@ import { useResizeObserver } from "@/hooks/useResizeObserver";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useOptionsStore } from "@/stores/useOptionsStore";
-import type { ViewEdge, ViewNode } from "@/types";
-import { formatKeyLabel, formatValue, getNodeId } from "@/utils/utils";
+import type { Attributes, ViewEdge, ViewNode } from "@/types";
+import { formatKeyLabel, formatValue } from "@/utils/utils";
 import { HelpCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Barchart from "./barchart/Barchart";
@@ -90,20 +90,19 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
     setBinCountsByKey((prev) => ({ ...prev, [key]: count }));
   };
 
-  const fullNodeData = useMemo(() => {
+  const fullNodeData = useMemo<({ id: string } & Attributes)[]>(() => {
     return Array.from(currentNodes.values())
       .filter((node) => !hiddenNodes.has(node.id))
-      .map((node) => node.attributes);
+      .map((node) => ({ id: node.id, ...node.attributes }));
   }, [currentNodes, hiddenNodes]);
 
-  const fullEdgeData = useMemo(() => {
+  const fullEdgeData = useMemo<({ id: string } & Attributes)[]>(() => {
     return Array.from(currentEdges.values())
       .filter(
         (edge) =>
-          !hiddenNodes.has(getNodeId(edge.source)) &&
-          !hiddenNodes.has(getNodeId(edge.target)),
+          !hiddenNodes.has(edge.source) && !hiddenNodes.has(edge.target),
       )
-      .map((edge) => edge.attributes);
+      .map((edge) => ({ id: edge.id, ...edge.attributes }));
   }, [currentEdges, hiddenNodes]);
 
   const filteredNodeData = useMemo(() => {
@@ -129,15 +128,18 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
   useEffect(() => {
     enabledNodeKeys.forEach((key) => {
       const info = metricsInfo.get(key);
-      if (!info || !info.isNumeric || info.isCategory) return null;
+      if (!info || !info.isNumeric || info.isCategory) return;
 
-      const values = fullNodeData
-        .map((d) => d[key])
-        .filter((v): v is number => typeof v === "number");
+      const entries = fullNodeData
+        .map((d) => ({ id: d.id, value: d[key] }))
+        .filter(
+          (e): e is { id: string; value: number } =>
+            typeof e.value === "number",
+        );
 
-      if (values.length > 0) {
+      if (entries.length > 0) {
         const binCount = getBinCount(key);
-        const binnedData = createBinnedData(values, binCount);
+        const binnedData = createBinnedData(entries, binCount);
         setBinnedData(key, binnedData);
       } else {
         setBinnedData(key, null);
@@ -148,13 +150,16 @@ const ChartFiltering = ({ nodeData, edgeData }: ChartFilteringProps) => {
       const info = metricsInfo.get(key);
       if (!info || !info.isNumeric || info.isCategory) return;
 
-      const values = fullEdgeData
-        .map((d) => d[key])
-        .filter((v): v is number => typeof v === "number");
+      const entries = fullEdgeData
+        .map((d) => ({ id: d.id, value: d[key] }))
+        .filter(
+          (e): e is { id: string; value: number } =>
+            typeof e.value === "number",
+        );
 
-      if (values.length > 0) {
+      if (entries.length > 0) {
         const binCount = getBinCount(key);
-        const binnedData = createBinnedData(values, binCount);
+        const binnedData = createBinnedData(entries, binCount);
         setBinnedData(key, binnedData);
       } else {
         setBinnedData(key, null);

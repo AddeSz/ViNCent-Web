@@ -13,8 +13,7 @@ import FileUploader from "./components/file-uploader/FileUploader";
 import { useFileUploaderState } from "./components/file-uploader/useFileUploaderState";
 import { ProcessingProgress } from "./components/ProcessingProgress";
 import ViewSettings from "./features/view-settings/ViewSettings";
-import { useFilterData } from "./hooks/useFilterData";
-import { useProcessData } from "./hooks/useProcessData";
+import { useGraphData } from "./hooks/useGraphData";
 import { useValidateSettings } from "./hooks/useValidateSettings";
 import { useNetworkStore } from "./stores/useNetworkStore";
 import { useOptionsStore } from "./stores/useOptionsStore";
@@ -39,23 +38,14 @@ const App = () => {
 
   const fileUploaderState = useFileUploaderState();
 
-  const { flaggedNodeData, flaggedEdgeData, nodeChanges, edgeChanges } =
-    useFilterData();
-
   const {
-    viewNodeData,
-    viewEdgeData,
-    visibleNodeData,
-    visibleEdgeData,
-    renderableNetwork,
-    confirmRemovals,
-    canConfirm,
-  } = useProcessData(
-    flaggedNodeData,
-    flaggedEdgeData,
+    nodeData,
+    edgeData,
     nodeChanges,
     edgeChanges,
-  );
+    confirmRemovals,
+    canConfirm,
+  } = useGraphData();
 
   useValidateSettings();
   const currentDataset = useNetworkStore((s) => s.currentDataset);
@@ -149,11 +139,8 @@ const App = () => {
 
           {appState.phase === "ready" && (
             <CenterView
-              nodeData={viewNodeData}
-              edgeData={viewEdgeData}
-              visibleNodeData={visibleNodeData}
-              visibleEdgeData={visibleEdgeData}
-              renderableNetwork={renderableNetwork}
+              nodeData={nodeData}
+              edgeData={edgeData}
               nodeChanges={nodeChanges}
               edgeChanges={edgeChanges}
               canConfirm={canConfirm}
@@ -171,16 +158,13 @@ const App = () => {
           <ResizablePanelGroup orientation="vertical" className="h-full">
             <ResizablePanel defaultSize={"70%"} minSize={"10%"}>
               <div className="h-full w-full">
-                <ChartFiltering
-                  nodeData={visibleNodeData}
-                  edgeData={visibleEdgeData}
-                />
+                <ChartFiltering nodeData={nodeData} edgeData={edgeData} />
               </div>
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={"30%"} minSize={"10%"}>
               <div className="scrollbar-thin h-full w-full overflow-y-auto">
-                <Legend nodeData={flaggedNodeData} />
+                <Legend nodeData={nodeData} />
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>

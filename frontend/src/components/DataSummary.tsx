@@ -1,14 +1,15 @@
 import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
-import { type Network } from "@/types";
+import { type ViewEdge, type ViewNode } from "@/types";
 import { getNodeId } from "@/utils/utils";
 import { useMemo } from "react";
 
 interface DataSummaryProps {
-  renderableNetwork: Network;
+  nodeData: Map<string, ViewNode>;
+  edgeData: Map<string, ViewEdge>;
 }
 
-const DataSummary = ({ renderableNetwork }: DataSummaryProps) => {
+const DataSummary = ({ nodeData, edgeData }: DataSummaryProps) => {
   const selectedNodes = useInteractionStore((s) => s.selectedNodes);
   const fullNetwork = useNetworkStore((s) => s.fullNetwork);
 
@@ -20,13 +21,13 @@ const DataSummary = ({ renderableNetwork }: DataSummaryProps) => {
     let nodesCount = 0;
     const uniqueLinks = new Set<string>();
 
-    for (const node of renderableNetwork.nodes) {
-      if (selectedNodes.has(node.id)) {
+    for (const nodeId of selectedNodes) {
+      if (nodeData.has(nodeId)) {
         nodesCount++;
       }
     }
 
-    for (const link of renderableNetwork.edges) {
+    for (const link of edgeData.values()) {
       const sourceId = getNodeId(link.source);
       const targetId = getNodeId(link.target);
 
@@ -39,18 +40,17 @@ const DataSummary = ({ renderableNetwork }: DataSummaryProps) => {
       selectedNodesCount: nodesCount,
       selectedLinksCount: uniqueLinks.size,
     };
-  }, [selectedNodes, renderableNetwork]);
+  }, [selectedNodes, nodeData, edgeData]);
 
   if (fullNetwork.nodes.length === 0) return null;
+
   return (
     <div className="pointer-events-none mt-2 cursor-default text-sm text-gray-300">
       <p>
-        Visible Nodes: {renderableNetwork.nodes.length} /{" "}
-        {fullNetwork.nodes.length}
+        Visible Nodes: {nodeData.size} / {fullNetwork.nodes.length}
       </p>
       <p>
-        Visible Links: {renderableNetwork.edges.length} /{" "}
-        {fullNetwork.edges.length}
+        Visible Links: {edgeData.size} / {fullNetwork.edges.length}
       </p>
       <p>
         Selected: {selectedNodesCount} nodes, {selectedLinksCount} links

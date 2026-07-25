@@ -51,7 +51,7 @@ function applyDelta(
   delta: TimestepDelta,
 ) {
   delta.nodes_added.forEach((node) => {
-    currentNodes.set(node.id, { ...node });
+    currentNodes.set(node.id, { ...node, attributes: { ...node.attributes } });
   });
 
   delta.nodes_removed.forEach((nodeId) => {
@@ -63,13 +63,13 @@ function applyDelta(
     if (node) {
       node.attributes = { ...node.attributes, ...attrChanges };
       if ("label" in attrChanges) {
-        node.label = attrChanges._label as string;
+        node.label = attrChanges.label as string;
       }
     }
   });
 
   delta.edges_added.forEach((edge) => {
-    currentEdges.set(edge.id, { ...edge });
+    currentEdges.set(edge.id, { ...edge, attributes: { ...edge.attributes } });
   });
 
   delta.edges_removed.forEach((edgeId) => {
@@ -162,11 +162,17 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       return;
     }
 
-    const currentNodes = new Map(
-      baseState.nodes.map((node) => [node.id, { ...node }]),
+    const currentNodes = new Map<string, Node>(
+      baseState.nodes.map((node) => [
+        node.id,
+        { ...node, attributes: { ...node.attributes } },
+      ]),
     );
-    const currentEdges = new Map(
-      baseState.edges.map((edge) => [edge.id, { ...edge }]),
+    const currentEdges = new Map<string, Edge>(
+      baseState.edges.map((edge) => [
+        edge.id,
+        { ...edge, attributes: { ...edge.attributes } },
+      ]),
     );
 
     const sortedTimesteps = Array.from(deltas.keys())
@@ -183,14 +189,10 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       .map((info) => info.key);
 
     currentNodes.forEach((node) => {
-      if (node.attributes) {
-        allCentralityKeys.forEach((key) => delete node.attributes![key]);
-      }
+      allCentralityKeys.forEach((key) => delete node.attributes[key]);
     });
     currentEdges.forEach((edge) => {
-      if (edge.attributes) {
-        allCentralityKeys.forEach((key) => delete edge.attributes![key]);
-      }
+      allCentralityKeys.forEach((key) => delete edge.attributes[key]);
     });
 
     const currentCentralities = centralities.get(timestep);
@@ -198,9 +200,8 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       Object.entries(currentCentralities.nodes).forEach(([nodeId, cents]) => {
         const node = currentNodes.get(nodeId);
         if (node) {
-          if (!node.attributes) node.attributes = {};
           Object.entries(cents).forEach(([key, value]) => {
-            node.attributes![key] = value;
+            node.attributes[key] = value;
           });
         }
       });
@@ -208,9 +209,8 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
       Object.entries(currentCentralities.edges).forEach(([edgeId, cents]) => {
         const edge = currentEdges.get(edgeId);
         if (edge) {
-          if (!edge.attributes) edge.attributes = {};
           Object.entries(cents).forEach(([key, value]) => {
-            edge.attributes![key] = value;
+            edge.attributes[key] = value;
           });
         }
       });
@@ -223,7 +223,6 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
           Object.entries(nodeAssignments).forEach(([nodeId, value]) => {
             const node = currentNodes.get(nodeId);
             if (node) {
-              if (!node.attributes) node.attributes = {};
               node.attributes[communityKey] = value;
             }
           });
