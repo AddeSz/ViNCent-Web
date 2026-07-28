@@ -231,14 +231,14 @@ export const updateLabelStyles = (
   const showAll = showLabels && shouldShowAllLabels(zoomLevel, outerArcsWidth);
 
   const linkedToHoveredIds = hoveredNode
-    ? nodeData.get(hoveredNode)?.linked
+    ? nodeData.get(hoveredNode)?.neighbors
     : null;
 
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
-    if (node?.linked && !node?.flags.removed && !node?.flags.hidden) {
-      node.linked.forEach((id) => linkedToSelectedIds.add(id));
+    if (node?.neighbors && !node?.flags.removed && !node?.flags.hidden) {
+      node.neighbors.forEach((id) => linkedToSelectedIds.add(id));
     }
   });
 
@@ -306,10 +306,10 @@ export const updateLabelStyles = (
         fillColor = highlightLabelColor.hovered;
         fontWeight = "700";
       } else if (linkedToSelectedIds.has(d)) {
-        fillColor = highlightLabelColor.linkedToSelected;
+        fillColor = highlightLabelColor.selectedNeighbor;
         fontWeight = "normal";
       } else if (linkedToHoveredIds?.has(d)) {
-        fillColor = highlightLabelColor.linkedToHovered;
+        fillColor = highlightLabelColor.hoveredNeighbor;
         fontWeight = "normal";
       } else {
         fillColor = highlightLabelColor.default;

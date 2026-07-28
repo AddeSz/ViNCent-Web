@@ -139,7 +139,7 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
           <div className="flex-col text-xs text-muted-foreground">
-            <div>Links: {nodeData.linked.size} </div>
+            <div>Links: {nodeData.neighbors.size} </div>
             {selectedCommunity !== "none" && (
               <div>Community: {nodeData?.attributes[selectedCommunity]}</div>
             )}
@@ -151,7 +151,7 @@ const ChartTooltip = ({ dataMap }: ChartTooltipProps) => {
         <div className="text-xs font-medium">
           {nodeData.label ? nodeData.label : nodeId}
           <div className="flex-col text-xs text-muted-foreground">
-            <div>Links: {nodeData.linked.size} </div>
+            <div>Links: {nodeData.neighbors.size} </div>
             {selectedCommunity !== "none" && (
               <div>Community: {nodeData?.attributes[selectedCommunity]}</div>
             )}

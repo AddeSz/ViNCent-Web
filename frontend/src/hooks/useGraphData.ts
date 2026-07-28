@@ -1,7 +1,7 @@
 import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import type { DataChanges, ViewEdge, ViewNode } from "@/types";
+import type { DataChanges, ViewEdge, ViewFlags, ViewNode } from "@/types";
 import {
   buildCategoryIndex,
   computeFilterMask,
@@ -24,7 +24,7 @@ import { useKeys } from "./useKeys";
 //
 //   Stage 2 (processing): resolve any removals the user has explicitly
 //   confirmed, stamp the manual "hidden" flag (from right-click-hide), and
-//   compute each node's `linked` set. Produces the final `nodeData`/
+//   compute each node's `neighbors` and `links` sets. Produces the final `nodeData`/
 //   `edgeData` maps that every component in the app consumes identically,
 //   each component then locally filters by `.flags` for whatever subset it
 //   needs to render.
@@ -35,7 +35,12 @@ import { useKeys } from "./useKeys";
 // ---------------------------------------------------------------------------
 
 const emptyChanges: DataChanges = { added: {}, removed: {}, updated: {} };
-const noFlags = { removed: false, pendingRemoval: false, hidden: false };
+const noFlags: ViewFlags = {
+  added: false,
+  removed: false,
+  pendingRemoval: false,
+  hidden: false,
+};
 
 export const useGraphData = (): {
   nodeData: Map<string, ViewNode>;
@@ -135,7 +140,8 @@ export const useGraphData = (): {
           label: node.label,
           attributes: node.attributes,
           flags: { ...noFlags },
-          linked: new Set(),
+          neighbors: new Set(),
+          links: new Set(),
         });
       });
 
@@ -220,6 +226,7 @@ export const useGraphData = (): {
       const removedNodeSet = new Set(
         Object.keys(activeNodeChanges.removed ?? {}),
       );
+      const addedNodeSet = new Set(Object.keys(activeNodeChanges.added ?? {}));
 
       // Controls whether a gone at this timestep node still shows structurally or only via the removal preview
       // When foreshadowing is enabled, use the full graph as the structural source instead of only the current timestep
@@ -228,7 +235,11 @@ export const useGraphData = (): {
 
       for (const id of allNodesById.keys()) {
         if (passingNodeData.has(id)) {
-          flaggedNodeData.set(id, passingNodeData.get(id)!);
+          const node = passingNodeData.get(id)!;
+          flaggedNodeData.set(id, {
+            ...node,
+            flags: { ...node.flags, added: addedNodeSet.has(id) },
+          });
         } else if (baseNodeSource.has(id)) {
           const baseNode = baseNodeSource.get(id)!;
 
@@ -237,7 +248,12 @@ export const useGraphData = (): {
             const removedNode = activeNodeChanges.removed[id] as ViewNode;
             flaggedNodeData.set(id, {
               ...removedNode,
-              flags: { removed: false, pendingRemoval: true, hidden: false },
+              flags: {
+                added: false,
+                removed: false,
+                pendingRemoval: true,
+                hidden: false,
+              },
             });
           } else {
             // Already filtered out, mark fully removed
@@ -245,8 +261,14 @@ export const useGraphData = (): {
               id,
               label: baseNode.label,
               attributes: {},
-              flags: { removed: true, pendingRemoval: false, hidden: false },
-              linked: new Set(),
+              flags: {
+                added: false,
+                removed: true,
+                pendingRemoval: false,
+                hidden: false,
+              },
+              neighbors: new Set(),
+              links: new Set(),
             });
           }
         } else if (previewChanges && removedNodeSet.has(id)) {
@@ -254,7 +276,12 @@ export const useGraphData = (): {
           const removedNode = activeNodeChanges.removed[id] as ViewNode;
           flaggedNodeData.set(id, {
             ...removedNode,
-            flags: { removed: false, pendingRemoval: true, hidden: false },
+            flags: {
+              added: false,
+              removed: false,
+              pendingRemoval: true,
+              hidden: false,
+            },
           });
         }
       }
@@ -263,17 +290,28 @@ export const useGraphData = (): {
       const removedEdgeSet = new Set(
         Object.keys(activeEdgeChanges.removed ?? {}),
       );
+      const addedEdgeSet = new Set(Object.keys(activeEdgeChanges.added ?? {}));
+
       const flaggedEdgeData = new Map<string, ViewEdge>();
 
       for (const edgeId of currentEdges.keys()) {
         if (passingEdgeData.has(edgeId)) {
-          flaggedEdgeData.set(edgeId, passingEdgeData.get(edgeId)!);
+          const edge = passingEdgeData.get(edgeId)!;
+          flaggedEdgeData.set(edgeId, {
+            ...edge,
+            flags: { ...edge.flags, added: addedEdgeSet.has(edgeId) },
+          });
         } else {
           if (previewChanges && removedEdgeSet.has(edgeId)) {
             const removedEdge = activeEdgeChanges.removed[edgeId] as ViewEdge;
             flaggedEdgeData.set(edgeId, {
               ...removedEdge,
-              flags: { removed: false, pendingRemoval: true, hidden: false },
+              flags: {
+                added: false,
+                removed: false,
+                pendingRemoval: true,
+                hidden: false,
+              },
             });
           } else {
             const baseEdge = currentEdges.get(edgeId)!;
@@ -283,7 +321,12 @@ export const useGraphData = (): {
               target: baseEdge.target,
               weight: baseEdge.weight,
               attributes: {},
-              flags: { removed: true, pendingRemoval: false, hidden: false },
+              flags: {
+                added: false,
+                removed: true,
+                pendingRemoval: false,
+                hidden: false,
+              },
             });
           }
         }
@@ -296,7 +339,12 @@ export const useGraphData = (): {
             const removedEdge = activeEdgeChanges.removed[edgeId] as ViewEdge;
             flaggedEdgeData.set(edgeId, {
               ...removedEdge,
-              flags: { removed: false, pendingRemoval: true, hidden: false },
+              flags: {
+                added: false,
+                removed: false,
+                pendingRemoval: true,
+                hidden: false,
+              },
             });
           }
         }
@@ -367,10 +415,21 @@ export const useGraphData = (): {
             id: node.id,
             label: node.label,
             attributes: node.attributes,
-            flags: { removed: true, pendingRemoval: false, hidden },
-            linked: new Set(),
+            flags: {
+              added: false,
+              removed: true,
+              pendingRemoval: false,
+              hidden,
+            },
+            neighbors: new Set(),
+            links: new Set(),
           }
-        : { ...node, flags: { ...node.flags, hidden }, linked: new Set() };
+        : {
+            ...node,
+            flags: { ...node.flags, hidden },
+            neighbors: new Set(),
+            links: new Set(),
+          };
 
       nodeData.set(id, processedNode);
 
@@ -391,11 +450,20 @@ export const useGraphData = (): {
         hiddenNodes.has(edge.source) || hiddenNodes.has(edge.target);
 
       const processedEdge: ViewEdge = isAcceptedEdge
-        ? { ...edge, flags: { removed: true, pendingRemoval: false, hidden } }
+        ? {
+            ...edge,
+            flags: {
+              added: false,
+              removed: true,
+              pendingRemoval: false,
+              hidden,
+            },
+          }
         : shouldRemove || edge.flags.removed
           ? {
               ...edge,
               flags: {
+                added: false,
                 pendingRemoval: shouldRemove && !edge.flags.removed,
                 removed: edge.flags.removed || shouldRemove,
                 hidden,
@@ -404,23 +472,16 @@ export const useGraphData = (): {
           : { ...edge, flags: { ...edge.flags, hidden } };
 
       edgeData.set(edgeId, processedEdge);
-    }
 
-    // Needs both finalized maps, so it cant be folded into the passes above
-    for (const [, edge] of edgeData) {
-      if (edge.flags.removed || edge.flags.hidden) continue;
-
-      const sourceNode = nodeData.get(edge.source);
-      const targetNode = nodeData.get(edge.target);
-
-      if (
-        sourceNode &&
-        targetNode &&
-        !sourceNode.flags.removed &&
-        !targetNode.flags.removed
-      ) {
-        sourceNode.linked.add(edge.target);
-        targetNode.linked.add(edge.source);
+      if (!processedEdge.flags.removed && !processedEdge.flags.hidden) {
+        const sourceNode = nodeData.get(edge.source);
+        const targetNode = nodeData.get(edge.target);
+        if (sourceNode && targetNode) {
+          sourceNode.neighbors.add(edge.target);
+          targetNode.neighbors.add(edge.source);
+          sourceNode.links.add(edgeId);
+          targetNode.links.add(edgeId);
+        }
       }
     }
 

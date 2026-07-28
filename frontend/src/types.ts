@@ -35,6 +35,7 @@ export type Network = {
 };
 
 export interface ViewFlags {
+  added: boolean;
   removed: boolean;
   pendingRemoval: boolean;
   hidden: boolean;
@@ -42,7 +43,8 @@ export interface ViewFlags {
 
 export interface ViewNode extends Node {
   flags: ViewFlags;
-  linked: Set<string>;
+  neighbors: Set<string>;
+  links: Set<string>;
 }
 
 export interface ViewEdge extends Edge {

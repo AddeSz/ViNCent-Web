@@ -102,14 +102,14 @@ export function updateBoundsHighlight(
   } = boundsCache;
 
   const linkedToHoveredIds = hoveredNode
-    ? nodeData.get(hoveredNode)?.linked
+    ? nodeData.get(hoveredNode)?.neighbors
     : null;
 
   const linkedToSelectedIds = new Set<string>();
   selectedNodes.forEach((nodeId) => {
     const node = nodeData.get(nodeId);
-    if (node?.linked && !node?.flags.removed) {
-      node.linked.forEach((id) => linkedToSelectedIds.add(id));
+    if (node?.neighbors && !node?.flags.removed) {
+      node.neighbors.forEach((id) => linkedToSelectedIds.add(id));
     }
   });
 
