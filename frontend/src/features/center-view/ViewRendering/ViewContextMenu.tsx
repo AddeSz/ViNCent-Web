@@ -15,7 +15,6 @@ import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { useInteractionStore } from "@/stores/useInteractionStore";
-import { handleHighlight } from "@/utils/ColorHelper";
 import { formatKeyLabel } from "@/utils/utils";
 import type { SortingState } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
@@ -39,7 +38,8 @@ const ViewContextMenu = ({
   canConfirm,
   confirmRemovals,
 }: ViewContextMenuProps) => {
-  const clearSelection = useInteractionStore((s) => s.clearSelection);
+  const selectNode = useInteractionStore((s) => s.selectNode);
+  const clearNodeSelection = useInteractionStore((s) => s.clearSelectedNodes);
   const resetRadialZoom = useInteractionStore((s) => s.resetRadialZoom);
   const resetNodeLinkZoom = useInteractionStore((s) => s.resetNodeLinkZoom);
   const setHoveredNode = useInteractionStore((s) => s.setHoveredNode);
@@ -95,7 +95,7 @@ const ViewContextMenu = ({
           selectedNodes.size > 0 && (
             <>
               <ContextMenuItem
-                onSelect={clearSelection}
+                onSelect={clearNodeSelection}
                 className="cursor-pointer"
               >
                 Clear Selection
@@ -112,7 +112,7 @@ const ViewContextMenu = ({
         {contextMenuTarget.type === "arc" && (
           <>
             <ContextMenuItem
-              onSelect={() => handleHighlight(contextMenuTarget.data.id, true)}
+              onSelect={() => selectNode(contextMenuTarget.data.id, true)}
               className="cursor-pointer"
             >
               {selectedNodes.has(contextMenuTarget.data.id)
@@ -186,7 +186,7 @@ const ViewContextMenu = ({
           <>
             <ContextMenuItem
               onSelect={() => {
-                handleHighlight(contextMenuTarget.data, true);
+                selectNode(contextMenuTarget.data, true);
               }}
               className="cursor-pointer"
             >
@@ -371,7 +371,7 @@ const ViewContextMenu = ({
             <ContextMenuItem
               onSelect={() => {
                 contextMenuTarget.data.nodeIds.forEach((id: string) => {
-                  handleHighlight(id, true);
+                  selectNode(id, true);
                 });
               }}
               className="cursor-pointer"

@@ -37,11 +37,9 @@ interface InteractionStore {
   resetNodeLinkZoomFlag: boolean;
   restartSimulationFlag: boolean;
 
-  selectNode: (id: string, multi?: boolean) => void;
-  deselectNode: (id: string) => void;
-  toggleNodeSelection: (id: string) => void;
-  toggleNodesSelection: (ids: string[]) => void;
-  clearSelection: () => void;
+  selectNode: (id: string, keyCheck: boolean) => void;
+  selectNodes: (ids: string[]) => void;
+  clearSelectedNodes: () => void;
 
   setHoveredNode: (node: string | null) => void;
   setHoveredCommunity: (key: string | null, id: number | null) => void;
@@ -76,29 +74,20 @@ export const useInteractionStore = create<InteractionStore>((set, get) => ({
   resetNodeLinkZoomFlag: false,
   restartSimulationFlag: false,
 
-  selectNode: (id, multi = false) => {
-    const current = get().selectedNodes;
-    const next = multi ? new Set(current) : new Set<string>();
-    next.add(id);
-    set({ selectedNodes: next });
+  selectNode: (id, keyCheck) => {
+    if (keyCheck) {
+      set((s) => {
+        const next = new Set(s.selectedNodes);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return { selectedNodes: next };
+      });
+    } else {
+      set({ selectedNodes: new Set([id]) });
+    }
   },
 
-  deselectNode: (id) =>
-    set((s) => {
-      const next = new Set(s.selectedNodes);
-      next.delete(id);
-      return { selectedNodes: next };
-    }),
-
-  toggleNodeSelection: (id) =>
-    set((s) => {
-      const next = new Set(s.selectedNodes);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return { selectedNodes: next };
-    }),
-
-  toggleNodesSelection: (ids) => {
+  selectNodes: (ids) => {
     const { selectedNodes } = get();
     const allSelected = ids.every((id) => selectedNodes.has(id));
 
@@ -110,7 +99,7 @@ export const useInteractionStore = create<InteractionStore>((set, get) => ({
     });
   },
 
-  clearSelection: () => set({ selectedNodes: new Set() }),
+  clearSelectedNodes: () => set({ selectedNodes: new Set() }),
 
   setHoveredNode: (node) => set({ hoveredNode: node }),
 

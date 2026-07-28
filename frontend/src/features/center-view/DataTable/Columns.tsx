@@ -229,9 +229,7 @@ export const createEdgeSelectColumn = <
   enableResizing: false,
   header: ({ table }) => {
     const selectedNodes = useInteractionStore((s) => s.selectedNodes);
-    const toggleNodesSelection = useInteractionStore(
-      (s) => s.toggleNodesSelection,
-    );
+    const selectNodes = useInteractionStore((s) => s.selectNodes);
 
     const allEdgeNodeIds = table.getRowModel().rows.flatMap((row) => {
       const [source, target] = row.original.id.split("|");
@@ -245,16 +243,12 @@ export const createEdgeSelectColumn = <
     const someSelected =
       !allSelected && allEdgeNodeIds.some((id) => selectedNodes.has(id));
 
-    const toggleAll = () => {
-      toggleNodesSelection(allEdgeNodeIds);
-    };
-
     return (
       <div className="flex shrink-0 items-center justify-center">
         <Checkbox
           id="select-all-edges"
           checked={allSelected || (someSelected && "indeterminate")}
-          onCheckedChange={toggleAll}
+          onCheckedChange={() => selectNodes(allEdgeNodeIds)}
           aria-label="Select all edges"
           className="cursor-pointer"
         />
@@ -263,9 +257,7 @@ export const createEdgeSelectColumn = <
   },
   cell: ({ row }) => {
     const selectedNodes = useInteractionStore((s) => s.selectedNodes);
-    const toggleNodesSelection = useInteractionStore(
-      (s) => s.toggleNodesSelection,
-    );
+    const selectNodes = useInteractionStore((s) => s.selectNodes);
 
     const [source, target] = row.original.id.split("|");
     const nodeIds = [source, target];
@@ -275,16 +267,12 @@ export const createEdgeSelectColumn = <
     const bothSelected = sourceSelected && targetSelected;
     const oneSelected = sourceSelected || targetSelected;
 
-    const toggleSelection = () => {
-      toggleNodesSelection(nodeIds);
-    };
-
     return (
       <div className="flex shrink-0 items-center justify-center">
         <Checkbox
           id={`select-edge-${row.id}`}
           checked={bothSelected || (oneSelected && "indeterminate")}
-          onCheckedChange={toggleSelection}
+          onCheckedChange={() => selectNodes(nodeIds)}
           aria-label="Select edge nodes"
           className="cursor-pointer"
         />

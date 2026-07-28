@@ -1,6 +1,7 @@
 import { type GetColorForMetric } from "@/hooks/useGetColorForMetric";
+import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { ViewNode } from "@/types";
-import { handleHighlight, highlightLabelColor } from "@/utils/ColorHelper";
+import { highlightLabelColor } from "@/utils/ColorHelper";
 import { formatValue, truncateText } from "@/utils/utils";
 import * as d3 from "d3";
 import type { InteractionProps } from "../Tooltips/useTooltip";
@@ -158,7 +159,7 @@ const drawLabels = (
     )
     .on("click", (event, d) => {
       const multi = event.shiftKey || event.ctrlKey;
-      handleHighlight(d, multi);
+      useInteractionStore.getState().selectNode(d, multi);
     })
     .on("contextmenu", (event, d) => {
       event._handledByChild = true;

@@ -255,7 +255,7 @@ const drawSelectionBrush = (
       }
       const selectedIds = getSelectedIds(start, end);
 
-      useInteractionStore.getState().toggleNodesSelection(selectedIds);
+      useInteractionStore.getState().selectNodes(selectedIds);
 
       setTimeout(clearBrushSelection, 50);
     });

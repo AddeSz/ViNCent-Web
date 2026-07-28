@@ -1,6 +1,5 @@
 import { useInteractionStore } from "@/stores/useInteractionStore";
 import type { DataChanges } from "@/types";
-import { handleHighlight } from "@/utils/ColorHelper";
 import * as d3 from "d3";
 import type { InteractionProps } from "../Tooltips/useTooltip";
 import type { ProcessedArc } from "./drawArcsCanvas";
@@ -393,11 +392,11 @@ function setupInteractions(
         const multi = event.shiftKey || event.ctrlKey;
         const id = arc?.data.id || circle?.id || label;
         if (id) {
-          handleHighlight(id, multi);
+          useInteractionStore.getState().selectNode(id, multi);
         }
       } else if (segment) {
         segment.nodeIds.forEach((id) => {
-          handleHighlight(id, true);
+          useInteractionStore.getState().selectNode(id, true);
         });
       }
     });

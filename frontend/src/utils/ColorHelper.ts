@@ -1,19 +1,10 @@
 import { useInteractionStore } from "@/stores/useInteractionStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 
-export const handleHighlight = (id: string, multi: boolean) => {
-  if (multi) {
-    useInteractionStore.getState().toggleNodeSelection(id);
-  } else {
-    useInteractionStore.getState().selectNode(id, false);
-  }
-};
-
 export const handleBrushSelection = (selectedIds: string[]) => {
   if (selectedIds.length === 0) return;
-
   selectedIds.forEach((id) => {
-    handleHighlight(id, true);
+    useInteractionStore.getState().selectNode(id, true);
   });
 };
 

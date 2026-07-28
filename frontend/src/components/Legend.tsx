@@ -117,7 +117,7 @@ const Legend = ({ nodeData }: LegendProps) => {
     <div className="h-auto space-y-0.5 px-2 pt-0.5 pb-2">
       <div className="border-b">
         <div className="text-sm font-semibold text-foreground">
-          Node Details:
+          Node Details:{" "}
           <span className="mt-1 text-sm text-muted-foreground">
             {data?.label || data?.id}
           </span>

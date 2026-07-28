@@ -81,7 +81,7 @@ export const useFilterStore = create<FilterStore>((set) => ({
       return { hiddenNodes: next };
     });
 
-    useInteractionStore.getState().clearSelection();
+    useInteractionStore.getState().clearSelectedNodes();
   },
 
   initializeBrushRanges: (metrics: Record<string, AttributeInfo>) =>
