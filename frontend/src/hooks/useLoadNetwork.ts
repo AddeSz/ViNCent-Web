@@ -1,6 +1,7 @@
 import { useColorStore } from "@/stores/useColorStore";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type { ProcessNetworkResponse } from "@/types";
 
 export const useLoadNetwork = () => {
@@ -41,6 +42,12 @@ export const useLoadNetwork = () => {
       .initializeColors(useNetworkStore.getState().metricsInfo);
 
     useFilterStore.getState().initializeBrushRanges(allMetricsInfo);
+    useSettingsStore
+      .getState()
+      .setInitialNetworkSettings(
+        network.nodes.length,
+        Object.keys(allMetricsInfo).length,
+      );
   };
 
   const clearAllData = () => {
