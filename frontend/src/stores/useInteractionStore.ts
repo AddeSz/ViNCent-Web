@@ -75,16 +75,22 @@ export const useInteractionStore = create<InteractionStore>((set, get) => ({
   restartSimulationFlag: false,
 
   selectNode: (id, keyCheck) => {
-    if (keyCheck) {
-      set((s) => {
-        const next = new Set(s.selectedNodes);
+    set((s) => {
+      const next = new Set(s.selectedNodes);
+
+      if (keyCheck) {
         if (next.has(id)) next.delete(id);
         else next.add(id);
+
         return { selectedNodes: next };
-      });
-    } else {
-      set({ selectedNodes: new Set([id]) });
-    }
+      }
+
+      if (next.size === 1 && next.has(id)) {
+        return { selectedNodes: new Set() };
+      }
+
+      return { selectedNodes: new Set([id]) };
+    });
   },
 
   selectNodes: (ids) => {

@@ -8,6 +8,27 @@ export const handleBrushSelection = (selectedIds: string[]) => {
   });
 };
 
+//orange, teal
+// selected: "#FF5A36",
+// selectedNeighbor: "#FFB703",
+// hovered: "#FF8C69",
+// hoveredNeighbor: "#FFD3C7",
+
+//Orange, blue
+// selected: "#FF5A36",
+// selectedNeighbor: "#FFB703",
+// hovered: "#3B82F6",
+// hoveredNeighbor: "#93C5FD",
+
+export const highlightColor = {
+  selected: "#FF5A36",
+  selectedNeighbor: "#FFB703",
+  hovered: "#FF5A36",
+  hoveredNeighbor: "#FFB703",
+  removed: "#B91C1C",
+  added: "#16A34A",
+};
+
 export const highlightBoundsColor = {
   default: "black",
   selected: "orange",
@@ -79,4 +100,25 @@ export const getLinkStyle = (
   }
 
   return { stroke, opacity };
+};
+
+// Simulates transparency without an alpha channel.
+// Returns an opaque color by blending `hex` toward `background` using `alpha`.
+// alpha: 1 = `hex`, 0 = `background`.
+export const colorBlend = (
+  hex: string,
+  background: string,
+  alpha: number,
+): string => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const [br, bg, bb] = [1, 3, 5].map((i) =>
+    parseInt(background.slice(i, i + 2), 16),
+  );
+
+  const mix = (fg: number, bgChan: number) =>
+    Math.round(fg * alpha + bgChan * (1 - alpha));
+
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+
+  return `#${toHex(mix(r, br))}${toHex(mix(g, bg))}${toHex(mix(b, bb))}`;
 };

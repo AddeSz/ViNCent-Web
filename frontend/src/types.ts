@@ -69,6 +69,27 @@ export interface ForceEdge extends SimulationLinkDatum<ForceNode> {
   data: Edge;
 }
 
+export interface GraphNode {
+  id: string;
+  color?: string;
+  label?: string;
+  importance?: number;
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+  fx?: number;
+  fy?: number;
+}
+
+export interface GraphLink {
+  id: string;
+  source: string | GraphNode;
+  target: string | GraphNode;
+  color?: string;
+  label?: string;
+}
+
 export type DataChanges = {
   added: Record<string, ViewNode | ViewEdge>;
   removed: Record<string, ViewNode | ViewEdge>;
