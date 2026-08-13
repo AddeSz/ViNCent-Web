@@ -81,7 +81,7 @@ export const useCurrentMetricsInfo = (): Map<string, AttributeInfo> => {
         result.set(key, {
           ...global,
           values: current.values,
-          range: current.range,
+          range: current.range ?? null,
         });
       }
     });
@@ -92,7 +92,7 @@ export const useCurrentMetricsInfo = (): Map<string, AttributeInfo> => {
         result.set(key, {
           ...global,
           values: current.values,
-          range: current.range,
+          range: current.range ?? null,
         });
       }
     });
