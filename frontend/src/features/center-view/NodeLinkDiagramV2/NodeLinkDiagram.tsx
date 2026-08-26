@@ -148,7 +148,7 @@ const NodeLinkDiagram = ({
       if (node === hoverNodeRef.current || selectedNodesRef.current.has(node)) {
         return undefined;
       }
-      if (neighborNodesRef.current.has(node)) return "after";
+      if (neighborNodesRef.current.has(node)) return "replace";
       if (resolveFlagColor(nodeData.get(node.id)?.flags)) return "after";
       return undefined;
     },
@@ -158,15 +158,10 @@ const NodeLinkDiagram = ({
   const nodeCanvasObject = useCallback(
     (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
       if (node.x === undefined || node.y === undefined) return;
+      if (neighborNodesRef.current.has(node)) return;
 
-      // nodeCanvasObjectMode returns undefined for the hovered/selected node,
-      // However, hovered node neighbors are rendered here as rings
-      // Their labels are handled separately by drawLabels
-      const isHighlightedNeighbor = neighborNodesRef.current.has(node);
-      const ringColor =
-        (isHighlightedNeighbor ? highlightColor.hoveredNeighbor : null) ??
-        resolveFlagColor(nodeData.get(node.id)?.flags);
-
+      // Only flag rings (added/pendingRemoval) are drawn here now.
+      const ringColor = resolveFlagColor(nodeData.get(node.id)?.flags);
       if (!ringColor) return;
 
       const ringWidth = Math.min(

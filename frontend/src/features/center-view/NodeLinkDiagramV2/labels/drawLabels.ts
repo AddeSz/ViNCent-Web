@@ -2,7 +2,11 @@ import type { GraphNode } from "@/types";
 import { LABEL_BG_PAD_X, LABEL_BG_PAD_Y, LABEL_GAP } from "../constants";
 import type { ImportanceSortCache } from "../NodeLinkDiagram";
 import { getLabelNodes } from "./labelSelection";
-import { drawNodeHighlight } from "./nodeHighlight";
+import {
+  drawNeighborNode,
+  drawNeighborRing,
+  drawNodeHighlight,
+} from "./nodeHighlight";
 
 // keeps label sizing consistent across zoom levels
 const getLabelMetrics = (globalScale: number) => {
@@ -59,7 +63,24 @@ export const drawLabels = ({
     cache: importanceSortCache,
   });
 
-  // 1. plain nodes
+  // 1. neighbor nodes (since nodes can overlap, we draw the ring second)
+  // TODO: Add a performance setting to render neighbor nodes and rings in a single loop
+  for (const node of neighborNodes) {
+    if (focusNodes.has(node)) continue;
+    if (node.x === undefined || node.y === undefined) continue;
+    if (!nodeVisibility(node)) continue;
+
+    drawNeighborNode(ctx, node);
+  }
+  for (const node of neighborNodes) {
+    if (focusNodes.has(node)) continue;
+    if (node.x === undefined || node.y === undefined) continue;
+    if (!nodeVisibility(node)) continue;
+
+    drawNeighborRing(ctx, node, globalScale);
+  }
+
+  // 2. plain node labels
   for (const node of nodes) {
     if (focusNodes.has(node) || !labelNodes.has(node)) continue;
     if (node.x === undefined || node.y === undefined || !node.label) continue;
@@ -77,7 +98,7 @@ export const drawLabels = ({
     ctx.fillText(node.label, node.x + r + gap, node.y + (ascent - descent) / 2);
   }
 
-  // 2. selected nodes
+  // 3. selected nodes
   for (const node of focusNodes) {
     if (node === hoveredNode) continue;
     if (node.x === undefined || node.y === undefined || !node.label) continue;
@@ -87,7 +108,7 @@ export const drawLabels = ({
     drawNodeHighlight(ctx, node, globalScale, { padX, bgHeight, ringRadius });
   }
 
-  // 3. hovered node (drawn last so it wins over all other nodes)
+  // 4. hovered node (drawn last so it wins over all other nodes)
   if (
     hoveredNode &&
     hoveredNode.x !== undefined &&

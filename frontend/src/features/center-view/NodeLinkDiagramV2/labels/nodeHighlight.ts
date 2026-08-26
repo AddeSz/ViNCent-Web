@@ -6,6 +6,41 @@ import {
   RING_MIN_WIDTH,
 } from "../constants";
 
+export const drawNeighborNode = (
+  ctx: CanvasRenderingContext2D,
+  node: GraphNode,
+) => {
+  const x = node.x as number;
+  const y = node.y as number;
+  const r = node.size;
+
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = node.color ?? DEFAULT_NODE_COLOR;
+  ctx.fill();
+};
+
+export const drawNeighborRing = (
+  ctx: CanvasRenderingContext2D,
+  node: GraphNode,
+  globalScale: number,
+) => {
+  const x = node.x as number;
+  const y = node.y as number;
+  const r = node.size;
+
+  const ringWidth = Math.min(
+    RING_MAX_WIDTH,
+    Math.max(RING_MIN_WIDTH, 2 / globalScale),
+  );
+
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.lineWidth = ringWidth;
+  ctx.strokeStyle = highlightColor.hoveredNeighbor;
+  ctx.stroke();
+};
+
 export const drawNodeHighlight = (
   ctx: CanvasRenderingContext2D,
   node: GraphNode,
