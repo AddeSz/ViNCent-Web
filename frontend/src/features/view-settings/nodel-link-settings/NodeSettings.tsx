@@ -29,7 +29,6 @@ import { Slider } from "@/components/ui/slider";
 import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
 import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useKeys } from "@/hooks/useKeys";
-import type { ScaleType } from "@/stores/useSettingsStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { formatKeyLabel } from "@/utils/utils";
 import { Check, ChevronDown } from "lucide-react";
@@ -180,32 +179,6 @@ const NodeSettings = ({ isOpen, setIsOpen }: NodeSettingsProps) => {
             </PopoverContent>
           </Popover>
         </div>
-
-        {settings.nodeSizeMode === "metric" && (
-          <div className="space-y-1">
-            <Label htmlFor="node-scale-type" className="text-sm">
-              Scale Type
-            </Label>
-            <Select
-              value={settings.nodeScaleType}
-              onValueChange={(value) =>
-                setNodeLinkSettings({ nodeScaleType: value as ScaleType })
-              }
-            >
-              <SelectTrigger
-                id="node-scale-type"
-                className="w-full text-sm"
-                size="sm"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="linear">Linear</SelectItem>
-                <SelectItem value="log">Logarithmic</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
 
         {settings.nodeSizeMode === "fixed" ? (
           <div className="space-y-1">

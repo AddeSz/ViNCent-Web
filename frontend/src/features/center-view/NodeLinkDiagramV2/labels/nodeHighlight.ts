@@ -2,7 +2,6 @@ import type { GraphNode } from "@/types";
 import { highlightColor } from "@/utils/ColorHelper";
 import {
   DEFAULT_NODE_COLOR,
-  NODE_R,
   RING_MAX_WIDTH,
   RING_MIN_WIDTH,
 } from "../constants";
@@ -17,6 +16,7 @@ export const drawNodeHighlight = (
   const y = node.y as number;
   const label = node.label as string;
   const { padX, bgHeight, ringRadius } = metrics;
+  const r = node.size;
 
   // disc reaches the pills edge so ring + pill read as one shape
   ctx.beginPath();
@@ -28,7 +28,7 @@ export const drawNodeHighlight = (
 
   const pillX = x;
   const pillY = y - bgHeight / 2;
-  const pillWidth = textMetrics.width + padX * 2 + NODE_R;
+  const pillWidth = textMetrics.width + padX * 2 + r;
   const pillRadius = bgHeight / 2;
 
   ctx.beginPath();
@@ -59,7 +59,7 @@ export const drawNodeHighlight = (
 
   // "middle" baseline centers on the ascent/descent box, not the glyph
   // ink, so it drifts at different zoom levels, using real bounds instead
-  ctx.fillText(label, x + NODE_R + padX, y + (ascent - descent) / 2);
+  ctx.fillText(label, x + r + padX, y + (ascent - descent) / 2);
 
   // redraw the center dot last so the pill highlight never covers it
   const strokeWidth = Math.min(
@@ -68,7 +68,7 @@ export const drawNodeHighlight = (
   );
 
   ctx.beginPath();
-  ctx.arc(x, y, NODE_R, 0, Math.PI * 2);
+  ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = DEFAULT_NODE_COLOR;
   ctx.fill();
 

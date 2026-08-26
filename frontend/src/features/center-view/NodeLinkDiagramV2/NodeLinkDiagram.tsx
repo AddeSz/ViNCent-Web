@@ -1,4 +1,6 @@
+import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
 import { useNetworkStore } from "@/stores/useNetworkStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
   DataChanges,
   GraphLink,
@@ -16,7 +18,6 @@ import {
   DEFAULT_NODE_COLOR,
   DIMMED_NODE_OPACITY,
   HIGHLIGHT_LINK_WIDTH,
-  NODE_R,
   RING_MAX_WIDTH,
   RING_MIN_WIDTH,
 } from "./constants";
@@ -24,6 +25,7 @@ import { useElementSize } from "./hooks/useElementSize";
 import { useForceGraphData } from "./hooks/useForceGraphData";
 import { useGraphInteraction } from "./hooks/useGraphInteraction";
 import { useGraphSync } from "./hooks/useGraphSync";
+import { useNodeSizing } from "./hooks/useNodeSizing";
 import { drawLabels } from "./labels/drawLabels";
 
 // Must stay in sync with the backgroundColor prop below
@@ -80,6 +82,12 @@ const NodeLinkDiagram = ({
     importanceVersionRef,
   });
 
+  const nodeLinkSettings = useSettingsStore((s) => s.nodeLinkSettings);
+  const currentMetricsInfo = useCurrentMetricsInfo();
+
+  // Derives and mutates node.size based on the active sizing mode/metric
+  useNodeSizing({ nodesById, nodeData, nodeLinkSettings, currentMetricsInfo });
+
   const {
     hoverNodeRef,
     neighborNodesRef,
@@ -130,6 +138,10 @@ const NodeLinkDiagram = ({
     [getDimmedColor],
   );
 
+  // react-force-graph-2d computes rendered radius as sqrt(val) * nodeRelSize;
+  // nodeRelSize is fixed at 1 below so node.size is the true pixel radius
+  const nodeVal = useCallback((node: GraphNode) => node.size ** 2, []);
+
   const nodeCanvasObjectMode = useCallback(
     (node: GraphNode) => {
       // Hovered/selected nodes are drawn entirely via onRenderFramePost so skip the default per node draw for both
@@ -162,7 +174,7 @@ const NodeLinkDiagram = ({
         Math.max(RING_MIN_WIDTH, 2 / globalScale),
       );
       ctx.beginPath();
-      ctx.arc(node.x, node.y, NODE_R, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, node.size, 0, 2 * Math.PI, false);
       ctx.lineWidth = ringWidth;
       ctx.strokeStyle = ringColor;
       ctx.stroke();
@@ -195,7 +207,8 @@ const NodeLinkDiagram = ({
         backgroundColor={CANVAS_BACKGROUND}
         width={size.width}
         height={size.height}
-        nodeRelSize={NODE_R}
+        nodeRelSize={1}
+        nodeVal={nodeVal}
         nodeVisibility={nodeVisibility}
         linkVisibility={linkVisibility}
         nodeColor={nodeColor}

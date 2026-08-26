@@ -1,10 +1,5 @@
 import type { GraphNode } from "@/types";
-import {
-  LABEL_BG_PAD_X,
-  LABEL_BG_PAD_Y,
-  LABEL_GAP,
-  NODE_R,
-} from "../constants";
+import { LABEL_BG_PAD_X, LABEL_BG_PAD_Y, LABEL_GAP } from "../constants";
 import type { ImportanceSortCache } from "../NodeLinkDiagram";
 import { getLabelNodes } from "./labelSelection";
 import { drawNodeHighlight } from "./nodeHighlight";
@@ -17,14 +12,7 @@ const getLabelMetrics = (globalScale: number) => {
   const padY = Math.max(0.2, LABEL_BG_PAD_Y / globalScale);
   const bgHeight = fontSize + padY * 2;
 
-  return {
-    fontSize,
-    gap,
-    padX,
-    padY,
-    bgHeight,
-    ringRadius: Math.max(NODE_R, bgHeight / 2),
-  };
+  return { fontSize, gap, padX, padY, bgHeight };
 };
 
 export const drawLabels = ({
@@ -48,8 +36,7 @@ export const drawLabels = ({
   importanceVersion: number;
   importanceSortCache: ImportanceSortCache;
 }) => {
-  const { fontSize, gap, padX, bgHeight, ringRadius } =
-    getLabelMetrics(globalScale);
+  const { fontSize, gap, padX, bgHeight } = getLabelMetrics(globalScale);
 
   ctx.font = `${fontSize}px sans-serif`;
   ctx.textAlign = "left";
@@ -78,6 +65,8 @@ export const drawLabels = ({
     if (node.x === undefined || node.y === undefined || !node.label) continue;
     if (!nodeVisibility(node)) continue;
 
+    const r = node.size;
+
     // "middle" baseline centers on the ascent/descent box, not the glyph
     // ink, so it drifts at different zoom levels, using real bounds instead
     const metrics = ctx.measureText(node.label);
@@ -85,11 +74,7 @@ export const drawLabels = ({
     const descent = metrics.actualBoundingBoxDescent ?? 0;
 
     ctx.fillStyle = "#fff";
-    ctx.fillText(
-      node.label,
-      node.x + NODE_R + gap,
-      node.y + (ascent - descent) / 2,
-    );
+    ctx.fillText(node.label, node.x + r + gap, node.y + (ascent - descent) / 2);
   }
 
   // 2. selected nodes
@@ -98,6 +83,7 @@ export const drawLabels = ({
     if (node.x === undefined || node.y === undefined || !node.label) continue;
     if (!nodeVisibility(node)) continue;
 
+    const ringRadius = Math.max(node.size, bgHeight / 2);
     drawNodeHighlight(ctx, node, globalScale, { padX, bgHeight, ringRadius });
   }
 
@@ -109,6 +95,7 @@ export const drawLabels = ({
     hoveredNode.label &&
     nodeVisibility(hoveredNode)
   ) {
+    const ringRadius = Math.max(hoveredNode.size, bgHeight / 2);
     drawNodeHighlight(ctx, hoveredNode, globalScale, {
       padX,
       bgHeight,

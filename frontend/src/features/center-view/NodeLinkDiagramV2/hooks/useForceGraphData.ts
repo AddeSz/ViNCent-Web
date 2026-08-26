@@ -1,5 +1,6 @@
 import type { GraphLink, GraphNode, Network } from "@/types";
 import { useMemo } from "react";
+import { NODE_R } from "../constants";
 
 // Creates the graph objects consumed by react-force-graph and
 // lookup maps for fast ID object resolution
@@ -10,6 +11,7 @@ export function useForceGraphData(fullNetwork: Network) {
     const nodes: GraphNode[] = fullNetwork.nodes.map((n) => ({
       id: n.id,
       importance: 0,
+      size: NODE_R,
     }));
 
     const links: GraphLink[] = fullNetwork.edges.map((e) => ({

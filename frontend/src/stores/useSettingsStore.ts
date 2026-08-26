@@ -17,7 +17,7 @@ type RadialSettings = {
   communitiesInArcs: boolean;
 };
 
-type NodeLinkSettings = {
+export type NodeLinkSettings = {
   linkDistance: number;
   chargeStrength: number;
   showLabels: boolean;
@@ -33,7 +33,6 @@ type NodeLinkSettings = {
   minLinkThickness: number;
   maxLinkThickness: number;
   collisionEnabled: boolean;
-  nodeScaleType: ScaleType;
   linkScaleType: ScaleType;
 };
 
@@ -92,7 +91,7 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   fontSize: 16,
   nodeSizeMode: "fixed",
   nodeSizeMetric: "",
-  fixedNodeSize: 15,
+  fixedNodeSize: 8,
   minNodeSize: 5,
   maxNodeSize: 20,
   linkThicknessMode: "fixed",
@@ -101,7 +100,6 @@ export const defaultNodeLinkSettings: NodeLinkSettings = {
   minLinkThickness: 1,
   maxLinkThickness: 5,
   collisionEnabled: true,
-  nodeScaleType: "linear",
   linkScaleType: "linear",
 };
 

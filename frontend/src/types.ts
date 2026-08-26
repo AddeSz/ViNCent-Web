@@ -74,6 +74,7 @@ export interface GraphNode {
   color?: string;
   label?: string;
   importance?: number;
+  size: number;
   x?: number;
   y?: number;
   vx?: number;
