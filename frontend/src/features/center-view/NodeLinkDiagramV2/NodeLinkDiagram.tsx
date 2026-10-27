@@ -18,7 +18,7 @@ import {
   DEFAULT_EDGE_COLOR,
   DEFAULT_LINK_WIDTH,
   DEFAULT_NODE_COLOR,
-  DIMMED_NODE_OPACITY,
+  DIMMED_OPACITY,
   HIGHLIGHT_LINK_WIDTH,
   RING_MAX_WIDTH,
   RING_MIN_WIDTH,
@@ -99,23 +99,29 @@ const NodeLinkDiagram = ({
     handleNodeClick,
   } = useGraphInteraction({ nodesById, linksById, nodeData });
 
-  // nodeColor() is called many times per frame, so avoid recalculating
-  // the same blended color for nodes sharing the same base color
+  // nodeColor() and linkColor() are called many times per frame, so avoid
+  // recalculating the same blended color for items sharing the same base color
   const getDimmedColor = useCallback((baseColor: string) => {
     const cache = dimmedColorCache.current;
     const cached = cache.get(baseColor);
     if (cached) return cached;
 
-    const dimmed = colorBlend(
-      baseColor,
-      CANVAS_BACKGROUND,
-      DIMMED_NODE_OPACITY,
-    );
+    const dimmed = colorBlend(baseColor, CANVAS_BACKGROUND, DIMMED_OPACITY);
     cache.set(baseColor, dimmed);
     return dimmed;
   }, []);
 
-  const linkColor = useCallback(() => DEFAULT_EDGE_COLOR, []);
+  const linkColor = useCallback(
+    (link: GraphLink) => {
+      const hasFocus =
+        !!hoverNodeRef.current || selectedNodesRef.current.size > 0;
+      if (!hasFocus || neighborLinksRef.current.has(link)) {
+        return DEFAULT_EDGE_COLOR;
+      }
+      return getDimmedColor(DEFAULT_EDGE_COLOR);
+    },
+    [getDimmedColor],
+  );
 
   const linkWidth = useCallback(
     (link: GraphLink) =>
