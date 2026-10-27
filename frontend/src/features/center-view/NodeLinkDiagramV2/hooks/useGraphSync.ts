@@ -1,6 +1,5 @@
 import type { Edge, GraphLink, GraphNode, ViewEdge, ViewNode } from "@/types";
 import { useCallback, useEffect, type RefObject } from "react";
-import { DEFAULT_NODE_COLOR } from "../constants";
 
 // sync mutable graph objects with the latest view state
 // This updates existing GraphNode/GraphLink instances instead of replacing
@@ -20,12 +19,11 @@ export function useGraphSync({
   currentEdges: Map<string, Edge>;
   importanceVersionRef: RefObject<number>;
 }) {
-  // labels and colors may change independently of graph topology
+  // labels may change independently of graph topology
   useEffect(() => {
     for (const [id, node] of nodesById) {
       const view = nodeData.get(id);
       node.label = view?.label || view?.id;
-      node.color = DEFAULT_NODE_COLOR;
     }
   }, [nodeData, nodesById]);
 

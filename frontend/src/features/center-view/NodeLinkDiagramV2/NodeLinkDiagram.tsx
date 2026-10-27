@@ -1,4 +1,5 @@
 import { useCurrentMetricsInfo } from "@/hooks/useCurrentMetricsInfo";
+import { useGetColorForMetric } from "@/hooks/useGetColorForMetric";
 import { useNetworkStore } from "@/stores/useNetworkStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import type {
@@ -13,6 +14,7 @@ import { colorBlend, highlightColor } from "@/utils/ColorHelper";
 import { useCallback, useRef } from "react";
 import ForceGraph2D from "react-force-graph-2d";
 import {
+  CANVAS_BACKGROUND,
   DEFAULT_EDGE_COLOR,
   DEFAULT_LINK_WIDTH,
   DEFAULT_NODE_COLOR,
@@ -25,12 +27,9 @@ import { useElementSize } from "./hooks/useElementSize";
 import { useForceGraphData } from "./hooks/useForceGraphData";
 import { useGraphInteraction } from "./hooks/useGraphInteraction";
 import { useGraphSync } from "./hooks/useGraphSync";
+import { useNodeColoring } from "./hooks/useNodeColoring";
 import { useNodeSizing } from "./hooks/useNodeSizing";
 import { drawLabels } from "./labels/drawLabels";
-
-// Must stay in sync with the backgroundColor prop below
-// colorBlend uses this as a hardcoded snapshot, not a live read
-const CANVAS_BACKGROUND = "#262626";
 
 export interface ImportanceSortCache {
   nodes: GraphNode[] | null;
@@ -85,8 +84,11 @@ const NodeLinkDiagram = ({
   const nodeLinkSettings = useSettingsStore((s) => s.nodeLinkSettings);
   const currentMetricsInfo = useCurrentMetricsInfo();
 
-  // Derives and mutates node.size based on the active sizing mode/metric
+  // Derives and mutates node attributes based on the active metric
   useNodeSizing({ nodesById, nodeData, nodeLinkSettings, currentMetricsInfo });
+
+  const getColorForMetric = useGetColorForMetric();
+  useNodeColoring({ nodesById, nodeData, getColorForMetric });
 
   const {
     hoverNodeRef,

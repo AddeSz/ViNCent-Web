@@ -1,3 +1,5 @@
+export const CANVAS_BACKGROUND = "#262626";
+
 export const NODE_R = 6;
 export const DEFAULT_NODE_COLOR = "#4f8ef7";
 export const DIMMED_NODE_OPACITY = 0.3;

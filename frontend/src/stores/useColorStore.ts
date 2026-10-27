@@ -52,12 +52,19 @@ const distinctColors = [
   "#DCD300",
 ];
 
+// d3 interpolators return "rgb(r, g, b)" and hsl() strings. Everything this store
+// hands out is normalized to #rrggbb
+const toHex = (color: string): string => d3.color(color)?.formatHex() ?? color;
+
+const interpolateSpectralHex = (t: number) => toHex(d3.interpolateSpectral(t));
+const interpolateCoolHex = (t: number) => toHex(d3.interpolateCool(t));
+
 function generateColors(n: number): string[] {
   const goldenAngle = 167.508;
   return Array.from({ length: n }, (_, i) => {
     const hue = (i * goldenAngle) % 360;
     const lightness = i % 2 === 0 ? 45 : 60;
-    return `hsl(${hue}, 70%, ${lightness}%)`;
+    return toHex(`hsl(${hue}, 70%, ${lightness}%)`);
   });
 }
 
@@ -102,7 +109,7 @@ export const useColorStore = create<ColorStore>((set, get) => ({
     const numAttributes = attributeKeys.length;
     attributeKeys.forEach((key, index) => {
       const t = numAttributes > 1 ? index / (numAttributes - 1) : 0.5;
-      const color = d3.interpolateCool(t);
+      const color = interpolateCoolHex(t);
       attributeColors.set(key, color);
     });
 
@@ -112,7 +119,7 @@ export const useColorStore = create<ColorStore>((set, get) => ({
         const numValues = info.values.size;
         Array.from(info.values).forEach((value, index) => {
           const t = numValues > 1 ? index / (numValues - 1) : 0.5;
-          const color = d3.interpolateSpectral(t);
+          const color = interpolateSpectralHex(t);
           communityColors.set(`${key}:${value}`, color);
         });
       }
@@ -179,7 +186,7 @@ export const useColorStore = create<ColorStore>((set, get) => ({
 
     const numExisting = centralityColors.size;
     const t = (numExisting % 100) / 99;
-    const color = d3.interpolateSpectral(t);
+    const color = interpolateSpectralHex(t);
 
     set((state) => ({
       centralityColors: new Map(state.centralityColors).set(key, color),
@@ -197,7 +204,7 @@ export const useColorStore = create<ColorStore>((set, get) => ({
 
     const numExisting = attributeColors.size;
     const t = (numExisting % 100) / 99;
-    const color = d3.interpolateCool(t);
+    const color = interpolateCoolHex(t);
 
     set((state) => ({
       attributeColors: new Map(state.attributeColors).set(key, color),
@@ -281,7 +288,7 @@ export const useColorStore = create<ColorStore>((set, get) => ({
 
     const numExisting = existingValuesForKey.length;
     const t = numExisting > 0 ? numExisting / (numExisting + 1) : 0.5;
-    const color = d3.interpolateSpectral(t);
+    const color = interpolateSpectralHex(t);
 
     set((state) => ({
       communityColors: new Map(state.communityColors).set(communityKey, color),

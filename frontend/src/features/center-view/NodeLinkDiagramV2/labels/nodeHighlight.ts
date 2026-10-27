@@ -104,7 +104,7 @@ export const drawNodeHighlight = (
 
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = DEFAULT_NODE_COLOR;
+  ctx.fillStyle = node.color ?? DEFAULT_NODE_COLOR;
   ctx.fill();
 
   ctx.lineWidth = strokeWidth;
